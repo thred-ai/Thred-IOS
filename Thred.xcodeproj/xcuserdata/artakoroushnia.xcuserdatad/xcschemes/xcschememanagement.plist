@@ -7,7 +7,25 @@
 		<key>Thred.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>0</integer>
+			<integer>41</integer>
+		</dict>
+	</dict>
+	<key>SuppressBuildableAutocreation</key>
+	<dict>
+		<key>AA4AF75323B4464500088F11</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>AA4AF76923B4464800088F11</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>AA4AF77423B4464800088F11</key>
+		<dict>
+			<key>primary</key>
+			<true/>
 		</dict>
 	</dict>
 </dict>

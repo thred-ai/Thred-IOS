@@ -1,0 +1,181 @@
+//
+//  UserInfoDownloader.swift
+//  Thred
+//
+//  Created by Arta Koroushnia on 2019-11-16.
+//  Copyright © 2019 ArtaCorp. All rights reserved.
+//
+
+import Foundation
+import UIKit
+import SDWebImage
+import Firebase
+import FirebaseFirestore
+
+extension UITableView{
+
+    func beginDownloadingUserInfo(uid: String, downloader: SDWebImageDownloader?, userVC: UserVC?, feedVC: FeedVC?, friendVC: FriendVC?, section: Int){
+        print(uid)
+        
+        downloadUserInfo(uid: uid, userVC: userVC, feedVC: feedVC, downloadingPersonalDP: false, downloader: downloader, userInfo: nil, completed: {[weak self] fullName, username, dpUID, notifID, bio, imgData in
+            
+            if username != nil{
+                if userVC != nil{
+                    userVC?.downloadingProfiles.removeAll(where: {$0 == uid})
+                }
+                if feedVC != nil{
+                    
+                    feedVC?.downloadingProfiles.removeAll(where: {$0 == uid})
+                }
+                if friendVC != nil{
+                    friendVC?.downloadingProfiles.removeAll(where: {$0 == uid})
+                }
+                
+                self?.setCellUserInfo(image: imgData, info: [uid, fullName, username, dpUID], feedVC: feedVC, userVC: userVC, friendVC: friendVC, section: section)
+            }
+        })
+    }
+    
+    func downloadUserInfo(uid: String, userVC: UserVC?, feedVC: FeedVC?, downloadingPersonalDP: Bool, downloader: SDWebImageDownloader?, userInfo: UserInfo?, completed: @escaping (String?, String?, String?, String?, String?, UIImage?) -> ()){
+        
+        let ref = Firestore.firestore().collection("Users").document(uid)
+        
+        ref.getDocument(){(document, err) in
+            if err != nil{
+                print("Error getting documents: \(err?.localizedDescription ?? "")") // LOCALIZED DESCRIPTION OF ERROR
+                completed(nil, nil, nil, nil, nil, userInfo?.dp ?? defaultDP)
+                return
+            }
+            else{
+                let dpUID = document!["ProfilePicID"] as? String //UID OF COMMENT IMAGE
+                let username = document!["Username"] as? String //COMMENTER'S USERNAME
+                let fullName = document!["Full Name"] as? String
+                let bio = document?["Bio"] as? String
+                let notifID = document?["Notification ID"] as? String
+
+                var options = SDWebImageOptions(arrayLiteral: [.scaleDownLargeImages, .continueInBackground])
+                var storageRef: StorageReference?
+                storageRef = Storage.storage().reference().child("Users").child(uid).child("profile_pic-" + (dpUID ?? "") + ".jpeg") //STORAGE REFERENCE OF COMMENT IMAGE
+                
+                if downloadingPersonalDP{
+                    options.insert(.refreshCached)
+                }
+              
+                completed(fullName, username, dpUID, notifID, bio, nil)
+
+                storageRef?.downloadURL(completion: { url, error in
+                    if error != nil{
+                        print(error?.localizedDescription ?? "")
+                        return
+                    }
+                    else{
+                        
+                        downloader?.requestImage(with: url, options: options, context: nil, progress: nil, completed: { (image, data, error, finished) in
+                            if finished{
+                                
+                                if error != nil{
+                                    print(error?.localizedDescription ?? "") //LOCALIZED DESCRIPTION OF ERROR
+                                    return
+                                }
+                                else{
+                                    if data != nil{
+                                        if userVC != nil || feedVC != nil{
+                                            cache.storeImageData(toDisk: data, forKey: dpUID)
+                                        }
+                                        
+                                        completed(fullName, username, dpUID, notifID, bio, image ?? userInfo?.dp ?? defaultDP)
+                                    }
+                                }
+                            }
+                        })
+                    }
+                })
+            }
+        }
+    }
+    
+    
+    
+    func setCellUserInfo(image: UIImage?, info: [String?], feedVC: FeedVC?, userVC: UserVC?, friendVC: FriendVC?, section: Int){
+        
+        guard let uid = info[0] else{return}
+        let fullname = info[1]
+        let username = info[2]
+        let dpUID = info[3]
+        
+
+        let sameIDs = userVC?.loadedProducts.filter({$0.uid == uid}) ?? feedVC?.loadedProducts.filter({$0.uid == uid}) ?? friendVC?.loadedProducts.filter({$0.uid == uid})
+        for sameID in sameIDs ?? []{
+            sameID.username = username
+            sameID.fullName = fullname
+            sameID.userImageID = dpUID
+            
+        }
+        NoProductsLoaded:
+        
+        if feedVC != nil{
+            guard let loadedProducts = feedVC?.loadedProducts else{break NoProductsLoaded}
+
+            if !(loadedProducts.contains(where: {$0.fullName == nil && $0.username == nil})){
+                //feedVC?.removeFile(withName: "CachedFeedProducts")
+                loadedProducts.saveAllObjects(type: "FeedProducts")
+            }
+            DispatchQueue.main.async {
+                self.setForProduct(uid: uid, fullname: fullname, username: username, image: image, userVC: userVC, friendVC: friendVC, feedVC: feedVC)
+            }
+        }
+        else if friendVC != nil{
+            DispatchQueue.main.async {
+                self.setForProduct(uid: uid, fullname: fullname, username: username, image: image, userVC: userVC, friendVC: friendVC, feedVC: feedVC)
+            }
+        }
+    }
+    
+    func setForProduct(uid: String, fullname: String?, username: String?, image: UIImage?, userVC: UserVC?, friendVC: FriendVC?, feedVC: FeedVC?){
+        
+        if let products = userVC?.loadedProducts ?? friendVC?.loadedProducts ?? feedVC?.loadedProducts{
+            
+            if let indices = indexPathsForVisibleRows{
+                for index in indices{
+                    if products[index.row].uid == uid{
+                        if let cell = cellForRow(at: index){
+                            switch cell{
+                            case let c as ProductCell:
+                                c.fullName.text = fullname
+                                c.username.text = "@" + (username ?? "null")
+                                c.removeLabelLoad()
+                                if let img = image{
+                                    c.userImage.image = img
+                                    c.removeDpLoad()
+                                }
+                            default:
+                                continue
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+
+extension UITableViewCell{
+    
+    
+    func removeLabelLoad(){
+        if let c = self as? ProductCell{
+            c.nameSkeletonView.stopAnimating()
+            c.nameSkeletonView.layer.mask = nil
+        }
+    }
+    func removeDpLoad(){
+        if let c = self as? ProductCell{
+            c.dpSkeletonView.stopAnimating()
+            c.dpSkeletonView.layer.mask = nil
+        }
+    }
+}
+
