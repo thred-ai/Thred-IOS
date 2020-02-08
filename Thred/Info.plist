@@ -22,7 +22,9 @@
 	<true/>
 	<key>UIAppFonts</key>
 	<array>
+		<string>HYPE.ttf</string>
 		<string>Nexa W01 Heavy.ttf</string>
+		<string>akaDora.ttf</string>
 	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>

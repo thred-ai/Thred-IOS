@@ -74,14 +74,15 @@ class ViewController2: UIViewController, WKNavigationDelegate {
     
     
     var requestIDString = ""
-    
+    var stripeID = "ca_GNV7BNqwGxdwvAojN6YJYzO4CdDuLFB6"
+    let email = "artakorp@gmail.com"
+    let accountType = "company"
+
     override func viewDidAppear(_ animated: Bool) {
         
-        let email = "artakorp@gmail.com"
         requestIDString = NSUUID().uuidString
-        let accountType = "company"
         
-        guard let url = URL(string: "https://connect.stripe.com/express/oauth/authorize?redirect_uri=https://connect.stripe.com/connect/default/oauth/test&client_id=ca_GNV7BNqwGxdwvAojN6YJYzO4CdDuLFB6&state=\(requestIDString)&stripe_user[business_type]=\(accountType)&stripe_user[email]=\(email)")
+        guard let url = URL(string: "https://connect.stripe.com/express/oauth/authorize?redirect_uri=https://connect.stripe.com/connect/default/oauth/test&client_id=\(stripeID)&state=\(requestIDString)&stripe_user[business_type]=\(accountType)&stripe_user[email]=\(email)")
 
         else{return}
         

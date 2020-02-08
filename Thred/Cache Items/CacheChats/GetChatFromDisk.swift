@@ -68,21 +68,16 @@ extension Array{
 
 extension Array where Iterator.Element == Template{
     
-    mutating func checkAndLoadTemplates(type: String, with completed: @escaping (Int) -> ()){
+    mutating func checkAndLoadTemplates(type: String, with completed: @escaping () -> ()){
             
         let diskLoadedProducts = self.getAllObjects(type: type, name: "TemplateData")
         switch diskLoadedProducts{
             
         case .some:
-            
-            guard let count = diskLoadedProducts?.count else{return}
-            
-            for product in diskLoadedProducts!{
-                self.append(product)
-                completed(count)
-            }
+            self = diskLoadedProducts!
+            completed()
         case .none:
-            completed(0)
+            completed()
         }
     }
     

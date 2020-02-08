@@ -25,7 +25,18 @@ public let userCalendar = Calendar.current
 class Product: Codable, Equatable{
     
     static func == (lhs: Product, rhs: Product) -> Bool {
-        return true
+        
+        
+        let nameCon = lhs.name == rhs.name
+        let descriptionCon = lhs.description == rhs.description
+        let productIDCon = lhs.productID == rhs.productID
+        let priceCon = lhs.price == rhs.price
+        let picIDCon = lhs.picID == rhs.picID
+        let timeCon = lhs.timestamp == rhs.timestamp
+
+
+        return nameCon && descriptionCon && productIDCon && priceCon && picIDCon && timeCon
+        
     }
     
     
@@ -603,36 +614,57 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         }
         
         query.getDocuments(completion: {[weak self] (snapDocuments, err) in
-            
-            if err != nil {
-                print("Error getting documents: \(err!)")
+            if let err = err {
+                print("Error getting documents: \(err)")
+                
                 completed(false, nil)
                 return
             }
-            else {
+            else{
                 if snapDocuments?.isEmpty ?? true{
                     completed(false, nil)
                 }
                 else{
-                    guard let snaps = snapDocuments?.documents else {return}
+                    guard let snaps = snapDocuments?.documents else {
+                        
+                        return}
                     if snapDocuments?.metadata.isFromCache ?? false{
+                        
                         completed(false, snaps)
                     }
                     else{
+                        
+                        var localLoaded: [Product]! = [Product]()
                         switch fromInterval{
                         case .none:
-                            let isSame = snaps.compactMap({$0.documentID}) == self?.loadedProducts.compactMap({$0.productID})
+                            for (index, snap) in snaps.enumerated(){
+                                let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
+                                let uid = snap["UID"] as! String
+                                let description = snap["Description"] as? String
+                                let name = snap["Name"] as? String
 
-                            self?.loadedProducts.removeOldFeedPosts(snaps: snaps) {
-                                if isSame{
-                                    completed(false, snaps)
-                                }
-                                else{
-                                    completed(true, snaps)
-                                    self?.sortDownloadedProducts(snaps: snaps)
+                                guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
+                                
+                                localLoaded.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, price: priceCents / 100, name: name))
+
+                                if localLoaded.count == snaps.count{
+                                    let isSame = localLoaded == self?.loadedProducts
+                                    
+                                    self?.loadedProducts.removeOldFeedPosts(isSame: isSame, snaps: snaps) {
+                                        if isSame{
+                                            localLoaded = nil
+                                            completed(false, snaps)
+                                        }
+                                        else{
+                                            localLoaded = nil
+                                            completed(true, snaps)
+                                            self?.sortDownloadedProducts(snaps: snaps)
+                                        }
+                                    }
                                 }
                             }
                         default:
+                            
                             completed(true, snaps)
                             self?.sortDownloadedProducts(snaps: snaps)
                         }

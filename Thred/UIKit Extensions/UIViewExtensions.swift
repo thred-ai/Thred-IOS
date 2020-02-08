@@ -107,10 +107,16 @@ extension UIView{
     
     func setRadiusWithShadow(_ radius: CGFloat? = nil) {
            //self.layer.cornerRadius = radius ?? self.frame.width / 2
-           self.layer.shadowColor = UIColor.darkGray.cgColor
-           self.layer.shadowOffset = CGSize(width: -1, height: 2)
-           self.layer.shadowRadius = 2.0
-           self.layer.shadowOpacity = 0.7
-           self.layer.masksToBounds = false
-       }
+        self.layer.shadowColor = UIColor.darkGray.cgColor
+        self.layer.shadowOffset = CGSize(width: -1, height: 2)
+        self.layer.shadowRadius = 2.0
+        self.layer.shadowOpacity = 0.7
+    }
+    func removeShadow() {
+        self.layer.shadowOffset = CGSize(width: 0 , height: 0)
+        self.layer.shadowColor = UIColor.clear.cgColor
+        self.layer.cornerRadius = 0.0
+        self.layer.shadowRadius = 0.0
+        self.layer.shadowOpacity = 0.0
+    }
 }

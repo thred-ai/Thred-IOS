@@ -46,8 +46,7 @@ extension Array where Iterator.Element == Product{
     }
     
     
-    func removeOldFeedPosts(snaps: [QueryDocumentSnapshot], completed: @escaping () -> ()){
-        let isSame = snaps.compactMap({$0.documentID}) == self.compactMap({$0.productID})
+    func removeOldFeedPosts(isSame: Bool, snaps: [QueryDocumentSnapshot], completed: @escaping () -> ()){
         
         if self.count == 0{
             completed()
@@ -58,13 +57,35 @@ extension Array where Iterator.Element == Product{
             
             for (index, product) in self.enumerated(){
                 
-                switch SDImageCache.shared.diskImageDataExists(withKey: product.userImageID){
+                switch cache.diskImageDataExists(withKey: product.userImageID){
                 case true:
-                    
-                    SDImageCache.shared.removeImage(forKey: product.userImageID, withCompletion: {
+                    if product.userImageID != userInfo.uid{
+                        cache.removeImage(forKey: product.userImageID, withCompletion: {
+                            if !isSame{
+                                if cache.diskImageDataExists(withKey: product.productID){
+                                    cache.removeImage(forKey: product.productID, withCompletion: {
+                                        if index == self.count - 1{
+                                            completed()
+                                        }
+                                    })
+                                }
+                                else{
+                                    if index == self.count - 1{
+                                        completed()
+                                    }
+                                }
+                            }
+                            else{
+                                if index == self.count - 1{
+                                    completed()
+                                }
+                            }
+                        })
+                    }
+                    else{
                         if !isSame{
-                            if SDImageCache.shared.diskImageDataExists(withKey: product.productID){
-                                SDImageCache.shared.removeImage(forKey: product.productID, withCompletion: {
+                            if cache.diskImageDataExists(withKey: product.productID){
+                                cache.removeImage(forKey: product.productID, withCompletion: {
                                     if index == self.count - 1{
                                         completed()
                                     }
@@ -81,7 +102,7 @@ extension Array where Iterator.Element == Product{
                                 completed()
                             }
                         }
-                    })
+                    }
                 default:
                     if index == self.count - 1{
                         completed()

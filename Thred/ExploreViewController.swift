@@ -8,13 +8,18 @@
 
 import UIKit
 import Firebase
+import Stripe
 
-class ExploreViewController: UIViewController {
+class ExploreViewController: UIViewController, STPPaymentCardTextFieldDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
+    }
+    
+    func addDebitCard(){
+        let form = STPPaymentCardTextField.init(frame: CGRect(x: 10, y: 0, width: self.view.frame.width - 20, height: 45))
     }
     
 

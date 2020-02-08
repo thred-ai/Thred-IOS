@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		97033D76E8A7B62F3040DBDE /* Pods_Thred_ThredUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F95A9C701689800CBA02234F /* Pods_Thred_ThredUITests.framework */; };
+		AA3151CF23EBD9D8003BF268 /* HYPE.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA3151CE23EBD95B003BF268 /* HYPE.ttf */; };
+		AA3151D123EC081E003BF268 /* akaDora.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA3151D023EC0800003BF268 /* akaDora.ttf */; };
+		AA44090A23EDFB75009F5774 /* TemplateCarousel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA44090923EDFB75009F5774 /* TemplateCarousel.swift */; };
 		AA4AF75823B4464500088F11 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4AF75723B4464500088F11 /* AppDelegate.swift */; };
 		AA4AF75A23B4464500088F11 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4AF75923B4464500088F11 /* SceneDelegate.swift */; };
 		AA4AF75C23B4464500088F11 /* DesignViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4AF75B23B4464500088F11 /* DesignViewController.swift */; };
@@ -118,6 +121,9 @@
 		532E47C4BE147E7D280832B2 /* Pods-Thred.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Thred.debug.xcconfig"; path = "Target Support Files/Pods-Thred/Pods-Thred.debug.xcconfig"; sourceTree = "<group>"; };
 		65B6CBAB1DC7968644D52FD7 /* Pods-ThredTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ThredTests.debug.xcconfig"; path = "Target Support Files/Pods-ThredTests/Pods-ThredTests.debug.xcconfig"; sourceTree = "<group>"; };
 		76F529EBC2B178695AE21035 /* Pods-Thred-ThredUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Thred-ThredUITests.release.xcconfig"; path = "Target Support Files/Pods-Thred-ThredUITests/Pods-Thred-ThredUITests.release.xcconfig"; sourceTree = "<group>"; };
+		AA3151CE23EBD95B003BF268 /* HYPE.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = HYPE.ttf; sourceTree = "<group>"; };
+		AA3151D023EC0800003BF268 /* akaDora.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = akaDora.ttf; sourceTree = "<group>"; };
+		AA44090923EDFB75009F5774 /* TemplateCarousel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateCarousel.swift; sourceTree = "<group>"; };
 		AA4AF75423B4464500088F11 /* Thred.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Thred.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA4AF75723B4464500088F11 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		AA4AF75923B4464500088F11 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -249,6 +255,16 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		AA3151CD23EBD918003BF268 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				AAABBFFD23C9431400E48987 /* Nexa W01 Heavy.ttf */,
+				AA3151D023EC0800003BF268 /* akaDora.ttf */,
+				AA3151CE23EBD95B003BF268 /* HYPE.ttf */,
+			);
+			path = Fonts;
+			sourceTree = "<group>";
+		};
 		AA4AF74B23B4464500088F11 = {
 			isa = PBXGroup;
 			children = (
@@ -277,6 +293,7 @@
 				AA4AF75723B4464500088F11 /* AppDelegate.swift */,
 				AA4AF75923B4464500088F11 /* SceneDelegate.swift */,
 				AA4AF75B23B4464500088F11 /* DesignViewController.swift */,
+				AA44090923EDFB75009F5774 /* TemplateCarousel.swift */,
 				AA545B3423C43827005E7979 /* ViewController2.swift */,
 				AAABC03623C9431E00E48987 /* BioCell.swift */,
 				AAABC0BB23C9435C00E48987 /* UserInfo.swift */,
@@ -292,7 +309,7 @@
 				AAABC00523C9431600E48987 /* FeedView */,
 				AAABC03D23C9432000E48987 /* FullNameCell.swift */,
 				AAABC03723C9431F00E48987 /* LoadingIndicators */,
-				AAABBFFD23C9431400E48987 /* Nexa W01 Heavy.ttf */,
+				AA3151CD23EBD918003BF268 /* Fonts */,
 				AAABBFFE23C9431500E48987 /* ProfileViews */,
 				AAABC02923C9431C00E48987 /* Swift Type Extensions */,
 				AAABC01623C9431900E48987 /* Textures */,
@@ -692,11 +709,13 @@
 				AAABC15F23C947AF00E48987 /* Main.storyboard in Resources */,
 				AAABC08423C9432700E48987 /* default_DP.png in Resources */,
 				AAABC08823C9432700E48987 /* night.png in Resources */,
+				AA3151D123EC081E003BF268 /* akaDora.ttf in Resources */,
 				AAABC08723C9432700E48987 /* arrowBtn.png in Resources */,
 				AAABC07023C9432700E48987 /* SearchUserTableViewCell.xib in Resources */,
 				AAABC08123C9432700E48987 /* feed@3x.png in Resources */,
 				AAABC08523C9432700E48987 /* profile@1x.png in Resources */,
 				AAABC08023C9432700E48987 /* blank.png in Resources */,
+				AA3151CF23EBD9D8003BF268 /* HYPE.ttf in Resources */,
 				AAABC08223C9432700E48987 /* feed@2x.png in Resources */,
 				AA4AF78823B4474600088F11 /* GoogleService-Info.plist in Resources */,
 				AAABC08A23C9432700E48987 /* mask.png in Resources */,
@@ -848,6 +867,7 @@
 				AAABC07823C9432700E48987 /* UIImageExtensions.swift in Sources */,
 				AAABC08F23C9432700E48987 /* DateExtensions.swift in Sources */,
 				AAABC07423C9432700E48987 /* EditFullnameVC.swift in Sources */,
+				AA44090A23EDFB75009F5774 /* TemplateCarousel.swift in Sources */,
 				AAABC0BC23C9435C00E48987 /* InternetConnection.swift in Sources */,
 				AAABC07523C9432700E48987 /* UIBarButtonItemExtensions.swift in Sources */,
 				AAABC07323C9432700E48987 /* FeedVC.swift in Sources */,

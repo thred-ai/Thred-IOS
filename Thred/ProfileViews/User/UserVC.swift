@@ -131,20 +131,20 @@ class UserVC: UITableViewController {
         //tableView.allowsSelection = false
 
         let refresher = BouncingTitleRefreshControl(title: "thred")
-        refresher.addTarget(self, action: #selector(self.refresh(_:)), for: UIControl.Event.valueChanged)
+        refresher.addTarget(self, action: #selector(refresh(_:)), for: UIControl.Event.valueChanged)
         
         tableView.register(UINib(nibName: "ProductCell", bundle: nil), forCellReuseIdentifier: "PictureProduct")
         
-        self.header = self.tableView.loadUserHeaderFromNib()
-        self.header?.actionBtn.addTarget(self, action: #selector(self.editProfile(_:)), for: .touchUpInside)
+        header = tableView.loadUserHeaderFromNib()
+        header?.actionBtn.addTarget(self, action: #selector(editProfile(_:)), for: .touchUpInside)
         if let image = userInfo.dp{
-            self.header?.setUpInfo(username: userInfo.username, fullname: userInfo.fullName, bio: userInfo.bio, notifID: userInfo.notifID, dpUID: nil, image: image, actionBtnTitle: "Edit Profile")
+            header?.setUpInfo(username: userInfo.username, fullname: userInfo.fullName, bio: userInfo.bio, notifID: userInfo.notifID, dpUID: nil, image: image, actionBtnTitle: "Edit Profile")
         }
-        self.tableView.addSubview(refresher)
+        tableView.addSubview(refresher)
 
         
      
-        self.loadedProducts.checkAndLoadProducts(vc: self, type: "Products") { _ in
+        loadedProducts.checkAndLoadProducts(vc: self, type: "Products") { _ in
             DispatchQueue.main.async {
                 if self.loadedProducts.isEmpty{
                     self.refresh(refresher)
@@ -153,10 +153,10 @@ class UserVC: UITableViewController {
         }
         if self.navigationController?.viewControllers.first == self{
                 //Clicked on profile button
-            self.navigationController?.navigationBar.layer.shadowColor = nil
-            self.navigationController?.navigationBar.setBackgroundImage(UIImage.init(), for: UIBarMetrics.default)
-            self.navigationController?.navigationBar.shadowImage = UIImage.init()
-            self.navigationItem.setRightBarButton(self.downBtn, animated: true)
+            navigationController?.navigationBar.layer.shadowColor = nil
+            navigationController?.navigationBar.setBackgroundImage(UIImage.init(), for: UIBarMetrics.default)
+            navigationController?.navigationBar.shadowImage = UIImage.init()
+            navigationItem.setRightBarButton(downBtn, animated: true)
         }
         else{
             //From Search
@@ -220,6 +220,7 @@ class UserVC: UITableViewController {
     }()
     
     @objc func backToFeed(_ sender: UIButton){
+        
         cache.clearMemory()
         self.performSegue(withIdentifier: "ToFeed", sender: nil)
     }
@@ -295,7 +296,6 @@ class UserVC: UITableViewController {
             }
             else{
                 if snapDocuments?.isEmpty ?? true{
-                    
                     completed(false, nil)
                 }
                 else{
@@ -307,18 +307,34 @@ class UserVC: UITableViewController {
                         completed(false, snaps)
                     }
                     else{
+                        
+                        var localLoaded: [Product]! = [Product]()
                         switch fromInterval{
                         case .none:
-                            let isSame = snaps.compactMap({$0.documentID}) == self?.loadedProducts.compactMap({$0.productID})
+                            for (index, snap) in snaps.enumerated(){
+                                let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
+                                let uid = snap["UID"] as! String
+                                let description = snap["Description"] as? String
+                                let name = snap["Name"] as? String
 
-                            self?.loadedProducts.removeOldFeedPosts(snaps: snaps) {
-                                if isSame{
-                                    completed(false, snaps)
-                                }
-                                else{
+                                guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
+                                
+                                localLoaded.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, price: priceCents / 100, name: name))
+
+                                if localLoaded.count == snaps.count{
+                                    let isSame = localLoaded == self?.loadedProducts
                                     
-                                    completed(true, snaps)
-                                    self?.sortDownloadedProducts(snaps: snaps)
+                                    self?.loadedProducts.removeOldFeedPosts(isSame: isSame, snaps: snaps) {
+                                        if isSame{
+                                            localLoaded = nil
+                                            completed(false, snaps)
+                                        }
+                                        else{
+                                            localLoaded = nil
+                                            completed(true, snaps)
+                                            self?.sortDownloadedProducts(snaps: snaps)
+                                        }
+                                    }
                                 }
                             }
                         default:
@@ -392,7 +408,7 @@ class UserVC: UITableViewController {
     override func didReceiveMemoryWarning() {
         
         DispatchQueue.global(qos: .background).sync {
-            SDImageCache.shared.clearMemory()
+            cache.clearMemory()
         }
     }
     
