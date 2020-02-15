@@ -72,7 +72,6 @@ class BouncingTitleRefreshControl: UIRefreshControl {
         var size = CGFloat()
         for letter in title{
             let label = UILabel()
-            
             label.font = UIFont(name: "NexaW01-Heavy", size: 48)!
             label.text = "\(letter)"
             label.textColor = UIColor(red: 0, green: 0.749, blue: 1, alpha: 1.0)

@@ -54,6 +54,11 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         }
     }
     
+    func setLeftNavigationItem(image: UIImage?, style: UIBarButtonItem.Style, target: Any?, action: Selector?){
+        let item = UIBarButtonItem(image: image, style: style, target: target, action: action)
+        self.navigationItem.setLeftBarButton(item, animated: false)
+    }
+    
     lazy var carousel: TemplateCarousel = {
         let carousel = TemplateCarousel(frame: CGRect(x: 0, y: 0, width: displayView.frame.width, height: displayView.frame.height))
         carousel.translatesAutoresizingMaskIntoConstraints = false
@@ -757,6 +762,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         titleView.inputAccessoryView = toolBar
         displayView.addSubview(carousel)
         setCarouselConstraints()
+        setLeftNavigationItem(image: UIImage(nameOrSystemName: "xmark", systemPointSize: 18, iconSize: 9), style: .plain, target: self, action: #selector(cancelDesigning(_:)))
         setPlaceholder(textView: descriptionView, textColor: ColorCompatibility.tertiaryLabel)
         textViewDidChange(descriptionView)
         setKeyBoardNotifs()
@@ -778,6 +784,10 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
             self.nextBtn.isEnabled = false
         }
         // Do any additional setup after loading the view.
+    }
+    
+    @objc func cancelDesigning(_ sender: UIBarButtonItem){
+        self.performSegue(withIdentifier: "cancelDesigning", sender: nil)
     }
     
     lazy var zoomableView: UIView = {
@@ -812,7 +822,6 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         let btn = UIButton(frame: CGRect(x: 0, y: 0, width: 45, height: 45))
         btn.setImage(UIImage(nameOrSystemName: "doc.text.magnifyingglass", systemPointSize: 18, iconSize: 9), for: .normal)
         btn.tintColor = UIColor(named: "LoadingColor")
-        btn.setRadiusWithShadow()
         btn.addTarget(self, action: #selector(showZoomableView(_:)), for: .touchUpInside)
         return btn
     }()

@@ -166,6 +166,8 @@ extension DesignViewController{
         if let textView = self.canvas.subviews.first(where: {$0.isFirstResponder}) as? UITextView{
             if sender.isSelected{
                 shadowBtn.setImage(UIImage(nameOrSystemName: "rectangle.on.rectangle", systemPointSize: 22, iconSize: 7), for: .normal)
+                textView.removeShadow()
+                sender.isSelected = false
             }
             else{
                 shadowBtn.setImage(UIImage(nameOrSystemName: "rectangle.fill.on.rectangle.fill", systemPointSize: 22, iconSize: 7), for: .normal)
