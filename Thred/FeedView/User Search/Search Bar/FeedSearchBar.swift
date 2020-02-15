@@ -21,9 +21,9 @@ extension FeedVC{
         search.tintColor = UIColor(named: "LoadingColor")
         search.placeholder = "Search"
         search.searchTextField.font = UIFont(name: "ArialRoundedMTBold", size: 18)
-        search.searchTextField.adjustsFontSizeToFitWidth = true
+        //search.searchTextField.adjustsFontSizeToFitWidth = true
         search.isTranslucent = false
-        search.searchTextField.minimumFontSize = 15
+        //search.searchTextField.minimumFontSize = 15
         if #available(iOS 13.0, *) {
             let attributes:[NSAttributedString.Key:Any] = [
                 NSAttributedString.Key.foregroundColor : UIColor.label,

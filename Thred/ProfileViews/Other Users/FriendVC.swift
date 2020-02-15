@@ -214,11 +214,12 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
                             let uid = snap["UID"] as! String
                             let description = snap["Description"] as? String
                             let name = snap["Name"] as? String
+                            let blurred = snap["Blurred"] as? Bool
 
                             guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                             
+                            self.loadedProducts.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name))
 
-                            self.loadedProducts.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, price: priceCents / 100, name: name))
                             self.tableView.performBatchUpdates({
                                 self.tableView.insertRows(at: [IndexPath(row: self.loadedProducts.count - 1, section: 0)], with: .automatic)
                             }, completion: { finished in

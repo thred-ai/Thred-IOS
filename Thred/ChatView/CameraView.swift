@@ -113,24 +113,15 @@ class CameraView: UIView, AVCapturePhotoCaptureDelegate{
         
         if #available(iOS 13.0, *) {
             statusBarHeight = UIApplication.shared.windows.first?.windowScene?.statusBarManager?.statusBarFrame.height ?? 20//
-            
         } else {
-            // Fallback on earlier versions
-            
+           statusBarHeight = UIApplication.shared.statusBarFrame.height
         }
         let view = UIView.init(frame: CGRect(x: 0, y: statusBarHeight, width: frame.width, height: 60))
         view.backgroundColor = UIColor.clear
         dismissBtn = UIButton.init(frame: CGRect(x: 0, y: 0, width: 50, height: 50))
         
-        if #available(iOS 13.0, *) {
-            let configuration = UIImage.SymbolConfiguration.init(pointSize: 22, weight: UIImage.SymbolWeight.black, scale: UIImage.SymbolScale.large)
-            
-            dismissBtn?.setPreferredSymbolConfiguration(configuration, forImageIn: .normal)
-            dismissBtn?.setImage(UIImage.init(systemName: "chevron.up"), for: .normal)
-        } else {
-            dismissBtn.setImage(UIImage(named: "chevron_up"), for: .normal)
-            // Fallback on earlier versions
-        }
+        dismissBtn?.setImage(UIImage.init(nameOrSystemName: "chevron.up", systemPointSize: 22, iconSize: 9), for: .normal)
+
 
         dismissBtn?.tintColor = UIColor.white
         dismissBtn?.setRadiusWithShadow()

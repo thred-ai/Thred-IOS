@@ -8,6 +8,7 @@
 
 import Foundation
 import Firebase
+import FirebaseFirestore
 import SDWebImage
 
 extension Array{
@@ -28,7 +29,6 @@ extension Array{
 extension Array where Iterator.Element == Template{
     func saveTemplates(type: String, name: String) {
         let encoder = JSONEncoder()
-        
         if let encoded = try? encoder.encode(self){
             self.saveClass(encoded, name: "TemplateData", type: type)
         }
@@ -48,66 +48,27 @@ extension Array where Iterator.Element == Product{
     
     func removeOldFeedPosts(isSame: Bool, snaps: [QueryDocumentSnapshot], completed: @escaping () -> ()){
         
+        
         if self.count == 0{
             completed()
             return
         }
         else{
-            print(self.count)
-            
             for (index, product) in self.enumerated(){
-                
-                switch cache.diskImageDataExists(withKey: product.userImageID){
-                case true:
+                cache.removeImage(forKey: product.productID, withCompletion: {
                     if product.userImageID != userInfo.uid{
                         cache.removeImage(forKey: product.userImageID, withCompletion: {
-                            if !isSame{
-                                if cache.diskImageDataExists(withKey: product.productID){
-                                    cache.removeImage(forKey: product.productID, withCompletion: {
-                                        if index == self.count - 1{
-                                            completed()
-                                        }
-                                    })
-                                }
-                                else{
-                                    if index == self.count - 1{
-                                        completed()
-                                    }
-                                }
-                            }
-                            else{
-                                if index == self.count - 1{
-                                    completed()
-                                }
+                            if index == self.count - 1{
+                                completed()
                             }
                         })
                     }
                     else{
-                        if !isSame{
-                            if cache.diskImageDataExists(withKey: product.productID){
-                                cache.removeImage(forKey: product.productID, withCompletion: {
-                                    if index == self.count - 1{
-                                        completed()
-                                    }
-                                })
-                            }
-                            else{
-                                if index == self.count - 1{
-                                    completed()
-                                }
-                            }
-                        }
-                        else{
-                            if index == self.count - 1{
-                                completed()
-                            }
+                        if index == self.count - 1{
+                            completed()
                         }
                     }
-                default:
-                    if index == self.count - 1{
-                        completed()
-                    }
-                }
+                })
             }
         }
     }

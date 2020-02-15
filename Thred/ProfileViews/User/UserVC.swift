@@ -28,6 +28,7 @@ class UserVC: UITableViewController {
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let user = self.loadedProducts[indexPath.row]
+
         let cell = tableView.setPictureCell(indexPath: indexPath, user: user, productLocation: self)
         return cell
         
@@ -316,29 +317,29 @@ class UserVC: UITableViewController {
                                 let uid = snap["UID"] as! String
                                 let description = snap["Description"] as? String
                                 let name = snap["Name"] as? String
+                                let blurred = snap["Blurred"] as? Bool
 
                                 guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                                 
-                                localLoaded.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, price: priceCents / 100, name: name))
+                                localLoaded.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name))
 
                                 if localLoaded.count == snaps.count{
                                     let isSame = localLoaded == self?.loadedProducts
                                     
-                                    self?.loadedProducts.removeOldFeedPosts(isSame: isSame, snaps: snaps) {
-                                        if isSame{
-                                            localLoaded = nil
-                                            completed(false, snaps)
-                                        }
-                                        else{
+                                    if !isSame{
+                                        self?.loadedProducts.removeOldFeedPosts(isSame: isSame, snaps: snaps) {
                                             localLoaded = nil
                                             completed(true, snaps)
                                             self?.sortDownloadedProducts(snaps: snaps)
                                         }
                                     }
+                                    else{
+                                        localLoaded = nil
+                                        completed(false, snaps)
+                                    }
                                 }
                             }
                         default:
-                            
                             completed(true, snaps)
                             self?.sortDownloadedProducts(snaps: snaps)
                         }
@@ -351,20 +352,19 @@ class UserVC: UITableViewController {
     
     func sortDownloadedProducts(snaps: [QueryDocumentSnapshot]){
         for (index, snap) in snaps.enumerated(){ // LOADED DOCUMENTS FROM \(snapDocuments)
-            if !self.loadedProducts.contains(where: {$0.productID == snap.documentID}){
+            if !loadedProducts.contains(where: {$0.productID == snap.documentID}){
                 let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
                 let uid = snap["UID"] as! String
                 let description = snap["Description"] as? String
                 let name = snap["Name"] as? String
+                let blurred = snap["Blurred"] as? Bool
 
                 guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
+                
+                loadedProducts.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name))
 
-                               
-                self.loadedProducts.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, price: priceCents / 100, name: name))
-                
-                
-                self.tableView.performBatchUpdates({
-                    self.tableView.insertRows(at: [IndexPath(row: self.loadedProducts.count - 1, section: 0)], with: .none)
+                tableView.performBatchUpdates({
+                    tableView.insertRows(at: [IndexPath(row: loadedProducts.count - 1, section: 0)], with: .none)
                 }, completion: { finished in
                     if finished{
                         if snap == snaps.last{

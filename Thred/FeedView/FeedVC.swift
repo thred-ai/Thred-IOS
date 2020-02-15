@@ -33,9 +33,10 @@ class Product: Codable, Equatable{
         let priceCon = lhs.price == rhs.price
         let picIDCon = lhs.picID == rhs.picID
         let timeCon = lhs.timestamp == rhs.timestamp
+        let blurCon = lhs.blurred == rhs.blurred
 
 
-        return nameCon && descriptionCon && productIDCon && priceCon && picIDCon && timeCon
+        return nameCon && descriptionCon && productIDCon && priceCon && picIDCon && timeCon && blurCon
         
     }
     
@@ -52,11 +53,12 @@ class Product: Codable, Equatable{
     var index: Int! = nil
     var timestampDiff: String! = nil
     var fromCache = Bool()
+    var blurred: Bool!
     var price: Double? = 0
     var name: String? = nil
 
     
-    init(uid: String, picID: String?, description: String?, fullName: String?, username: String?, productID: String, userImageID: String?, timestamp: Date!, index: Int!, timestampDiff: String!, fromCache: Bool, price: Double?, name: String?) {
+    init(uid: String, picID: String?, description: String?, fullName: String?, username: String?, productID: String, userImageID: String?, timestamp: Date!, index: Int!, timestampDiff: String!, fromCache: Bool, blurred: Bool!, price: Double?, name: String?) {
         
         self.uid = uid
         self.picID = picID
@@ -69,12 +71,13 @@ class Product: Codable, Equatable{
         self.index = index
         self.timestampDiff = timestampDiff
         self.fromCache = fromCache
+        self.blurred = blurred
         self.price = price
         self.name = name
     }
     
     convenience init() {
-        self.init(uid: "", picID: nil, description: nil, fullName: nil, username: "", productID: "", userImageID: nil, timestamp: nil,  index: nil, timestampDiff: nil, fromCache: false, price: nil, name: nil)
+        self.init(uid: "", picID: nil, description: nil, fullName: nil, username: "", productID: "", userImageID: nil, timestamp: nil,  index: nil, timestampDiff: nil, fromCache: false, blurred: false, price: nil, name: nil)
     }
     
 }
@@ -451,11 +454,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                 for i in 0..<(self?.loadedProducts.count ?? 0){
                     self?.loadedProducts[i].fromCache = false
                 }
-                if let indexPaths = self?.tableView.indexPathsForVisibleRows{
-                    self?.tableView.performBatchUpdates({
-                        self?.tableView.reloadRows(at: indexPaths, with: .none)
-                    }, completion: nil)
-                }
+                self?.tableView.reloadData()
             }
         }
     }
@@ -490,7 +489,8 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         FeedVC.searchTable.delegate = self
         FeedVC.searchTable.dataSource = self
         setSearchTableConstraints()
-        FeedVC.searchBar.delegate = self
+        
+        //FeedVC.searchBar.delegate = self
         FeedVC.searchTable.register(UINib(nibName: "SearchUserTableViewCell", bundle: nil), forCellReuseIdentifier: "search")
         //FeedVC.searchTable.register(EmptyFeedVC.searchTableViewCell.self, forCellReuseIdentifier: "emptySearch")
         navigationController?.navigationBar.layer.shadowColor = nil
@@ -512,7 +512,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         let image = userInfo.dp
         
         setupUI(image: image!)
-        navigationItem.titleView = FeedVC.searchBar
+        //navigationItem.titleView = FeedVC.searchBar
         
         
         //UserDefaults.standard.set("vK39Da3RIGVGsgBgpdkj0CWdtdW2", forKey: "UID") //Arta
@@ -602,7 +602,6 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
     func getProducts(fromInterval: Date?, completed: @escaping (Bool?, [DocumentSnapshot]?) -> ()){
         
     
-
         guard let searchDate = currentDate(asString: false, dateToUse: Date(), toFirestoreFormat: true).0 else{return}
         //REMOVE LATER
         query = nil
@@ -642,24 +641,25 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                                 let uid = snap["UID"] as! String
                                 let description = snap["Description"] as? String
                                 let name = snap["Name"] as? String
+                                let blurred = snap["Blurred"] as? Bool
 
                                 guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                                 
-                                localLoaded.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, price: priceCents / 100, name: name))
+                                localLoaded.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name))
 
                                 if localLoaded.count == snaps.count{
                                     let isSame = localLoaded == self?.loadedProducts
                                     
-                                    self?.loadedProducts.removeOldFeedPosts(isSame: isSame, snaps: snaps) {
-                                        if isSame{
-                                            localLoaded = nil
-                                            completed(false, snaps)
-                                        }
-                                        else{
+                                    if !isSame{
+                                        self?.loadedProducts.removeOldFeedPosts(isSame: isSame, snaps: snaps) {
                                             localLoaded = nil
                                             completed(true, snaps)
                                             self?.sortDownloadedProducts(snaps: snaps)
                                         }
+                                    }
+                                    else{
+                                        localLoaded = nil
+                                        completed(false, snaps)
                                     }
                                 }
                             }
@@ -681,10 +681,11 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                 let uid = snap["UID"] as! String
                 let description = snap["Description"] as? String
                 let name = snap["Name"] as? String
+                let blurred = snap["Blurred"] as? Bool
                 guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                                
                                
-                loadedProducts.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, price: priceCents / 100, name: name))
+                loadedProducts.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name))
                 
                 
                 tableView.performBatchUpdates({

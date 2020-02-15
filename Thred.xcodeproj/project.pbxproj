@@ -8,11 +8,21 @@
 
 /* Begin PBXBuildFile section */
 		97033D76E8A7B62F3040DBDE /* Pods_Thred_ThredUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F95A9C701689800CBA02234F /* Pods_Thred_ThredUITests.framework */; };
-		AA3151CF23EBD9D8003BF268 /* HYPE.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA3151CE23EBD95B003BF268 /* HYPE.ttf */; };
 		AA3151D123EC081E003BF268 /* akaDora.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA3151D023EC0800003BF268 /* akaDora.ttf */; };
 		AA44090A23EDFB75009F5774 /* TemplateCarousel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA44090923EDFB75009F5774 /* TemplateCarousel.swift */; };
+		AA44090C23EEE5B1009F5774 /* OtherProductInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA44090B23EEE5B1009F5774 /* OtherProductInfoViewController.swift */; };
+		AA44090E23F3DFC5009F5774 /* ProductInProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA44090D23F3DFC5009F5774 /* ProductInProgress.swift */; };
+		AA44091023F3E00D009F5774 /* Template.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA44090F23F3E00D009F5774 /* Template.swift */; };
+		AA44091223F3E084009F5774 /* DesignCanvas.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA44091123F3E084009F5774 /* DesignCanvas.swift */; };
+		AA44091423F3E16D009F5774 /* LabelSticker.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA44091323F3E16D009F5774 /* LabelSticker.swift */; };
+		AA44091623F3E28D009F5774 /* DrawCanvas.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA44091523F3E28D009F5774 /* DrawCanvas.swift */; };
+		AA44091823F3E409009F5774 /* GarbageBtn.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA44091723F3E409009F5774 /* GarbageBtn.swift */; };
+		AA44091A23F3E4B1009F5774 /* ObjectAlignmentLines.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA44091923F3E4B1009F5774 /* ObjectAlignmentLines.swift */; };
+		AA44091E23F3E61E009F5774 /* ZoomableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA44091D23F3E61E009F5774 /* ZoomableView.swift */; };
+		AA44092023F3E750009F5774 /* PhotoStickers.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA44091F23F3E750009F5774 /* PhotoStickers.swift */; };
+		AA44092223F3E863009F5774 /* LoadTemplates.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA44092123F3E863009F5774 /* LoadTemplates.swift */; };
+		AA44092423F66DD1009F5774 /* HOPE-HYPE.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA44092323F66DD0009F5774 /* HOPE-HYPE.ttf */; };
 		AA4AF75823B4464500088F11 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4AF75723B4464500088F11 /* AppDelegate.swift */; };
-		AA4AF75A23B4464500088F11 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4AF75923B4464500088F11 /* SceneDelegate.swift */; };
 		AA4AF75C23B4464500088F11 /* DesignViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4AF75B23B4464500088F11 /* DesignViewController.swift */; };
 		AA4AF76423B4464800088F11 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA4AF76223B4464800088F11 /* LaunchScreen.storyboard */; };
 		AA4AF76F23B4464800088F11 /* ThredTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4AF76E23B4464800088F11 /* ThredTests.swift */; };
@@ -121,12 +131,22 @@
 		532E47C4BE147E7D280832B2 /* Pods-Thred.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Thred.debug.xcconfig"; path = "Target Support Files/Pods-Thred/Pods-Thred.debug.xcconfig"; sourceTree = "<group>"; };
 		65B6CBAB1DC7968644D52FD7 /* Pods-ThredTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ThredTests.debug.xcconfig"; path = "Target Support Files/Pods-ThredTests/Pods-ThredTests.debug.xcconfig"; sourceTree = "<group>"; };
 		76F529EBC2B178695AE21035 /* Pods-Thred-ThredUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Thred-ThredUITests.release.xcconfig"; path = "Target Support Files/Pods-Thred-ThredUITests/Pods-Thred-ThredUITests.release.xcconfig"; sourceTree = "<group>"; };
-		AA3151CE23EBD95B003BF268 /* HYPE.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = HYPE.ttf; sourceTree = "<group>"; };
 		AA3151D023EC0800003BF268 /* akaDora.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = akaDora.ttf; sourceTree = "<group>"; };
 		AA44090923EDFB75009F5774 /* TemplateCarousel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateCarousel.swift; sourceTree = "<group>"; };
+		AA44090B23EEE5B1009F5774 /* OtherProductInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OtherProductInfoViewController.swift; sourceTree = "<group>"; };
+		AA44090D23F3DFC5009F5774 /* ProductInProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductInProgress.swift; sourceTree = "<group>"; };
+		AA44090F23F3E00D009F5774 /* Template.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Template.swift; sourceTree = "<group>"; };
+		AA44091123F3E084009F5774 /* DesignCanvas.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignCanvas.swift; sourceTree = "<group>"; };
+		AA44091323F3E16D009F5774 /* LabelSticker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LabelSticker.swift; sourceTree = "<group>"; };
+		AA44091523F3E28D009F5774 /* DrawCanvas.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrawCanvas.swift; sourceTree = "<group>"; };
+		AA44091723F3E409009F5774 /* GarbageBtn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarbageBtn.swift; sourceTree = "<group>"; };
+		AA44091923F3E4B1009F5774 /* ObjectAlignmentLines.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectAlignmentLines.swift; sourceTree = "<group>"; };
+		AA44091D23F3E61E009F5774 /* ZoomableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomableView.swift; sourceTree = "<group>"; };
+		AA44091F23F3E750009F5774 /* PhotoStickers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoStickers.swift; sourceTree = "<group>"; };
+		AA44092123F3E863009F5774 /* LoadTemplates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadTemplates.swift; sourceTree = "<group>"; };
+		AA44092323F66DD0009F5774 /* HOPE-HYPE.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "HOPE-HYPE.ttf"; sourceTree = "<group>"; };
 		AA4AF75423B4464500088F11 /* Thred.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Thred.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA4AF75723B4464500088F11 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		AA4AF75923B4464500088F11 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		AA4AF75B23B4464500088F11 /* DesignViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignViewController.swift; sourceTree = "<group>"; };
 		AA4AF76323B4464800088F11 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		AA4AF76523B4464800088F11 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -259,10 +279,38 @@
 			isa = PBXGroup;
 			children = (
 				AAABBFFD23C9431400E48987 /* Nexa W01 Heavy.ttf */,
+				AA44092323F66DD0009F5774 /* HOPE-HYPE.ttf */,
 				AA3151D023EC0800003BF268 /* akaDora.ttf */,
-				AA3151CE23EBD95B003BF268 /* HYPE.ttf */,
 			);
 			path = Fonts;
+			sourceTree = "<group>";
+		};
+		AA44091B23F3E4FF009F5774 /* DesignVC */ = {
+			isa = PBXGroup;
+			children = (
+				AA4AF75B23B4464500088F11 /* DesignViewController.swift */,
+				AA44090B23EEE5B1009F5774 /* OtherProductInfoViewController.swift */,
+				AA44090D23F3DFC5009F5774 /* ProductInProgress.swift */,
+				AA44090923EDFB75009F5774 /* TemplateCarousel.swift */,
+				AA44090F23F3E00D009F5774 /* Template.swift */,
+				AA44091D23F3E61E009F5774 /* ZoomableView.swift */,
+				AA44091C23F3E577009F5774 /* Canvas */,
+			);
+			path = DesignVC;
+			sourceTree = "<group>";
+		};
+		AA44091C23F3E577009F5774 /* Canvas */ = {
+			isa = PBXGroup;
+			children = (
+				AA44091123F3E084009F5774 /* DesignCanvas.swift */,
+				AA44092123F3E863009F5774 /* LoadTemplates.swift */,
+				AA44091F23F3E750009F5774 /* PhotoStickers.swift */,
+				AA44091323F3E16D009F5774 /* LabelSticker.swift */,
+				AA44091923F3E4B1009F5774 /* ObjectAlignmentLines.swift */,
+				AA44091523F3E28D009F5774 /* DrawCanvas.swift */,
+				AA44091723F3E409009F5774 /* GarbageBtn.swift */,
+			);
+			path = Canvas;
 			sourceTree = "<group>";
 		};
 		AA4AF74B23B4464500088F11 = {
@@ -291,9 +339,7 @@
 			isa = PBXGroup;
 			children = (
 				AA4AF75723B4464500088F11 /* AppDelegate.swift */,
-				AA4AF75923B4464500088F11 /* SceneDelegate.swift */,
-				AA4AF75B23B4464500088F11 /* DesignViewController.swift */,
-				AA44090923EDFB75009F5774 /* TemplateCarousel.swift */,
+				AA44091B23F3E4FF009F5774 /* DesignVC */,
 				AA545B3423C43827005E7979 /* ViewController2.swift */,
 				AAABC03623C9431E00E48987 /* BioCell.swift */,
 				AAABC0BB23C9435C00E48987 /* UserInfo.swift */,
@@ -537,17 +583,17 @@
 		AAABC04F23C9432600E48987 /* Download Cell Images */ = {
 			isa = PBXGroup;
 			children = (
-				AAABC05023C9432600E48987 /* Group Chats */,
+				AAABC05023C9432600E48987 /* DownloadProductImage */,
 			);
 			path = "Download Cell Images";
 			sourceTree = "<group>";
 		};
-		AAABC05023C9432600E48987 /* Group Chats */ = {
+		AAABC05023C9432600E48987 /* DownloadProductImage */ = {
 			isa = PBXGroup;
 			children = (
 				AAABC05123C9432600E48987 /* DownloadImageForPictureChat.swift */,
 			);
-			path = "Group Chats";
+			path = DownloadProductImage;
 			sourceTree = "<group>";
 		};
 		AAABC05423C9432700E48987 /* Chat & Text Cells */ = {
@@ -711,11 +757,11 @@
 				AAABC08823C9432700E48987 /* night.png in Resources */,
 				AA3151D123EC081E003BF268 /* akaDora.ttf in Resources */,
 				AAABC08723C9432700E48987 /* arrowBtn.png in Resources */,
+				AA44092423F66DD1009F5774 /* HOPE-HYPE.ttf in Resources */,
 				AAABC07023C9432700E48987 /* SearchUserTableViewCell.xib in Resources */,
 				AAABC08123C9432700E48987 /* feed@3x.png in Resources */,
 				AAABC08523C9432700E48987 /* profile@1x.png in Resources */,
 				AAABC08023C9432700E48987 /* blank.png in Resources */,
-				AA3151CF23EBD9D8003BF268 /* HYPE.ttf in Resources */,
 				AAABC08223C9432700E48987 /* feed@2x.png in Resources */,
 				AA4AF78823B4474600088F11 /* GoogleService-Info.plist in Resources */,
 				AAABC08A23C9432700E48987 /* mask.png in Resources */,
@@ -857,10 +903,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				AAABC06F23C9432700E48987 /* SearchUserTableViewCell.swift in Sources */,
+				AA44091E23F3E61E009F5774 /* ZoomableView.swift in Sources */,
 				AAABC07623C9432700E48987 /* UINavigationBarExtensions.swift in Sources */,
 				AAABC06E23C9432700E48987 /* UserVC.swift in Sources */,
 				AAABC16323CD189400E48987 /* MainTabBarViewController.swift in Sources */,
 				AAABC0A523C9432700E48987 /* GetChatFromDisk.swift in Sources */,
+				AA44091023F3E00D009F5774 /* Template.swift in Sources */,
 				AAABC08E23C9432700E48987 /* StringExtensions.swift in Sources */,
 				AAABC09723C9432700E48987 /* LoadingHeaderView.swift in Sources */,
 				AAABC09923C9432700E48987 /* SkeletonView.swift in Sources */,
@@ -877,24 +925,32 @@
 				AAABC0B523C9432700E48987 /* SetUpPictureChat.swift in Sources */,
 				AAABC07123C9432700E48987 /* FeedSearchTable.swift in Sources */,
 				AAABC09E23C9432700E48987 /* FullNameCell.swift in Sources */,
+				AA44090C23EEE5B1009F5774 /* OtherProductInfoViewController.swift in Sources */,
 				AAABC0A623C9432700E48987 /* CheckUserInfoForChat.swift in Sources */,
 				AAABC07723C9432700E48987 /* UIViewControllerExtensions.swift in Sources */,
 				AAABC0B623C9432700E48987 /* SetUpTimeDifferences.swift in Sources */,
 				AA4AF75C23B4464500088F11 /* DesignViewController.swift in Sources */,
 				AAABC0A823C9432700E48987 /* DownloadUserInfo&Set.swift in Sources */,
+				AA44092223F3E863009F5774 /* LoadTemplates.swift in Sources */,
+				AA44091823F3E409009F5774 /* GarbageBtn.swift in Sources */,
+				AA44091623F3E28D009F5774 /* DrawCanvas.swift in Sources */,
 				AAABC0BD23C9435C00E48987 /* UserInfo.swift in Sources */,
 				AAABC09B23C9432700E48987 /* UIViewMasking.swift in Sources */,
+				AA44091223F3E084009F5774 /* DesignCanvas.swift in Sources */,
 				AAABC06C23C9432700E48987 /* ProfileHeaderView.swift in Sources */,
 				AAABC0B323C9432700E48987 /* ProductCell.swift in Sources */,
 				AAABC08D23C9432700E48987 /* ArrayExtensions.swift in Sources */,
 				AAABC09823C9432700E48987 /* BioCell.swift in Sources */,
 				AAABC07223C9432700E48987 /* FeedSearchBar.swift in Sources */,
+				AA44091423F3E16D009F5774 /* LabelSticker.swift in Sources */,
 				AAABC06B23C9432700E48987 /* FriendVC.swift in Sources */,
 				AAABC0A023C9432700E48987 /* EditBioVC.swift in Sources */,
 				AAABC09C23C9432700E48987 /* BouncingTitleRefreshControl.swift in Sources */,
 				AAABC09023C9432700E48987 /* CollectionViewLayout.swift in Sources */,
 				AAABC16723D12A8D00E48987 /* ExploreViewController.swift in Sources */,
+				AA44091A23F3E4B1009F5774 /* ObjectAlignmentLines.swift in Sources */,
 				AA545B3523C43827005E7979 /* ViewController2.swift in Sources */,
+				AA44092023F3E750009F5774 /* PhotoStickers.swift in Sources */,
 				AAABC09223C9432700E48987 /* PhotoLibraryCollectionView.swift in Sources */,
 				AAABC07923C9432700E48987 /* UIViewExtensions.swift in Sources */,
 				AAABC07A23C9432700E48987 /* UIButtonExtensions.swift in Sources */,
@@ -904,9 +960,9 @@
 				AAABC0A423C9432700E48987 /* SaveChatToDisk.swift in Sources */,
 				AAABC09A23C9432700E48987 /* CircularProgress.swift in Sources */,
 				AAABC09123C9432700E48987 /* Message.swift in Sources */,
-				AA4AF75A23B4464500088F11 /* SceneDelegate.swift in Sources */,
 				AAABC09D23C9432700E48987 /* MapSpinnerView.swift in Sources */,
 				AAABC09323C9432700E48987 /* PhotosCell.swift in Sources */,
+				AA44090E23F3DFC5009F5774 /* ProductInProgress.swift in Sources */,
 				AAABC08C23C9432700E48987 /* EditProfileVC.swift in Sources */,
 				AAABC0A223C9432700E48987 /* SavePIcturesToDisk.swift in Sources */,
 				AA8CD7FD23DE0F1300DCA929 /* FlappingButterflyRefreshControl.swift in Sources */,

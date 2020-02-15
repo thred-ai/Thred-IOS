@@ -23,8 +23,40 @@ class EditUsernameVC: UIViewController, UITextFieldDelegate, UINavigationControl
         usernameField.text = username
         usernameField.becomeFirstResponder()
         
+        usernameField.addTarget(self, action: #selector(textFieldDidChange(_:)),
+        for: .editingChanged)
     }
     
+    var oldText: String!
+    
+    @objc func textFieldDidChange(_ textField: UITextField){
+        
+        guard var text = textField.text else {return}
+        
+        text = text.replacingOccurrences(of: " ", with: "_")
+        textField.text = text
+        
+        if text.count < 4{
+            doneBtn.isEnabled = false
+        }
+        else{
+            if text.hasSpecialCharacters(){
+                textField.text = oldText
+            }
+            else{
+                oldText = text
+            }
+            if !(textField.text?.first == "." || textField.text?.last == "."){
+                doneBtn.isEnabled = true
+            }
+            else{
+                doneBtn.isEnabled = false
+            }
+        }
+    }
+    
+    
+
     
     @IBAction func done(_ sender: UIBarButtonItem) {
         
@@ -70,6 +102,7 @@ class EditUsernameVC: UIViewController, UITextFieldDelegate, UINavigationControl
         }
     }
     
+    @IBOutlet weak var doneBtn: UIBarButtonItem!
     
     
     @IBOutlet weak var usernameField: UITextField!
@@ -84,4 +117,13 @@ class EditUsernameVC: UIViewController, UITextFieldDelegate, UINavigationControl
     }
     */
 
+}
+
+extension String{
+    func hasSpecialCharacters() -> Bool {
+        if self.range(of: "^[0-9a-zA-Z-_\\.]{0,40}$", options: [.regularExpression, .caseInsensitive]) != nil {
+            return false
+        }
+        return true
+    }
 }

@@ -1,0 +1,314 @@
+//
+//  DesignCanvas.swift
+//  Thred
+//
+//  Created by Arta Koroushnia on 2020-02-12.
+//  Copyright © 2020 Thred. All rights reserved.
+//
+
+import Foundation
+import UIKit
+
+
+extension DesignViewController{
+    @objc func maximiseDrawingArea(displayView: UIImageView){
+        
+        if let selectedIndex = carousel.collectionView.indexPathsForVisibleItems.first?.item{
+            aspectRatio = displayView.frame.height / displayView.frame.width
+            let viewY = displayView.frame.origin.y
+            let width = view.frame.width
+            let height = view.frame.width * aspectRatio
+            let difference = (canvas.frame.height - height).magnitude
+            garbageBtn.center.y -= difference
+            self.titleView.isUserInteractionEnabled = false
+            self.canvasDisplayView.isHidden = false
+            self.canvasDisplayView.frame.size = displayView.frame.size
+            self.canvasDisplayView.frame.origin.y = viewY
+            displayView.isHidden = true
+            nextBtn.isEnabled = false
+            self.carousel.displayImage = self.canvasDisplayView.image
+            selectedView = displayView
+            DispatchQueue.main.async {
+                self.scrollview.setContentOffset(.zero, animated: true)
+                self.scrollview.isScrollEnabled = false
+                self.canvas.backgroundColor = UIColor(named: self.tees[selectedIndex].templateID)
+                self.canvasDisplayView.backgroundColor = UIColor(named: self.tees[selectedIndex].templateID)
+                self.garbageBtn.isHidden = true
+                self.textStyleBtn.superview?.isHidden = true
+                self.fontSlider.isHidden = true
+                self.textCoverView.isHidden = true
+                self.bottomBar.isHidden = false
+                self.bottomSafeAreaView.isHidden = false
+                let y = self.displayView.frame.origin.y
+                var bottomBarY = y + height + self.view.safeAreaInsets.top
+                if bottomBarY >= self.view.frame.maxY - self.bottomBar.frame.height{
+                    bottomBarY = self.view.frame.maxY - self.bottomBar.frame.height
+                }
+                self.bottomBar.frame.origin.y = bottomBarY
+                self.bottomSafeAreaView.frame.origin.y = self.bottomBar.frame.maxY
+                self.bottomSafeAreaView.frame.size.height = self.view.frame.maxY - self.bottomSafeAreaView.frame.origin.y
+                
+                UIView.animate(withDuration: 0.2, animations: {
+                    self.descriptionView.alpha = 0.0
+                    self.canvasDisplayView.frame = CGRect(x: 0, y: y, width: width, height: height)
+                    self.canvasDisplayView.center.x = self.view.center.x
+                    self.canvas.frame = CGRect(x: 0, y: y + self.view.safeAreaInsets.top, width: width, height: height)
+                    self.canvas.center.x = self.view.center.x
+                    
+                }, completion: { finished in
+                    if finished{
+                        //self.displayView.image = nil
+
+                        self.descriptionView.isHidden = true
+                        self.canvas.isHidden = false
+                        self.drawCanvas.isHidden = false
+                    }
+                })
+            }
+        }
+    }
+    
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        return true
+    }
+    
+    @objc func minimizeDrawingArea(_ sender: UIButton){
+        canvasDisplayView.image = nil
+        garbageBtn.isHidden = true
+        textCoverView.isHidden = true
+        textStyleBtn.superview?.isHidden = true
+        fontSlider.isHidden = true
+        midXLine.isHidden = true
+        midYLine.isHidden = true
+        angleLine.isHidden = true
+        angleLocked = false
+        viewCenteredX = false
+        viewCenteredY = false
+        if canvas.subviews.contains(where: {$0.isKind(of: UIImageView.self) || ($0.isKind(of: UITextView.self))}) || drawCanvas.lines.contains(where: {$0.brush.blendMode != .clear}){
+            canvasDisplayView.image = canvas.makeSnapshot()
+            nextBtn.isEnabled = true
+        }
+        if !cameraRollCollectionView.isHidden{
+            configurePhotos(photosBtn)
+        }
+        let x = selectedView.frame.origin.x
+        let y = selectedView.frame.origin.y
+        let width = selectedView.frame.width
+        let height = selectedView.frame.height
+        DispatchQueue.main.async {
+            self.scrollview.isScrollEnabled = true
+            //self.displayView.image = UIImage(data: self.tees[self.currentItemIndex].templateData)
+            self.titleView.isUserInteractionEnabled = true
+            self.bottomBar.isHidden = true
+            self.bottomSafeAreaView.isHidden = true
+            self.descriptionView.isHidden = false
+            self.drawCanvas.isEnabled = false
+            self.drawBtn.isSelected = false
+            self.drawBtn.tintColor = UIColor(named: "LoadingColor")
+            self.drawCanvas.isHidden = true
+            self.canvas.isHidden = true
+            UIView.animate(withDuration: 0.2, animations: {
+                self.descriptionView.alpha = 1.0
+                self.canvasDisplayView.frame = CGRect(x: x, y: y, width: width, height: height)
+                self.canvasDisplayView.center.x = self.displayView.center.x
+            }, completion: { finished in
+                if finished{
+                    UIView.animate(withDuration: 0.1, animations: {
+                        self.carousel.displayImage = self.canvasDisplayView.image
+                        self.carousel.collectionView.reloadData()
+                        self.selectedView.isHidden = false
+                        self.selectedView = nil
+                        self.canvasDisplayView.isHidden = true
+                    })
+                }
+            })
+        }
+    }
+    
+    @objc func closeDrawCanvas(_ sender: UIButton){
+        for label in canvas.subviews.filter({$0.isKind(of: UITextView.self)}){
+            label.isUserInteractionEnabled = true
+        }
+        drawToolBar.isHidden = true
+        canvas.gestureRecognizers?.first?.isEnabled = true
+        drawToolBar.isHidden = true
+        drawCanvas.isUserInteractionEnabled = false
+        drawBtn.superview?.isHidden = false
+        drawCanvas.isEnabled = false
+        drawBtn.isSelected = false
+    }
+
+    @objc func openDrawCanvas(_ sender: UIButton){
+        
+        drawToolBar.isHidden = false
+        sender.superview?.isHidden = true
+        if !cameraRollCollectionView.isHidden{
+            configurePhotos(photosBtn)
+        }
+        for label in canvas.subviews.filter({$0.isKind(of: UITextView.self)}){
+            label.isUserInteractionEnabled = false
+            canvas.bringSubviewToFront(label)
+        }
+        drawCanvas.isEnabled = true
+        canvas.gestureRecognizers?.first?.isEnabled = false
+        drawCanvas.isUserInteractionEnabled = true
+        sender.isSelected = true
+        
+    }
+    
+    
+    @objc func handleObjectPan(_ sender: UIPanGestureRecognizer){
+        let viewDrag = sender.view!
+        switch sender.state {
+        case .began, .changed:
+            canvas.gestureRecognizers?.first?.isEnabled = false
+            if viewDrag != backgroundView{
+                canvas.bringSubviewToFront(viewDrag)
+            }
+            self.angleLine.isHidden = true
+            configureOtherStickersGestures(ignoredView: viewDrag, disable: true)
+            
+            let translation = sender.translation(in: view)
+            viewDrag.center = CGPoint(x: viewDrag.center.x + translation.x, y: viewDrag.center.y + translation.y)
+            checkInGarbage(sender: sender, completed: {inGarbage in
+                if !inGarbage{
+                    self.canvas.bringSubviewToFront(self.garbageBtn)
+                    if translation.x <= 5 && translation.y <= 5{
+                        self.checkCentering(viewDrag: viewDrag)
+                    }
+                }
+                else{
+                    self.midYLine.isHidden = true
+                    self.midXLine.isHidden = true
+                    self.viewCenteredY = false
+                    self.viewCenteredX = false
+                }
+            })
+            sender.setTranslation(CGPoint.zero, in: view)
+        default:
+            canvas.gestureRecognizers?.first?.isEnabled = true
+            if viewCenteredY{
+                viewDrag.center.y = canvas.center.y - view.safeAreaInsets.top
+            }
+            if viewCenteredX{
+                viewDrag.center.x = canvas.center.x
+            }
+            midYLine.isHidden = true
+            midXLine.isHidden = true
+            viewCenteredY = false
+            viewCenteredX = false
+            configureOtherStickersGestures(ignoredView: viewDrag, disable: false)
+            if viewDrag.isOutOfBounds(){
+                viewDrag.removeFromSuperview()
+                if viewDrag == backgroundView{
+                    backgroundView = nil
+                }
+                hideGarbageBtn()
+                break
+            }
+            checkInGarbage(sender: sender, completed: { inGarbage in
+                if inGarbage{
+                    viewDrag.removeFromSuperview()
+                    if viewDrag == self.backgroundView{
+                        self.backgroundView = nil
+                    }
+                    self.eatGarbageAnimation{
+                        self.hideGarbageBtn()
+                    }
+                }
+                else{
+                    self.hideGarbageBtn()
+                }
+            })
+            break
+        }
+    }
+    
+    @objc func handleObjectPinch(_ sender: UIPinchGestureRecognizer){
+        switch sender.state {
+        case .began, .changed:
+            canvas.gestureRecognizers?.first?.isEnabled = false
+            let viewDrag = sender.view!
+            if viewDrag != backgroundView{
+                canvas.bringSubviewToFront(viewDrag)
+            }
+            let scale = sender.scale
+            sender.view!.transform = sender.view!.transform.scaledBy(x: scale, y: scale)
+            sender.scale = 1
+            break
+        default:
+            canvas.gestureRecognizers?.first?.isEnabled = true
+            break
+        }
+    }
+    
+    @objc func handleObjectRotation(_ sender: UIRotationGestureRecognizer){
+        switch sender.state{
+        case .began, .changed:
+            if sender.numberOfTouches == 2{
+                canvas.gestureRecognizers?.first?.isEnabled = false
+                let viewDrag = sender.view!
+                if viewDrag != backgroundView{
+                    canvas.bringSubviewToFront(viewDrag)
+                }
+                sender.view!.transform = sender.view!.transform.rotated(by: sender.rotation)
+                checkRotation(viewDrag: viewDrag)
+                sender.rotation = 0
+            }
+            break
+        default:
+            canvas.gestureRecognizers?.first?.isEnabled = true
+            angleLine.isHidden = true
+            angleLocked = false
+            break
+        }
+    }
+    
+    func maximiseGarbage(view: UIView, completed: @escaping () -> ()){
+        if self.garbageBtn.transform != CGAffineTransform(scaleX: 1.2, y: 1.2){
+            var scale: CGFloat!
+            if view.frame.width > view.frame.height{
+                scale = garbageBtn.frame.width / view.frame.width
+            }
+            else{
+                scale = garbageBtn.frame.height / view.frame.height
+            }
+            prevTransform = view.transform
+            UIView.animate(withDuration: 0.2, animations: {
+                view.transform = view.transform.scaledBy(x: scale, y: scale)
+                view.center = self.garbageBtn.center
+                view.alpha = 0.8
+                self.canvas.bringSubviewToFront(view)
+                self.garbageBtn.transform = CGAffineTransform(scaleX: 1.2, y: 1.2)
+            }, completion: { finished in
+                if finished{
+                    completed()
+                }
+            })
+        }
+        else{
+            completed()
+        }
+    }
+}
+
+extension UIView{
+    func isOutOfBounds() -> Bool {
+        guard let superview = self.superview else {
+            return true
+        }
+        if self.frame.origin.y <= 0 - self.frame.height{
+            return true
+        }
+        if self.frame.origin.y >= superview.frame.height{
+            return true
+        }
+        if self.frame.origin.x <= 0 - self.frame.width{
+            return true
+        }
+        if self.frame.origin.x >= superview.frame.width{
+            return true
+        }
+        return false
+    }
+}
