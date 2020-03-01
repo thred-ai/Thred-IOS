@@ -16,7 +16,7 @@ import ColorSlider
 import AVKit
 
 
-class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDelegate, UIGestureRecognizerDelegate, SwiftyDrawViewDelegate {
+class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDelegate, UIGestureRecognizerDelegate, UITextFieldDelegate, SwiftyDrawViewDelegate {
     
     var cameraBtn: UIButton!
     var photosBtn: UIButton!
@@ -28,35 +28,63 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     @IBOutlet weak var scrollview: UIScrollView!
     @IBOutlet weak var titleView: UITextField!
     @IBOutlet weak var nextBtn: UIBarButtonItem!
+    @IBOutlet weak var priceView: UITextField!
     
     var currentItemIndex: Int! = 0
     
     
-    var product = ProductInProgress()
+    var product: ProductInProgress! = ProductInProgress()
 
-    @IBAction func nextPage(_ sender: UIBarButtonItem) {
+
+    @IBAction func doneDesigning(_ sender: UIBarButtonItem) {
         
-        if let indexPath = carousel.collectionView.indexPathsForVisibleItems.first{
-            if let cell = carousel.collectionView.cellForItem(at: indexPath) as? carouselCollectionViewCell{
-                if cell.canvasDisplayView.image != nil{
-                    zoomBtn.isHidden = true
-                    product.designOnShirt = displayView.makeSnapshot()
-                    product.design = cell.canvasDisplayView.makeSnapshot()
-                    product.caption = descriptionView.text
-                    product.uid = userInfo.uid
-                    product.name = titleView.text
-                    product.templateColor = self.tees[indexPath.item].templateID
-                    zoomBtn.isHidden = false
-                    self.performSegue(withIdentifier: "nextPage", sender: nil)
-
+        let canPost = canPostDesign()
+        if canPost.0{
+            if let indexPath = carousel.collectionView.indexPathsForVisibleItems.first{
+                if let cell = carousel.collectionView.cellForItem(at: indexPath) as? carouselCollectionViewCell{
+                    if cell.canvasDisplayView.image != nil{
+                        guard let price = priceView.text else{return}
+                        guard let decimalPrice = Double(price) else{return}
+                        zoomBtn.isHidden = true
+                        product.designOnShirt = displayView.makeSnapshot(clear: false)
+                        product.design = cell.canvasDisplayView.image
+                        product.caption = descriptionView.text
+                        product.uid = userInfo.uid
+                        product.name = titleView.text
+                        product.templateColor = tees[indexPath.item].templateID
+                        product.price = decimalPrice * 100
+                        zoomBtn.isHidden = false
+                        performSegue(withIdentifier: "DoneDesigning", sender: nil)
+                    }
                 }
             }
+        }
+        else{
+            if canPost.1 == "title"{
+                //throw title empty error
+            }
+            else if canPost.1 == "price"{
+                //throw price empty error
+            }
+        }
+    }
+    
+    func canPostDesign() -> (Bool, String?){
+        
+        if titleView.text?.isEmpty ?? false{
+            return (false, "title")
+        }
+        else if priceView.text?.isEmpty ?? false{
+            return (false, "price")
+        }
+        else{
+            return (true, nil)
         }
     }
     
     func setLeftNavigationItem(image: UIImage?, style: UIBarButtonItem.Style, target: Any?, action: Selector?){
         let item = UIBarButtonItem(image: image, style: style, target: target, action: action)
-        self.navigationItem.setLeftBarButton(item, animated: false)
+        navigationItem.setLeftBarButton(item, animated: false)
     }
     
     lazy var carousel: TemplateCarousel = {
@@ -67,17 +95,17 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     
     
     @objc func closeCamera(_ sender: UIButton?){
-        self.titleView.isHidden = false
-        self.bottomBar.isHidden = false
+        titleView.isHidden = false
+        bottomBar.isHidden = false
         canvas.gestureRecognizers?.first?.isEnabled = true
-        self.cameraView.hideCameraAnimate(viewToCarry: self.bottomBar) {
+        cameraView.hideCameraAnimate(viewToCarry: bottomBar) {
             self.cameraView.resetDisplayImage()
         }
     }
     
     lazy var drawToolBar: UIStackView = {
         
-        let stack = UIStackView(frame: CGRect(x: 10, y: 5, width: self.view.frame.width - 20, height: 35))
+        let stack = UIStackView(frame: CGRect(x: 10, y: 5, width: view.frame.width - 20, height: 35))
         
         stack.axis = .horizontal
         stack.distribution = .fill
@@ -174,7 +202,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
             drawCanvas.brush.color = Color(slider.color)
         }
         else{
-            brushBtn.setImage(UIImage(nameOrSystemName: "pencil.circle.fill", systemPointSize: 25, iconSize: 9), for: .normal)
+            brushBtn.setImage(UIImage(nameOrSystemName: "wand.and.rays.inverse", systemPointSize: 23, iconSize: 9), for: .normal)
             drawCanvas.brush.blendMode = .clear
         }
     }
@@ -195,10 +223,12 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         
         let aspectRatio = selectedImage.size.height / selectedImage.size.width
         
-        let width = canvas.frame.width / 4
+        let width = canvas.frame.width / 2
 
         let imageView = UIImageView.init(frame: CGRect(x: canvas.frame.width / 2, y: canvas.frame.height / 2, width: width, height: width * aspectRatio))
         imageView.contentMode = .scaleAspectFit
+        imageView.center.y = canvas.bounds.midY
+        imageView.center.x = canvas.center.x
         imageView.image = selectedImage
         let tapper = UILongPressGestureRecognizer(target: self, action: #selector(configureAsBackground(_:)))
         imageView.addGestureRecognizer(tapper)
@@ -215,7 +245,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
             if let heldView = sender.view as? UIImageView{
                 if backgroundView == heldView{
                     backgroundView = nil
-                    self.canvas.bringSubviewToFront(heldView)
+                    canvas.bringSubviewToFront(heldView)
                     heldView.alpha = 0.0
                     UIView.animate(withDuration: 0.25, animations: {
                         heldView.alpha = 1.0
@@ -223,7 +253,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
                 }
                 else{
                     backgroundView = heldView
-                    self.canvas.sendSubviewToBack(heldView)
+                    canvas.sendSubviewToBack(heldView)
                     heldView.alpha = 0.0
                     UIView.animate(withDuration: 0.25, animations: {
                         heldView.alpha = 1.0
@@ -235,14 +265,14 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     
     func configureOtherStickersGestures(ignoredView: UIView, disable: Bool){
         if disable{
-            for view in self.canvas.subviews.filter({$0.isKind(of: UITextView.self) || $0.isKind(of: UIImageView.self)}){
+            for view in canvas.subviews.filter({$0.isKind(of: UITextView.self) || $0.isKind(of: UIImageView.self)}){
                 if view != ignoredView{
                     view.isUserInteractionEnabled = false
                 }
             }
         }
         else{
-            for view in self.canvas.subviews.filter({$0.isKind(of: UITextView.self) || $0.isKind(of: UIImageView.self)}){
+            for view in canvas.subviews.filter({$0.isKind(of: UITextView.self) || $0.isKind(of: UIImageView.self)}){
                 if view != ignoredView{
                     view.isUserInteractionEnabled = true
                 }
@@ -257,52 +287,39 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         pan.accessibilityLabel = "pan"
         pinch.accessibilityLabel = "pinch"
         rotate.accessibilityLabel = "rotate"
-
         pan.delegate = self
         pinch.delegate = self
         rotate.delegate = self
-
         view.addGestureRecognizer(pan)
         view.addGestureRecognizer(pinch)
         view.addGestureRecognizer(rotate)
-
         view.isUserInteractionEnabled = true
         view.clipsToBounds = true
     }
     
     var viewCenteredY = false
     var viewCenteredX = false
-
-    
-    
-    
     var angleLocked = false
-    
-
     var prevTransform: CGAffineTransform!
 
-    
-    
-        
-    
     lazy var toolBar: UIView = {
         let bar = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 45))
         bar.backgroundColor = ColorCompatibility.systemBackground.withAlphaComponent(0.8)
         let stackView = UIStackView(frame: bar.frame)
         bar.addSubview(stackView)
         let button = UIButton(frame: CGRect(x: 0, y: 0, width: 45, height: 45))
-    
         button.setTitle("Done", for: .normal)
         button.setTitleColor(ColorCompatibility.label, for: .normal)
         button.addTarget(self, action: #selector(doneEditing(_:)), for: .touchUpInside)
         stackView.addArrangedSubview(button)
-       
+        
         return bar
     }()
     
     @objc func doneEditing(_ sender: UIButton){
         descriptionView.resignFirstResponder()
         titleView.resignFirstResponder()
+        priceView.resignFirstResponder()
     }
     
     
@@ -317,30 +334,26 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
                 keyboardHeight = keyboardFrame.height
                 if canvas.isHidden{
                     UIView.animate(withDuration: 0.2, animations: {
-                        //self.bottomBar.transform = CGAffineTransform(translationX: 0, y: -(keyboardHeight - bottomPadding))
-                        
                         if self.scrollview.contentInset.bottom == 0{
                             self.scrollview.contentOffset.y -= self.keyboardHeight - bottomPadding
                         }
                         self.scrollview.contentInset.bottom = self.keyboardHeight - bottomPadding
                         self.scrollview.verticalScrollIndicatorInsets.bottom = self.keyboardHeight - bottomPadding
-                        
                     }, completion: { finished in
                         if finished{}
                     })
                 }
                 else{
                     if let textView = canvas.subviews.first(where: {$0.isFirstResponder && $0.isKind(of: UITextView.self)}) as? UITextView{
-                        self.activeLbl = textView
-                        self.editingTransform = textView.transform
-                        self.editingCenter = textView.center
+                        activeLbl = textView
+                        editingTransform = textView.transform
+                        editingCenter = textView.center
                         if !(textView.accessibilityIdentifier?.isEmpty ?? false){
                             textView.text = textView.accessibilityIdentifier
                         }
-                        self.textStyleBtn.superview?.isHidden = false
-                        self.fontSlider.isHidden = false
-                        self.textCoverView.isHidden = false
-
+                        textStyleBtn.superview?.isHidden = false
+                        fontSlider.isHidden = false
+                        textCoverView.isHidden = false
                         UIView.animate(withDuration: 0.15, animations: {
                             textView.transform = CGAffineTransform.identity
                         }, completion: { finished in
@@ -453,6 +466,8 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     
     var keyboardHeight: CGFloat!
     
+    
+    
     func textViewDidChange(_ textView: UITextView) {
         if textView == descriptionView{
             placeholderLabel.isHidden = !textView.text.isEmpty
@@ -493,6 +508,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     @IBOutlet weak var displayView: UIView!
     
     
+    
     lazy var cameraView: CameraView = {
         let cameraView = CameraView.init(frame: CGRect(x: 0, y: bottomBar.frame.maxY, width: view.frame.width, height: view.frame.height))
         cameraView.bottomBar.frame.size.height = cameraView.bottomBar.frame.height + view.safeAreaInsets.bottom
@@ -531,6 +547,8 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     var midYLine: UIView!
     var angleLine: UIView!
     
+    var lineTypeView: UIView!
+    
     lazy var canvas: UIView = {
         let view = UIImageView(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: self.view.frame.height * aspectRatio))
         view.isUserInteractionEnabled = true
@@ -551,6 +569,29 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         brushCircle.isHidden = true
         let gesture = UIPinchGestureRecognizer(target: self, action: #selector(changeBrushSize(_:)))
         drawCanvas.addGestureRecognizer(gesture)
+        
+        let holdGesture = UILongPressGestureRecognizer(target: self, action: #selector(activateStraightLine(_:)))
+        drawCanvas.addGestureRecognizer(holdGesture)
+        
+        lineTypeView = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
+        let lineImageView = UIImageView(frame: CGRect(x: 0, y: 0, width: lineTypeView.frame.width, height: lineTypeView.frame.height))
+        lineImageView.image = UIImage(named: "scribble.mode")
+        lineTypeView.center = drawCanvas.center
+        lineImageView.frame.origin = CGPoint.zero
+        lineTypeView.addSubview(lineImageView)
+        
+        
+        
+        if #available(iOS 13.0, *) {
+            lineTypeView.addBackgroundBlur(blurEffect: UIBlurEffect(style: UIBlurEffect.Style.systemUltraThinMaterial))
+        } else {
+            lineTypeView.addBackgroundBlur(blurEffect: UIBlurEffect(style: UIBlurEffect.Style.regular))
+        }
+        lineTypeView.tintColor = UIColor.cyan
+        lineTypeView.layer.cornerRadius = lineTypeView.frame.height / 8
+        lineTypeView.clipsToBounds = true
+        drawCanvas.addSubview(lineTypeView)
+        
         let lineWidth: CGFloat = 1
         midXLine = UIView.init(frame: CGRect(x: 0, y: 0, width: lineWidth, height: view.frame.height))
         midXLine.center.x = view.center.x
@@ -610,6 +651,41 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         return view
     }()
     
+    @objc func activateStraightLine(_ sender: UILongPressGestureRecognizer){
+        if sender.state == .began{
+            drawCanvas.undo()
+            if let lineImageView = lineTypeView.subviews.first(where: {$0.isKind(of: UIImageView.self)}) as? UIImageView{
+                lineTypeView.center = drawCanvas.center
+                lineTypeView.center.y = drawCanvas.center.y - self.view.safeAreaInsets.top
+                lineImageView.frame.origin = CGPoint.zero
+                lineTypeView.tintColor = slider.color
+                lineTypeView.isHidden = false
+                AudioServicesPlaySystemSound(1519)
+                if drawCanvas.shouldDrawStraight{
+                    drawCanvas.shouldDrawStraight = false
+                    lineImageView.image = UIImage(named: "scribble.mode")
+                }
+                else{
+                    drawCanvas.shouldDrawStraight = true
+                    lineImageView.image = UIImage(named: "straight.mode")
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5){
+                    UIView.animate(withDuration: 0.2, animations: {
+                        self.lineTypeView.alpha = 0.0
+                    }, completion: { finished in
+                        if finished{
+                            self.lineTypeView.alpha = 1.0
+                            self.lineTypeView.isHidden = true
+                        }
+                    })
+                }
+            }
+            else{
+                
+            }
+        }
+    }
+    
     lazy var brushCircle: UIView = {
         let view = UIView.init(frame: CGRect(x: 0, y: 0, width: drawCanvas.brush.originalWidth, height: drawCanvas.brush.originalWidth))
         view.backgroundColor = .white
@@ -627,8 +703,6 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     
     
     var fontSlider: UISlider!
-    
-    
     
     var currentLabelStyle: LabelStyle!
     
@@ -703,6 +777,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         
         doneBtn = UIButton.init(frame: CGRect(x: 0, y: 0, width: view.frame.height, height: view.frame.height))
         doneBtn.setTitle("Done", for: .normal)
+        doneBtn.setTitleColor(UIColor(named: "LoadingColor")?.withAlphaComponent(0.5), for: .disabled)
         doneBtn.setTitleColor(UIColor(named: "LoadingColor"), for: .normal)
         doneBtn.addTarget(self, action: #selector(minimizeDrawingArea(_:)), for: .touchUpInside)
         
@@ -730,14 +805,16 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
             drawBtn.isSelected = true
             closeDrawCanvas(drawBtn)
             exitTapper.isEnabled = true
+            doneBtn.isEnabled = false
             showCamRoll(sender: sender)
-            //canvas.gestureRecognizers?.first?.isEnabled = false
+            canvas.gestureRecognizers?.first?.isEnabled = false
         }
         else{
             exitTapper.isEnabled = false
+            doneBtn.isEnabled = true
             sender.tintColor = UIColor(named: "LoadingColor")
             cameraRollCollectionView.animatehideCameraRoll(viewToCarry: self.bottomBar, backgroundView: view, tableView: nil){
-                //self.canvas.gestureRecognizers?.first?.isEnabled = true
+                self.canvas.gestureRecognizers?.first?.isEnabled = true
             }
         }
     }
@@ -750,6 +827,46 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         NSLayoutConstraint(item: carousel, attribute: .left, relatedBy: .equal, toItem: displayView, attribute: .left, multiplier: 1.0, constant: 0).isActive = true
         NSLayoutConstraint(item: carousel, attribute: .right, relatedBy: .equal, toItem: displayView, attribute: .right, multiplier: 1.0, constant: 0).isActive = true
     }
+   
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        if textField.text == minimumPrice{
+            textField.text?.removeAll()
+        }
+    }
+    
+    var minimumPrice: String! = "20.00"
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        guard let text = textField.text else{return}
+        guard let price = Float(text) else{
+            textField.text = minimumPrice
+            return}
+        guard let minPrice = Float(minimumPrice) else{return}
+        if price >= minPrice{
+            if let index = text.firstIndex(of: ".")?.utf16Offset(in: text){
+                switch index{
+                case text.count - 1:
+                    textField.text?.append(contentsOf: "00")
+                case text.count - 2:
+                    textField.text?.append(contentsOf: "0")
+                default:
+                    break
+                }
+            }
+            else{
+                if text.isEmpty{
+                    textField.text = minimumPrice
+                }
+                else{
+                    textField.text?.append(contentsOf: ".00")
+                }
+            }
+        }
+        else{
+            textField.text = minimumPrice
+            //throw minimum price error
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -760,6 +877,9 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         descriptionView.delegate = self
         descriptionView.inputAccessoryView = toolBar
         titleView.inputAccessoryView = toolBar
+        priceView.delegate = self
+        priceView.text = "20.00"
+        priceView.inputAccessoryView = toolBar
         displayView.addSubview(carousel)
         setCarouselConstraints()
         setLeftNavigationItem(image: UIImage(nameOrSystemName: "xmark", systemPointSize: 18, iconSize: 9), style: .plain, target: self, action: #selector(cancelDesigning(_:)))
@@ -767,27 +887,30 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         textViewDidChange(descriptionView)
         setKeyBoardNotifs()
         loadDesigns(){
-            self.carousel.setCarouselTemplates(templates: self.tees)
-            self.scrollview.addSubview(self.canvasDisplayView)
-            self.view.addSubview(self.canvas)
-            self.canvas.isHidden = true
-            self.view.addSubview(self.bottomBar)
-            self.bottomBar.isHidden = true
-            self.view.addSubview(self.bottomSafeAreaView)
-            self.bottomSafeAreaView.isHidden = true
-            self.bottomBar.addSubview(self.drawToolBar)
-            self.drawToolBar.isHidden = true
-            self.displayView.addSubview(self.zoomBtn)
-            self.zoomBtn.frame.origin = CGPoint(x: 5, y: self.displayView.frame.maxY - self.zoomBtn.frame.height - 5)
-            self.view.addSubview(self.zoomableView)
-            self.zoomableView.isHidden = true
-            self.nextBtn.isEnabled = false
+            DispatchQueue.main.async {
+                self.carousel.setCarouselTemplates(templates: self.tees)
+                self.scrollview.addSubview(self.canvasDisplayView)
+                self.view.addSubview(self.canvas)
+                self.canvas.isHidden = true
+                self.view.addSubview(self.bottomBar)
+                self.bottomBar.isHidden = true
+                self.view.addSubview(self.bottomSafeAreaView)
+                self.bottomSafeAreaView.isHidden = true
+                self.bottomBar.addSubview(self.drawToolBar)
+                self.drawToolBar.isHidden = true
+                self.displayView.addSubview(self.zoomBtn)
+                self.zoomBtn.frame.origin = CGPoint(x: 5, y: self.displayView.frame.maxY - self.zoomBtn.frame.height - 5)
+                self.view.addSubview(self.zoomableView)
+                self.zoomableView.isHidden = true
+                self.nextBtn.isEnabled = false
+            }
         }
         // Do any additional setup after loading the view.
     }
     
     @objc func cancelDesigning(_ sender: UIBarButtonItem){
-        self.performSegue(withIdentifier: "cancelDesigning", sender: nil)
+        product = nil
+        performSegue(withIdentifier: "DoneDesigning", sender: nil)
     }
     
     lazy var zoomableView: UIView = {
@@ -836,21 +959,29 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
 
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let nextVC = segue.destination as? OtherProductInfoViewController{
-            nextVC.product = product
+        if let tabVC = segue.destination as? MainTabBarViewController{
+            if product != nil{
+                tabVC.posted = true
+                tabVC.product = product
+            }
+            else{
+                tabVC.posted = false
+            }
         }
     }
 }
 
 extension UIView {
-    func makeSnapshot() -> UIImage? {
-        let color = self.backgroundColor
-        self.backgroundColor = .clear
+    func makeSnapshot(clear: Bool) -> UIImage? {
+        let color = backgroundColor
+        if clear{
+            backgroundColor = .clear
+        }
         let renderer = UIGraphicsImageRenderer(size: bounds.size)
         let image = renderer.image { ctx in
             drawHierarchy(in: bounds, afterScreenUpdates: true)
         }
-        self.backgroundColor = color
+        backgroundColor = color
         return image
     }
 }
@@ -858,10 +989,10 @@ extension UIView {
 extension UIImage {
 /// Returns a system image on iOS 13, otherwise returns an image from the Bundle provided.
     convenience init?(nameOrSystemName: String, systemPointSize: CGFloat?, iconSize: Int?, in bundle: Bundle? = Bundle.main, compatibleWith traitCollection: UITraitCollection? = nil) {
-if #available(iOS 13, *) {
-    self.init(systemName: nameOrSystemName, withConfiguration: UIImage.SymbolConfiguration.init(pointSize: systemPointSize ?? 20, weight: UIImage.SymbolWeight(rawValue: iconSize ?? 9) ?? UIImage.SymbolWeight.black, scale: UIImage.SymbolScale.large))
+        if #available(iOS 13, *) {
+            self.init(systemName: nameOrSystemName, withConfiguration: UIImage.SymbolConfiguration.init(pointSize: systemPointSize ?? 20, weight: UIImage.SymbolWeight(rawValue: iconSize ?? 9) ?? UIImage.SymbolWeight.black, scale: UIImage.SymbolScale.large))
         } else {
-self.init(named: nameOrSystemName, in: bundle, compatibleWith: traitCollection)
+            self.init(named: nameOrSystemName, in: bundle, compatibleWith: traitCollection)
         }
     }
 }

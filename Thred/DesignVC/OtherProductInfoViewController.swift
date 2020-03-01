@@ -13,6 +13,7 @@ class OtherProductInfoViewController: UIViewController {
     var product: ProductInProgress?
     @IBOutlet weak var titleView: UILabel!
     @IBOutlet weak var imageView: UIImageView!
+    @IBOutlet weak var textView: UITextView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -22,6 +23,9 @@ class OtherProductInfoViewController: UIViewController {
         }
         if let displayImage = product?.designOnShirt{
             imageView.image = displayImage
+        }
+        if let caption = product?.caption{
+            textView.text = caption
         }
         
         // Do any additional setup after loading the view.

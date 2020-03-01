@@ -22,7 +22,7 @@ extension DesignViewController{
                 if cell.canvasDisplayView.image == nil{
                     cell.canvasDisplayView.isHidden = true
                 }
-                imageView?.image = sender.superview?.makeSnapshot()
+                imageView?.image = sender.superview?.makeSnapshot(clear: true)
                 sender.isHidden = false
                 cell.canvasDisplayView.isHidden = false
 

@@ -10,29 +10,41 @@ import UIKit
 import AudioToolbox
 import ColorCompatibility
 
+var templates: [Template]! = [Template]()
 
 class MainTabBarViewController: UITabBarController {
 
+    var posted: Bool!
+    var product: ProductInProgress!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
         tabBar.isTranslucent = false
+        templates.checkAndLoadTemplates(type: "TeeTemplates"){}
         // Do any additional setup after loading the view.
     }
     
     @IBAction func unwindToTabBar(segue:  UIStoryboardSegue) {
         
-        
+        if posted{
+            selectedIndex = 4
+            if let profileVC = (viewControllers?[selectedIndex] as? UINavigationController)?.viewControllers.first as? UserVC{
+                profileVC.uploadPost(post: product)
+            }
+        }
     }
+    
+    
     
     let notificationCenter = NotificationCenter.default
 
     lazy var button: UIButton = {
-        let tabHeight = self.tabBar.frame.size.height
-        let width = (self.view.frame.width / 3) - 45
+        let tabHeight = tabBar.frame.size.height
+        let width = (view.frame.width / 3) - 45
         let height = width
-        let x = (self.view.frame.width / 3) + 22.5
-        let y = self.view.frame.maxY - tabHeight - (height / 2)
+        let x = (view.frame.width / 3) + 22.5
+        let y = view.frame.maxY - tabHeight - (height / 2)
         
         let button = UIButton.init(frame: CGRect(x: x, y: y, width: width, height: height))
         button.backgroundColor = ColorCompatibility.systemBackground
@@ -49,7 +61,7 @@ class MainTabBarViewController: UITabBarController {
     
     @objc func segueToCreationScreen(_ sender: UIButton){
         AudioServicesPlaySystemSound(1520) // Actuate `Pop` feedback (strong boom)
-        self.performSegue(withIdentifier: "new", sender: nil)
+        performSegue(withIdentifier: "new", sender: nil)
     }
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -77,7 +89,7 @@ class MainTabBarViewController: UITabBarController {
     }
     
     override func viewDidLayoutSubviews() {
-        self.view.insertSubview(button, aboveSubview: tabBar)
+        view.insertSubview(button, aboveSubview: tabBar)
     }
 
     /*

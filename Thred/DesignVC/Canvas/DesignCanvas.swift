@@ -13,7 +13,9 @@ import UIKit
 extension DesignViewController{
     @objc func maximiseDrawingArea(displayView: UIImageView){
         
+        
         if let selectedIndex = carousel.collectionView.indexPathsForVisibleItems.first?.item{
+            
             aspectRatio = displayView.frame.height / displayView.frame.width
             let viewY = displayView.frame.origin.y
             let width = view.frame.width
@@ -58,7 +60,7 @@ extension DesignViewController{
                 }, completion: { finished in
                     if finished{
                         //self.displayView.image = nil
-
+                        self.lineTypeView.isHidden = true
                         self.descriptionView.isHidden = true
                         self.canvas.isHidden = false
                         self.drawCanvas.isHidden = false
@@ -85,7 +87,7 @@ extension DesignViewController{
         viewCenteredX = false
         viewCenteredY = false
         if canvas.subviews.contains(where: {$0.isKind(of: UIImageView.self) || ($0.isKind(of: UITextView.self))}) || drawCanvas.lines.contains(where: {$0.brush.blendMode != .clear}){
-            canvasDisplayView.image = canvas.makeSnapshot()
+            canvasDisplayView.image = canvas.makeSnapshot(clear: true)
             nextBtn.isEnabled = true
         }
         if !cameraRollCollectionView.isHidden{
@@ -97,7 +99,6 @@ extension DesignViewController{
         let height = selectedView.frame.height
         DispatchQueue.main.async {
             self.scrollview.isScrollEnabled = true
-            //self.displayView.image = UIImage(data: self.tees[self.currentItemIndex].templateData)
             self.titleView.isUserInteractionEnabled = true
             self.bottomBar.isHidden = true
             self.bottomSafeAreaView.isHidden = true
@@ -165,14 +166,15 @@ extension DesignViewController{
             if viewDrag != backgroundView{
                 canvas.bringSubviewToFront(viewDrag)
             }
-            self.angleLine.isHidden = true
+            canvas.bringSubviewToFront(drawCanvas)
+            angleLine.isHidden = true
             configureOtherStickersGestures(ignoredView: viewDrag, disable: true)
-            
             let translation = sender.translation(in: view)
             viewDrag.center = CGPoint(x: viewDrag.center.x + translation.x, y: viewDrag.center.y + translation.y)
-            checkInGarbage(sender: sender, completed: {inGarbage in
+            checkInGarbage(sender: sender, completed: { inGarbage in
+                self.canvas.bringSubviewToFront(self.garbageBtn)
+
                 if !inGarbage{
-                    self.canvas.bringSubviewToFront(self.garbageBtn)
                     if translation.x <= 5 && translation.y <= 5{
                         self.checkCentering(viewDrag: viewDrag)
                     }
@@ -232,6 +234,7 @@ extension DesignViewController{
             if viewDrag != backgroundView{
                 canvas.bringSubviewToFront(viewDrag)
             }
+            canvas.bringSubviewToFront(drawCanvas)
             let scale = sender.scale
             sender.view!.transform = sender.view!.transform.scaledBy(x: scale, y: scale)
             sender.scale = 1
@@ -251,6 +254,7 @@ extension DesignViewController{
                 if viewDrag != backgroundView{
                     canvas.bringSubviewToFront(viewDrag)
                 }
+                canvas.bringSubviewToFront(drawCanvas)
                 sender.view!.transform = sender.view!.transform.rotated(by: sender.rotation)
                 checkRotation(viewDrag: viewDrag)
                 sender.rotation = 0

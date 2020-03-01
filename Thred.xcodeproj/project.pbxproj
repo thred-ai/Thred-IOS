@@ -28,8 +28,15 @@
 		AA4AF76F23B4464800088F11 /* ThredTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4AF76E23B4464800088F11 /* ThredTests.swift */; };
 		AA4AF77A23B4464800088F11 /* ThredUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4AF77923B4464800088F11 /* ThredUITests.swift */; };
 		AA4AF78823B4474600088F11 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AA4AF78723B4474600088F11 /* GoogleService-Info.plist */; };
+		AA4CE2762406F69B009BAC92 /* ExploreColorCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4CE2742406F69B009BAC92 /* ExploreColorCell.swift */; };
+		AA4CE2772406F69B009BAC92 /* ExploreColorCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = AA4CE2752406F69B009BAC92 /* ExploreColorCell.xib */; };
+		AA4CE27A24076701009BAC92 /* ExploreProductCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4CE27824076701009BAC92 /* ExploreProductCell.swift */; };
+		AA4CE27B24076701009BAC92 /* ExploreProductCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = AA4CE27924076701009BAC92 /* ExploreProductCell.xib */; };
 		AA545B3523C43827005E7979 /* ViewController2.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA545B3423C43827005E7979 /* ViewController2.swift */; };
 		AA8CD7FD23DE0F1300DCA929 /* FlappingButterflyRefreshControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8CD7FC23DE0F1300DCA929 /* FlappingButterflyRefreshControl.swift */; };
+		AA8E68EA2407C43900C651A1 /* ExplorePageFlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8E68E92407C43900C651A1 /* ExplorePageFlowLayout.swift */; };
+		AA8E68ED240B2B5C00C651A1 /* carouselCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8E68EB240B2B5C00C651A1 /* carouselCollectionViewCell.swift */; };
+		AA8E68EE240B2B5C00C651A1 /* carouselCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = AA8E68EC240B2B5C00C651A1 /* carouselCollectionViewCell.xib */; };
 		AAABC06A23C9432700E48987 /* Nexa W01 Heavy.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AAABBFFD23C9431400E48987 /* Nexa W01 Heavy.ttf */; };
 		AAABC06B23C9432700E48987 /* FriendVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAABC00023C9431500E48987 /* FriendVC.swift */; };
 		AAABC06C23C9432700E48987 /* ProfileHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAABC00123C9431500E48987 /* ProfileHeaderView.swift */; };
@@ -157,8 +164,15 @@
 		AA4AF77923B4464800088F11 /* ThredUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThredUITests.swift; sourceTree = "<group>"; };
 		AA4AF77B23B4464800088F11 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AA4AF78723B4474600088F11 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		AA4CE2742406F69B009BAC92 /* ExploreColorCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreColorCell.swift; sourceTree = "<group>"; };
+		AA4CE2752406F69B009BAC92 /* ExploreColorCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ExploreColorCell.xib; sourceTree = "<group>"; };
+		AA4CE27824076701009BAC92 /* ExploreProductCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreProductCell.swift; sourceTree = "<group>"; };
+		AA4CE27924076701009BAC92 /* ExploreProductCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ExploreProductCell.xib; sourceTree = "<group>"; };
 		AA545B3423C43827005E7979 /* ViewController2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController2.swift; sourceTree = "<group>"; };
 		AA8CD7FC23DE0F1300DCA929 /* FlappingButterflyRefreshControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlappingButterflyRefreshControl.swift; sourceTree = "<group>"; };
+		AA8E68E92407C43900C651A1 /* ExplorePageFlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplorePageFlowLayout.swift; sourceTree = "<group>"; };
+		AA8E68EB240B2B5C00C651A1 /* carouselCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = carouselCollectionViewCell.swift; sourceTree = "<group>"; };
+		AA8E68EC240B2B5C00C651A1 /* carouselCollectionViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = carouselCollectionViewCell.xib; sourceTree = "<group>"; };
 		AAABBFFD23C9431400E48987 /* Nexa W01 Heavy.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Nexa W01 Heavy.ttf"; sourceTree = "<group>"; };
 		AAABC00023C9431500E48987 /* FriendVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FriendVC.swift; sourceTree = "<group>"; };
 		AAABC00123C9431500E48987 /* ProfileHeaderView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProfileHeaderView.swift; sourceTree = "<group>"; };
@@ -292,6 +306,8 @@
 				AA44090B23EEE5B1009F5774 /* OtherProductInfoViewController.swift */,
 				AA44090D23F3DFC5009F5774 /* ProductInProgress.swift */,
 				AA44090923EDFB75009F5774 /* TemplateCarousel.swift */,
+				AA8E68EB240B2B5C00C651A1 /* carouselCollectionViewCell.swift */,
+				AA8E68EC240B2B5C00C651A1 /* carouselCollectionViewCell.xib */,
 				AA44090F23F3E00D009F5774 /* Template.swift */,
 				AA44091D23F3E61E009F5774 /* ZoomableView.swift */,
 				AA44091C23F3E577009F5774 /* Canvas */,
@@ -364,6 +380,11 @@
 				AAABC03E23C9432100E48987 /* UsernameCell.swift */,
 				AAABC15E23C947AF00E48987 /* Main.storyboard */,
 				AAABC16623D12A8D00E48987 /* ExploreViewController.swift */,
+				AA8E68E92407C43900C651A1 /* ExplorePageFlowLayout.swift */,
+				AA4CE2742406F69B009BAC92 /* ExploreColorCell.swift */,
+				AA4CE2752406F69B009BAC92 /* ExploreColorCell.xib */,
+				AA4CE27824076701009BAC92 /* ExploreProductCell.swift */,
+				AA4CE27924076701009BAC92 /* ExploreProductCell.xib */,
 				AAABC16223CD189400E48987 /* MainTabBarViewController.swift */,
 				AA4AF76223B4464800088F11 /* LaunchScreen.storyboard */,
 				AA4AF76523B4464800088F11 /* Info.plist */,
@@ -758,6 +779,7 @@
 				AA3151D123EC081E003BF268 /* akaDora.ttf in Resources */,
 				AAABC08723C9432700E48987 /* arrowBtn.png in Resources */,
 				AA44092423F66DD1009F5774 /* HOPE-HYPE.ttf in Resources */,
+				AA4CE2772406F69B009BAC92 /* ExploreColorCell.xib in Resources */,
 				AAABC07023C9432700E48987 /* SearchUserTableViewCell.xib in Resources */,
 				AAABC08123C9432700E48987 /* feed@3x.png in Resources */,
 				AAABC08523C9432700E48987 /* profile@1x.png in Resources */,
@@ -771,6 +793,8 @@
 				AAABC08323C9432700E48987 /* feed@1x.png in Resources */,
 				AAABC07F23C9432700E48987 /* profile@2x.png in Resources */,
 				AAABC08923C9432700E48987 /* home@1x.png in Resources */,
+				AA4CE27B24076701009BAC92 /* ExploreProductCell.xib in Resources */,
+				AA8E68EE240B2B5C00C651A1 /* carouselCollectionViewCell.xib in Resources */,
 				AAABC09623C9432700E48987 /* PhotosCell.xib in Resources */,
 				AAABC07C23C9432700E48987 /* home@2x.png in Resources */,
 			);
@@ -934,11 +958,13 @@
 				AA44092223F3E863009F5774 /* LoadTemplates.swift in Sources */,
 				AA44091823F3E409009F5774 /* GarbageBtn.swift in Sources */,
 				AA44091623F3E28D009F5774 /* DrawCanvas.swift in Sources */,
+				AA8E68ED240B2B5C00C651A1 /* carouselCollectionViewCell.swift in Sources */,
 				AAABC0BD23C9435C00E48987 /* UserInfo.swift in Sources */,
 				AAABC09B23C9432700E48987 /* UIViewMasking.swift in Sources */,
 				AA44091223F3E084009F5774 /* DesignCanvas.swift in Sources */,
 				AAABC06C23C9432700E48987 /* ProfileHeaderView.swift in Sources */,
 				AAABC0B323C9432700E48987 /* ProductCell.swift in Sources */,
+				AA4CE2762406F69B009BAC92 /* ExploreColorCell.swift in Sources */,
 				AAABC08D23C9432700E48987 /* ArrayExtensions.swift in Sources */,
 				AAABC09823C9432700E48987 /* BioCell.swift in Sources */,
 				AAABC07223C9432700E48987 /* FeedSearchBar.swift in Sources */,
@@ -950,6 +976,7 @@
 				AAABC16723D12A8D00E48987 /* ExploreViewController.swift in Sources */,
 				AA44091A23F3E4B1009F5774 /* ObjectAlignmentLines.swift in Sources */,
 				AA545B3523C43827005E7979 /* ViewController2.swift in Sources */,
+				AA8E68EA2407C43900C651A1 /* ExplorePageFlowLayout.swift in Sources */,
 				AA44092023F3E750009F5774 /* PhotoStickers.swift in Sources */,
 				AAABC09223C9432700E48987 /* PhotoLibraryCollectionView.swift in Sources */,
 				AAABC07923C9432700E48987 /* UIViewExtensions.swift in Sources */,
@@ -964,6 +991,7 @@
 				AAABC09323C9432700E48987 /* PhotosCell.swift in Sources */,
 				AA44090E23F3DFC5009F5774 /* ProductInProgress.swift in Sources */,
 				AAABC08C23C9432700E48987 /* EditProfileVC.swift in Sources */,
+				AA4CE27A24076701009BAC92 /* ExploreProductCell.swift in Sources */,
 				AAABC0A223C9432700E48987 /* SavePIcturesToDisk.swift in Sources */,
 				AA8CD7FD23DE0F1300DCA929 /* FlappingButterflyRefreshControl.swift in Sources */,
 			);

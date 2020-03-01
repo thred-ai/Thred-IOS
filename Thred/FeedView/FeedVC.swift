@@ -56,9 +56,11 @@ class Product: Codable, Equatable{
     var blurred: Bool!
     var price: Double? = 0
     var name: String? = nil
+    var templateColor: String!
+    var likes = Int()
 
     
-    init(uid: String, picID: String?, description: String?, fullName: String?, username: String?, productID: String, userImageID: String?, timestamp: Date!, index: Int!, timestampDiff: String!, fromCache: Bool, blurred: Bool!, price: Double?, name: String?) {
+    init(uid: String, picID: String?, description: String?, fullName: String?, username: String?, productID: String, userImageID: String?, timestamp: Date!, index: Int!, timestampDiff: String!, fromCache: Bool, blurred: Bool!, price: Double?, name: String?, templateColor: String!, likes: Int!) {
         
         self.uid = uid
         self.picID = picID
@@ -74,10 +76,12 @@ class Product: Codable, Equatable{
         self.blurred = blurred
         self.price = price
         self.name = name
+        self.templateColor = templateColor
+        self.likes = likes
     }
     
     convenience init() {
-        self.init(uid: "", picID: nil, description: nil, fullName: nil, username: "", productID: "", userImageID: nil, timestamp: nil,  index: nil, timestampDiff: nil, fromCache: false, blurred: false, price: nil, name: nil)
+        self.init(uid: "", picID: nil, description: nil, fullName: nil, username: "", productID: "", userImageID: nil, timestamp: nil,  index: nil, timestampDiff: nil, fromCache: false, blurred: false, price: nil, name: nil, templateColor: nil, likes: 0)
     }
     
 }
@@ -319,7 +323,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                                 let dpLink = document["ProfilePicID"] as? String
                                 let notifID = document["Notification ID"] as? String
                                 
-                                let user = UserInfo(uid: uid, dp: nil, dpID: dpLink ?? "nil", username: username ?? "null", fullName: fullname ?? "null", bio: bio ?? "", notifID: notifID ?? "", userFollowing: nil)
+                                let user = UserInfo(uid: uid, dp: nil, dpID: dpLink ?? "nil", username: username ?? "null", fullName: fullname ?? "null", bio: bio ?? "", notifID: notifID ?? "", userFollowing: nil, userLiked: nil)
 
                                 if uid == userInfo.uid{
                                     user.dp = userInfo.dp
@@ -602,20 +606,20 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
     func getProducts(fromInterval: Date?, completed: @escaping (Bool?, [DocumentSnapshot]?) -> ()){
         
     
-        guard let searchDate = currentDate(asString: false, dateToUse: Date(), toFirestoreFormat: true).0 else{return}
         //REMOVE LATER
         query = nil
         if fromInterval == nil{
-            query = Firestore.firestore().collectionGroup("Posts").whereField("UID", in: myFollowing).whereField("Timestamp", isLessThanOrEqualTo: searchDate).limit(to: 8).order(by: "Timestamp", descending: true)
+            query = Firestore.firestore().collectionGroup("Products").whereField("UID", in: myFollowing).whereField("Timestamp", isLessThanOrEqualTo: Date()).limit(to: 8).order(by: "Timestamp", descending: true)
         }
         if let last = fromInterval{
-            query = Firestore.firestore().collectionGroup("Posts").whereField("UID", in: myFollowing).whereField("Timestamp", isLessThan: last).limit(to: 8).order(by: "Timestamp", descending: true)
+            query = Firestore.firestore().collectionGroup("Products").whereField("UID", in: myFollowing).whereField("Timestamp", isLessThan: last).limit(to: 8).order(by: "Timestamp", descending: true)
         }
+        
+        
         
         query.getDocuments(completion: {[weak self] (snapDocuments, err) in
             if let err = err {
                 print("Error getting documents: \(err)")
-                
                 completed(false, nil)
                 return
             }
@@ -625,7 +629,6 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                 }
                 else{
                     guard let snaps = snapDocuments?.documents else {
-                        
                         return}
                     if snapDocuments?.metadata.isFromCache ?? false{
                         
@@ -642,16 +645,19 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                                 let description = snap["Description"] as? String
                                 let name = snap["Name"] as? String
                                 let blurred = snap["Blurred"] as? Bool
+                                let templateColor = snap["Template_Color"] as? String
+                                let likes = snap["Likes"] as? Int
+
 
                                 guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                                 
-                                localLoaded.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name))
+                                localLoaded.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes))
 
                                 if localLoaded.count == snaps.count{
                                     let isSame = localLoaded == self?.loadedProducts
                                     
                                     if !isSame{
-                                        self?.loadedProducts.removeOldFeedPosts(isSame: isSame, snaps: snaps) {
+                                        self?.loadedProducts.removeOldFeedPosts(newPosts: localLoaded){
                                             localLoaded = nil
                                             completed(true, snaps)
                                             self?.sortDownloadedProducts(snaps: snaps)
@@ -682,10 +688,13 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                 let description = snap["Description"] as? String
                 let name = snap["Name"] as? String
                 let blurred = snap["Blurred"] as? Bool
+                let templateColor = snap["Template_Color"] as? String
+                let likes = snap["Likes"] as? Int
+
+
                 guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
-                               
-                               
-                loadedProducts.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name))
+                
+                loadedProducts.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes))
                 
                 
                 tableView.performBatchUpdates({
@@ -820,6 +829,9 @@ extension UIViewController{
         
         if let notifID = UserDefaults.standard.string(forKey: "NOTIF_ID"){
             userInfo.notifID = notifID
+        }
+        if let userLiked = UserDefaults.standard.stringArray(forKey: "LikedPosts"){
+            userInfo.userLiked = userLiked
         }
     }
 }

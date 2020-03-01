@@ -16,8 +16,6 @@ extension UITableView{
 
         let cell = dequeueReusableCell(withIdentifier: "PictureProduct", for: indexPath) as? ProductCell
         
-        //return cell!
-        
         cell?.selectionStyle = .none
         guard let userLbl = cell?.username else {return cell!}
         guard let fullLbl = cell?.fullName else {return cell!}
@@ -40,6 +38,16 @@ extension UITableView{
         fullLbl.text = nil
         cell?.productDescription.text = nil
         cell?.productPicture.image = nil
+        cell?.canvasDisplayView.image = nil
+        cell?.likesLbl.text = "\(0)"
+        cell?.product = user
+
+        if userInfo.userLiked?.contains(user.productID) ?? false{
+            cell?.likeBtn.setImage(cell?.likedImage?.imageWithColor(cell?.selectedColor ?? UIColor.red), for: .normal)
+        }
+        else{
+            cell?.likeBtn.setImage(cell?.unlikedImage, for: .normal)
+        }
         
         if user.description != nil{
             cell?.productDescription.text = user.description
@@ -57,6 +65,9 @@ extension UITableView{
             cell?.price.text = price
             
         }
+        
+        cell?.likesLbl.text = "\(user.likes)"
+        
         
         checkTimes(user: user, timestampLbl: cell?.timestampLbl, productLocation: productLocation)
         switch productLocation{

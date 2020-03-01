@@ -93,11 +93,10 @@ class UserVC: UITableViewController {
     }
     
     func downloadProducts(completed: @escaping () -> ()){
-        self.getProducts(fromInterval: nil) {[weak self] hasDiffproducts, snapDocs in
+        self.getProducts(fromInterval: nil, refresh: true) {[weak self] hasDiffproducts, snapDocs in
             
             completed()
             if hasDiffproducts ?? false{
-                self?.currentproductsJSON = snapDocs
                 self?.loadedProducts.removeAll()
                 self?.cellHeights.removeAll()
                 self?.tableView.reloadData()
@@ -135,7 +134,7 @@ class UserVC: UITableViewController {
         refresher.addTarget(self, action: #selector(refresh(_:)), for: UIControl.Event.valueChanged)
         
         tableView.register(UINib(nibName: "ProductCell", bundle: nil), forCellReuseIdentifier: "PictureProduct")
-        
+        tableView.allowsSelection = false
         header = tableView.loadUserHeaderFromNib()
         header?.actionBtn.addTarget(self, action: #selector(editProfile(_:)), for: .touchUpInside)
         if let image = userInfo.dp{
@@ -251,7 +250,7 @@ class UserVC: UITableViewController {
                 if let interval = last.timestamp{
                     if !self.isLoading{
                         self.isLoading = true
-                        self.getProducts(fromInterval: interval){_,_ in
+                        self.getProducts(fromInterval: interval, refresh: false){_,_ in
                              self.isLoading = false
                             if self.refreshControl?.isRefreshing ?? true{
                                 self.refreshControl?.endRefreshing()
@@ -263,10 +262,58 @@ class UserVC: UITableViewController {
         }
     }
     
-    var currentproductsJSON: [DocumentSnapshot]? = [DocumentSnapshot]()
-
+    func uploadPost(post: ProductInProgress){
+        
+        let date = Date()
+        
+        guard let designData = post.design.pngData() else{
+               // post failed error
+        return}
+        
+        let doc = Firestore.firestore().collection("Users").document(userInfo.uid).collection("Products").document()
+        
+        let product = Product(uid: userInfo.uid, picID: doc.documentID, description: post.caption, fullName: userInfo.fullName, username: userInfo.username, productID: doc.documentID, userImageID: userInfo.dpID, timestamp: date, index: nil, timestampDiff: nil, fromCache: false, blurred: false, price: (post.price ?? 2000) / 100, name: post.name, templateColor: post.templateColor, likes: 0)
+        
+        cache.storeImageData(toDisk: designData, forKey: doc.documentID)
+        self.loadedProducts.insert(product, at: 0)
+        DispatchQueue.main.async{
+            self.tableView.reloadData()
+            self.loadedProducts.saveAllObjects(type: "Products")
+            self.tableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .middle, animated: false)
+        }
+        
+        
+        let designRef = Storage.storage().reference().child("Users/" + userInfo.uid + "/" + "Products/" + doc.documentID + "/" + doc.documentID + ".png")
+        
+        designRef.putData(designData, metadata: nil, completion: { metaData, error in
+            if error != nil{
+                print(error?.localizedDescription ?? "")
+            }
+            else{
+                let data = [
+                    "Name": post.name!,
+                    "Description" : post.caption ?? "",
+                    "Price_Cents" : post.price ?? "2000",
+                    "UID" : userInfo.uid,
+                    "Blurred" : false,
+                    "Timestamp" : date,
+                    "Template_Color" : post.templateColor ?? "null",
+                    "Likes" : 0
+                ] as [String : Any]
+                
+                doc.setData(data, completion: { error in
+                    if error != nil{
+                        print(error?.localizedDescription ?? "")
+                    }
+                    else{
+                        //Done uploading
+                    }
+                })
+            }
+        })
+    }
     
-    func getProducts(fromInterval: Date?, completed: @escaping (Bool?, [DocumentSnapshot]?) -> ()){
+    func getProducts(fromInterval: Date?, refresh: Bool, completed: @escaping (Bool?, [DocumentSnapshot]?) -> ()){
         
         
         /*
@@ -283,7 +330,7 @@ class UserVC: UITableViewController {
         //
         
         if fromInterval == nil{
-            query = Firestore.firestore().collection("Users").document("aR6FMc9OR2VmBUrHCk8l3KQIDPj1").collection("Products").whereField("Timestamp", isLessThanOrEqualTo: Date()).limit(to: 8).order(by: "Timestamp", descending: true)
+            query = Firestore.firestore().collection("Users").document(userInfo.uid).collection("Products").whereField("Timestamp", isLessThanOrEqualTo: Date()).limit(to: 8).order(by: "Timestamp", descending: true)
         }
         else if let last = fromInterval{
             query = Firestore.firestore().collection("Users").document(userInfo.uid).collection("Products").whereField("Timestamp", isLessThan: last).limit(to: 8).order(by: "Timestamp", descending: true)
@@ -291,20 +338,26 @@ class UserVC: UITableViewController {
         query.getDocuments(completion: {[weak self] (snapDocuments, err) in
             if let err = err {
                 print("Error getting documents: \(err)")
-                
                 completed(false, nil)
                 return
             }
             else{
                 if snapDocuments?.isEmpty ?? true{
-                    completed(false, nil)
+                    if refresh{
+                        completed(true, nil)
+                        self?.loadedProducts.removeOldFeedPosts(newPosts: nil){
+                            self?.loadedProducts.removeAllObjects(type: "Products")
+                        }
+                    }
+                    else{
+                        completed(false, nil)
+                    }
                 }
                 else{
                     guard let snaps = snapDocuments?.documents else {
                         
                         return}
                     if snapDocuments?.metadata.isFromCache ?? false{
-                        
                         completed(false, snaps)
                     }
                     else{
@@ -318,16 +371,19 @@ class UserVC: UITableViewController {
                                 let description = snap["Description"] as? String
                                 let name = snap["Name"] as? String
                                 let blurred = snap["Blurred"] as? Bool
+                                let templateColor = snap["Template_Color"] as? String
+
+                                let likes = snap["Likes"] as? Int
 
                                 guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                                 
-                                localLoaded.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name))
+                                localLoaded.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes))
 
                                 if localLoaded.count == snaps.count{
                                     let isSame = localLoaded == self?.loadedProducts
                                     
                                     if !isSame{
-                                        self?.loadedProducts.removeOldFeedPosts(isSame: isSame, snaps: snaps) {
+                                        self?.loadedProducts.removeOldFeedPosts(newPosts: localLoaded){
                                             localLoaded = nil
                                             completed(true, snaps)
                                             self?.sortDownloadedProducts(snaps: snaps)
@@ -358,10 +414,13 @@ class UserVC: UITableViewController {
                 let description = snap["Description"] as? String
                 let name = snap["Name"] as? String
                 let blurred = snap["Blurred"] as? Bool
+                let templateColor = snap["Template_Color"] as? String
+
+                let likes = snap["Likes"] as? Int
 
                 guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                 
-                loadedProducts.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name))
+                loadedProducts.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes))
 
                 tableView.performBatchUpdates({
                     tableView.insertRows(at: [IndexPath(row: loadedProducts.count - 1, section: 0)], with: .none)

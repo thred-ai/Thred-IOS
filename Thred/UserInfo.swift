@@ -21,8 +21,9 @@ class UserInfo{
     var bio: String = String()
     var notifID: String = String()
     var userFollowing: [String]? = [String]()
+    var userLiked: [String]? = [String]()
     
-    init(uid: String, dp: UIImage?, dpID: String, username: String, fullName: String, bio: String, notifID: String, userFollowing: [String]?) {
+    init(uid: String, dp: UIImage?, dpID: String, username: String, fullName: String, bio: String, notifID: String, userFollowing: [String]?, userLiked: [String]?) {
         
         self.uid = uid
         self.dp = dp
@@ -32,9 +33,10 @@ class UserInfo{
         self.bio = bio
         self.notifID = notifID
         self.userFollowing = userFollowing
+        self.userLiked = userLiked
     }
     
     convenience init() {
-        self.init(uid: "", dp: nil,  dpID: "", username: "", fullName: "", bio: "", notifID: "", userFollowing: nil)
+        self.init(uid: "", dp: nil,  dpID: "", username: "", fullName: "", bio: "", notifID: "", userFollowing: [], userLiked: [])
     }
 }

@@ -17,9 +17,9 @@ class ProductInProgress{
     var uid: String!
     var caption: String!
     var name: String!
-    var price: String?
+    var price: Double?
     
-    init(templateColor: String!, design: UIImage!, designOnShirt: UIImage!, uid: String!, caption: String!, name: String!, price: String!) {
+    init(templateColor: String!, design: UIImage!, designOnShirt: UIImage!, uid: String!, caption: String!, name: String!, price: Double!) {
         self.templateColor = templateColor
         self.design = design
         self.designOnShirt = designOnShirt

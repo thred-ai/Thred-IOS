@@ -25,7 +25,8 @@ extension UITableView{
 
         if let imgFromCache = cache.imageFromCache(forKey: picID){
             circularProgress?.removeFromSuperview()
-            cell?.productPicture.image = imgFromCache
+            cell?.productPicture.image = UIImage(named: user.templateColor)
+            cell?.canvasDisplayView.image = imgFromCache
         }
         else{
             cell?.setUpCircularProgress()
@@ -51,7 +52,7 @@ extension UITableView{
                 pic_id = "blur_\(pic_id)"
             }
             
-            let ref = Storage.storage().reference().child("Users/" + followingUID + "/" + "Products/" + picID + "/" + pic_id + ".jpg")
+            let ref = Storage.storage().reference().child("Users/" + followingUID + "/" + "Products/" + picID + "/" + pic_id + ".png")
             ref.downloadURL(completion: { url, error in
                 if error != nil{
                     print(error?.localizedDescription ?? "")
@@ -81,7 +82,7 @@ extension UITableView{
                                 if let index = products.firstIndex(where: {$0.productID == picID}){
                                     if products.indices.contains(index){
                                         cache.storeImageData(toDisk: imgData, forKey: picID)
-                                        self?.setCell(index: index, image: image)
+                                        self?.setCell(index: index, image: image, templateID: product?.templateColor)
                                     }
                                 }
                             }
@@ -95,9 +96,11 @@ extension UITableView{
         }
     }
     
-    func setCell(index: Int, image: UIImage?){
+    func setCell(index: Int, image: UIImage?, templateID: String!){
         if let cell = cellForRow(at: IndexPath(row: index, section: 0)) as? ProductCell{
-            cell.productPicture.image = image
+            
+            cell.productPicture.image = UIImage(named: templateID)
+            cell.canvasDisplayView.image = image
             cell.circularProgress.removeFromSuperview()
         }
     }

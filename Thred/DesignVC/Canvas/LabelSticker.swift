@@ -201,7 +201,7 @@ extension DesignViewController{
                 if !textChars.isEmpty{
                     imageView.isHidden = false
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        imageView.image = textView.makeSnapshot()
+                        imageView.image = textView.makeSnapshot(clear: true)
                         textView.accessibilityIdentifier = textView.text
                         textView.text.removeAll()
                     }
