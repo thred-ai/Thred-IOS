@@ -14,6 +14,39 @@ import SDWebImage
 
 extension UITableView{
     
+    func checkAndDownloadUserInfoInFullVC(user: Product, dp: UIImageView, userLbl: UILabel, fullLbl: UILabel, picCell: ProductCell?, fullVC: FullProductVC){
+        
+        switch user.uid{
+        case userInfo.uid:
+            dp.image = userInfo.dp
+            fullLbl.text = userInfo.fullName
+            userLbl.text = "@" + userInfo.username
+            picCell?.removeLabelLoad()
+            picCell?.removeDpLoad()
+        default:
+            switch (user.fullName, user.username){
+            case (.some, .some):
+                if let imageFromCache = cache.imageFromCache(forKey: user.userImageID){
+                    dp.image = imageFromCache
+                    fullLbl.text = user.fullName
+                    userLbl.text = "@" + (user.username ?? "null")
+                    picCell?.removeLabelLoad()
+                    picCell?.removeDpLoad()
+                }
+                else{ fallthrough }
+            default:
+                if userLbl.text?.isEmpty ?? true && fullLbl.text?.isEmpty ?? true{
+                    picCell?.nameSkeletonView.startAnimating()
+                }
+                
+                picCell?.dpSkeletonView.startAnimating()
+                guard let downloader = fullVC.downloader
+                    else{return}
+                beginDownloadingUserInfo(uid: user.uid, downloader: downloader, userVC: nil, feedVC: nil, friendVC: nil, fullVC: fullVC, section: 0)
+            }
+        }
+    }
+    
     func checkAndDownloadUserInfoInFeed(feed: FeedVC?, user: Product, dp: UIImageView, userLbl: UILabel, fullLbl: UILabel, picCell: ProductCell?){
         
         switch (user.fullName, user.username){
@@ -24,7 +57,6 @@ extension UITableView{
                 dp.image = imageFromCache
                 fullLbl.text = user.fullName
                 userLbl.text = "@" + (user.username ?? "null")
-                
                 picCell?.removeLabelLoad()
                 picCell?.removeDpLoad()
             }
@@ -75,7 +107,7 @@ extension UITableView{
                     guard let downloader = feed?.downloader
                         else{return}
                     
-                    beginDownloadingUserInfo(uid: user.uid, downloader: downloader, userVC: nil, feedVC: feed, friendVC: nil, section: 0)
+                    beginDownloadingUserInfo(uid: user.uid, downloader: downloader, userVC: nil, feedVC: feed, friendVC: nil, fullVC: nil, section: 0)
                 }
             }
         }
@@ -84,7 +116,10 @@ extension UITableView{
     func checkAndDownloadUserInfoInProfile(userVC: UserVC?, friendVC: FriendVC?, user: Product, dp: UIImageView, userLbl: UILabel, fullLbl: UILabel,picCell: ProductCell?, userInfo: UserInfo){
         
         if user.uid == userInfo.uid{
-            dp.image = userInfo.dp
+            if userInfo.dp != nil{
+                dp.image = userInfo.dp
+            }
+            
             userLbl.text = "@" + userInfo.username
             fullLbl.text = userInfo.fullName
             picCell?.removeLabelLoad()
@@ -111,7 +146,7 @@ extension UITableView{
                     userVC?.downloadingProfiles.append(user.uid)
                     friendVC?.downloadingProfiles.append(user.uid)
 
-                    beginDownloadingUserInfo(uid: user.uid, downloader: userVC?.downloader ?? friendVC?.downloader, userVC: userVC, feedVC: nil, friendVC: nil, section: 0)
+                    beginDownloadingUserInfo(uid: user.uid, downloader: userVC?.downloader ?? friendVC?.downloader, userVC: userVC, feedVC: nil, friendVC: nil, fullVC: nil, section: 0)
                 }
             }
         }

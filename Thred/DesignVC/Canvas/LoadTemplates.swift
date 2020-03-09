@@ -17,7 +17,6 @@ extension DesignViewController{
             for id in loadedTees{
                 self.tees.append(Template(templateID: id))
             }
-            print(tees.count)
             completed()
         }
         else{

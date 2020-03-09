@@ -4,6 +4,7 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
@@ -90,9 +91,22 @@
                                 <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oeL-mu-0pN">
+                                <rect key="frame" x="325" y="10" width="40" height="40"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" secondItem="oeL-mu-0pN" secondAttribute="height" multiplier="1:1" id="OKv-0a-57W"/>
+                                </constraints>
+                                <color key="tintColor" name="LoadingColor"/>
+                                <state key="normal" image="ellipsis.circle"/>
+                                <connections>
+                                    <action selector="openOptionMenu:" destination="qto-th-NSw" eventType="touchUpInside" id="T0c-1T-QhW"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <gestureRecognizers/>
                         <constraints>
+                            <constraint firstAttribute="bottom" secondItem="oeL-mu-0pN" secondAttribute="bottom" id="7PW-Q4-VKC"/>
                             <constraint firstItem="0m4-jT-kf8" firstAttribute="leading" secondItem="cL0-7U-szH" secondAttribute="trailing" constant="7.5" id="8Ny-NV-qxa"/>
                             <constraint firstAttribute="trailing" secondItem="pSf-TM-jQ0" secondAttribute="trailing" constant="10" id="Awc-zM-l3h"/>
                             <constraint firstItem="pSf-TM-jQ0" firstAttribute="top" secondItem="kwj-hw-CJE" secondAttribute="top" constant="15" id="D1e-NM-ka0"/>
@@ -104,7 +118,9 @@
                             <constraint firstItem="cL0-7U-szH" firstAttribute="top" secondItem="kwj-hw-CJE" secondAttribute="top" constant="12.5" id="Opy-TG-gM7"/>
                             <constraint firstItem="pSf-TM-jQ0" firstAttribute="leading" secondItem="cL0-7U-szH" secondAttribute="trailing" constant="7.5" id="RKr-UW-h9Q"/>
                             <constraint firstItem="aOP-qQ-RiY" firstAttribute="leading" secondItem="mw1-AG-O0b" secondAttribute="trailing" constant="10" id="RaU-K7-Xbq"/>
+                            <constraint firstAttribute="trailing" secondItem="oeL-mu-0pN" secondAttribute="trailing" constant="10" id="TbW-AM-iqT"/>
                             <constraint firstAttribute="height" constant="50" id="hOu-PT-tRt"/>
+                            <constraint firstItem="oeL-mu-0pN" firstAttribute="top" secondItem="kwj-hw-CJE" secondAttribute="top" constant="10" id="irl-kn-Zzt"/>
                             <constraint firstItem="aOP-qQ-RiY" firstAttribute="top" secondItem="kwj-hw-CJE" secondAttribute="top" constant="20" id="pbn-r7-c8p"/>
                             <constraint firstItem="mw1-AG-O0b" firstAttribute="top" secondItem="kwj-hw-CJE" secondAttribute="top" constant="12.5" id="tPi-uU-Wql"/>
                             <constraint firstAttribute="trailing" secondItem="aOP-qQ-RiY" secondAttribute="trailing" id="teg-DQ-QS2"/>
@@ -125,14 +141,14 @@
                                                 <rect key="frame" x="0.0" y="0.0" width="355" height="35"/>
                                                 <subviews>
                                                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="&quot;Title&quot;" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="XUp-PP-Cop">
-                                                        <rect key="frame" x="0.0" y="0.0" width="178" height="35"/>
+                                                        <rect key="frame" x="0.0" y="0.0" width="175" height="35"/>
                                                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                                         <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="25"/>
                                                         <nil key="textColor"/>
                                                         <nil key="highlightedColor"/>
                                                     </label>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="&quot;Timestamp&quot;" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="MpD-rw-TRb">
-                                                        <rect key="frame" x="178" y="0.0" width="177" height="35"/>
+                                                        <rect key="frame" x="175" y="0.0" width="180" height="35"/>
                                                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                                         <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="12"/>
                                                         <color key="textColor" systemColor="quaternaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.17999999999999999" colorSpace="custom" customColorSpace="sRGB"/>
@@ -176,57 +192,68 @@
                                     </view>
                                 </subviews>
                             </stackView>
-                            <imageView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="aN6-3V-AT0">
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Fn7-cE-W3W">
                                 <rect key="frame" x="0.0" y="10" width="375" height="375"/>
-                                <color key="backgroundColor" systemColor="quaternarySystemFillColor" red="0.4549019608" green="0.4549019608" blue="0.50196078430000002" alpha="0.080000000000000002" colorSpace="custom" customColorSpace="sRGB"/>
-                                <gestureRecognizers/>
-                                <constraints>
-                                    <constraint firstAttribute="width" secondItem="aN6-3V-AT0" secondAttribute="height" id="8NL-Z5-fEq"/>
-                                </constraints>
-                            </imageView>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" spacing="-10" translatesAutoresizingMaskIntoConstraints="NO" id="SqF-Rh-nL3">
-                                <rect key="frame" x="310" y="305" width="60" height="70"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" reversesTitleShadowWhenHighlighted="YES" adjustsImageSizeForAccessibilityContentSizeCategory="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="y5c-Qz-o4x">
-                                        <rect key="frame" x="0.0" y="0.0" width="60" height="60"/>
+                                    <imageView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="aN6-3V-AT0">
+                                        <rect key="frame" x="0.0" y="0.0" width="375" height="375"/>
+                                        <color key="backgroundColor" systemColor="secondarySystemBackgroundColor" red="0.94901960780000005" green="0.94901960780000005" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <gestureRecognizers/>
                                         <constraints>
-                                            <constraint firstAttribute="width" secondItem="y5c-Qz-o4x" secondAttribute="height" multiplier="1:1" id="WyB-r7-2R6"/>
+                                            <constraint firstAttribute="width" secondItem="aN6-3V-AT0" secondAttribute="height" id="8NL-Z5-fEq"/>
                                         </constraints>
-                                        <color key="tintColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
-                                        <state key="normal" image="like">
-                                            <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="default" weight="heavy"/>
-                                        </state>
-                                        <connections>
-                                            <action selector="likeDesign:" destination="qto-th-NSw" eventType="touchUpInside" id="8fj-6z-9Ab"/>
-                                        </connections>
-                                    </button>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Hb9-Yh-flX">
-                                        <rect key="frame" x="0.0" y="50" width="60" height="20"/>
+                                    </imageView>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" spacing="-10" translatesAutoresizingMaskIntoConstraints="NO" id="SqF-Rh-nL3">
+                                        <rect key="frame" x="310" y="295" width="60" height="70"/>
+                                        <subviews>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" reversesTitleShadowWhenHighlighted="YES" adjustsImageSizeForAccessibilityContentSizeCategory="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="y5c-Qz-o4x">
+                                                <rect key="frame" x="0.0" y="0.0" width="60" height="60"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" secondItem="y5c-Qz-o4x" secondAttribute="height" multiplier="1:1" id="WyB-r7-2R6"/>
+                                                </constraints>
+                                                <color key="tintColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+                                                <state key="normal" image="like">
+                                                    <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="default" weight="heavy"/>
+                                                </state>
+                                                <connections>
+                                                    <action selector="likeDesign:" destination="qto-th-NSw" eventType="touchUpInside" id="8fj-6z-9Ab"/>
+                                                </connections>
+                                            </button>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Hb9-Yh-flX">
+                                                <rect key="frame" x="0.0" y="50" width="60" height="20"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="20" id="ZwX-7I-W8B"/>
+                                                </constraints>
+                                                <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
+                                                <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
                                         <constraints>
-                                            <constraint firstAttribute="height" constant="20" id="ZwX-7I-W8B"/>
+                                            <constraint firstAttribute="height" constant="70" id="Mby-n4-n68"/>
                                         </constraints>
-                                        <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
-                                        <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
+                                    </stackView>
                                 </subviews>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="70" id="Mby-n4-n68"/>
+                                    <constraint firstItem="aN6-3V-AT0" firstAttribute="leading" secondItem="Fn7-cE-W3W" secondAttribute="leading" id="2h0-YU-si0"/>
+                                    <constraint firstItem="aN6-3V-AT0" firstAttribute="bottom" secondItem="SqF-Rh-nL3" secondAttribute="bottom" constant="10" id="7r9-Wz-WGr"/>
+                                    <constraint firstAttribute="trailing" secondItem="aN6-3V-AT0" secondAttribute="trailing" id="FpO-ZH-2uE"/>
+                                    <constraint firstItem="aN6-3V-AT0" firstAttribute="top" secondItem="Fn7-cE-W3W" secondAttribute="top" id="RLm-xH-dSq"/>
+                                    <constraint firstAttribute="width" secondItem="Fn7-cE-W3W" secondAttribute="height" id="hAT-tI-0sy"/>
+                                    <constraint firstItem="aN6-3V-AT0" firstAttribute="trailing" secondItem="SqF-Rh-nL3" secondAttribute="trailing" constant="5" id="pcO-Y8-9aY"/>
                                 </constraints>
-                            </stackView>
+                            </view>
                         </subviews>
                         <accessibility key="accessibilityConfiguration">
                             <accessibilityTraits key="traits" header="YES"/>
                         </accessibility>
                         <constraints>
-                            <constraint firstAttribute="trailing" secondItem="aN6-3V-AT0" secondAttribute="trailing" id="EzU-6j-Xlr"/>
+                            <constraint firstItem="FXT-jc-Xcq" firstAttribute="top" secondItem="Fn7-cE-W3W" secondAttribute="bottom" constant="10" id="9ez-i6-FLi"/>
+                            <constraint firstItem="Fn7-cE-W3W" firstAttribute="top" secondItem="bn9-KI-nXD" secondAttribute="top" constant="10" id="INZ-3J-0vT"/>
                             <constraint firstAttribute="bottom" secondItem="FXT-jc-Xcq" secondAttribute="bottom" id="ITE-RT-hpo"/>
                             <constraint firstItem="FXT-jc-Xcq" firstAttribute="leading" secondItem="bn9-KI-nXD" secondAttribute="leading" constant="10" id="OkC-SQ-JeW"/>
-                            <constraint firstItem="aN6-3V-AT0" firstAttribute="top" secondItem="bn9-KI-nXD" secondAttribute="top" constant="10" id="e2I-w6-cWk"/>
-                            <constraint firstAttribute="trailing" secondItem="SqF-Rh-nL3" secondAttribute="trailing" constant="5" id="mNm-Ha-I4r"/>
-                            <constraint firstItem="aN6-3V-AT0" firstAttribute="bottom" secondItem="SqF-Rh-nL3" secondAttribute="bottom" constant="10" id="nNp-Yr-sw4"/>
-                            <constraint firstItem="FXT-jc-Xcq" firstAttribute="top" secondItem="aN6-3V-AT0" secondAttribute="bottom" constant="10" id="pPm-5N-y9J"/>
-                            <constraint firstItem="aN6-3V-AT0" firstAttribute="leading" secondItem="bn9-KI-nXD" secondAttribute="leading" id="tIX-Gg-3gJ"/>
+                            <constraint firstAttribute="trailing" secondItem="Fn7-cE-W3W" secondAttribute="trailing" id="c0d-Xm-twC"/>
+                            <constraint firstItem="Fn7-cE-W3W" firstAttribute="leading" secondItem="bn9-KI-nXD" secondAttribute="leading" id="hTT-0u-CJ5"/>
                             <constraint firstAttribute="trailing" secondItem="FXT-jc-Xcq" secondAttribute="trailing" constant="10" id="w7c-uU-ipD"/>
                         </constraints>
                     </view>
@@ -249,12 +276,14 @@
                 <outlet property="likeBtn" destination="y5c-Qz-o4x" id="6uE-cU-Ho3"/>
                 <outlet property="likesLbl" destination="Hb9-Yh-flX" id="R5F-wG-idp"/>
                 <outlet property="nameSkeletonView" destination="aOP-qQ-RiY" id="flZ-8P-4F1"/>
+                <outlet property="openOptionMenuBtn" destination="oeL-mu-0pN" id="8MM-FS-XQO"/>
                 <outlet property="price" destination="Aq5-4R-7E4" id="rFK-UQ-cx2"/>
                 <outlet property="productDescription" destination="9vJ-jq-xDm" id="VEw-jb-bY6"/>
                 <outlet property="productPicture" destination="aN6-3V-AT0" id="6Le-R4-HJD"/>
                 <outlet property="timestampLbl" destination="MpD-rw-TRb" id="bdw-6P-KAk"/>
                 <outlet property="title" destination="XUp-PP-Cop" id="xxU-lr-8fT"/>
                 <outlet property="userImage" destination="cL0-7U-szH" id="8IE-rM-foW"/>
+                <outlet property="userInfoView" destination="kwj-hw-CJE" id="InD-01-VQ8"/>
                 <outlet property="username" destination="0m4-jT-kf8" id="p2a-uS-DJI"/>
                 <outletCollection property="dpMaskingViews" destination="AkY-Nx-bL8" collectionClass="NSMutableArray" id="9iE-Z8-vtV"/>
                 <outletCollection property="nameMaskingViews" destination="GnZ-Vd-zdh" collectionClass="NSMutableArray" id="rwd-XX-CGF"/>
@@ -264,6 +293,10 @@
         </tableViewCell>
     </objects>
     <resources>
+        <image name="ellipsis.circle" width="33.333332061767578" height="33.333332061767578"/>
         <image name="like" width="366.66665649414062" height="366.66665649414062"/>
+        <namedColor name="LoadingColor">
+            <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+        </namedColor>
     </resources>
 </document>

@@ -78,6 +78,13 @@ class ViewController2: UIViewController, WKNavigationDelegate {
     let email = "artakorp@gmail.com"
     let accountType = "company"
 
+    override func viewDidDisappear(_ animated: Bool) {
+        
+        
+    }
+    
+    
+    
     override func viewDidAppear(_ animated: Bool) {
         
         requestIDString = NSUUID().uuidString

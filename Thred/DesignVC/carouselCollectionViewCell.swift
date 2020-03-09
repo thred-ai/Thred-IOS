@@ -9,6 +9,20 @@
 import UIKit
 import ColorCompatibility
 
+class CanvasInfo{
+    var heightCM: CGFloat {
+        return 30.48
+    }
+    var widthCM: CGFloat {
+        return 19.685
+    }
+    var aspectRatio: CGFloat {
+        return heightCM / widthCM
+    }
+}
+
+var canvasInfo = CanvasInfo()
+
 class carouselCollectionViewCell: UICollectionViewCell {
     
     @IBOutlet weak var backgroundImageView: UIImageView!
@@ -59,9 +73,8 @@ class carouselCollectionViewCell: UICollectionViewCell {
         
         NSLayoutConstraint(item: canvasDisplayView, attribute: .centerX, relatedBy: .equal, toItem: contentView, attribute: .centerX, multiplier: 1.0, constant: 0).isActive = true
         NSLayoutConstraint(item: canvasDisplayView, attribute: .centerY, relatedBy: .equal, toItem: contentView, attribute: .centerY, multiplier: 1.0, constant: -20).isActive = true
-        NSLayoutConstraint(item: canvasDisplayView, attribute: .width, relatedBy: .equal, toItem: contentView, attribute: .width, multiplier: 0.3, constant: 0).isActive = true
-        NSLayoutConstraint(item: canvasDisplayView, attribute: .height, relatedBy: .equal, toItem: contentView, attribute: .height, multiplier: 0.475, constant: 0).isActive = true
-        
+        NSLayoutConstraint(item: canvasDisplayView, attribute: .width, relatedBy: .equal, toItem: contentView, attribute: .width, multiplier: 0.25, constant: 0).isActive = true
+        NSLayoutConstraint(item: canvasDisplayView, attribute: .height, relatedBy: .equal, toItem: canvasDisplayView, attribute: .width, multiplier: canvasInfo.aspectRatio, constant: 0).isActive = true
         let tap = UITapGestureRecognizer(target: self, action: #selector(maximiseDrawingArea(_:)))
         canvasDisplayView.addGestureRecognizer(tap)
         
@@ -72,6 +85,8 @@ class carouselCollectionViewCell: UICollectionViewCell {
         NSLayoutConstraint(item: touchHereLabel, attribute: .width, relatedBy: .equal, toItem: canvasDisplayView, attribute: .width, multiplier: 1.0, constant: -20).isActive = true
         touchHereLabel.heightAnchor.constraint(equalToConstant: 20).isActive = true
     }
+    
+    
     
     @objc func maximiseDrawingArea(_ sender: UITapGestureRecognizer){
         

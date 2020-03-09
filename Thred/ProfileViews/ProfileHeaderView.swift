@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import ColorCompatibility
 
 class ProfileHeaderView: UIView{
 
@@ -22,7 +23,8 @@ class ProfileHeaderView: UIView{
     @IBOutlet weak var bioView: UITextView!
     @IBOutlet weak var actionBtn: UIButton!
     @IBOutlet weak var profileImgView: UIImageView!
-    
+    var headerActionBtnTitle: String = "Follow"
+
     override func awakeFromNib() {
         super.awakeFromNib()
         self.backgroundColor = UIColor.clear
@@ -53,6 +55,29 @@ class ProfileHeaderView: UIView{
             
             self.frame.size.height += difference
         }
+    }
+    
+    func updateFollowBtn(didFollow: Bool, animated: Bool){
+        var animationDuration = 0.0
+        
+        if animated{
+            animationDuration = 0.2
+        }
+        if didFollow{
+            headerActionBtnTitle = "Following"
+            actionBtn.setTitleColor(.white, for: .normal)
+            UIView.animate(withDuration: animationDuration, animations: {
+                self.actionBtn.backgroundColor = UIColor(named: "LoadingColor")
+            })
+        }
+        else{
+            headerActionBtnTitle = "Follow"
+            actionBtn.setTitleColor(ColorCompatibility.label, for: .normal)
+            UIView.animate(withDuration: animationDuration, animations: {
+                self.actionBtn.backgroundColor = ColorCompatibility.quaternarySystemFill
+            })
+        }
+        self.actionBtn.setTitle(headerActionBtnTitle, for: .normal)
     }
     
     func setUpInfo(username: String?, fullname: String?, bio: String?, notifID: String?, dpUID: String?, image: UIImage?, actionBtnTitle: String){

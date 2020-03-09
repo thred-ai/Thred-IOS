@@ -13,8 +13,10 @@ import SDWebImage
 
 class ExploreViewController: UITableViewController{
 
-    var colorSections = [[String : [Product]?]]()
+    var colorSections = [[String : Any?]]()
+    
     var downloader = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
+    var productToOpen: Product!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -71,7 +73,7 @@ class ExploreViewController: UITableViewController{
                 guard let doc = snap else{return}
                 let ids = doc["IDs"] as? [String]
                 for id in ids ?? []{
-                    self.colorSections.append([id : nil])
+                    self.colorSections.append(["Array": nil, "ID": id, "Offset": 0, "Downloading" : []])
                 }
                 DispatchQueue.main.async {
                     self.tableView.reloadData()
@@ -81,27 +83,61 @@ class ExploreViewController: UITableViewController{
         })
     }
     
+    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        
+        if let cell = cell as? ExploreColorCell{
+            cell.collectionViewOffset = colorSections[indexPath.row]["Offset"] as? CGFloat ?? 0
+           
+        }
+    }
+    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ExploreColorCell", for: indexPath) as? ExploreColorCell
         
         cell?.colorIcon.backgroundColor = nil
         cell?.exploreVC = nil
         cell?.downloader = nil
-        cell?.postArray = nil
         
-        cell?.colorIcon.backgroundColor = UIColor(named: colorSections[indexPath.row].keys.first ?? "null")
+        cell?.templateColor = nil
+        
+        cell?.colorIcon.backgroundColor = UIColor(named: self.colorSections[indexPath.row]["ID"] as? String ?? "null")
         cell?.exploreVC = self
         cell?.downloader = downloader
-        cell?.templateColor = self.colorSections[indexPath.row].keys.first!
-        if let postArray = self.colorSections[indexPath.row][self.colorSections[indexPath.row].keys.first ?? ""]{
+        cell?.templateColor = self.colorSections[indexPath.row]["ID"] as? String //problem
+
+        if let postArray = self.colorSections[indexPath.row]["Array"] as? [Product]{
             cell?.postArray = postArray
         }
-        cell?.getProducts()
+        else{
+            cell?.postArray = nil
+        }
+        cell?.getProducts{
+            DispatchQueue.main.async {
+                cell?.collectionView.reloadData()
+            }
+        }
         return cell!
+    }
+    
+    override func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if let cell = cell as? ExploreColorCell{
+            cell.postArray.removeAll()
+            cell.collectionView.reloadData()
+            if colorSections.indices.contains(indexPath.row){
+                colorSections[indexPath.row]["Offset"] = cell.collectionViewOffset
+            }
+            
+        }
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 250
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let fullVC = segue.destination as? FullProductVC{
+            fullVC.fullProduct = productToOpen
+        }
     }
     
     /*

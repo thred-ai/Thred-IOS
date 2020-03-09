@@ -27,7 +27,7 @@ class MainTabBarViewController: UITabBarController {
     
     @IBAction func unwindToTabBar(segue:  UIStoryboardSegue) {
         
-        if posted{
+        if posted ?? false{
             selectedIndex = 4
             if let profileVC = (viewControllers?[selectedIndex] as? UINavigationController)?.viewControllers.first as? UserVC{
                 profileVC.uploadPost(post: product)

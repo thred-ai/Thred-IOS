@@ -16,13 +16,14 @@ import ColorSlider
 import AVKit
 
 
-class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDelegate, UIGestureRecognizerDelegate, UITextFieldDelegate, SwiftyDrawViewDelegate {
+class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDelegate, UIGestureRecognizerDelegate, UITextFieldDelegate, SwiftyDrawViewDelegate, UICollectionViewDelegate, UICollectionViewDataSource {
     
     var cameraBtn: UIButton!
     var photosBtn: UIButton!
     var textBtn: UIButton!
     var drawBtn: UIButton!
     var doneBtn: UIButton!
+    @IBOutlet weak var colorCollectionView: UICollectionView!
     
     
     @IBOutlet weak var scrollview: UIScrollView!
@@ -45,15 +46,13 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
                     if cell.canvasDisplayView.image != nil{
                         guard let price = priceView.text else{return}
                         guard let decimalPrice = Double(price) else{return}
-                        zoomBtn.isHidden = true
-                        product.designOnShirt = displayView.makeSnapshot(clear: false)
+                        product.designOnShirt = displayView.makeSnapshot(clear: false, subviewsToIgnore: [zoomBtn])
                         product.design = cell.canvasDisplayView.image
                         product.caption = descriptionView.text
                         product.uid = userInfo.uid
                         product.name = titleView.text
                         product.templateColor = tees[indexPath.item].templateID
                         product.price = decimalPrice * 100
-                        zoomBtn.isHidden = false
                         performSegue(withIdentifier: "DoneDesigning", sender: nil)
                     }
                 }
@@ -87,7 +86,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         navigationItem.setLeftBarButton(item, animated: false)
     }
     
-    lazy var carousel: TemplateCarousel = {
+    lazy var carousel: TemplateCarousel! = {
         let carousel = TemplateCarousel(frame: CGRect(x: 0, y: 0, width: displayView.frame.width, height: displayView.frame.height))
         carousel.translatesAutoresizingMaskIntoConstraints = false
         return carousel
@@ -208,77 +207,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     }
     
     
-    @objc func usePhoto(_ sender: UIButton?){
-        
-        var selectedImage: UIImage!
-        
-        if !cameraView.isHidden{
-            selectedImage = cameraView.selectedImage
-            closeCamera(cameraBtn)
-        }
-        else if !cameraRollCollectionView.isHidden{
-            selectedImage = cameraRollCollectionView.selectedImage
-            configurePhotos(photosBtn)
-        }
-        
-        let aspectRatio = selectedImage.size.height / selectedImage.size.width
-        
-        let width = canvas.frame.width / 2
-
-        let imageView = UIImageView.init(frame: CGRect(x: canvas.frame.width / 2, y: canvas.frame.height / 2, width: width, height: width * aspectRatio))
-        imageView.contentMode = .scaleAspectFit
-        imageView.center.y = canvas.bounds.midY
-        imageView.center.x = canvas.center.x
-        imageView.image = selectedImage
-        let tapper = UILongPressGestureRecognizer(target: self, action: #selector(configureAsBackground(_:)))
-        imageView.addGestureRecognizer(tapper)
-        
-        makeMovable(view: imageView)
-        canvas.addSubview(imageView)
-    }
     
-    var backgroundView: UIImageView!
-    
-    @objc func configureAsBackground(_ sender: UILongPressGestureRecognizer){
-        
-        if sender.state == .began{
-            if let heldView = sender.view as? UIImageView{
-                if backgroundView == heldView{
-                    backgroundView = nil
-                    canvas.bringSubviewToFront(heldView)
-                    heldView.alpha = 0.0
-                    UIView.animate(withDuration: 0.25, animations: {
-                        heldView.alpha = 1.0
-                    })
-                }
-                else{
-                    backgroundView = heldView
-                    canvas.sendSubviewToBack(heldView)
-                    heldView.alpha = 0.0
-                    UIView.animate(withDuration: 0.25, animations: {
-                        heldView.alpha = 1.0
-                    })
-                }
-            }
-        }
-    }
-    
-    func configureOtherStickersGestures(ignoredView: UIView, disable: Bool){
-        if disable{
-            for view in canvas.subviews.filter({$0.isKind(of: UITextView.self) || $0.isKind(of: UIImageView.self)}){
-                if view != ignoredView{
-                    view.isUserInteractionEnabled = false
-                }
-            }
-        }
-        else{
-            for view in canvas.subviews.filter({$0.isKind(of: UITextView.self) || $0.isKind(of: UIImageView.self)}){
-                if view != ignoredView{
-                    view.isUserInteractionEnabled = true
-                }
-            }
-        }
-    }
     
     func makeMovable(view: UIView){
         let pan = UIPanGestureRecognizer(target: self, action: #selector(handleObjectPan(_:)))
@@ -322,9 +251,9 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         priceView.resignFirstResponder()
     }
     
-    
     @IBOutlet weak var descriptionView: UITextView!
-    
+    var backgroundView: UIImageView!
+
     @objc func keyboardWillShow(_ notification: Notification) {
 
         let bottomPadding = view.safeAreaInsets.bottom
@@ -503,7 +432,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     }
     
     var hoodies = [Data]()
-    var tees = [Template]()
+    var tees: [Template]! = [Template]()
     
     @IBOutlet weak var displayView: UIView!
     
@@ -726,7 +655,9 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     }()
     
     
-    
+    deinit {
+        
+    }
     
     
     
@@ -775,6 +706,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         drawBtn.tintColor = UIColor(named: "LoadingColor")
         drawBtn.addTarget(self, action: #selector(openDrawCanvas(_:)), for: .touchUpInside)
         
+
         doneBtn = UIButton.init(frame: CGRect(x: 0, y: 0, width: view.frame.height, height: view.frame.height))
         doneBtn.setTitle("Done", for: .normal)
         doneBtn.setTitleColor(UIColor(named: "LoadingColor")?.withAlphaComponent(0.5), for: .disabled)
@@ -786,12 +718,14 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         photosBtn.setImage(UIImage(nameOrSystemName: "photo.fill", systemPointSize: 20, iconSize: 9), for: .normal)
         textBtn.setImage(UIImage(nameOrSystemName: "textbox", systemPointSize: 20, iconSize: 9), for: .normal)
         drawBtn.setImage(UIImage(nameOrSystemName: "scribble", systemPointSize: 20, iconSize: 9), for: .normal)
+
         
         stackView.addArrangedSubview(cameraBtn)
         stackView.addArrangedSubview(photosBtn)
         stackView.addArrangedSubview(textBtn)
         stackView.addArrangedSubview(drawBtn)
         stackView.addArrangedSubview(doneBtn)
+        
         
         return view
     }()
@@ -819,13 +753,27 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         }
     }
     
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return self.tees.count
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        
+        let tee = self.tees[indexPath.item]
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "color_icon", for: indexPath) as? TemplateColorChooserCellCollectionViewCell
+        cell?.colorView.backgroundColor = nil
+        
+        cell?.colorView.backgroundColor = UIColor(named: tee.templateID)
+        
+        return cell!
+    }
     
     
     func setCarouselConstraints(){
-        NSLayoutConstraint(item: carousel, attribute: .top, relatedBy: .equal, toItem: displayView, attribute: .top, multiplier: 1.0, constant: 0).isActive = true
-        NSLayoutConstraint(item: carousel, attribute: .bottom, relatedBy: .equal, toItem: displayView, attribute: .bottom, multiplier: 1.0, constant: 0).isActive = true
-        NSLayoutConstraint(item: carousel, attribute: .left, relatedBy: .equal, toItem: displayView, attribute: .left, multiplier: 1.0, constant: 0).isActive = true
-        NSLayoutConstraint(item: carousel, attribute: .right, relatedBy: .equal, toItem: displayView, attribute: .right, multiplier: 1.0, constant: 0).isActive = true
+        NSLayoutConstraint(item: carousel!, attribute: .top, relatedBy: .equal, toItem: displayView, attribute: .top, multiplier: 1.0, constant: 0).isActive = true
+        NSLayoutConstraint(item: carousel!, attribute: .bottom, relatedBy: .equal, toItem: displayView, attribute: .bottom, multiplier: 1.0, constant: 0).isActive = true
+        NSLayoutConstraint(item: carousel!, attribute: .left, relatedBy: .equal, toItem: displayView, attribute: .left, multiplier: 1.0, constant: 0).isActive = true
+        NSLayoutConstraint(item: carousel!, attribute: .right, relatedBy: .equal, toItem: displayView, attribute: .right, multiplier: 1.0, constant: 0).isActive = true
     }
    
     func textFieldDidBeginEditing(_ textField: UITextField) {
@@ -871,6 +819,8 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        self.colorCollectionView.delegate = self
+        self.colorCollectionView.dataSource = self
         scrollview.alwaysBounceVertical = false
         navigationController?.navigationBar.setBackgroundImage(UIImage.init(), for: UIBarMetrics.default)
         navigationController?.navigationBar.shadowImage = UIImage.init()
@@ -878,7 +828,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         descriptionView.inputAccessoryView = toolBar
         titleView.inputAccessoryView = toolBar
         priceView.delegate = self
-        priceView.text = "20.00"
+        priceView.text = minimumPrice
         priceView.inputAccessoryView = toolBar
         displayView.addSubview(carousel)
         setCarouselConstraints()
@@ -888,6 +838,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         setKeyBoardNotifs()
         loadDesigns(){
             DispatchQueue.main.async {
+                self.colorCollectionView.reloadData()
                 self.carousel.setCarouselTemplates(templates: self.tees)
                 self.scrollview.addSubview(self.canvasDisplayView)
                 self.view.addSubview(self.canvas)
@@ -899,7 +850,9 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
                 self.bottomBar.addSubview(self.drawToolBar)
                 self.drawToolBar.isHidden = true
                 self.displayView.addSubview(self.zoomBtn)
-                self.zoomBtn.frame.origin = CGPoint(x: 5, y: self.displayView.frame.maxY - self.zoomBtn.frame.height - 5)
+                self.displayView.addSubview(self.saveBtn)
+                self.saveBtn.frame.origin = CGPoint(x: 5, y: self.displayView.frame.maxY - self.zoomBtn.frame.height - 5)
+                self.zoomBtn.frame.origin = CGPoint(x: self.saveBtn.frame.origin.x, y: self.saveBtn.frame.origin.y - self.zoomBtn.frame.height)
                 self.view.addSubview(self.zoomableView)
                 self.zoomableView.isHidden = true
                 self.nextBtn.isEnabled = false
@@ -907,6 +860,15 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         }
         // Do any additional setup after loading the view.
     }
+    
+    lazy var saveBtn: UIButton = {
+        
+        let btn = UIButton.init(frame: CGRect(x: 0, y: 0, width: 45, height: 45))
+        btn.tintColor = UIColor(named: "LoadingColor")
+        btn.addTarget(self, action: #selector(saveToCameraRoll(_:)), for: .touchUpInside)
+        btn.setImage(UIImage(nameOrSystemName: "square.and.arrow.down.fill", systemPointSize: 18, iconSize: 9), for: .normal)
+        return btn
+    }()
     
     @objc func cancelDesigning(_ sender: UIBarButtonItem){
         product = nil
@@ -956,7 +918,15 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
     }
-
+    
+   
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(true)
+        tees = nil
+        
+        NotificationCenter.default.removeObserver(self)
+        
+    }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let tabVC = segue.destination as? MainTabBarViewController{
@@ -972,16 +942,25 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
 }
 
 extension UIView {
-    func makeSnapshot(clear: Bool) -> UIImage? {
+    func makeSnapshot(clear: Bool, subviewsToIgnore: [UIView]) -> UIImage? {
+        
         let color = backgroundColor
         if clear{
             backgroundColor = .clear
         }
+        
+        for view in subviewsToIgnore{
+            view.isHidden = true
+        }
+        
         let renderer = UIGraphicsImageRenderer(size: bounds.size)
         let image = renderer.image { ctx in
             drawHierarchy(in: bounds, afterScreenUpdates: true)
         }
         backgroundColor = color
+        for view in subviewsToIgnore{
+            view.isHidden = false
+        }
         return image
     }
 }

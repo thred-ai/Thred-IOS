@@ -11,6 +11,9 @@ import FirebaseUI
 import ColorCompatibility
 import FirebaseFunctions
 
+let window = UIApplication.shared.windows.first
+
+var likeQueue = [String: Bool]()
 
 class ProductCell: UITableViewCell {
 
@@ -43,7 +46,9 @@ class ProductCell: UITableViewCell {
     
     @IBOutlet weak var price: UILabel!
     @IBOutlet weak var title: UILabel!
+    weak var vc: UIViewController?
     
+    @IBOutlet weak var userInfoView: UIView!
     
     var product: Product!
     
@@ -53,17 +58,42 @@ class ProductCell: UITableViewCell {
     
     let selectedColor = UIColor(red: 1, green: 0, blue: 0.3137, alpha: 0.9) /* #ff0050 */
     
+    @objc func toProfile(_ sender: UITapGestureRecognizer) {
+        
+        if vc is FeedVC || vc is FullProductVC{
+            
+            if product.uid == userInfo.uid{
+                vc?.tabBarController?.selectedIndex = 4
+            }
+            else{
+                
+                let info = UserInfo(uid: product.uid, dp: self.userImage.image, dpID: product.userImageID ?? "null", username: product.username ?? "", fullName: product.fullName ?? "", bio: "", notifID: "", userFollowing: nil, userLiked: nil)
+                
+                (vc as? FullProductVC)?.friendInfo = info
+                
+                (vc as? FeedVC)?.selectedUser = info
+                vc?.performSegue(withIdentifier: "toFriend", sender: nil)
+            }
+        }
+        else if let userVC = vc as? UserVC{
+            userVC.tableView.setContentOffset(CGPoint(x: 0, y: -userVC.view.safeAreaInsets.top), animated: true)
+        }
+    }
+    
     let likedImage = UIImage(named: "liked")
     let unlikedImage = UIImage(named: "like")
 
     @IBAction func likeDesign(_ sender: UIButton) {
         
         sender.isEnabled = false
+        isUserInteractionEnabled = false
+        likeQueue.removeValue(forKey: product.productID)
+        
         if likeBtn.currentImage == unlikedImage{
-        likesLbl.text = "\(product.likes + 1)"
-        updateProductLiking(isLiking: true)
-        updateLiking(isLiking: true)
-        likeBtn.setImage(likedImage?.imageWithColor(selectedColor), for: .normal)
+            likeQueue.updateValue(true, forKey: product.productID)
+            likeBtn.setImage(likedImage?.imageWithColor(selectedColor), for: .normal)
+            likesLbl.text = "\((product.likes) + 1)"
+            updateProductLiking(isLiking: true)
             likeBtn.alpha = 0.0
             likeBtn.transform = CGAffineTransform(rotationAngle: CGFloat.pi)
             UIView.animate(withDuration: 0.2, animations: {
@@ -72,28 +102,47 @@ class ProductCell: UITableViewCell {
             }, completion: { finished in
                 if finished{
                     sender.isEnabled = true
-                    self.likeBtn.imageView!.startAnimating()
+                    self.isUserInteractionEnabled = true
+                    self.likeBtn.imageView?.startAnimating()
                 }
             })
         }
         else{
-            likesLbl.text = "\(product.likes - 1)"
-            updateProductLiking(isLiking: false)
-            updateLiking(isLiking: false)
             likeBtn.setImage(unlikedImage, for: .normal)
+            likeQueue.updateValue(false, forKey: product.productID)
+            if product.likes == 0{
+                let products = (vc as? FeedVC)?.loadedProducts ?? (vc as? UserVC)?.loadedProducts ?? (vc as? FriendVC)?.loadedProducts
+                if let product = products?.first(where: {$0.productID == product.productID}) ?? (vc as? FullProductVC)?.fullProduct{
+                    product.liked = false
+                    product.likes = 0
+                    userInfo.userLiked?.removeAll(where: {$0 == self.product.productID})
+                    UserDefaults.standard.set(userInfo.userLiked, forKey: "LikedPosts")
+                    if vc is FeedVC{
+                        products?.saveAllObjects(type: "FeedProducts")
+                    }
+                    else if vc is UserVC{
+                        products?.saveAllObjects(type: "Products")
+                    }
+                    sender.isEnabled = true
+                    isUserInteractionEnabled = true
+                }
+                return
+            }
+            likesLbl.text = "\((product.likes) - 1)"
+            updateProductLiking(isLiking: false)
             likeBtn.alpha = 0.0
             likeBtn.transform = CGAffineTransform(rotationAngle: CGFloat.pi)
             UIView.animate(withDuration: 0.2, animations: {
                 self.likeBtn.transform = CGAffineTransform.identity
                 self.likeBtn.alpha = 1.0
             }, completion: { finished in
+                self.isUserInteractionEnabled = true
                 sender.isEnabled = true
             })
         }
     }
     
-    func updateLiking(isLiking: Bool){
-        
+    func updateLiking(isLiking: Bool, loadedProducts: [Product]?, saveType: String?){
         let data = [
             "product_id" : product.productID,
             "creator_uid" : product.uid,
@@ -112,24 +161,35 @@ class ProductCell: UITableViewCell {
                     userInfo.userLiked?.removeAll(where: {$0 == self.product.productID})
                 }
                 UserDefaults.standard.set(userInfo.userLiked, forKey: "LikedPosts")
+                guard let type = saveType else{return}
+                loadedProducts?.saveAllObjects(type: type)
             }
         })
     }
     
     func updateProductLiking(isLiking: Bool){
         var updateNum = -1
-        if isLiking{
-            updateNum = 1
-        }
-        switch self.getViewController(){
+        if isLiking{ updateNum = 1 }
+        switch vc{
         case let feed as FeedVC:
-            feed.loadedProducts.first(where: {$0.productID == self.product.productID})?.likes += updateNum
-            feed.loadedProducts.saveAllObjects(type: "FeedProducts")
+            guard let product = feed.loadedProducts.first(where: {$0.productID == self.product?.productID}) else{return}
+            product.likes += updateNum
+            product.liked = updateNum == 1
+            updateLiking(isLiking: isLiking, loadedProducts: feed.loadedProducts, saveType: "FeedProducts")
         case let user as UserVC:
-            user.loadedProducts.first(where: {$0.productID == self.product.productID})?.likes += updateNum
-            user.loadedProducts.saveAllObjects(type: "Products")
+            guard let product = user.loadedProducts.first(where: {$0.productID == self.product?.productID}) else{return}
+            product.likes += updateNum
+            product.liked = updateNum == 1
+            updateLiking(isLiking: isLiking, loadedProducts: user.loadedProducts, saveType: "Products")
         case let friend as FriendVC:
-            friend.loadedProducts.first(where: {$0.productID == self.product.productID})?.likes += updateNum
+            guard let product = friend.loadedProducts.first(where: {$0.productID == self.product?.productID}) else{return}
+            product.likes += updateNum
+            product.liked = updateNum == 1
+            updateLiking(isLiking: isLiking, loadedProducts: nil, saveType: nil)
+        case let full as FullProductVC:
+            full.fullProduct.likes += updateNum
+            full.fullProduct.liked = true
+            updateLiking(isLiking: isLiking, loadedProducts: nil, saveType: nil)
         default:
             break
         }
@@ -174,35 +234,53 @@ class ProductCell: UITableViewCell {
         
         productPicture.isUserInteractionEnabled = true
         
-        //let pinch = UIPinchGestureRecognizer(target: self, action: #selector(handleZoom(_:)))
-        //let pan = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
+        let tap = UITapGestureRecognizer(target: self, action: #selector(toProfile(_:)))
         
-        // Use 2 thingers to move the view
-        //pan.minimumNumberOfTouches = 2
-        //pan.maximumNumberOfTouches = 2
+        userInfoView.addGestureRecognizer(tap)
         
-        // We delegate gestures so we can
-        // perform both at the same time
-       // pan.delegate = self
-        //pinch.delegate = self
-        
-        // Add the gestures to our target (imageView)
-        //productPicture.addGestureRecognizer(pinch)
-        //productPicture.addGestureRecognizer(pan)
         
         // Here some basic setup
         //view.addSubView(overlay)
         //view.bringSubViewToFront(imageView)
-        addSubview(canvasDisplayView)
+        productPicture.addSubview(canvasDisplayView)
 
         NSLayoutConstraint(item: canvasDisplayView, attribute: .centerX, relatedBy: .equal, toItem: productPicture, attribute: .centerX, multiplier: 1.0, constant: 0).isActive = true
         NSLayoutConstraint(item: canvasDisplayView, attribute: .centerY, relatedBy: .equal, toItem: productPicture, attribute: .centerY, multiplier: 1.0, constant: -20).isActive = true
-        NSLayoutConstraint(item: canvasDisplayView, attribute: .width, relatedBy: .equal, toItem: productPicture, attribute: .width, multiplier: 0.3, constant: 0).isActive = true
-        NSLayoutConstraint(item: canvasDisplayView, attribute: .height, relatedBy: .equal, toItem: productPicture, attribute: .height, multiplier: 0.475, constant: 0).isActive = true
-
-        
+        NSLayoutConstraint(item: canvasDisplayView, attribute: .width, relatedBy: .equal, toItem: productPicture, attribute: .width, multiplier: 0.25, constant: 0).isActive = true
+        NSLayoutConstraint(item: canvasDisplayView, attribute: .height, relatedBy: .equal, toItem: canvasDisplayView, attribute: .width, multiplier: canvasInfo.aspectRatio, constant: 0).isActive = true
     }
     
+    func setGestureRecognizers(){
+        if vc is FullProductVC{
+            let pinch = UIPinchGestureRecognizer(target: self, action: #selector(handleZoom(_:)))
+            let pan = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
+            pan.minimumNumberOfTouches = 2
+            pan.maximumNumberOfTouches = 2
+            pan.delegate = self
+            pinch.delegate = self
+            imageCenter = productPicture.center
+            productPicture.addGestureRecognizer(pinch)
+            productPicture.addGestureRecognizer(pan)
+        }
+        else{
+            for gesture in productPicture.gestureRecognizers ?? []{
+                gesture.delegate = nil
+                imageCenter = nil
+                productPicture.removeGestureRecognizer(gesture)
+            }
+        }
+    }
+    
+    override func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        return true
+    }
+    
+    override func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        self.likeBtn.isHidden = true
+        self.likesLbl.isHidden = true
+        (vc as? FullProductVC)?.tableView.isScrollEnabled = false
+        return true
+    }
     
     
     func setUpCircularProgress(){
@@ -233,9 +311,31 @@ class ProductCell: UITableViewCell {
          userImage.layer.borderColor = UIColor(named: "ProfileMask")?.cgColor
     }
     
+    
+    @IBOutlet weak var openOptionMenuBtn: UIButton!
+    
+    @IBAction func openOptionMenu(_ sender: UIButton) {
+        
+        
+        if !productPicture.subviews.contains(optionMenu){
+            productPicture.addSubview(optionMenu)
+            optionMenu.isHidden = false
+            optionMenu.alpha = 0.0
+            UIView.animate(withDuration: 0.1, animations: {
+                self.optionMenu.alpha = 1.0
+            }, completion: {finished in
+                
+            })
+        }
+        else{
+            optionMenu.removeFromSuperview()
+        }
+    }
     override func layoutSubviews() {
         super.layoutSubviews()
 
+        
+        
         self.userImage.layer.cornerRadius = self.userImage.frame.height / 2
         self.userImage.clipsToBounds = true
         self.userImage.layer.borderColor = UIColor(named: "ProfileMask")?.cgColor
@@ -247,12 +347,108 @@ class ProductCell: UITableViewCell {
         
     }
     
+    var optionMenuActionBtn1: UIButton!
+    var optionMenuCancelBtn: UIButton!
+
+    lazy var optionMenu: UIView = {
+        
+        let view = UIView(frame: productPicture.bounds)
+        
+        //view.translatesAutoresizingMaskIntoConstraints = false
+       
+        view.backgroundColor = ColorCompatibility.systemBackground.withAlphaComponent(0.9)
+
+        let stackView = UIStackView.init(frame: view.bounds)
+        stackView.axis = .horizontal
+        stackView.alignment = .fill
+        stackView.spacing = 0
+        stackView.distribution = .fillEqually
+        //stackView.translatesAutoresizingMaskIntoConstraints = false
+        
+        let buttonSize = 75
+        
+        let optionMenuView1 = UIView.init(frame: CGRect(x: 0, y:0, width: stackView.frame.width / 2, height: stackView.frame.height))
+        
+        optionMenuActionBtn1 = UIButton.init(frame: CGRect(x: 0, y:0, width: buttonSize, height: buttonSize))
+        optionMenuActionBtn1.setTitle("Report", for: .normal)
+        optionMenuActionBtn1.backgroundColor = ColorCompatibility.tertiarySystemFill
+        optionMenuActionBtn1.setTitleColor(UIColor(named: "LoadingColor"), for: .normal)
+        optionMenuActionBtn1.layer.cornerRadius = optionMenuActionBtn1.frame.height / 2
+        optionMenuActionBtn1.clipsToBounds = true
+        optionMenuActionBtn1.center = optionMenuView1.center
+        optionMenuView1.addSubview(optionMenuActionBtn1)
+        
+        
+        let optionMenuView2 = UIView.init(frame: CGRect(x: 0, y:0, width: stackView.frame.width / 2, height: stackView.frame.height))
+        optionMenuCancelBtn = UIButton.init(frame: CGRect(x: 0, y:0, width: buttonSize, height: buttonSize))
+        optionMenuCancelBtn.setTitle("Cancel", for: .normal)
+        optionMenuCancelBtn.backgroundColor = ColorCompatibility.tertiarySystemFill
+        optionMenuCancelBtn.setTitleColor(ColorCompatibility.label, for: .normal)
+        optionMenuCancelBtn.layer.cornerRadius = optionMenuCancelBtn.frame.height / 2
+        optionMenuCancelBtn.clipsToBounds = true
+        optionMenuCancelBtn.center = optionMenuView2.center
+        optionMenuView2.addSubview(optionMenuCancelBtn)
+        
+        stackView.addArrangedSubview(optionMenuView1)
+        stackView.addArrangedSubview(optionMenuView2)
+        
+
+        view.addSubview(stackView)
+        
+        return view
+    }()
+    
     override func prepareForReuse() {
         super.prepareForReuse()
-        productPicture.image = nil
+        productPicture?.image = nil
         //Stop or reset anything else that is needed here
     }
-
+    
+    @objc func handleZoom(_ gesture: UIPinchGestureRecognizer) {
+        switch gesture.state {
+        case .began, .changed:
+            if gesture.scale >= 1 {
+                let scale = gesture.scale
+                gesture.view!.transform = CGAffineTransform(scaleX: scale, y: scale)
+            }
+            break;
+        default:
+            UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseInOut, animations: {
+              gesture.view!.transform = .identity
+            }) { completed in
+                if completed{
+                    DispatchQueue.main.async {
+                        self.likeBtn.isHidden = false
+                        self.likesLbl.isHidden = false
+                    }
+                }
+            }
+            (vc as? FullProductVC)?.tableView.isScrollEnabled = true
+        }
+    }
+    
+    
+    @objc func handlePan(_ gesture: UIPanGestureRecognizer) {
+        
+        switch gesture.state {
+        case .began, .changed:
+            let translation = gesture.translation(in: self.contentView)
+            gesture.view?.center = CGPoint(x: gesture.view!.center.x + translation.x, y: gesture.view!.center.y + translation.y)
+            gesture.setTranslation(.zero, in: self.contentView)
+            break;
+        default:
+            UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseInOut, animations: {
+                gesture.view?.center = self.imageCenter
+                gesture.setTranslation(.zero, in: self.contentView)
+            }) { completed in
+                if completed{
+                   
+                }
+            }
+            (vc as? FullProductVC)?.tableView.isScrollEnabled = true
+            break
+        }
+    }
 }
  
 extension UIView {
@@ -286,3 +482,5 @@ extension UIImage {
         return newImage
     }
 }
+
+

@@ -12,6 +12,7 @@ import SDWebImage
 
 
 extension UITableView{
+    
     func setPictureCell(indexPath: IndexPath, user: Product, productLocation: UIViewController) -> ProductCell{
 
         let cell = dequeueReusableCell(withIdentifier: "PictureProduct", for: indexPath) as? ProductCell
@@ -37,12 +38,13 @@ extension UITableView{
         dp.image = nil
         fullLbl.text = nil
         cell?.productDescription.text = nil
-        cell?.productPicture.image = nil
+        cell?.productPicture?.image = nil
         cell?.canvasDisplayView.image = nil
         cell?.likesLbl.text = "\(0)"
         cell?.product = user
-
-        if userInfo.userLiked?.contains(user.productID) ?? false{
+        cell?.vc = productLocation
+        cell?.setGestureRecognizers()
+        if user.liked{
             cell?.likeBtn.setImage(cell?.likedImage?.imageWithColor(cell?.selectedColor ?? UIColor.red), for: .normal)
         }
         else{
@@ -69,7 +71,7 @@ extension UITableView{
         cell?.likesLbl.text = "\(user.likes)"
         
         
-        checkTimes(user: user, timestampLbl: cell?.timestampLbl, productLocation: productLocation)
+        checkTimes(user: user, timestampLbl: cell?.timestampLbl)
         switch productLocation{
         case let feed as FeedVC:
             feed.loadedProducts[indexPath.row].index = indexPath.row
@@ -83,6 +85,10 @@ extension UITableView{
             friendVC.loadedProducts[indexPath.row].index = indexPath.row
             checkAndDownloadProductImage(user: user, vc: friendVC, picID: picID, cell: cell, index: indexPath.row, type: nil)
             checkAndDownloadUserInfoInProfile(userVC: nil, friendVC: friendVC, user: user, dp: dp, userLbl: userLbl, fullLbl: fullLbl, picCell: cell, userInfo: friendVC.friendInfo)
+        case let fullVC as FullProductVC:
+            fullVC.fullProduct.index = indexPath.row
+            checkAndDownloadProductImage(user: user, vc: fullVC, picID: picID, cell: cell, index: indexPath.row, type: nil)
+            checkAndDownloadUserInfoInFullVC(user: user, dp: dp, userLbl: userLbl, fullLbl: fullLbl, picCell: cell, fullVC: fullVC)
         default:
             break
         }

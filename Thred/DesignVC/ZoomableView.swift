@@ -18,12 +18,10 @@ extension DesignViewController{
                 self.navigationItem.rightBarButtonItem?.isEnabled = false
                 let imageView = zoomableView.subviews.first as? UIImageView
                 imageView?.image = nil
-                sender.isHidden = true
                 if cell.canvasDisplayView.image == nil{
                     cell.canvasDisplayView.isHidden = true
                 }
-                imageView?.image = sender.superview?.makeSnapshot(clear: true)
-                sender.isHidden = false
+                imageView?.image = sender.superview?.makeSnapshot(clear: true, subviewsToIgnore: [zoomBtn, saveBtn])
                 cell.canvasDisplayView.isHidden = false
 
                 zoomableView.alpha = 0.0
@@ -70,6 +68,7 @@ extension DesignViewController{
     
     
     @objc func handlePan(_ gesture: UIPanGestureRecognizer) {
+        
         switch gesture.state {
         case .began, .changed:
             let translation = gesture.translation(in: self.zoomableView)

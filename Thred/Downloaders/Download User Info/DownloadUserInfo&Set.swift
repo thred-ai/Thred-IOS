@@ -14,7 +14,7 @@ import FirebaseFirestore
 
 extension UITableView{
 
-    func beginDownloadingUserInfo(uid: String, downloader: SDWebImageDownloader?, userVC: UserVC?, feedVC: FeedVC?, friendVC: FriendVC?, section: Int){
+    func beginDownloadingUserInfo(uid: String, downloader: SDWebImageDownloader?, userVC: UserVC?, feedVC: FeedVC?, friendVC: FriendVC?, fullVC: FullProductVC?, section: Int){
         print(uid)
         
         downloadUserInfo(uid: uid, userVC: userVC, feedVC: feedVC, downloadingPersonalDP: false, downloader: downloader, userInfo: nil, completed: {[weak self] fullName, username, dpUID, notifID, bio, imgData in
@@ -24,14 +24,13 @@ extension UITableView{
                     userVC?.downloadingProfiles.removeAll(where: {$0 == uid})
                 }
                 if feedVC != nil{
-                    
                     feedVC?.downloadingProfiles.removeAll(where: {$0 == uid})
                 }
                 if friendVC != nil{
                     friendVC?.downloadingProfiles.removeAll(where: {$0 == uid})
                 }
                 
-                self?.setCellUserInfo(image: imgData, info: [uid, fullName, username, dpUID], feedVC: feedVC, userVC: userVC, friendVC: friendVC, section: section)
+                self?.setCellUserInfo(image: imgData, info: [uid, fullName, username, dpUID], feedVC: feedVC, userVC: userVC, friendVC: friendVC, fullVC: fullVC, section: section)
             }
         })
     }
@@ -61,8 +60,13 @@ extension UITableView{
                     options.insert(.refreshCached)
                 }
               
-                completed(fullName, username, dpUID, notifID, bio, nil)
-
+                if let image = cache.imageFromCache(forKey: dpUID){
+                    completed(fullName, username, dpUID, notifID, bio, image)
+                    return
+                }
+                else{
+                    completed(fullName, username, dpUID, notifID, bio, nil)
+                }
                 storageRef?.downloadURL(completion: { url, error in
                     if error != nil{
                         print(error?.localizedDescription ?? "")
@@ -95,8 +99,7 @@ extension UITableView{
     }
     
     
-    
-    func setCellUserInfo(image: UIImage?, info: [String?], feedVC: FeedVC?, userVC: UserVC?, friendVC: FriendVC?, section: Int){
+    func setCellUserInfo(image: UIImage?, info: [String?], feedVC: FeedVC?, userVC: UserVC?, friendVC: FriendVC?, fullVC: FullProductVC?, section: Int){
         
         guard let uid = info[0] else{return}
         let fullname = info[1]
@@ -109,7 +112,6 @@ extension UITableView{
             sameID.username = username
             sameID.fullName = fullname
             sameID.userImageID = dpUID
-            
         }
         NoProductsLoaded:
         
@@ -129,6 +131,25 @@ extension UITableView{
                 self.setForProduct(uid: uid, fullname: fullname, username: username, image: image, userVC: userVC, friendVC: friendVC, feedVC: feedVC)
             }
         }
+        else if fullVC != nil{
+            DispatchQueue.main.async {
+                if let mainProductCell = self.cellForRow(at: IndexPath(row: 0, section: 0)) as? ProductCell{
+                    
+                    if let user = username, let full = fullname{
+                        fullVC?.fullProduct.fullName = full
+                        fullVC?.fullProduct.username = username
+                        mainProductCell.username.text = "@" + user
+                        mainProductCell.fullName.text = full
+                        mainProductCell.removeLabelLoad()
+                    }
+                    if let img = image{
+                        mainProductCell.userImage.image = img
+                        mainProductCell.removeDpLoad()
+                    }
+                }
+            }
+        }
+    
     }
     
     func setForProduct(uid: String, fullname: String?, username: String?, image: UIImage?, userVC: UserVC?, friendVC: FriendVC?, feedVC: FeedVC?){

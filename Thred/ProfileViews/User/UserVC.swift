@@ -68,7 +68,7 @@ class UserVC: UITableViewController {
                         userInfo.notifID.removeAll()
                         
                         self?.header?.setUpInfo(username: username, fullname: fullName, bio: bio, notifID: notifID, dpUID: dpID, image: image, actionBtnTitle: "Edit Profile")
-                        self?.setUserInfo(username: username, fullname: fullName, image: image, bio: bio, notifID: notifID, dpUID: dpID)
+                        self?.setUserInfo(username: username, fullname: fullName, image: image, bio: bio, notifID: notifID, dpUID: dpID, userFollowing: nil)
                         
                         for product in self?.loadedProducts ?? []{
                             if product.uid == userInfo.uid{
@@ -134,7 +134,6 @@ class UserVC: UITableViewController {
         refresher.addTarget(self, action: #selector(refresh(_:)), for: UIControl.Event.valueChanged)
         
         tableView.register(UINib(nibName: "ProductCell", bundle: nil), forCellReuseIdentifier: "PictureProduct")
-        tableView.allowsSelection = false
         header = tableView.loadUserHeaderFromNib()
         header?.actionBtn.addTarget(self, action: #selector(editProfile(_:)), for: .touchUpInside)
         if let image = userInfo.dp{
@@ -146,6 +145,7 @@ class UserVC: UITableViewController {
      
         loadedProducts.checkAndLoadProducts(vc: self, type: "Products") { _ in
             DispatchQueue.main.async {
+                self.loadedProducts.saveAllObjects(type: "Products")
                 if self.loadedProducts.isEmpty{
                     self.refresh(refresher)
                 }
@@ -186,8 +186,30 @@ class UserVC: UITableViewController {
     
     
     override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(true)
         
+        print(likeQueue.count)
         
+        for (index, like) in likeQueue.enumerated(){
+            print(like)
+            if let product = loadedProducts.first(where: {$0.productID == like.key}){
+                if product.liked == !like.value{
+                    product.liked = like.value
+                    likeQueue.removeValue(forKey: product.productID)
+                }
+            }
+            if index == likeQueue.count - 1{
+                self.loadedProducts.saveAllObjects(type: "Products")
+                self.tableView.performBatchUpdates({
+                    self.tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
+                }, completion: nil)
+            }
+        }
+        
+        self.tableView.performBatchUpdates({
+            self.tableView.reloadRows(at: self.tableView?.indexPathsForVisibleRows ?? [], with: .none)
+        }, completion: nil)
+    
         if self.navigationController?.viewControllers.first == self{
                 //Clicked on profile button
             
@@ -272,7 +294,7 @@ class UserVC: UITableViewController {
         
         let doc = Firestore.firestore().collection("Users").document(userInfo.uid).collection("Products").document()
         
-        let product = Product(uid: userInfo.uid, picID: doc.documentID, description: post.caption, fullName: userInfo.fullName, username: userInfo.username, productID: doc.documentID, userImageID: userInfo.dpID, timestamp: date, index: nil, timestampDiff: nil, fromCache: false, blurred: false, price: (post.price ?? 2000) / 100, name: post.name, templateColor: post.templateColor, likes: 0)
+        let product = Product(uid: userInfo.uid, picID: doc.documentID, description: post.caption, fullName: userInfo.fullName, username: userInfo.username, productID: doc.documentID, userImageID: userInfo.dpID, timestamp: date, index: nil, timestampDiff: tableView.calculateTimeDifference(time: date), fromCache: false, blurred: false, price: (post.price ?? 2000) / 100, name: post.name, templateColor: post.templateColor, likes: 0, liked: false, designImage: nil)
         
         cache.storeImageData(toDisk: designData, forKey: doc.documentID)
         self.loadedProducts.insert(product, at: 0)
@@ -377,7 +399,7 @@ class UserVC: UITableViewController {
 
                                 guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                                 
-                                localLoaded.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes))
+                                localLoaded.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked?.contains(snap.documentID), designImage: nil))
 
                                 if localLoaded.count == snaps.count{
                                     let isSame = localLoaded == self?.loadedProducts
@@ -420,7 +442,7 @@ class UserVC: UITableViewController {
 
                 guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                 
-                loadedProducts.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes))
+                loadedProducts.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked?.contains(snap.documentID), designImage: nil))
 
                 tableView.performBatchUpdates({
                     tableView.insertRows(at: [IndexPath(row: loadedProducts.count - 1, section: 0)], with: .none)
@@ -458,37 +480,42 @@ class UserVC: UITableViewController {
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        productToOpen = self.loadedProducts[indexPath.row]
-        
-        self.performSegue(withIdentifier: "ToProduct", sender: nil)
-        
+        let product = loadedProducts[indexPath.row]
+        guard let cell = tableView.cellForRow(at: indexPath) as? ProductCell else{return}
+        guard let imageData = product.designImage ?? cell.productPicture.makeSnapshot(clear: false, subviewsToIgnore: [])?.pngData() else{
+            return
+        }
+        DispatchQueue.main.async {
+            product.designImage = imageData
+            self.productToOpen = product
+            self.performSegue(withIdentifier: "toFull", sender: nil)
+        }
     }
     
     override func didReceiveMemoryWarning() {
-        
+        likeQueue.removeAll()
         DispatchQueue.global(qos: .background).sync {
             cache.clearMemory()
         }
     }
     
     var productToOpen = Product()
-    
     // MARK: - Navigation
     
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
-        
-        
+        if let fullVC = segue.destination as? FullProductVC{
+            fullVC.fullProduct = productToOpen
+        }
     }
-    
 }
 
 
 
 extension UIViewController{
     
-    func setUserInfo(username: String?, fullname: String?, image: UIImage?, bio: String?, notifID: String?, dpUID: String?){
+    func setUserInfo(username: String?, fullname: String?, image: UIImage?, bio: String?, notifID: String?, dpUID: String?, userFollowing: [String]?){
         if let usernameToSet = username{
             UserDefaults.standard.set(usernameToSet, forKey: "USERNAME")
             userInfo.username = usernameToSet
@@ -504,6 +531,9 @@ extension UIViewController{
         if let notifIDToSet = notifID{
             UserDefaults.standard.set(notifIDToSet, forKey: "NOTIF_ID")
             userInfo.notifID = notifIDToSet
+        }
+        if let userFollowing = userFollowing{
+            UserDefaults.standard.set(userFollowing, forKey: "FOLLOWING")
         }
         if let dpIDToSet = dpUID{
             UserDefaults.standard.set(dpIDToSet, forKey: "DP_ID")

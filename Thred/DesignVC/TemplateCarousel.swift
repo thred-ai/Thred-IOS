@@ -11,12 +11,14 @@ import ColorCompatibility
 
 class TemplateCarousel: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewDelegate, UICollectionViewDataSource {
     
-    private var timer : Timer = Timer()
-    public var interval : Double?
     public var displayImage: UIImage?
     
     var slides = [TemplateCarouselSlide]()
+     
+    deinit {
+        print("")
         
+    }
     
     func setCarouselTemplates(templates: [Template]){
         for (index, template) in templates.enumerated(){
@@ -96,8 +98,6 @@ class TemplateCarousel: UIView, UICollectionViewDelegateFlowLayout, UICollection
             }
             
         }
-        
-        print(collectionView.bounds.width)
         cell?.parseData(forSlide: slide)
         return cell!
     }

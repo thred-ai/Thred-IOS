@@ -8,6 +8,7 @@
 
 import UIKit
 import FirebaseFirestore
+import FirebaseFunctions
 import FirebaseUI
 
 
@@ -23,6 +24,9 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
     var productToOpen = Product()
     var friendInfo = UserInfo()
     var header: ProfileHeaderView?
+    
+    
+    
 
     
     override func viewDidLoad() {
@@ -37,26 +41,76 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         refresher.addTarget(self, action: #selector(self.refresh(_:)), for: UIControl.Event.valueChanged)
         
         tableView.register(UINib(nibName: "ProductCell", bundle: nil), forCellReuseIdentifier: "PictureProduct")
-        tableView.register(UINib(nibName: "ProductWithTextCell", bundle: nil), forCellReuseIdentifier: "TextProduct")
 
         self.header = self.tableView.loadUserHeaderFromNib()
         self.tableView.addSubview(refresher)
         self.navigationController?.navigationBar.setBackgroundImage(UIImage.init(), for: UIBarMetrics.default)
         self.navigationController?.navigationBar.shadowImage = UIImage.init()
 
-        self.header?.clearAll(actionBtnTitle: "Follow")
-        
+        self.header?.clearAll(actionBtnTitle: header?.headerActionBtnTitle ?? "null")
+        header?.actionBtn.addTarget(self, action: #selector(followBtnPressed(_:)), for: .touchUpInside)
+
         if let image = friendInfo.dp{
-            self.header?.setUpInfo(username: friendInfo.username, fullname: friendInfo.fullName, bio: friendInfo.bio, notifID: friendInfo.notifID, dpUID: nil, image: image, actionBtnTitle: "Follow")
+            self.header?.setUpInfo(username: friendInfo.username, fullname: friendInfo.fullName, bio: friendInfo.bio, notifID: friendInfo.notifID, dpUID: nil, image: image, actionBtnTitle: header?.headerActionBtnTitle ?? "null")
         }
+
+        
+
      
         if friendInfo.dp == nil{
             self.refresh(refresher)
         }
         else{
-            self.downloadProducts(){
-                return
+            
+            if let vcIndex = navigationController?.viewControllers.firstIndex(of: self){
+                if navigationController?.viewControllers[vcIndex - 1] is FullProductVC || navigationController?.viewControllers[vcIndex - 1] is FeedVC{
+                    self.refresh(refresher)
+                }
+                else{
+                    self.downloadProducts(){
+                        return
+                    }
+                }
             }
+        }
+    }
+    
+    
+    @objc func followBtnPressed(_ sender: UIButton){
+        
+        guard let following = userInfo.userFollowing else{return}
+        let didFollow = !following.contains(friendInfo.uid)
+        header?.updateFollowBtn(didFollow: didFollow, animated: true)
+        updateFollowInDatabase(didFollow: didFollow)
+    }
+    
+    func updateFollowInDatabase(didFollow: Bool){
+        
+        if didFollow{
+            let data = [
+                 "UID" : friendInfo.uid
+             ]
+            Firestore.firestore().document("Users/\(userInfo.uid)/Following/\(friendInfo.uid)").setData(data, completion: { error in
+                 if error != nil{
+                     print(error?.localizedDescription ?? "")
+                 }
+                 else{
+                    userInfo.userFollowing?.append(self.friendInfo.uid)
+                    UserDefaults.standard.set(userInfo.userFollowing, forKey: "FOLLOWING")
+                 }
+             })
+        }
+        else{
+            Firestore.firestore().collection("Users/\(userInfo.uid)/Following").document(friendInfo.uid).delete(
+                completion: { error in
+                if error != nil{
+                    print(error?.localizedDescription ?? "")
+                }
+                else{
+                    userInfo.userFollowing?.removeAll(where: {$0 == self.friendInfo.uid})
+                    UserDefaults.standard.set(userInfo.userFollowing, forKey: "FOLLOWING")
+                }
+            })
         }
     }
     
@@ -66,7 +120,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
             header.usernameLbl.text = "@" + (username ?? "null")
             header.fullnameLbl.text = fullname ?? "null"
             header.bioView.text = bio
-            header.actionBtn.setTitle("Follow", for: .normal)
+            header.actionBtn.setTitle(header.headerActionBtnTitle, for: .normal)
             let image = UIImage.init(data: data)
             header.profileImgView.image = image
         }
@@ -86,22 +140,18 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
                 self.downloader?.cancelAllDownloads()
                 self.tableView.downloadUserInfo(uid: self.friendInfo.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: true, downloader: self.downloader, userInfo: self.friendInfo, completed: { fullName, username, dpID, notifID, bio, image in
                     
-                    
-                    if image != nil{
-                        self.friendInfo.dp = nil
-                        if dpID != self.friendInfo.dpID{
-                            self.friendInfo.dpID.removeAll()
-                        }
-                    }
                     if username != nil{
-                        self.friendInfo.username.removeAll()
-                        self.friendInfo.fullName.removeAll()
-                        self.friendInfo.bio.removeAll()
-                        self.friendInfo.notifID.removeAll()
-                        
-                        self.header?.setUpInfo(username: username, fullname: fullName, bio: bio, notifID: notifID, dpUID: dpID, image: image, actionBtnTitle: "Follow")
                         
                         self.setInfo(username: username, fullname: fullName, dpID: dpID, image: image, notifID: notifID, bio: bio)
+
+                        self.header?.setUpInfo(username: username, fullname: fullName, bio: bio, notifID: notifID, dpUID: dpID, image: image, actionBtnTitle: self.header?.headerActionBtnTitle ?? "null")
+
+                        self.tableView.performBatchUpdates({
+                            self.tableView.reloadRows(at: self.tableView?.indexPathsForVisibleRows ?? [], with: .none)
+                        }, completion: { complete in
+                            if complete{
+                            }
+                        })
                     }
                 })
                 self.downloadProducts(){[weak self] in
@@ -119,14 +169,14 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         guard let username = username else{return}
         guard let fullname = fullname else{return}
         guard let dpID = dpID else{return}
-        guard let notifID = notifID else{return}
+        //guard let notifID = notifID else{return}
         guard let bio = bio else{return}
         
         self.friendInfo.username = username
         self.friendInfo.fullName = fullname
         self.friendInfo.dpID = dpID
         self.friendInfo.bio = bio
-        self.friendInfo.notifID = notifID
+        //self.friendInfo.notifID = notifID
         
         guard let img = image else{return}
         self.friendInfo.dp = img
@@ -174,15 +224,14 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
          - IF THERE IS AN ERROR, IT WILL BE IN THE \(err) VAR
          - A COMMENT WILL EITHER BE A PICTURE OR TEXT, NOT BOTH
          */
-        guard let searchDate = currentDate(asString: true, dateToUse: Date(), toFirestoreFormat: true).0 else{return}
         var query: Query! = nil
         //REMOVE LATER
         //
         if fromInterval == nil{
-            query = Firestore.firestore().collection("Users").document(friendInfo.uid).collection("Posts").whereField("Timestamp", isLessThanOrEqualTo: searchDate).limit(to: 8).order(by: "Timestamp", descending: true)
+            query = Firestore.firestore().collection("Users").document(friendInfo.uid).collection("Products").whereField("Timestamp", isLessThanOrEqualTo: Date()).limit(to: 8).order(by: "Timestamp", descending: true)
         }
         else if let last = fromInterval{
-            query = Firestore.firestore().collection("Users").document(friendInfo.uid).collection("Posts").whereField("Timestamp", isLessThan: last).limit(to: 8).order(by: "Timestamp", descending: true)
+            query = Firestore.firestore().collection("Users").document(friendInfo.uid).collection("Products").whereField("Timestamp", isLessThan: last).limit(to: 8).order(by: "Timestamp", descending: true)
         }
         query.getDocuments(completion: { (snapDocuments, err) in
             if let err = err {
@@ -221,7 +270,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
 
                             guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                             
-                            self.loadedProducts.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes))
+                            self.loadedProducts.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: self.friendInfo.fullName, username: self.friendInfo.username, productID: snap.documentID, userImageID: self.friendInfo.dpID, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked?.contains(snap.documentID), designImage: nil))
 
                             self.tableView.performBatchUpdates({
                                 self.tableView.insertRows(at: [IndexPath(row: self.loadedProducts.count - 1, section: 0)], with: .automatic)
@@ -259,10 +308,38 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        productToOpen = self.loadedProducts[indexPath.row]
+        let product = loadedProducts[indexPath.row]
+        guard let cell = tableView.cellForRow(at: indexPath) as? ProductCell else{return}
+        guard let imageData = product.designImage ?? cell.productPicture.makeSnapshot(clear: false, subviewsToIgnore: [])?.pngData() else{
+            return
+        }
+        DispatchQueue.main.async {
+            product.designImage = imageData
+            self.productToOpen = product
+            self.performSegue(withIdentifier: "toFull", sender: nil)
+        }
         
-        self.performSegue(withIdentifier: "ToProduct", sender: nil)
-        
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(true)
+        for (index, like) in likeQueue.enumerated(){
+            print(like)
+            if let product = loadedProducts.first(where: {$0.productID == like.key}){
+                if product.liked == !like.value{
+                    product.liked = like.value
+                    likeQueue.removeValue(forKey: product.productID)
+                }
+            }
+            if index == likeQueue.count - 1{
+                self.tableView.performBatchUpdates({
+                    self.tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
+                }, completion: nil)
+            }
+        }
+        self.tableView.performBatchUpdates({
+            self.tableView.reloadRows(at: self.tableView?.indexPathsForVisibleRows ?? [], with: .none)
+        }, completion: nil)
     }
     
     override func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
@@ -303,6 +380,9 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        let isFollowing = (userInfo.userFollowing?.contains(friendInfo.uid) ?? false)
+        header?.actionBtn.setTitle("", for: .normal)
+        header?.updateFollowBtn(didFollow: isFollowing, animated: false)
         if self.downloader == nil{
             self.downloader = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
         }
@@ -315,7 +395,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
     }
     
     override func didReceiveMemoryWarning() {
-        
+        likeQueue.removeAll()
         DispatchQueue.global(qos: .background).sync {
             cache.clearMemory()
         }
@@ -361,7 +441,9 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        
+        if let fullVC = segue.destination as? FullProductVC{
+            fullVC.fullProduct = productToOpen
+        }
         
     }
     

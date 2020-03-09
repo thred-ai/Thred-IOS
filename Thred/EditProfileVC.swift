@@ -263,7 +263,7 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
         sender.isEnabled = false
         
         self.save {
-            self.setUserInfo(username: self.editUserInfo.username, fullname: self.editUserInfo.fullName, image: self.editUserInfo.dp, bio: self.editUserInfo.bio, notifID: self.editUserInfo.notifID, dpUID: self.editUserInfo.dpID)
+            self.setUserInfo(username: self.editUserInfo.username, fullname: self.editUserInfo.fullName, image: self.editUserInfo.dp, bio: self.editUserInfo.bio, notifID: self.editUserInfo.notifID, dpUID: self.editUserInfo.dpID, userFollowing: self.editUserInfo.userFollowing)
             self.performSegue(withIdentifier: "backToProfile", sender: nil)
         }
  
@@ -467,8 +467,6 @@ class OptionMenu: UIView{
     var cancelBtn: UIButton!
     var removeBtn: UIButton!
     var cameraBtnBottom: CGFloat!
-
-    
     
     override init(frame: CGRect){
         super.init(frame: frame)

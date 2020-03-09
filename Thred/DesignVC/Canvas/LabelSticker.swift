@@ -182,10 +182,10 @@ extension DesignViewController{
         if let textView = self.canvas.subviews.first(where: {$0.isFirstResponder}) as? UITextView{
             textView.resignFirstResponder()
             textView.isScrollEnabled = false
-            self.textStyleBtn.superview?.isHidden = true
-            self.fontSlider.isHidden = true
-            self.textCoverView.isHidden = true
-            
+            textStyleBtn.superview?.isHidden = true
+            fontSlider.isHidden = true
+            textCoverView.isHidden = true
+            canvas.bringSubviewToFront(drawCanvas)
             let textChars = textView.text.replacingOccurrences(of: " ", with: "")
             if let imageView = textView.subviews.first(where: {$0.isKind(of: UIImageView.self)}) as? UIImageView{
                 let size = textView.sizeThatFits(CGSize(width: self.canvas.frame.width, height: CGFloat.greatestFiniteMagnitude))
@@ -193,17 +193,23 @@ extension DesignViewController{
                     let resizedY = (self.view.frame.height - self.keyboardHeight - size.height) - self.view.safeAreaInsets.top
                     textView.frame.origin.y = resizedY
                     imageView.frame.origin = CGPoint.zero
+                    textView.frame.size = size
+                    textView.center = self.canvas.center
+                    imageView.frame.size = size
                 }
-                textView.frame.size = size
-                textView.center = canvas.center
-                imageView.frame.size = size
+                
                 imageView.image = nil
                 if !textChars.isEmpty{
                     imageView.isHidden = false
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        imageView.image = textView.makeSnapshot(clear: true)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                        imageView.image = textView.makeSnapshot(clear: true, subviewsToIgnore: [imageView])
                         textView.accessibilityIdentifier = textView.text
                         textView.text.removeAll()
+                        if self.editingTransform != nil && self.editingCenter != nil{
+                            textView.transform = self.editingTransform
+                            textView.center = self.editingCenter
+                        }
+                        
                     }
                 }
                 else{
@@ -213,7 +219,7 @@ extension DesignViewController{
                 }
             }
             if self.editingTransform != nil && self.editingCenter != nil{
-                DispatchQueue.main.async {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
                     UIView.animate(withDuration: 0.15, animations: {
                         textView.transform = self.editingTransform
                         textView.center = self.editingCenter

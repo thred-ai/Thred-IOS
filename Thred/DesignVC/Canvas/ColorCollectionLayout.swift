@@ -1,14 +1,14 @@
 //
-//  ExplorePageFlowLayout.swift
+//  ColorCollectionLayout.swift
 //  Thred
 //
-//  Created by Arta Koroushnia on 2020-02-27.
+//  Created by Arta Koroushnia on 2020-03-08.
 //  Copyright © 2020 Thred. All rights reserved.
 //
 
 import UIKit
 
-class ExplorePageFlowLayout: UICollectionViewFlowLayout {
+class ColorCollectionLayout: UICollectionViewFlowLayout {
 
     let innerSpace: CGFloat = 0.5
     let numberOfCellsOnRow: CGFloat = 3
@@ -36,3 +36,4 @@ class ExplorePageFlowLayout: UICollectionViewFlowLayout {
         }
     }
 }
+

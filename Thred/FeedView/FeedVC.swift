@@ -34,9 +34,10 @@ class Product: Codable, Equatable{
         let picIDCon = lhs.picID == rhs.picID
         let timeCon = lhs.timestamp == rhs.timestamp
         let blurCon = lhs.blurred == rhs.blurred
+        let likesCon = lhs.likes == rhs.likes
 
 
-        return nameCon && descriptionCon && productIDCon && priceCon && picIDCon && timeCon && blurCon
+        return nameCon && descriptionCon && productIDCon && priceCon && picIDCon && timeCon && blurCon && likesCon
         
     }
     
@@ -58,9 +59,11 @@ class Product: Codable, Equatable{
     var name: String? = nil
     var templateColor: String!
     var likes = Int()
+    var liked: Bool!
+    var designImage: Data!
 
     
-    init(uid: String, picID: String?, description: String?, fullName: String?, username: String?, productID: String, userImageID: String?, timestamp: Date!, index: Int!, timestampDiff: String!, fromCache: Bool, blurred: Bool!, price: Double?, name: String?, templateColor: String!, likes: Int!) {
+    init(uid: String, picID: String?, description: String?, fullName: String?, username: String?, productID: String, userImageID: String?, timestamp: Date!, index: Int!, timestampDiff: String!, fromCache: Bool, blurred: Bool!, price: Double?, name: String?, templateColor: String!, likes: Int!, liked: Bool!, designImage: Data!) {
         
         self.uid = uid
         self.picID = picID
@@ -78,10 +81,12 @@ class Product: Codable, Equatable{
         self.name = name
         self.templateColor = templateColor
         self.likes = likes
+        self.liked = liked
+        self.designImage = designImage
     }
     
     convenience init() {
-        self.init(uid: "", picID: nil, description: nil, fullName: nil, username: "", productID: "", userImageID: nil, timestamp: nil,  index: nil, timestampDiff: nil, fromCache: false, blurred: false, price: nil, name: nil, templateColor: nil, likes: 0)
+        self.init(uid: "", picID: nil, description: nil, fullName: nil, username: "", productID: "", userImageID: nil, timestamp: nil,  index: nil, timestampDiff: nil, fromCache: false, blurred: false, price: nil, name: nil, templateColor: nil, likes: 0, liked: false, designImage: nil)
     }
     
 }
@@ -412,7 +417,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
     }
     
     override func didReceiveMemoryWarning() {
-        
+        likeQueue.removeAll()
         DispatchQueue.global(qos: .background).sync {
             cache.clearMemory()
         }
@@ -430,19 +435,12 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                 sender.animateRefresh()
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                if !self.myFollowing.isEmpty{
-                    self.downloadProducts(){
-                        self.isLoading = false
-                        sender.endRefreshing()
-                    }
-                }
-                else{
+                self.downloadProducts(){
                     self.isLoading = false
                     sender.endRefreshing()
+                    self.loadedProducts.saveAllObjects(type: "FeedProducts")
                 }
             }
-        }
-        else{
         }
     }
     
@@ -457,6 +455,10 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
             else{
                 for i in 0..<(self?.loadedProducts.count ?? 0){
                     self?.loadedProducts[i].fromCache = false
+                    if self?.loadedProducts[i].uid == userInfo.uid{
+                        continue
+                    }
+                    self?.loadedProducts[i].userImageID = nil
                 }
                 self?.tableView.reloadData()
             }
@@ -478,7 +480,6 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
     
     
     
-    var myFollowing = userInfo.userFollowing ?? []
 
  
     
@@ -523,18 +524,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         //UserDefaults.standard.set("tl1oOs1NXdeHsium7ZygweBc7YO2", forKey: "UID") //Arvin
         //UserDefaults.standard.set("te7lsnwiPUMyj85O4Q5Tkvuu3VH3", forKey: "UID") //Dad
         
-        if userInfo.uid == "vK39Da3RIGVGsgBgpdkj0CWdtdW2"{
-            myFollowing.append("tl1oOs1NXdeHsium7ZygweBc7YO2") //Arta
-            myFollowing.append("te7lsnwiPUMyj85O4Q5Tkvuu3VH3")
-        }
-        else if userInfo.uid == "tl1oOs1NXdeHsium7ZygweBc7YO2"{ //Arvin
-            myFollowing.append("vK39Da3RIGVGsgBgpdkj0CWdtdW2")
-            myFollowing.append("te7lsnwiPUMyj85O4Q5Tkvuu3VH3")
-        }
-        else if userInfo.uid == "te7lsnwiPUMyj85O4Q5Tkvuu3VH3"{ //Dad
-            myFollowing.append("vK39Da3RIGVGsgBgpdkj0CWdtdW2")
-            myFollowing.append("tl1oOs1NXdeHsium7ZygweBc7YO2")
-        }
+        
         
         
         
@@ -571,8 +561,6 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                 }
             }
         }
-        
-        // Do any additional setup after loading the view.
     }
     
     override func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
@@ -606,13 +594,20 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
     func getProducts(fromInterval: Date?, completed: @escaping (Bool?, [DocumentSnapshot]?) -> ()){
         
     
+        guard var followArray = userInfo.userFollowing else{
+            return
+        }
         //REMOVE LATER
+        if !followArray.contains(userInfo.uid){
+            followArray.append(userInfo.uid)
+        }
+        followArray.append(userInfo.uid)
         query = nil
         if fromInterval == nil{
-            query = Firestore.firestore().collectionGroup("Products").whereField("UID", in: myFollowing).whereField("Timestamp", isLessThanOrEqualTo: Date()).limit(to: 8).order(by: "Timestamp", descending: true)
+            query = Firestore.firestore().collectionGroup("Products").whereField("UID", in: followArray).whereField("Timestamp", isLessThanOrEqualTo: Date()).limit(to: 8).order(by: "Timestamp", descending: true)
         }
         if let last = fromInterval{
-            query = Firestore.firestore().collectionGroup("Products").whereField("UID", in: myFollowing).whereField("Timestamp", isLessThan: last).limit(to: 8).order(by: "Timestamp", descending: true)
+            query = Firestore.firestore().collectionGroup("Products").whereField("UID", in: followArray).whereField("Timestamp", isLessThan: last).limit(to: 8).order(by: "Timestamp", descending: true)
         }
         
         
@@ -651,7 +646,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
 
                                 guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                                 
-                                localLoaded.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes))
+                                localLoaded.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked?.contains(snap.documentID), designImage: nil))
 
                                 if localLoaded.count == snaps.count{
                                     let isSame = localLoaded == self?.loadedProducts
@@ -694,8 +689,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
 
                 guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                 
-                loadedProducts.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes))
-                
+                loadedProducts.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked?.contains(snap.documentID), designImage: nil))
                 
                 tableView.performBatchUpdates({
                     self.tableView.insertRows(at: [IndexPath(row: self.loadedProducts.count - 1, section: 0)], with: .none)
@@ -735,13 +729,30 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
     }
     
     override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(true)
         
+        for (index, like) in likeQueue.enumerated(){
+            print(like)
+            if let product = loadedProducts.first(where: {$0.productID == like.key}){
+                if product.liked == !like.value{
+                    product.liked = like.value
+                    likeQueue.removeValue(forKey: product.productID)
+                }
+            }
+            if index == likeQueue.count - 1{
+                self.loadedProducts.saveAllObjects(type: "FeedProducts")
+                self.tableView.performBatchUpdates({
+                    self.tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
+                }, completion: nil)
+            }
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(true)
         selectedUser = nil
 
+        
         if let indexPath = FeedVC.searchTable.indexPathForSelectedRow{
             FeedVC.searchTable.deselectRow(at: indexPath, animated: true)
         }
@@ -753,13 +764,31 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                 FeedVC.searchTable.reloadData()
             }
         }
+        for post in loadedProducts.filter({$0.uid == userInfo.uid && $0.userImageID != userInfo.dpID}){
+            
+            if let index = loadedProducts.firstIndex(where: {$0.productID == post.productID}){
+                loadedProducts[index].userImageID = userInfo.dpID
+                tableView.performBatchUpdates({
+                    tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
+                }, completion: nil)
+            }
+        }
     }
    
+    
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         if tableView == self.tableView{
-            productToOpen = loadedProducts[indexPath.row]
-            performSegue(withIdentifier: "ToProduct", sender: nil)
+            let product = loadedProducts[indexPath.row]
+            guard let cell = tableView.cellForRow(at: indexPath) as? ProductCell else{return}
+            guard let imageData = product.designImage ?? cell.productPicture.makeSnapshot(clear: false, subviewsToIgnore: [])?.pngData() else{
+                return
+            }
+            DispatchQueue.main.async {
+                product.designImage = imageData
+                self.productToOpen = product
+                self.performSegue(withIdentifier: "toFull", sender: nil)
+            }
         }
         else if tableView == FeedVC.searchTable{
             selectedUser = loadedUsers[indexPath.row]
@@ -777,8 +806,8 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
-        if segue.destination as? UINavigationController != nil{
-
+        if let fullVC = segue.destination as? FullProductVC{
+            fullVC.fullProduct = productToOpen
         }
         else if let friend = segue.destination as? FriendVC{
             friend.friendInfo = selectedUser!
@@ -813,6 +842,7 @@ extension UIViewController{
 
         let uid = UserDefaults.standard.string(forKey: "UID")!
         userInfo.uid = uid
+        print(uid)
 
         let username = UserDefaults.standard.string(forKey: "USERNAME") ?? "null"
         userInfo.username = username
@@ -832,6 +862,9 @@ extension UIViewController{
         }
         if let userLiked = UserDefaults.standard.stringArray(forKey: "LikedPosts"){
             userInfo.userLiked = userLiked
+        }
+        if let userFollowing = UserDefaults.standard.stringArray(forKey: "FOLLOWING"){
+            userInfo.userFollowing = userFollowing
         }
     }
 }

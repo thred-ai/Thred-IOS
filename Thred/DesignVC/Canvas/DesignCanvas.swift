@@ -8,6 +8,7 @@
 
 import Foundation
 import UIKit
+import Photos
 
 
 extension DesignViewController{
@@ -70,6 +71,7 @@ extension DesignViewController{
         }
     }
     
+    
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
         return true
     }
@@ -87,7 +89,7 @@ extension DesignViewController{
         viewCenteredX = false
         viewCenteredY = false
         if canvas.subviews.contains(where: {$0.isKind(of: UIImageView.self) || ($0.isKind(of: UITextView.self))}) || drawCanvas.lines.contains(where: {$0.brush.blendMode != .clear}){
-            canvasDisplayView.image = canvas.makeSnapshot(clear: true)
+            canvasDisplayView.image = canvas.makeSnapshot(clear: true, subviewsToIgnore: [])
             nextBtn.isEnabled = true
         }
         if !cameraRollCollectionView.isHidden{
@@ -226,6 +228,18 @@ extension DesignViewController{
         }
     }
     
+    @objc func saveToCameraRoll(_ sender: UIButton){
+        guard let image = displayView.makeSnapshot(clear: false, subviewsToIgnore: [zoomBtn, saveBtn]) else{return}
+        image.saveToPhotos { (success) in
+            if success {
+                // image saved to photos
+            }
+            else {
+                // image not saved
+            }
+        }
+    }
+    
     @objc func handleObjectPinch(_ sender: UIPinchGestureRecognizer){
         switch sender.state {
         case .began, .changed:
@@ -314,5 +328,33 @@ extension UIView{
             return true
         }
         return false
+    }
+}
+
+extension UIImage {
+
+    func saveToPhotos(completion: @escaping (_ success:Bool) -> ()) {
+        if let pngData = self.pngData() {
+            PHPhotoLibrary.shared().performChanges({ () -> Void in
+                let creationRequest = PHAssetCreationRequest.forAsset()
+                let options = PHAssetResourceCreationOptions()
+                creationRequest.addResource(with: PHAssetResourceType.photo, data: pngData, options: options)
+            }, completionHandler: { (success, error) -> Void in
+                if success == false {
+                    if let errorString = error?.localizedDescription  {
+                        print("Photo could not be saved: \(errorString))")
+                    }
+                    completion(false)
+                }
+                else {
+                    print("Photo saved!")
+                    completion(true)
+                }
+            })
+        }
+        else {
+            completion(false)
+        }
+
     }
 }

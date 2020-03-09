@@ -17,6 +17,8 @@ class ExploreProductCell: UICollectionViewCell {
         super.awakeFromNib()
         self.setUpCircularProgress()
         // Initialization code
+        
+        
     }
 
     func setUpCircularProgress(){

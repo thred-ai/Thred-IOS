@@ -267,13 +267,13 @@ class CameraView: UIView, AVCapturePhotoCaptureDelegate{
     }
     
     @objc func rotateCamera(_ sender: Any){
-           do {
-               try rotateCameraViews()
-           }
-           catch {
-               print(error)
-           }
-       }
+        do {
+            try rotateCameraViews()
+        }
+        catch {
+            print(error)
+        }
+    }
        
        @objc func saveToCameraRoll(_ sender: UIButton){
            guard let image = displayImage.image else{return}
