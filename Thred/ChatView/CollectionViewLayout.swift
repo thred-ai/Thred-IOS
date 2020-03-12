@@ -1,9 +1,9 @@
 //
 //  CollectionViewLayout.swift
-//  Pictomap
+//  Thred
 //
-//  Created by Artak on 2018-11-10.
-//  Copyright © 2018 artacorp. All rights reserved.
+//  Created by Arta Kouroshnia on 2019-11-10.
+//  Copyright © 2019 Thred Apps Inc. All rights reserved.
 //
 
 import UIKit

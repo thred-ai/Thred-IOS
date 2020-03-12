@@ -25,7 +25,12 @@ var canvasInfo = CanvasInfo()
 
 class carouselCollectionViewCell: UICollectionViewCell {
     
-    @IBOutlet weak var backgroundImageView: UIImageView!
+    lazy var backgroundImageView: UIImageView! = {
+        let iv = UIImageView(frame: frame)
+        iv.translatesAutoresizingMaskIntoConstraints = false
+        iv.contentMode = .scaleAspectFit
+        return iv
+    }()
     
     lazy var canvasDisplayView: UIImageView = {
         let view = UIImageView(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
@@ -52,28 +57,35 @@ class carouselCollectionViewCell: UICollectionViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
+        
+    }
+    
+    override init(frame: CGRect){
+        super.init(frame: frame)
         setup()
     }
     
-    
-    override func prepareForReuse() {
-        
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
-    
+
     private func setup() {
         backgroundColor = .clear
-        clipsToBounds = true
         
-        NSLayoutConstraint(item: backgroundImageView!, attribute: .top, relatedBy: .equal, toItem: contentView, attribute: .top, multiplier: 1.0, constant: 0).isActive = true
-        NSLayoutConstraint(item: backgroundImageView!, attribute: .bottom, relatedBy: .equal, toItem: contentView, attribute: .bottom, multiplier: 1.0, constant: 0).isActive = true
-        NSLayoutConstraint(item: backgroundImageView!, attribute: .left, relatedBy: .equal, toItem: contentView, attribute: .left, multiplier: 1.0, constant: 0).isActive = true
-        NSLayoutConstraint(item: backgroundImageView!, attribute: .right, relatedBy: .equal, toItem: contentView, attribute: .right, multiplier: 1.0, constant: 0).isActive = true
+        addSubview(backgroundImageView)
+        
+        NSLayoutConstraint(item: backgroundImageView!, attribute: .top, relatedBy: .equal, toItem: self, attribute: .top, multiplier: 1.0, constant: 0).isActive = true
+        NSLayoutConstraint(item: backgroundImageView!, attribute: .bottom, relatedBy: .equal, toItem: self, attribute: .bottom, multiplier: 1.0, constant: 0).isActive = true
+        NSLayoutConstraint(item: backgroundImageView!, attribute: .left, relatedBy: .equal, toItem: self, attribute: .left, multiplier: 1.0, constant: 0).isActive = true
+        NSLayoutConstraint(item: backgroundImageView!, attribute: .right, relatedBy: .equal, toItem: self, attribute: .right, multiplier: 1.0, constant: 0).isActive = true
+        NSLayoutConstraint(item: backgroundImageView!, attribute: .width, relatedBy: .equal, toItem: self, attribute: .width, multiplier: 1.0, constant: 0).isActive = true
+        NSLayoutConstraint(item: backgroundImageView!, attribute: .height, relatedBy: .equal, toItem: backgroundImageView!, attribute: .height, multiplier: 1, constant: 0).isActive = true
         
         addSubview(canvasDisplayView)
         
-        NSLayoutConstraint(item: canvasDisplayView, attribute: .centerX, relatedBy: .equal, toItem: contentView, attribute: .centerX, multiplier: 1.0, constant: 0).isActive = true
+        NSLayoutConstraint(item: canvasDisplayView, attribute: .centerX, relatedBy: .equal, toItem: backgroundImageView.superview, attribute: .centerX, multiplier: 1.0, constant: 0).isActive = true
         NSLayoutConstraint(item: canvasDisplayView, attribute: .centerY, relatedBy: .equal, toItem: contentView, attribute: .centerY, multiplier: 1.0, constant: -20).isActive = true
-        NSLayoutConstraint(item: canvasDisplayView, attribute: .width, relatedBy: .equal, toItem: contentView, attribute: .width, multiplier: 0.25, constant: 0).isActive = true
+        NSLayoutConstraint(item: canvasDisplayView, attribute: .width, relatedBy: .equal, toItem: backgroundImageView.superview, attribute: .width, multiplier: 0.25, constant: 0).isActive = true
         NSLayoutConstraint(item: canvasDisplayView, attribute: .height, relatedBy: .equal, toItem: canvasDisplayView, attribute: .width, multiplier: canvasInfo.aspectRatio, constant: 0).isActive = true
         let tap = UITapGestureRecognizer(target: self, action: #selector(maximiseDrawingArea(_:)))
         canvasDisplayView.addGestureRecognizer(tap)
@@ -84,6 +96,7 @@ class carouselCollectionViewCell: UICollectionViewCell {
         NSLayoutConstraint(item: touchHereLabel, attribute: .centerY, relatedBy: .equal, toItem: canvasDisplayView, attribute: .centerY, multiplier: 1.0, constant: 0).isActive = true
         NSLayoutConstraint(item: touchHereLabel, attribute: .width, relatedBy: .equal, toItem: canvasDisplayView, attribute: .width, multiplier: 1.0, constant: -20).isActive = true
         touchHereLabel.heightAnchor.constraint(equalToConstant: 20).isActive = true
+
     }
     
     
@@ -97,18 +110,22 @@ class carouselCollectionViewCell: UICollectionViewCell {
     }
     
     func parseData(forSlide slide: TemplateCarouselSlide) {
-        if let image = slide.slideImage {
-            self.backgroundImageView.image = image
+        let bundlePath = Bundle.main.path(forResource: slide.canvasColorName, ofType: "png")
+        let image = UIImage(contentsOfFile: bundlePath!)
+        if let image = image {
+            backgroundImageView.image = image
         }
         if let color = slide.canvasBackColor {
-            self.canvasDisplayView.backgroundColor = color
+            canvasDisplayView.backgroundColor = color
         }
+        backgroundImageView.removeShadow()
+        backgroundImageView.addShadowToImageNotLayer()
         
         return
     }
     
     override func layoutSubviews() {
-        
+
     }
     
 
@@ -116,13 +133,10 @@ class carouselCollectionViewCell: UICollectionViewCell {
 
 final public class TemplateCarouselSlide : NSObject {
     
-    public var slideImage : UIImage?
     public var canvasBackColor: UIColor?
     public var canvasColorName: String?
     
-    public init(image: UIImage?, canvasColor: UIColor?, canvasName: String?) {
-        slideImage = image
-        
+    public init(canvasColor: UIColor?, canvasName: String?) {
         canvasBackColor = canvasColor
         canvasColorName = canvasName
     }

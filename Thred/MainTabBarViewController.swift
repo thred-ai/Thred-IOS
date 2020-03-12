@@ -22,15 +22,23 @@ class MainTabBarViewController: UITabBarController {
 
         tabBar.isTranslucent = false
         templates.checkAndLoadTemplates(type: "TeeTemplates"){}
+        
+       // if let userVC = viewControllers?.last as? UserVC{
+            //userVC.setPageInfo()
+       // }
+        
         // Do any additional setup after loading the view.
     }
+    
+    
+    
     
     @IBAction func unwindToTabBar(segue:  UIStoryboardSegue) {
         
         if posted ?? false{
             selectedIndex = 4
             if let profileVC = (viewControllers?[selectedIndex] as? UINavigationController)?.viewControllers.first as? UserVC{
-                profileVC.uploadPost(post: product)
+                profileVC.uploadPost(post: product, isRetryingWithID: nil)
             }
         }
     }

@@ -2,16 +2,16 @@
 //  SearchTableCellTableViewCell.swift
 //  Thred
 //
-//  Created by Artak on 2019-11-03.
-//  Copyright © 2019 ArtaCorp. All rights reserved.
+//  Created by Arta Kouroshnia on 2019-11-03.
+//  Copyright © 2019 Thred Apps Inc. All rights reserved.
 //
 
 //
 //  SearchUsersTableViewCell.swift
-//  Pictomap
+//  Thred
 //
-//  Created by Artak on 2019-07-23.
-//  Copyright © 2019 artacorp. All rights reserved.
+//  Created by Arta Kouroshnia on 2019-07-23.
+//  Copyright © 2019 Thred Apps Inc. All rights reserved.
 //
 
 import UIKit

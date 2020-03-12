@@ -13,7 +13,7 @@ class TemplateCarousel: UIView, UICollectionViewDelegateFlowLayout, UICollection
     
     public var displayImage: UIImage?
     
-    var slides = [TemplateCarouselSlide]()
+    var slides: [TemplateCarouselSlide]! = [TemplateCarouselSlide]()
      
     deinit {
         print("")
@@ -22,10 +22,7 @@ class TemplateCarousel: UIView, UICollectionViewDelegateFlowLayout, UICollection
     
     func setCarouselTemplates(templates: [Template]){
         for (index, template) in templates.enumerated(){
-            guard let templateImage = UIImage(named: template.templateID) else{
-                
-                continue}
-            let slide = TemplateCarouselSlide(image: templateImage, canvasColor: UIColor(named: templates[index].templateID)?.withAlphaComponent(0.25), canvasName: template.templateID)
+            let slide = TemplateCarouselSlide(canvasColor: UIColor(named: templates[index].templateID)?.withAlphaComponent(0.25), canvasName: template.templateID)
             slides.append(slide)
             self.collectionView.performBatchUpdates({
                 self.collectionView.insertItems(at: [IndexPath(item: index, section: 0)])
@@ -42,7 +39,7 @@ class TemplateCarousel: UIView, UICollectionViewDelegateFlowLayout, UICollection
         cv.dataSource = self
         cv.isPagingEnabled = true
         cv.isPrefetchingEnabled = false
-        cv.register(UINib(nibName: "carouselCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: "slideCell")
+        cv.register(carouselCollectionViewCell.self, forCellWithReuseIdentifier: "slideCell")
         cv.clipsToBounds = true
         cv.backgroundColor = .clear
         cv.showsHorizontalScrollIndicator = false
@@ -71,11 +68,18 @@ class TemplateCarousel: UIView, UICollectionViewDelegateFlowLayout, UICollection
 
     }
     
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+
+    }
+    
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "slideCell", for: indexPath) as? carouselCollectionViewCell
         
         cell?.canvasDisplayView.image = nil
         cell?.backgroundImageView.image = nil
+        
+        
+        
         let slide = slides[indexPath.item]
 
         
@@ -99,7 +103,39 @@ class TemplateCarousel: UIView, UICollectionViewDelegateFlowLayout, UICollection
             
         }
         cell?.parseData(forSlide: slide)
+        
         return cell!
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didEndDisplaying cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        
+        
+        
+
+    }
+    
+    func scrollViewWillBeginDecelerating(_ scrollView: UIScrollView) {
+        
+    }
+    
+    func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
+        
+    }
+    
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+            let x = scrollView.contentOffset.x
+            let w = scrollView.bounds.size.width
+            let currentPage = Int(ceil(x/w))
+            guard let colorCollectionView = (getViewController() as? DesignViewController)?.colorCollectionView else{return}
+            colorCollectionView.selectItem(at: IndexPath(item: currentPage, section: 0), animated: true, scrollPosition: .centeredHorizontally)
+    }
+    
+    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        let x = scrollView.contentOffset.x
+        let w = scrollView.bounds.size.width
+        let currentPage = Int(ceil(x/w))
+        guard let colorCollectionView = (getViewController() as? DesignViewController)?.colorCollectionView else{return}
+        colorCollectionView.selectItem(at: IndexPath(item: currentPage, section: 0), animated: true, scrollPosition: .centeredHorizontally)
     }
     
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -112,13 +148,9 @@ class TemplateCarousel: UIView, UICollectionViewDelegateFlowLayout, UICollection
     
     public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let size = CGSize(width: collectionView.frame.width, height: collectionView.frame.height)
-        
         return size
     }
     
-    public func collectionView(_ collectionView: UICollectionView, didEndDisplaying cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-        
-    }
     
     public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
         return 0

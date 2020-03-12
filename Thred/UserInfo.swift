@@ -2,8 +2,8 @@
 //  userInfo.swift
 //  Thred
 //
-//  Created by Artak on 2019-10-23.
-//  Copyright © 2019 ArtaCorp. All rights reserved.
+//  Created by Arta Kouroshnia on 2019-10-23.
+//  Copyright © 2019 Thred Apps Inc. All rights reserved.
 //
 
 import Foundation
@@ -22,6 +22,7 @@ class UserInfo{
     var notifID: String = String()
     var userFollowing: [String]? = [String]()
     var userLiked: [String]? = [String]()
+    var pendingLiked: [String : Bool]? = [String : Bool]()
     
     init(uid: String, dp: UIImage?, dpID: String, username: String, fullName: String, bio: String, notifID: String, userFollowing: [String]?, userLiked: [String]?) {
         

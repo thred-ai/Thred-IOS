@@ -8,7 +8,7 @@
 
 import UIKit
 import SDWebImage
-
+import FirebaseFirestore
 
 
 class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableViewDelegate, UITableViewDataSource {
@@ -23,8 +23,8 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
     var fullProduct = Product()
     var downloader: SDWebImageDownloader? = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
     
-    var friendInfo = UserInfo()
-    
+    var friendInfo: UserInfo! = UserInfo()
+
     @IBOutlet weak var tableView: UITableView!
 
     override func viewDidDisappear(_ animated: Bool) {
@@ -35,7 +35,6 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        navigationController?.delegate = self
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
@@ -45,68 +44,116 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
         
         tableView.register(UINib(nibName: "ProductCell", bundle: nil), forCellReuseIdentifier: "PictureProduct")
         cache.removeImageFromMemory(forKey: fullProduct.picID)
-        DispatchQueue.main.async {
-            self.tableView.reloadData()
-        }
     }
+    
+
     
     override func viewDidLayoutSubviews() {
         addToCartBtn.layer.cornerRadius = addToCartBtn.frame.height / 8
         addToCartBtn.clipsToBounds = true
     }
     
+    func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 1000
+    }
+    
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(true)
+        
+        if downloader == nil{
+            downloader = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
+        }
+        getProduct {
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
+        }
+        if self.navigationController != nil{
+           self.navigationController?.delegate = self // Update assignment here
+        }
+        else {
+            print("navigation controller does not exist")
+        }
         hideCenterBtn()
     }
     
-    func hideCenterBtn(){
-        if let button = (self.tabBarController as? MainTabBarViewController)?.button{
-            UIView.animate(withDuration: 0.2, animations: {
-                button.alpha = 0.0
-            }, completion: { finished in
-                if finished{
-                    button.isHidden = true
-                }
-            })
-        }
+    
+    func getProduct(completed: @escaping () -> ()){
+        Firestore.firestore().collection("Users").document(fullProduct.uid).collection("Products").document(fullProduct.productID).getDocument(completion: { doc, error in
+            if error != nil{
+                print(error?.localizedDescription ?? "")
+                completed()
+            }
+            else{
+                
+                guard let snap = doc else{return}
+                let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
+                let uid = snap["UID"] as! String
+                let description = snap["Description"] as? String
+                let name = snap["Name"] as? String
+                let blurred = snap["Blurred"] as? Bool
+                let templateColor = snap["Template_Color"] as? String
+                let likes = snap["Likes"] as? Int
+                guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
+                
+                Firestore.firestore().collection("Users").document(self.fullProduct.uid).collection("Products").document(self.fullProduct.productID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userInfo.uid).getDocuments(completion: { snaps, error in
+                    
+                    var liked: Bool!
+                    
+                    EmptyDocuments:
+                    if error != nil{
+                        print(error?.localizedDescription ?? "")
+                    }
+                    else{
+                        guard let docs = snaps?.documents, !docs.isEmpty else{
+                            liked = false
+                            userInfo.userLiked?.removeAll(where: {$0 == snap.documentID})
+                            break EmptyDocuments
+                        }
+                        
+                        liked = true
+                        if (userInfo.userLiked?.contains(snap.documentID) ?? true){
+                            userInfo.userLiked?.append(snap.documentID)
+                        }
+                    }
+                    let product = Product(uid: uid, picID: snap.documentID, description: description, fullName: self.fullProduct.fullName, username: self.fullProduct.username, productID: snap.documentID, userImageID: self.fullProduct.userImageID, timestamp: timestamp, index: nil, timestampDiff: self.fullProduct.timestampDiff, fromCache: false, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: self.fullProduct.designImage)
+                    self.fullProduct = product
+                    completed()
+                })
+            }
+        })
     }
     
-    func showCenterBtn(){
-        if let button = (self.tabBarController as? MainTabBarViewController)?.button{
-            button.isHidden = false
-            UIView.animate(withDuration: 0.2, animations: {
-                button.alpha = 1.0
-            }, completion: { finished in
-                if finished{
-                }
-            })
+    
+    
+    
+    func navigationController(_ navigationController: UINavigationController, didShow viewController: UIViewController, animated: Bool) {
+        if !(viewController.hidesBottomBarWhenPushed){
+        }
+        else{
         }
     }
-    
-    
 
     
     func navigationController(_ navigationController: UINavigationController, willShow viewController: UIViewController, animated: Bool) {
         
-        if viewController != self{
-            showCenterBtn()
-        }
     }
     
     func rasterizeProductCellDisplay(cell: ProductCell?, image: UIImage?, product: Product?){
         cell?.canvasDisplayView.isHidden = false
         cell?.canvasDisplayView.image = image
-        cell?.productPicture.image = UIImage(named: product?.templateColor ?? "nil")
+        let bundlePath = Bundle.main.path(forResource: product?.templateColor, ofType: "png")
+        let img = UIImage(contentsOfFile: bundlePath!)
+        cell?.productPicture.image = img
+        cell?.productPicture.addShadowToImageNotLayer()
         cell?.circularProgress.removeFromSuperview()
-        cell?.productPicture.superview?.backgroundColor = cell?.productPicture.backgroundColor
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             let fullData = cell?.productPicture.makeSnapshot(clear: true, subviewsToIgnore: [])?.pngData()
             cell?.canvasDisplayView.isHidden = true
             self.fullProduct.designImage = fullData
             guard let fullImgData = fullData else{return}
             cell?.productPicture.image = UIImage(data: fullImgData)
-            cell?.productPicture.superview?.backgroundColor = .clear
         }
     }
 
@@ -128,7 +175,7 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
 
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        return tableView.setPictureCell(indexPath: indexPath, user: fullProduct, productLocation: self)
+        return tableView.setPictureCell(indexPath: indexPath, product: fullProduct, productLocation: self)
     }
     
 
@@ -180,4 +227,34 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
     }
     
 
+}
+
+extension UIViewController{
+    func showCenterBtn(){
+        if let button = (self.tabBarController as? MainTabBarViewController)?.button{
+            if button.isHidden{
+                button.isHidden = false
+                UIView.animate(withDuration: 0.2, animations: {
+                    button.alpha = 1.0
+                }, completion: { finished in
+                    if finished{
+                    }
+                })
+            }
+        }
+    }
+    
+    func hideCenterBtn(){
+        if let button = (self.tabBarController as? MainTabBarViewController)?.button{
+            if !button.isHidden{
+                UIView.animate(withDuration: 0.2, animations: {
+                    button.alpha = 0.0
+                }, completion: { finished in
+                    if finished{
+                        button.isHidden = true
+                    }
+                })
+            }
+        }
+    }
 }

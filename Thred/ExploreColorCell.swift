@@ -93,27 +93,26 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ExploreProductCell", for: indexPath) as? ExploreProductCell
         
-        guard let posts = self.postArray else{return UICollectionViewCell()}
+        
         cell?.imageView.image = nil
         cell?.circularProgress.isHidden = false
-        cell?.contentView.backgroundColor = UIColor(named: posts[indexPath.item].templateColor)
+        cell?.contentView.backgroundColor = UIColor(named: self.postArray[indexPath.item].templateColor)
 
-        if let image = cache.imageFromCache(forKey: posts[indexPath.item].picID){
+        if let image = cache.imageFromCache(forKey: self.postArray[indexPath.item].picID){
             cell?.imageView.image = image
             cell?.circularProgress.isHidden = true
             print(image.size.height / image.size.width)
         }
         else{
-            cell?.circularProgress.isHidden = false
             
             if let colorIndex = self.exploreVC?.colorSections.firstIndex(where: {$0["ID"] as? String == self.templateColor}){
                 
                 var downloading = self.exploreVC?.colorSections[colorIndex]["Downloading"] as? [String]
-                if !(downloading?.contains(posts[indexPath.item].picID ?? "null") ?? true){
-                    downloading?.append(posts[indexPath.item].picID ?? "null")
-                    self.exploreVC?.colorSections[colorIndex]["Downloading"] = downloading
-                    self.downloadExploreProductImage(pictureProduct: cell, followingUID: posts[indexPath.item].uid, picID: posts[indexPath.item].picID ?? "", index: indexPath.item, exploreVC: exploreVC, product: posts[indexPath.item]){
-                        if posts.indices.contains(indexPath.item){
+                if !(downloading?.contains(self.postArray[indexPath.item].picID ?? "null") ?? true){
+                    cell?.circularProgress.isHidden = false
+                    downloading?.append(self.postArray[indexPath.item].picID ?? "null")
+                    self.downloadExploreProductImage(pictureProduct: cell, followingUID: self.postArray[indexPath.item].uid, picID: self.postArray[indexPath.item].picID ?? "", index: indexPath.item, exploreVC: exploreVC, product: self.postArray[indexPath.item]){
+                        if self.postArray.indices.contains(indexPath.item){
                             if cell != nil{
                                 if collectionView.numberOfItems(inSection: 0) > 0{
                                     collectionView.performBatchUpdates({
@@ -131,9 +130,10 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
     
     override func prepareForReuse() {
         super.prepareForReuse()
-        postArray.removeAll()
-          collectionView.reloadData()
-
+        self.postArray.removeAll()
+        DispatchQueue.main.async {
+            self.collectionView.reloadData()
+        }
     }
     
     
@@ -174,9 +174,20 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
                         }
                         else{
                             cache.storeImage(toMemory: image, forKey: picID)
-                            guard let products = exploreVC?.colorSections else{return}
+
+                            guard let products = exploreVC?.colorSections else{
+                                return}
                             if let index = products.firstIndex(where: {$0["ID"] as? String == product?.templateColor}){
                                 if products.indices.contains(index){
+                                    
+                                    if var downloading = self.exploreVC?.colorSections[index]["Downloading"] as? [String]{
+                                        if let postIndex = downloading.firstIndex(of: product?.productID ?? "null"){
+                                            
+                                            downloading.remove(at: postIndex)
+                                        }
+                                    }
+
+                                    
                                     if let array = products[index]["Array"] as? [Product]{
                                         if let arrayIndex = array.firstIndex(where: {$0.picID == product?.picID}){
                                             if array.indices.contains(arrayIndex){

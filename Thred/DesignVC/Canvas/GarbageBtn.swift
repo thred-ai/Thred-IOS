@@ -97,6 +97,33 @@ extension DesignViewController{
         }
     }
     
+    func maximiseGarbage(view: UIView, completed: @escaping () -> ()){
+        if self.garbageBtn.transform != CGAffineTransform(scaleX: 1.2, y: 1.2){
+            var scale: CGFloat!
+            if view.frame.width > view.frame.height{
+                scale = garbageBtn.frame.width / view.frame.width
+            }
+            else{
+                scale = garbageBtn.frame.height / view.frame.height
+            }
+            prevTransform = view.transform
+            UIView.animate(withDuration: 0.2, animations: {
+                view.transform = view.transform.scaledBy(x: scale, y: scale)
+                view.center = self.garbageBtn.center
+                view.alpha = 0.8
+                self.canvas.bringSubviewToFront(view)
+                self.garbageBtn.transform = CGAffineTransform(scaleX: 1.2, y: 1.2)
+            }, completion: { finished in
+                if finished{
+                    completed()
+                }
+            })
+        }
+        else{
+            completed()
+        }
+    }
+    
     func minimizeGarbage(view: UIView, completed: @escaping () ->()){
         UIView.animate(withDuration: 0.2, animations: {
             if self.garbageBtn.transform == CGAffineTransform(scaleX: 1.2, y: 1.2){

@@ -1,9 +1,9 @@
 //
 //  ProductCell.swift
-//  Pictomap
+//  Thred
 //
-//  Created by Artak on 2018-12-17.
-//  Copyright © 2018 artacorp. All rights reserved.
+//  Created by Arta Kouroshnia on 2019-12-17.
+//  Copyright © 2019 Thred Apps Inc. All rights reserved.
 //
 
 import UIKit
@@ -52,6 +52,23 @@ class ProductCell: UITableViewCell {
     
     var product: Product!
     
+     var isLiked: Bool = false {
+        didSet {
+            if isLiked {
+                likeBtn.setImage(likedImage?
+                    .imageWithColor(selectedColor), for: .normal)
+                product.liked = true
+            } else {
+                likeBtn.setImage(unlikedImage, for: .normal)
+                if product.likes == 0{
+                    likesLbl.text = "\(0)"
+                    product.likes = 0
+                }
+                product.liked = false
+            }
+        }
+    }
+    
     let circularProgress = CircularProgress(frame: CGRect(x: 0, y: 0, width: 80, height: 80))
 
     var imageCenter: CGPoint!
@@ -82,39 +99,25 @@ class ProductCell: UITableViewCell {
     
     let likedImage = UIImage(named: "liked")
     let unlikedImage = UIImage(named: "like")
-
+    
     @IBAction func likeDesign(_ sender: UIButton) {
         
         sender.isEnabled = false
         isUserInteractionEnabled = false
         likeQueue.removeValue(forKey: product.productID)
         
-        if likeBtn.currentImage == unlikedImage{
+        if !(userInfo.userLiked?.contains(product.productID) ?? true){
+            isLiked = true
             likeQueue.updateValue(true, forKey: product.productID)
-            likeBtn.setImage(likedImage?.imageWithColor(selectedColor), for: .normal)
             likesLbl.text = "\((product.likes) + 1)"
-            updateProductLiking(isLiking: true)
-            likeBtn.alpha = 0.0
-            likeBtn.transform = CGAffineTransform(rotationAngle: CGFloat.pi)
-            UIView.animate(withDuration: 0.2, animations: {
-                self.likeBtn.transform = CGAffineTransform.identity
-                self.likeBtn.alpha = 1.0
-            }, completion: { finished in
-                if finished{
-                    sender.isEnabled = true
-                    self.isUserInteractionEnabled = true
-                    self.likeBtn.imageView?.startAnimating()
-                }
-            })
+            product.likes += 1
+            animateLike()
         }
         else{
-            likeBtn.setImage(unlikedImage, for: .normal)
+            isLiked = false
             likeQueue.updateValue(false, forKey: product.productID)
             if product.likes == 0{
                 let products = (vc as? FeedVC)?.loadedProducts ?? (vc as? UserVC)?.loadedProducts ?? (vc as? FriendVC)?.loadedProducts
-                if let product = products?.first(where: {$0.productID == product.productID}) ?? (vc as? FullProductVC)?.fullProduct{
-                    product.liked = false
-                    product.likes = 0
                     userInfo.userLiked?.removeAll(where: {$0 == self.product.productID})
                     UserDefaults.standard.set(userInfo.userLiked, forKey: "LikedPosts")
                     if vc is FeedVC{
@@ -125,36 +128,91 @@ class ProductCell: UITableViewCell {
                     }
                     sender.isEnabled = true
                     isUserInteractionEnabled = true
-                }
                 return
             }
-            likesLbl.text = "\((product.likes) - 1)"
-            updateProductLiking(isLiking: false)
-            likeBtn.alpha = 0.0
-            likeBtn.transform = CGAffineTransform(rotationAngle: CGFloat.pi)
-            UIView.animate(withDuration: 0.2, animations: {
-                self.likeBtn.transform = CGAffineTransform.identity
-                self.likeBtn.alpha = 1.0
-            }, completion: { finished in
-                self.isUserInteractionEnabled = true
-                sender.isEnabled = true
-            })
+            else{
+                likesLbl.text = "\((product.likes) - 1)"
+                product.likes -= 1
+            }
+            animateUnlike()
         }
+        UserDefaults.standard.set(likeQueue, forKey: "likeQueue")
+        setProductInArray()
+
+        if let feed = vc as? FeedVC{
+            updateLiking(loadedProducts: feed.loadedProducts, saveType: "FeedProducts")
+        }
+        else if let user = vc as? UserVC{
+            updateLiking(loadedProducts: user.loadedProducts, saveType: "Products")
+        }
+        else{
+            updateLiking(loadedProducts: nil, saveType: nil)
+        }
+        
     }
     
-    func updateLiking(isLiking: Bool, loadedProducts: [Product]?, saveType: String?){
+    lazy var uploadView: UIView = {
+      
+        let view = UIView(frame: bounds)
+        view.backgroundColor = ColorCompatibility.systemBackground.withAlphaComponent(0.5)
+        var cp: MapSpinnerView! = MapSpinnerView(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
+        cp.accessibilityIdentifier = "uploadSpinner"
+        view.addSubview(cp)
+        cp.center = view.center
+        
+        let retryBtn = view
+        
+        return view
+    }()
+    
+    func setProductInArray(){
+        let products = (vc as? FeedVC)?.loadedProducts ?? (vc as? FriendVC)?.loadedProducts ?? (vc as? UserVC)?.loadedProducts
+        guard let productInArray = products?.first(where: {$0.productID == product.productID}) ?? (vc as? FullProductVC)?.fullProduct else{return}
+        
+        productInArray.likes = product.likes
+        productInArray.liked = product.liked
+    }
+    
+    func animateLike(){
+        likeBtn.alpha = 0.0
+        likeBtn.transform = CGAffineTransform(rotationAngle: CGFloat.pi)
+        UIView.animate(withDuration: 0.2, animations: {
+            self.likeBtn.transform = CGAffineTransform.identity
+            self.likeBtn.alpha = 1.0
+        }, completion: { finished in
+            if finished{
+                self.likeBtn.isEnabled = true
+                self.isUserInteractionEnabled = true
+                self.likeBtn.imageView?.startAnimating()
+            }
+        })
+    }
+    
+    func animateUnlike(){
+        likeBtn.alpha = 0.0
+        likeBtn.transform = CGAffineTransform(rotationAngle: CGFloat.pi)
+        UIView.animate(withDuration: 0.2, animations: {
+            self.likeBtn.transform = CGAffineTransform.identity
+            self.likeBtn.alpha = 1.0
+        }, completion: { finished in
+            self.isUserInteractionEnabled = true
+            self.likeBtn.isEnabled = true
+        })
+    }
+    
+    func updateLiking(loadedProducts: [Product]?, saveType: String?){
         let data = [
             "product_id" : product.productID,
             "creator_uid" : product.uid,
             "uid" : userInfo.uid,
-            "is_liking" : isLiking
+            "is_liking" : isLiked
             ] as [String : Any]
         Functions.functions().httpsCallable("updateLiking").call(data, completion: { result, error in
             if error != nil{
                 print(error?.localizedDescription ?? "")
             }
             else{
-                if isLiking{
+                if self.isLiked{
                     userInfo.userLiked?.append(self.product.productID)
                 }
                 else{
@@ -165,34 +223,6 @@ class ProductCell: UITableViewCell {
                 loadedProducts?.saveAllObjects(type: type)
             }
         })
-    }
-    
-    func updateProductLiking(isLiking: Bool){
-        var updateNum = -1
-        if isLiking{ updateNum = 1 }
-        switch vc{
-        case let feed as FeedVC:
-            guard let product = feed.loadedProducts.first(where: {$0.productID == self.product?.productID}) else{return}
-            product.likes += updateNum
-            product.liked = updateNum == 1
-            updateLiking(isLiking: isLiking, loadedProducts: feed.loadedProducts, saveType: "FeedProducts")
-        case let user as UserVC:
-            guard let product = user.loadedProducts.first(where: {$0.productID == self.product?.productID}) else{return}
-            product.likes += updateNum
-            product.liked = updateNum == 1
-            updateLiking(isLiking: isLiking, loadedProducts: user.loadedProducts, saveType: "Products")
-        case let friend as FriendVC:
-            guard let product = friend.loadedProducts.first(where: {$0.productID == self.product?.productID}) else{return}
-            product.likes += updateNum
-            product.liked = updateNum == 1
-            updateLiking(isLiking: isLiking, loadedProducts: nil, saveType: nil)
-        case let full as FullProductVC:
-            full.fullProduct.likes += updateNum
-            full.fullProduct.liked = true
-            updateLiking(isLiking: isLiking, loadedProducts: nil, saveType: nil)
-        default:
-            break
-        }
     }
     
     lazy var canvasDisplayView: UIImageView = {
@@ -243,6 +273,7 @@ class ProductCell: UITableViewCell {
         //view.addSubView(overlay)
         //view.bringSubViewToFront(imageView)
         productPicture.addSubview(canvasDisplayView)
+        addSubview(uploadView)
 
         NSLayoutConstraint(item: canvasDisplayView, attribute: .centerX, relatedBy: .equal, toItem: productPicture, attribute: .centerX, multiplier: 1.0, constant: 0).isActive = true
         NSLayoutConstraint(item: canvasDisplayView, attribute: .centerY, relatedBy: .equal, toItem: productPicture, attribute: .centerY, multiplier: 1.0, constant: -20).isActive = true

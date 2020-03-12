@@ -16,12 +16,11 @@ extension DesignViewController{
         
         
         if let selectedIndex = carousel.collectionView.indexPathsForVisibleItems.first?.item{
-            
             aspectRatio = displayView.frame.height / displayView.frame.width
             let viewY = displayView.frame.origin.y
             let width = view.frame.width
             let height = view.frame.width * aspectRatio
-            let difference = (canvas.frame.height - height).magnitude
+            let difference = (height - canvas.frame.height).magnitude
             garbageBtn.center.y -= difference
             self.titleView.isUserInteractionEnabled = false
             self.canvasDisplayView.isHidden = false
@@ -61,8 +60,9 @@ extension DesignViewController{
                 }, completion: { finished in
                     if finished{
                         //self.displayView.image = nil
+                        self.garbageBtn.center.y = self.bottomBar.frame.minY - (self.garbageBtn.frame.height / 2) - self.view.safeAreaInsets.top
                         self.lineTypeView.isHidden = true
-                        self.descriptionView.isHidden = true
+                         self.descriptionView.isHidden = true
                         self.canvas.isHidden = false
                         self.drawCanvas.isHidden = false
                     }
@@ -279,33 +279,6 @@ extension DesignViewController{
             angleLine.isHidden = true
             angleLocked = false
             break
-        }
-    }
-    
-    func maximiseGarbage(view: UIView, completed: @escaping () -> ()){
-        if self.garbageBtn.transform != CGAffineTransform(scaleX: 1.2, y: 1.2){
-            var scale: CGFloat!
-            if view.frame.width > view.frame.height{
-                scale = garbageBtn.frame.width / view.frame.width
-            }
-            else{
-                scale = garbageBtn.frame.height / view.frame.height
-            }
-            prevTransform = view.transform
-            UIView.animate(withDuration: 0.2, animations: {
-                view.transform = view.transform.scaledBy(x: scale, y: scale)
-                view.center = self.garbageBtn.center
-                view.alpha = 0.8
-                self.canvas.bringSubviewToFront(view)
-                self.garbageBtn.transform = CGAffineTransform(scaleX: 1.2, y: 1.2)
-            }, completion: { finished in
-                if finished{
-                    completed()
-                }
-            })
-        }
-        else{
-            completed()
         }
     }
 }

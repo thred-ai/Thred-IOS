@@ -2,8 +2,8 @@
 //  FriendVC.swift
 //  Thred
 //
-//  Created by Artak on 2019-11-05.
-//  Copyright © 2019 ArtaCorp. All rights reserved.
+//  Created by Arta Kouroshnia on 2019-11-05.
+//  Copyright © 2019 Thred Apps Inc. All rights reserved.
 //
 
 import UIKit
@@ -24,7 +24,6 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
     var productToOpen = Product()
     var friendInfo = UserInfo()
     var header: ProfileHeaderView?
-    
     
     
 
@@ -138,11 +137,11 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
                     self.downloader = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
                 }
                 self.downloader?.cancelAllDownloads()
-                self.tableView.downloadUserInfo(uid: self.friendInfo.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: true, downloader: self.downloader, userInfo: self.friendInfo, completed: { fullName, username, dpID, notifID, bio, image in
+                self.tableView.downloadUserInfo(uid: self.friendInfo.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: true, downloader: self.downloader, userInfo: self.friendInfo, completed: { fullName, username, dpID, notifID, bio, image, userFollowing in
                     
                     if username != nil{
                         
-                        self.setInfo(username: username, fullname: fullName, dpID: dpID, image: image, notifID: notifID, bio: bio)
+                        self.setInfo(username: username, fullname: fullName, dpID: dpID, image: image, notifID: notifID, bio: bio, userFollowing: userFollowing)
 
                         self.header?.setUpInfo(username: username, fullname: fullName, bio: bio, notifID: notifID, dpUID: dpID, image: image, actionBtnTitle: self.header?.headerActionBtnTitle ?? "null")
 
@@ -164,7 +163,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         }
     }
     
-    func setInfo(username: String?, fullname: String?, dpID: String?, image: UIImage?, notifID: String?, bio: String?){
+    func setInfo(username: String?, fullname: String?, dpID: String?, image: UIImage?, notifID: String?, bio: String?, userFollowing: [String]?){
         
         guard let username = username else{return}
         guard let fullname = fullname else{return}
@@ -172,14 +171,15 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         //guard let notifID = notifID else{return}
         guard let bio = bio else{return}
         
-        self.friendInfo.username = username
-        self.friendInfo.fullName = fullname
-        self.friendInfo.dpID = dpID
-        self.friendInfo.bio = bio
+        friendInfo.username = username
+        friendInfo.fullName = fullname
+        friendInfo.dpID = dpID
+        friendInfo.bio = bio
+        friendInfo.userFollowing = userFollowing
         //self.friendInfo.notifID = notifID
         
         guard let img = image else{return}
-        self.friendInfo.dp = img
+        friendInfo.dp = img
 
     }
     
@@ -228,10 +228,10 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         //REMOVE LATER
         //
         if fromInterval == nil{
-            query = Firestore.firestore().collection("Users").document(friendInfo.uid).collection("Products").whereField("Timestamp", isLessThanOrEqualTo: Date()).limit(to: 8).order(by: "Timestamp", descending: true)
+            query = Firestore.firestore().collection("Users").document(friendInfo.uid).collection("Products").whereField("Timestamp", isLessThanOrEqualTo: Timestamp(date: Date())).limit(to: 8).order(by: "Timestamp", descending: true)
         }
         else if let last = fromInterval{
-            query = Firestore.firestore().collection("Users").document(friendInfo.uid).collection("Products").whereField("Timestamp", isLessThan: last).limit(to: 8).order(by: "Timestamp", descending: true)
+            query = Firestore.firestore().collection("Users").document(friendInfo.uid).collection("Products").whereField("Timestamp", isLessThan: Timestamp(date: last)).limit(to: 8).order(by: "Timestamp", descending: true)
         }
         query.getDocuments(completion: { (snapDocuments, err) in
             if let err = err {
@@ -257,26 +257,62 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
                 default:
                     guard let snaps = snapDocuments?.documents else {return}
                     completed(true, snaps)
+                    var productsToUse: [Product]! = [Product]()
                     for (index, snap) in snaps.enumerated(){ // LOADED DOCUMENTS FROM \(snapDocuments)
                         if !self.loadedProducts.contains(where: {$0.productID == snap.documentID}){
+                            
                             let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
                             let uid = snap["UID"] as! String
                             let description = snap["Description"] as? String
                             let name = snap["Name"] as? String
                             let blurred = snap["Blurred"] as? Bool
                             let templateColor = snap["Template_Color"] as? String
-
                             let likes = snap["Likes"] as? Int
-
                             guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
+                            Firestore.firestore().collection("Users").document(uid).collection("Products").document(snap.documentID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userInfo.uid).getDocuments(completion: { snapLikes, error in
                             
-                            self.loadedProducts.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: self.friendInfo.fullName, username: self.friendInfo.username, productID: snap.documentID, userImageID: self.friendInfo.dpID, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked?.contains(snap.documentID), designImage: nil))
-
-                            self.tableView.performBatchUpdates({
-                                self.tableView.insertRows(at: [IndexPath(row: self.loadedProducts.count - 1, section: 0)], with: .automatic)
-                            }, completion: { finished in
-                                if finished{
-                                    
+                                var liked: Bool!
+                                
+                                if error != nil{
+                                    print(error?.localizedDescription ?? "")
+                                }
+                                else{
+                                    userInfo.userLiked?.removeAll(where: {$0 == snap.documentID})
+                                    if let likeDocs = snapLikes?.documents{
+                                        if likeDocs.isEmpty{
+                                            liked = false
+                                        }
+                                        else{
+                                            liked = true
+                                            if !(userInfo.userLiked?.contains(snap.documentID) ?? true){
+                                                userInfo.userLiked?.append(snap.documentID)
+                                            }
+                                        }
+                                    }
+                                    else{
+                                        liked = false
+                                    }
+                                }
+                                
+                                productsToUse.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil))
+                                
+                                if productsToUse.count == (snaps.count){
+                                    UserDefaults.standard.set(userInfo.userLiked, forKey: "LikedPosts")
+                                    let sorted = productsToUse.sorted(by: {$0.timestamp > $1.timestamp})
+                                    for product in sorted{
+                                        self.loadedProducts.append(product)
+                                        
+                                        self.tableView.performBatchUpdates({
+                                            self.tableView.insertRows(at: [IndexPath(row: self.loadedProducts.count - 1, section: 0)], with: .none)
+                                        }, completion: { finished in
+                                            if finished{
+                                                if product == sorted.last{
+                                                    productsToUse.removeAll()
+                                                    productsToUse = nil
+                                                }
+                                            }
+                                        })
+                                    }
                                 }
                             })
                         }
@@ -302,7 +338,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
     }
     
     override func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
-        return cellHeights[indexPath] ?? 100
+        return cellHeights[indexPath] ?? 1500
     }
     
 
@@ -321,25 +357,10 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         
     }
     
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(true)
-        for (index, like) in likeQueue.enumerated(){
-            print(like)
-            if let product = loadedProducts.first(where: {$0.productID == like.key}){
-                if product.liked == !like.value{
-                    product.liked = like.value
-                    likeQueue.removeValue(forKey: product.productID)
-                }
-            }
-            if index == likeQueue.count - 1{
-                self.tableView.performBatchUpdates({
-                    self.tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
-                }, completion: nil)
-            }
-        }
-        self.tableView.performBatchUpdates({
-            self.tableView.reloadRows(at: self.tableView?.indexPathsForVisibleRows ?? [], with: .none)
-        }, completion: nil)
+        
     }
     
     override func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
@@ -375,11 +396,14 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let user = self.loadedProducts[indexPath.row]
-        let cell = tableView.setPictureCell(indexPath: indexPath, user: user, productLocation: self)
+        let cell = tableView.setPictureCell(indexPath: indexPath, product: user, productLocation: self)
         return cell
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        
+        tableView.syncPostLikes(loadedProducts: loadedProducts, vc: self)
+
         let isFollowing = (userInfo.userFollowing?.contains(friendInfo.uid) ?? false)
         header?.actionBtn.setTitle("", for: .normal)
         header?.updateFollowBtn(didFollow: isFollowing, animated: false)

@@ -32,20 +32,20 @@
                             <rect key="frame" x="0.0" y="0.0" width="266.33333333333331" height="35"/>
                             <subviews>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="&quot;Full Name&quot;" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.75" translatesAutoresizingMaskIntoConstraints="NO" id="fP5-xX-6Mz">
-                                    <rect key="frame" x="0.0" y="0.0" width="266.33333333333331" height="20"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="266.33333333333331" height="17.666666666666668"/>
                                     <fontDescription key="fontDescription" name="ArialRoundedMTBold" family="Arial Rounded MT Bold" pointSize="17"/>
                                     <nil key="textColor"/>
                                     <nil key="highlightedColor"/>
                                 </label>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="&quot;@username&quot;" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.75" translatesAutoresizingMaskIntoConstraints="NO" id="Dak-Hv-czS">
-                                    <rect key="frame" x="0.0" y="19.999999999999986" width="266.33333333333331" height="15"/>
+                                    <rect key="frame" x="0.0" y="17.666666666666657" width="266.33333333333331" height="17.333333333333329"/>
                                     <fontDescription key="fontDescription" name="ArialRoundedMTBold" family="Arial Rounded MT Bold" pointSize="14"/>
                                     <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
                                     <nil key="highlightedColor"/>
                                 </label>
                             </subviews>
                             <constraints>
-                                <constraint firstItem="Dak-Hv-czS" firstAttribute="height" secondItem="fP5-xX-6Mz" secondAttribute="height" multiplier="0.75" id="BDZ-oU-7do"/>
+                                <constraint firstItem="Dak-Hv-czS" firstAttribute="height" secondItem="fP5-xX-6Mz" secondAttribute="height" id="BDZ-oU-7do"/>
                                 <constraint firstAttribute="height" constant="35" id="dps-v4-S8R"/>
                             </constraints>
                         </stackView>

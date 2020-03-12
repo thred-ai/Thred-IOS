@@ -11,12 +11,12 @@ import UIKit
 class ColorCollectionLayout: UICollectionViewFlowLayout {
 
     let innerSpace: CGFloat = 0.5
-    let numberOfCellsOnRow: CGFloat = 3
+    let numberOfCellsOnRow: CGFloat = 5
     override init() {
         super.init()
         self.minimumLineSpacing = innerSpace
         self.minimumInteritemSpacing = innerSpace
-        self.scrollDirection = .horizontal
+        self.scrollDirection = .vertical
     }
     required init?(coder aDecoder: NSCoder) {
         //fatalError("init(coder:) has not been implemented")
@@ -27,12 +27,10 @@ class ColorCollectionLayout: UICollectionViewFlowLayout {
     }
     override var itemSize: CGSize {
         set {
-            self.itemSize = CGSize(width:itemWidth(), height:itemWidth() * 1.5484444444444445
-)
+            self.itemSize = CGSize(width:itemWidth(), height:itemWidth())
         }
         get {
-            return CGSize(width:itemWidth(),height:itemWidth() * 1.5484444444444445
-)
+            return CGSize(width:itemWidth(),height:itemWidth())
         }
     }
 }

@@ -2,14 +2,15 @@
 //  DownloadImageForPictureProduct.swift
 //  Thred
 //
-//  Created by Artak on 2019-11-01.
-//  Copyright © 2019 ArtaCorp. All rights reserved.
+//  Created by Arta Kouroshnia on 2019-11-01.
+//  Copyright © 2019 Thred Apps Inc. All rights reserved.
 //
 
 import Foundation
 import UIKit
 import Firebase
 import SDWebImage
+import FirebaseStorage
 
 let cache = SDImageCache.shared
 
@@ -22,6 +23,7 @@ extension UITableView{
         let circularProgress = cell?.circularProgress
 
         if let fullVC = vc as? FullProductVC{
+            
             switch user.designImage {
             case .some:
                 if let img = UIImage(data: user.designImage){
@@ -44,7 +46,11 @@ extension UITableView{
         }
         else if let imgFromCache = cache.imageFromCache(forKey: picID){
             circularProgress?.removeFromSuperview()
-            cell?.productPicture.image = UIImage(named: user.templateColor)
+            
+            let bundlePath = Bundle.main.path(forResource: user.templateColor, ofType: "png")
+            let image = UIImage(contentsOfFile: bundlePath!)
+            cell?.productPicture.image = image
+            cell?.productPicture.addShadowToImageNotLayer()
             cell?.canvasDisplayView.image = imgFromCache
         }
         else{
@@ -129,10 +135,45 @@ extension UITableView{
     func setCell(index: Int, image: UIImage?, templateID: String!){
         if let cell = cellForRow(at: IndexPath(row: index, section: 0)) as? ProductCell{
             
-            cell.productPicture.image = UIImage(named: templateID)
+            let bundlePath = Bundle.main.path(forResource: templateID, ofType: "png")
+            let img = UIImage(contentsOfFile: bundlePath!)
+            
+            
+            cell.productPicture.image = img
             cell.canvasDisplayView.image = image
+            cell.productPicture.addShadowToImageNotLayer()
             cell.circularProgress.removeFromSuperview()
         }
+    }
+    
+    
+}
+
+extension UIImageView {
+
+    func addShadowToImageNotLayer(blurSize: CGFloat = 8){
+
+        let shadowColor = UIColor(white:0.0, alpha:0.8).cgColor
+
+        guard let image = self.image else {return}
+
+        let context = CGContext(data: nil,
+                                width: Int(image.size.width + blurSize),
+                                height: Int(image.size.height + blurSize),
+                                bitsPerComponent: image.cgImage!.bitsPerComponent,
+                                bytesPerRow: 0,
+                                space: CGColorSpaceCreateDeviceRGB(),
+                                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+
+        context.setShadow(offset: CGSize(width: 0,height: 0),
+                          blur: blurSize,
+                          color: shadowColor)
+        context.draw(image.cgImage!,
+                     in: CGRect(x: 0, y: blurSize, width: image.size.width, height: image.size.height),
+                     byTiling:false)
+
+        self.image = UIImage(cgImage: context.makeImage()!)
+
     }
 }
 

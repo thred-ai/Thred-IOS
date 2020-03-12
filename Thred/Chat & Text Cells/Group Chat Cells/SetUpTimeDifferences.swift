@@ -2,8 +2,8 @@
 //  SetUpTimeDifferences.swift
 //  Thred
 //
-//  Created by Artak on 2019-11-01.
-//  Copyright © 2019 ArtaCorp. All rights reserved.
+//  Created by Arta Kouroshnia on 2019-11-01.
+//  Copyright © 2019 Thred Apps Inc. All rights reserved.
 //
 
 import Foundation
@@ -12,18 +12,17 @@ import SDWebImage
 
 extension UITableView{
     
-    
-    
     func checkTimes(user: Product, timestampLbl: UILabel?){
         
         if user.timestamp == nil{
+            
             return
         }
         user.timestampDiff = setTimeDifference(user: user, timeToUse: user.timestamp)
-        timestampLbl?.text = "\(user.timestampDiff!) ago"
+        DispatchQueue.main.async {
+            timestampLbl?.text = "\(user.timestampDiff!) ago"
+        }
     }
-    
-    
 
     func setTimeDifference(user: Product, timeToUse: Date?) -> String{
         
@@ -34,14 +33,12 @@ extension UITableView{
             fallthrough
               //return user.timestampDiff
         default:
-            
-            
-            guard let time = timeToUse else{return ""}
-            return calculateTimeDifference(time: time)
+            guard let time = timeToUse else{return "0 seconds"}
+            return calculateTimeDifference(time: time) ?? "0 seconds"
         }
     }
     
-    func calculateTimeDifference(time: Date) -> String{
+    func calculateTimeDifference(time: Date) -> String?{
         let currentDate = Date()
         let requestedComponent: Set<Calendar.Component> = [.year, .month, .weekOfYear, .day, .hour, .minute, .second]
         let timeDifference = userCalendar.dateComponents(requestedComponent, from: time, to: currentDate)
@@ -56,17 +53,15 @@ extension UITableView{
         timeDiffList?.append(["Num" : timeDifference.second ?? 0, "index" : 6])
         guard let topDict = timeDiffList?.filter({$0["Num"] != 0}).first
         else{
-            return ""
+            return nil
         }
         guard let index = topDict["index"]
         else{
-            
-            return ""
+            return nil
         }
         guard let displayUnitCount = topDict["Num"]
         else{
-            
-            return ""
+            return nil
         }
         var pluralLetter = ""
         let displayUnit = dateUnits[index]

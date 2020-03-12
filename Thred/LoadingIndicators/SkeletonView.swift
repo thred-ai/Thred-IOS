@@ -3,7 +3,7 @@
 //  SkeletonViewExample
 //
 //  Created by Roni Leshes on 3/16/18.
-//  Copyright © 2018 Roni Leshes. All rights reserved.
+//  Copyright © 2019 Roni Leshes. All rights reserved.
 //
 
 import UIKit

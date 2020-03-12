@@ -3,7 +3,7 @@
 //  Thred
 //
 //  Created by Arta Koroushnia on 2019-11-16.
-//  Copyright © 2019 ArtaCorp. All rights reserved.
+//  Copyright © 2019 Thred Apps Inc. All rights reserved.
 //
 
 import Foundation
@@ -17,7 +17,7 @@ extension UITableView{
     func beginDownloadingUserInfo(uid: String, downloader: SDWebImageDownloader?, userVC: UserVC?, feedVC: FeedVC?, friendVC: FriendVC?, fullVC: FullProductVC?, section: Int){
         print(uid)
         
-        downloadUserInfo(uid: uid, userVC: userVC, feedVC: feedVC, downloadingPersonalDP: false, downloader: downloader, userInfo: nil, completed: {[weak self] fullName, username, dpUID, notifID, bio, imgData in
+        downloadUserInfo(uid: uid, userVC: userVC, feedVC: feedVC, downloadingPersonalDP: false, downloader: downloader, userInfo: nil, completed: {[weak self] fullName, username, dpUID, notifID, bio, imgData, userFollowing in
             
             if username != nil{
                 if userVC != nil{
@@ -35,14 +35,14 @@ extension UITableView{
         })
     }
     
-    func downloadUserInfo(uid: String, userVC: UserVC?, feedVC: FeedVC?, downloadingPersonalDP: Bool, downloader: SDWebImageDownloader?, userInfo: UserInfo?, completed: @escaping (String?, String?, String?, String?, String?, UIImage?) -> ()){
+    func downloadUserInfo(uid: String, userVC: UserVC?, feedVC: FeedVC?, downloadingPersonalDP: Bool, downloader: SDWebImageDownloader?, userInfo: UserInfo?, completed: @escaping (String?, String?, String?, String?, String?, UIImage?, [String]?) -> ()){
         
         let ref = Firestore.firestore().collection("Users").document(uid)
         
         ref.getDocument(){(document, err) in
             if err != nil{
                 print("Error getting documents: \(err?.localizedDescription ?? "")") // LOCALIZED DESCRIPTION OF ERROR
-                completed(nil, nil, nil, nil, nil, userInfo?.dp ?? defaultDP)
+                completed(nil, nil, nil, nil, nil, userInfo?.dp ?? defaultDP, nil)
                 return
             }
             else{
@@ -51,7 +51,7 @@ extension UITableView{
                 let fullName = document!["Full Name"] as? String
                 let bio = document?["Bio"] as? String
                 let notifID = document?["Notification ID"] as? String
-
+                let userFollowing = document?["Following_List"] as? [String]
                 var options = SDWebImageOptions(arrayLiteral: [.scaleDownLargeImages, .continueInBackground])
                 var storageRef: StorageReference?
                 storageRef = Storage.storage().reference().child("Users").child(uid).child("profile_pic-" + (dpUID ?? "") + ".jpeg") //STORAGE REFERENCE OF COMMENT IMAGE
@@ -61,11 +61,11 @@ extension UITableView{
                 }
               
                 if let image = cache.imageFromCache(forKey: dpUID){
-                    completed(fullName, username, dpUID, notifID, bio, image)
+                    completed(fullName, username, dpUID, notifID, bio, image, userFollowing)
                     return
                 }
                 else{
-                    completed(fullName, username, dpUID, notifID, bio, nil)
+                    completed(fullName, username, dpUID, notifID, bio, nil, userFollowing)
                 }
                 storageRef?.downloadURL(completion: { url, error in
                     if error != nil{
@@ -82,12 +82,11 @@ extension UITableView{
                                     return
                                 }
                                 else{
-                                    if data != nil{
+                                    if let imgData = data{
                                         if userVC != nil || feedVC != nil{
-                                            cache.storeImageData(toDisk: data, forKey: dpUID)
+                                            cache.storeImageData(toDisk: imgData, forKey: dpUID)
                                         }
-                                        
-                                        completed(fullName, username, dpUID, notifID, bio, image ?? userInfo?.dp ?? defaultDP)
+                                        completed(fullName, username, dpUID, notifID, bio, UIImage(data: imgData), userFollowing)
                                     }
                                 }
                             }

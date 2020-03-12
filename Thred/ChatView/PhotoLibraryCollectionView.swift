@@ -3,7 +3,7 @@
 //  Thred
 //
 //  Created by Arta Koroushnia on 2019-11-28.
-//  Copyright © 2019 ArtaCorp. All rights reserved.
+//  Copyright © 2019 Thred Apps Inc. All rights reserved.
 //
 
 import Foundation
@@ -102,6 +102,8 @@ class CameraRollView: UICollectionView, UICollectionViewDelegate, UICollectionVi
             }
         })
     }
+    
+    
     
     func hidePhotosCollectionView(completed: () -> ()){
         self.isHidden = true
@@ -249,6 +251,8 @@ class CameraRollView: UICollectionView, UICollectionViewDelegate, UICollectionVi
         }
     }
     
+    
+    
     internal func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         
         let asset = self.images[indexPath.item]
@@ -280,6 +284,7 @@ class CameraRollView: UICollectionView, UICollectionViewDelegate, UICollectionVi
             })
         }
     }
+    
     
     func presentCameraRollSettings(completed: @escaping () -> ()) {
         let alertController = UIAlertController(
@@ -313,5 +318,6 @@ class CameraRollView: UICollectionView, UICollectionViewDelegate, UICollectionVi
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
     
 }

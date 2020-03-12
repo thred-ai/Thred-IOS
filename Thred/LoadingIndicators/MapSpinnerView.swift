@@ -1,9 +1,9 @@
 //
 //  MapSpinnerView.swift
-//  Pictomap
+//  Thred
 //
-//  Created by Artak on 2019-02-23.
-//  Copyright © 2019 artacorp. All rights reserved.
+//  Created by Arta Kouroshnia on 2019-02-23.
+//  Copyright © 2019 Thred Apps Inc. All rights reserved.
 //
 
 import Foundation

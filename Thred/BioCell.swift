@@ -3,7 +3,7 @@
 //  Thred
 //
 //  Created by Arta Koroushnia on 2019-11-25.
-//  Copyright © 2019 ArtaCorp. All rights reserved.
+//  Copyright © 2019 Thred Apps Inc. All rights reserved.
 //
 
 import UIKit

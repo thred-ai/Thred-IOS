@@ -13,16 +13,14 @@ class ProductInProgress{
     
     var templateColor: String!
     var design: UIImage!
-    var designOnShirt: UIImage!
     var uid: String!
     var caption: String!
     var name: String!
     var price: Double?
     
-    init(templateColor: String!, design: UIImage!, designOnShirt: UIImage!, uid: String!, caption: String!, name: String!, price: Double!) {
+    init(templateColor: String!, design: UIImage!, uid: String!, caption: String!, name: String!, price: Double!) {
         self.templateColor = templateColor
         self.design = design
-        self.designOnShirt = designOnShirt
         self.uid = uid
         self.caption = caption
         self.name = name
@@ -30,6 +28,6 @@ class ProductInProgress{
     }
     
     convenience init() {
-        self.init(templateColor: nil, design: nil, designOnShirt: nil, uid: nil, caption: nil, name: nil, price: nil)
+        self.init(templateColor: nil, design: nil, uid: nil, caption: nil, name: nil, price: nil)
     }
 }

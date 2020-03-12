@@ -2,8 +2,8 @@
 //  SaveProductToDisk.swift
 //  Thred
 //
-//  Created by Artak on 2019-11-01.
-//  Copyright © 2019 ArtaCorp. All rights reserved.
+//  Created by Arta Kouroshnia on 2019-11-01.
+//  Copyright © 2019 Thred Apps Inc. All rights reserved.
 //
 
 import Foundation
@@ -64,7 +64,7 @@ extension Array where Iterator.Element == Product{
             for (index, product) in self.enumerated(){
                 if (!(newPosts?.contains(where: {$0.picID == product.picID}) ?? false)) || newPosts?.contains(where: {$0.picID == product.picID && $0.blurred != product.blurred}) ?? false{
                     cache.removeImage(forKey: product.productID, withCompletion: {
-                        if product.userImageID != userInfo.uid{
+                        if product.uid != userInfo.uid{
                             cache.removeImage(forKey: product.userImageID, withCompletion: {
                                 if index == self.count - 1{
                                     completed()

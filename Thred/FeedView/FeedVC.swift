@@ -2,8 +2,8 @@
 //  FeedVC.swift
 //  Thred
 //
-//  Created by Artak on 2019-10-23.
-//  Copyright © 2019 ArtaCorp. All rights reserved.
+//  Created by Arta Kouroshnia on 2019-10-23.
+//  Copyright © 2019 Thred Apps Inc. All rights reserved.
 //
 
 import UIKit
@@ -14,7 +14,7 @@ import AudioToolbox
 import AVFoundation
 import SDWebImage
 import ColorCompatibility
-
+import Crashlytics
 
 
 
@@ -99,7 +99,6 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
     var downloader = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
 
     var tokens = [String]()
-    
     var downloadCount = 0
     
     struct TimeUnits{
@@ -394,7 +393,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         
         if tableView == self.tableView{
             let user = self.loadedProducts[indexPath.row]
-            let cell = tableView.setPictureCell(indexPath: indexPath, user: user, productLocation: self)
+            let cell = tableView.setPictureCell(indexPath: indexPath, product: user, productLocation: self)
             return cell
         }
         else{
@@ -444,23 +443,28 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         }
     }
     
+    
+    func clearTableView(){
+        self.loadedProducts.removeAll()
+        self.cellHeights.removeAll()
+        self.tableView.reloadData()
+    }
+    
     func downloadProducts(completed: @escaping () -> ()){
-        getProducts(fromInterval: nil) {[weak self] hasDiffproducts, snapDocs in
+        getProducts(fromInterval: nil) { hasDiffproducts, snapDocs in
             completed()
             if hasDiffproducts ?? false{
-                self?.loadedProducts.removeAll()
-                self?.cellHeights.removeAll()
-                self?.tableView.reloadData()
+                self.clearTableView()
             }
             else{
-                for i in 0..<(self?.loadedProducts.count ?? 0){
-                    self?.loadedProducts[i].fromCache = false
-                    if self?.loadedProducts[i].uid == userInfo.uid{
+                for i in 0..<(self.loadedProducts.count){
+                    self.loadedProducts[i].fromCache = false
+                    if self.loadedProducts[i].uid == userInfo.uid{
                         continue
                     }
-                    self?.loadedProducts[i].userImageID = nil
+                    self.loadedProducts[i].userImageID = nil
                 }
-                self?.tableView.reloadData()
+                self.tableView.reloadData()
             }
         }
     }
@@ -514,9 +518,9 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         //self.tableView.refreshControl = refresher
         tableView.addSubview(refresher)
 
-        let image = userInfo.dp
+        //let image = userInfo.dp
         
-        setupUI(image: image!)
+        //setupUI(image: image!)
         //navigationItem.titleView = FeedVC.searchBar
         
         
@@ -591,28 +595,33 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
     var currentproductsJSON: [DocumentSnapshot]!
 
     
+    func getDate(){
+        
+    }
+    
     func getProducts(fromInterval: Date?, completed: @escaping (Bool?, [DocumentSnapshot]?) -> ()){
         
     
         guard var followArray = userInfo.userFollowing else{
             return
         }
+
+        
         //REMOVE LATER
         if !followArray.contains(userInfo.uid){
             followArray.append(userInfo.uid)
         }
-        followArray.append(userInfo.uid)
         query = nil
         if fromInterval == nil{
-            query = Firestore.firestore().collectionGroup("Products").whereField("UID", in: followArray).whereField("Timestamp", isLessThanOrEqualTo: Date()).limit(to: 8).order(by: "Timestamp", descending: true)
+            query = Firestore.firestore().collectionGroup("Products").whereField("UID", in: followArray).whereField("Timestamp", isLessThanOrEqualTo: Timestamp(date: Date())).limit(to: 8).order(by: "Timestamp", descending: true)
         }
         if let last = fromInterval{
-            query = Firestore.firestore().collectionGroup("Products").whereField("UID", in: followArray).whereField("Timestamp", isLessThan: last).limit(to: 8).order(by: "Timestamp", descending: true)
+            query = Firestore.firestore().collectionGroup("Products").whereField("UID", in: followArray).whereField("Timestamp", isLessThan: Timestamp(date: last)).limit(to: 8).order(by: "Timestamp", descending: true)
         }
         
         
         
-        query.getDocuments(completion: {[weak self] (snapDocuments, err) in
+        query.getDocuments(completion: { (snapDocuments, err) in
             if let err = err {
                 print("Error getting documents: \(err)")
                 completed(false, nil)
@@ -626,7 +635,6 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                     guard let snaps = snapDocuments?.documents else {
                         return}
                     if snapDocuments?.metadata.isFromCache ?? false{
-                        
                         completed(false, snaps)
                     }
                     else{
@@ -635,6 +643,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                         switch fromInterval{
                         case .none:
                             for (index, snap) in snaps.enumerated(){
+                                
                                 let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
                                 let uid = snap["UID"] as! String
                                 let description = snap["Description"] as? String
@@ -643,19 +652,22 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                                 let templateColor = snap["Template_Color"] as? String
                                 let likes = snap["Likes"] as? Int
 
-
                                 guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
+                                
                                 
                                 localLoaded.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked?.contains(snap.documentID), designImage: nil))
 
                                 if localLoaded.count == snaps.count{
-                                    let isSame = localLoaded == self?.loadedProducts
+                                    let isSame = localLoaded == self.loadedProducts
                                     
+                                        
                                     if !isSame{
-                                        self?.loadedProducts.removeOldFeedPosts(newPosts: localLoaded){
+                                        self.loadedProducts.removeOldFeedPosts(newPosts: localLoaded){
                                             localLoaded = nil
                                             completed(true, snaps)
-                                            self?.sortDownloadedProducts(snaps: snaps)
+                                            self.sortDownloadedProducts(snaps: snaps){
+                                                self.loadedProducts.saveAllObjects(type: "FeedProducts")
+                                            }
                                         }
                                     }
                                     else{
@@ -665,9 +677,9 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                                 }
                             }
                         default:
-                            
-                            completed(true, snaps)
-                            self?.sortDownloadedProducts(snaps: snaps)
+                            self.sortDownloadedProducts(snaps: snaps){
+                                completed(true, snaps)
+                            }
                         }
                     }
                 }
@@ -675,9 +687,22 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         })
     }
     
-    func sortDownloadedProducts(snaps: [QueryDocumentSnapshot]){
-        for (index, snap) in snaps.enumerated(){ // LOADED DOCUMENTS FROM \(snapDocuments)
+    func sortDownloadedProducts(snaps: [QueryDocumentSnapshot], completed: @escaping () -> ()){
+        
+        var productsToUse: [Product]! = [Product]()
+        
+        var snapsToCheck = snaps
+        
+        for snapToCheck in snapsToCheck{
+            if loadedProducts.contains(where: {$0.productID == snapToCheck.documentID}){
+                snapsToCheck.removeAll(where: {$0 == snapToCheck})
+            }
+        }
+        
+        for (index, snap) in snapsToCheck.enumerated(){ // LOADED DOCUMENTS FROM \(snapDocuments)
+        
             if !loadedProducts.contains(where: {$0.productID == snap.documentID}){
+                
                 let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
                 let uid = snap["UID"] as! String
                 let description = snap["Description"] as? String
@@ -685,17 +710,56 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                 let blurred = snap["Blurred"] as? Bool
                 let templateColor = snap["Template_Color"] as? String
                 let likes = snap["Likes"] as? Int
-
-
                 guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                 
-                loadedProducts.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked?.contains(snap.documentID), designImage: nil))
                 
-                tableView.performBatchUpdates({
-                    self.tableView.insertRows(at: [IndexPath(row: self.loadedProducts.count - 1, section: 0)], with: .none)
-                }, completion: { finished in
-                    if finished{
-                       
+                
+                Firestore.firestore().collection("Users").document(uid).collection("Products").document(snap.documentID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userInfo.uid).getDocuments(completion: { snapLikes, error in
+                
+                    var liked: Bool!
+                    
+                    if error != nil{
+                        print(error?.localizedDescription ?? "")
+                    }
+                    else{
+                        userInfo.userLiked?.removeAll(where: {$0 == snap.documentID})
+                        if let likeDocs = snapLikes?.documents{
+                            if likeDocs.isEmpty{
+                                liked = false
+                            }
+                            else{
+                                liked = true
+                                if !(userInfo.userLiked?.contains(snap.documentID) ?? true){
+                                    userInfo.userLiked?.append(snap.documentID)
+                                }
+                            }
+                        }
+                        else{
+                            liked = false
+                        }
+                    }
+                    
+                    productsToUse.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil))
+                    
+                    print(snaps.count)
+           
+                    if productsToUse.count == snapsToCheck.count{
+                        UserDefaults.standard.set(userInfo.userLiked, forKey: "LikedPosts")
+                        let sorted = productsToUse.sorted(by: {$0.timestamp > $1.timestamp})
+                        for product in sorted{
+                            self.loadedProducts.append(product)
+                            self.tableView.performBatchUpdates({
+                                self.tableView.insertRows(at: [IndexPath(row: self.loadedProducts.count - 1, section: 0)], with: .none)
+                            }, completion: { finished in
+                                if finished{
+                                    if product == sorted.last{
+                                        completed()
+                                        productsToUse.removeAll()
+                                        productsToUse = nil
+                                    }
+                                }
+                            })
+                        }
                     }
                 })
             }
@@ -714,7 +778,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
     
 
     override func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
-        return cellHeights[indexPath] ?? 100
+        return cellHeights[indexPath] ?? 1500
     }
     
     
@@ -729,29 +793,16 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(true)
-        
-        for (index, like) in likeQueue.enumerated(){
-            print(like)
-            if let product = loadedProducts.first(where: {$0.productID == like.key}){
-                if product.liked == !like.value{
-                    product.liked = like.value
-                    likeQueue.removeValue(forKey: product.productID)
-                }
-            }
-            if index == likeQueue.count - 1{
-                self.loadedProducts.saveAllObjects(type: "FeedProducts")
-                self.tableView.performBatchUpdates({
-                    self.tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
-                }, completion: nil)
-            }
-        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(true)
         selectedUser = nil
-
+        
+        self.showCenterBtn()
+        
+        tableView.syncPostLikes(loadedProducts: loadedProducts, vc: self)
+        loadedProducts.saveAllObjects(type: "FeedProducts")
         
         if let indexPath = FeedVC.searchTable.indexPathForSelectedRow{
             FeedVC.searchTable.deselectRow(at: indexPath, animated: true)
@@ -843,7 +894,9 @@ extension UIViewController{
         let uid = UserDefaults.standard.string(forKey: "UID")!
         userInfo.uid = uid
         print(uid)
+        
 
+        //Crashlytics.sharedInstance().crash()
         let username = UserDefaults.standard.string(forKey: "USERNAME") ?? "null"
         userInfo.username = username
         let fullname = UserDefaults.standard.string(forKey: "FULLNAME") ?? "null"
@@ -854,9 +907,10 @@ extension UIViewController{
         }
         let dpID = UserDefaults.standard.string(forKey: "DP_ID") ?? "default"
         userInfo.dpID = dpID
-        let profilePic = cache.imageFromDiskCache(forKey: dpID) ?? defaultDP
-        userInfo.dp = profilePic
-        
+        if let profilePic = cache.imageFromDiskCache(forKey: dpID){
+            userInfo.dp = profilePic
+        }
+
         if let notifID = UserDefaults.standard.string(forKey: "NOTIF_ID"){
             userInfo.notifID = notifID
         }
@@ -865,6 +919,12 @@ extension UIViewController{
         }
         if let userFollowing = UserDefaults.standard.stringArray(forKey: "FOLLOWING"){
             userInfo.userFollowing = userFollowing
+        }
+        if let likesToUpdate =         UserDefaults.standard.object(forKey: "likeQueue") as? [String : Bool]{
+            likeQueue = likesToUpdate
+        }
+        if let uploadPosts =         UserDefaults.standard.stringArray(forKey: "UploadingPosts"){
+            uploadingPosts = uploadPosts
         }
     }
 }

@@ -46,7 +46,6 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
                     if cell.canvasDisplayView.image != nil{
                         guard let price = priceView.text else{return}
                         guard let decimalPrice = Double(price) else{return}
-                        product.designOnShirt = displayView.makeSnapshot(clear: false, subviewsToIgnore: [zoomBtn])
                         product.design = cell.canvasDisplayView.image
                         product.caption = descriptionView.text
                         product.uid = userInfo.uid
@@ -411,12 +410,25 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
                     
                     if let textStyleView = self.textStyleBtn.superview{
                         let minY = textStyleView.frame.maxY + 10
+                        let bottomInset = self.view.safeAreaInsets.bottom
+                        
                         if resizedY <= minY{
                             textView.isScrollEnabled = true
                             textView.frame.origin.y = minY
-                            textView.frame.size.height = -(minY - (self.canvas.frame.maxY - self.keyboardHeight)) + self.view.safeAreaInsets.bottom
+                            
+                            let p1 = self.view.frame.maxY - self.keyboardHeight - self.textToolBar.frame.height - 10
+                            let maxY = p1 - bottomInset - 10
+                            
+                            textView.frame.size.height = maxY - minY
+                            
+                            print(self.view.frame.width)
+                            print(self.view.frame.height)
+                            print(minY)
+                            
+                            print(maxY)
+                            
                             if textView.text.count > 250{
-                                textView.text.removeLast(textView.text.count - 250)
+                                    textView.text.removeLast(textView.text.count - 250)
                             }
                         }
                         else{
@@ -516,6 +528,8 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         } else {
             lineTypeView.addBackgroundBlur(blurEffect: UIBlurEffect(style: UIBlurEffect.Style.regular))
         }
+        
+        
         lineTypeView.tintColor = UIColor.cyan
         lineTypeView.layer.cornerRadius = lineTypeView.frame.height / 8
         lineTypeView.clipsToBounds = true
@@ -629,6 +643,9 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     
     
     
+    override func didReceiveMemoryWarning() {
+        
+    }
     
     
     var fontSlider: UISlider!
@@ -760,12 +777,28 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
         let tee = self.tees[indexPath.item]
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "color_icon", for: indexPath) as? TemplateColorChooserCellCollectionViewCell
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "color_icon", for: indexPath) as? TemplateColorChooserCell
         cell?.colorView.backgroundColor = nil
         
         cell?.colorView.backgroundColor = UIColor(named: tee.templateID)
         
         return cell!
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath) -> Bool {
+        if collectionView.indexPathsForSelectedItems?.contains(indexPath) ?? false{
+            collectionView.deselectItem(at: indexPath, animated: true)
+            
+
+            return false
+        }
+        else{
+            return true
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        carousel.collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
     }
     
     
@@ -839,6 +872,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         loadDesigns(){
             DispatchQueue.main.async {
                 self.colorCollectionView.reloadData()
+                self.colorCollectionView.selectItem(at: IndexPath(item: 0, section: 0), animated: false, scrollPosition: .centeredHorizontally)
                 self.carousel.setCarouselTemplates(templates: self.tees)
                 self.scrollview.addSubview(self.canvasDisplayView)
                 self.view.addSubview(self.canvas)
@@ -923,7 +957,8 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(true)
         tees = nil
-        
+        carousel.slides = nil
+        carousel.displayImage = nil
         NotificationCenter.default.removeObserver(self)
         
     }

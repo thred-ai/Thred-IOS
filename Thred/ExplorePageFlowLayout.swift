@@ -10,8 +10,10 @@ import UIKit
 
 class ExplorePageFlowLayout: UICollectionViewFlowLayout {
 
+    var canvasInfo = CanvasInfo()
+
     let innerSpace: CGFloat = 0.5
-    let numberOfCellsOnRow: CGFloat = 3
+    let numberOfCellsOnRow: CGFloat = 3.5
     override init() {
         super.init()
         self.minimumLineSpacing = innerSpace
@@ -27,11 +29,11 @@ class ExplorePageFlowLayout: UICollectionViewFlowLayout {
     }
     override var itemSize: CGSize {
         set {
-            self.itemSize = CGSize(width:itemWidth(), height:itemWidth() * 1.5484444444444445
+            self.itemSize = CGSize(width:itemWidth(), height:itemWidth() * canvasInfo.aspectRatio
 )
         }
         get {
-            return CGSize(width:itemWidth(),height:itemWidth() * 1.5484444444444445
+            return CGSize(width:itemWidth(),height:itemWidth() * canvasInfo.aspectRatio
 )
         }
     }

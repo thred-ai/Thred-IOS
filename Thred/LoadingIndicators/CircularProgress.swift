@@ -3,7 +3,7 @@
 //  CircularProgress-Tutorial
 //
 //  Created by Aman Aggarwal on 5/18/18.
-//  Copyright © 2018 iostutorialjunction.com . All rights reserved.
+//  Copyright © 2019 iostutorialjunction.com . All rights reserved.
 //
 
 import UIKit

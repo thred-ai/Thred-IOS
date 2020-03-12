@@ -34,6 +34,12 @@ class ExploreViewController: UITableViewController{
         }
     }
     
+     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(true)
+        showCenterBtn()
+    }
+    
     var isLoading = false
     
     @objc func refresh(_ sender: BouncingTitleRefreshControl){
@@ -131,7 +137,7 @@ class ExploreViewController: UITableViewController{
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 250
+        return 220
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

@@ -2,8 +2,8 @@
 //  DownloadUserInfoForProduct.swift
 //  Thred
 //
-//  Created by Artak on 2019-11-01.
-//  Copyright © 2019 ArtaCorp. All rights reserved.
+//  Created by Arta Kouroshnia on 2019-11-01.
+//  Copyright © 2019 Thred Apps Inc. All rights reserved.
 //
 
 import Foundation
@@ -61,7 +61,16 @@ extension UITableView{
                 picCell?.removeDpLoad()
             }
             else{
-                fallthrough
+                if user.uid == userInfo.uid, userInfo.dp != nil{
+                    dp.image = userInfo.dp
+                    fullLbl.text = userInfo.fullName
+                    userLbl.text = "@" + (userInfo.username)
+                    picCell?.removeLabelLoad()
+                    picCell?.removeDpLoad()
+                }
+                else{
+                    fallthrough
+                }
             }
         default:
             switch feed?.loadedProducts.contains(where: {$0.uid == user.uid}){
