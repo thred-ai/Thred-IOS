@@ -62,7 +62,8 @@ extension Array where Iterator.Element == Product{
         }
         else{
             for (index, product) in self.enumerated(){
-                if (!(newPosts?.contains(where: {$0.picID == product.picID}) ?? false)) || newPosts?.contains(where: {$0.picID == product.picID && $0.blurred != product.blurred}) ?? false{
+                if (!(newPosts?.contains(where: {$0.picID == product.picID}) ?? true)) || newPosts?.contains(where: {$0.picID == product.picID && $0.blurred != product.blurred}) ?? false{
+                    
                     cache.removeImage(forKey: product.productID, withCompletion: {
                         if product.uid != userInfo.uid{
                             cache.removeImage(forKey: product.userImageID, withCompletion: {

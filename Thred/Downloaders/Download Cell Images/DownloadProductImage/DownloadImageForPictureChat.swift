@@ -34,86 +34,96 @@ extension UITableView{
                     fallthrough
                 }
             default:
-                if let image = cache.imageFromCache(forKey: user.picID){
+                
+                if let image = cache.imageFromCache(forKey: picID){
                     fullVC.rasterizeProductCellDisplay(cell: cell, image: image, product: user)
                 }
                 else{
-                    downloadProductImage(pictureProduct: cell, followingUID: user.uid, picID: picID, index: index, downloader: downloader, feedVC: nil, friendVC: nil, userVC: nil, fullVC: vc as? FullProductVC, type: type, product: user){
+                    
+                    self.downloadProductImage(pictureProduct: cell, followingUID: user.uid, picID: picID, index: index, downloader: downloader, feedVC: nil, friendVC: nil, userVC: nil, fullVC: vc as? FullProductVC, type: type, product: user){_,_ in
                         return
                     }
                 }
             }
         }
-        else if let imgFromCache = cache.imageFromCache(forKey: picID){
-            circularProgress?.removeFromSuperview()
-            
-            let bundlePath = Bundle.main.path(forResource: user.templateColor, ofType: "png")
-            let image = UIImage(contentsOfFile: bundlePath!)
-            cell?.productPicture.image = image
-            cell?.productPicture.addShadowToImageNotLayer()
-            cell?.canvasDisplayView.image = imgFromCache
-        }
         else{
-            guard var tokens = (vc as? FeedVC)?.tokens ?? (vc as? UserVC)?.tokens ?? (vc as? FriendVC)?.tokens
-            else {return}
-            cell?.setUpCircularProgress()
-            if !tokens.contains(where: {$0 == picID}){
-                tokens.append(picID)
-                downloadProductImage(pictureProduct: cell, followingUID: user.uid, picID: picID, index: index, downloader: downloader, feedVC: vc as? FeedVC, friendVC: vc as? FriendVC, userVC: vc as? UserVC, fullVC: nil, type: type, product: user){
-                    tokens.removeAll(where: {$0 == picID})
+            
+            DispatchQueue(label: "cache").async {
+                let img = cache.imageFromCache(forKey: picID)
+                
+                DispatchQueue.main.async {
+                    if let imgFromCache = img{
+                        circularProgress?.removeFromSuperview()
+                        
+                        let bundlePath = Bundle.main.path(forResource: user.templateColor, ofType: "png")
+                        let image = UIImage(contentsOfFile: bundlePath!)
+                        cell?.productPicture.image = image
+                        cell?.productPicture.addShadowToImageNotLayer()
+                        cell?.canvasDisplayView.image = imgFromCache
+                    }
+                    else{
+                        guard var tokens = (vc as? FeedVC)?.tokens ?? (vc as? UserVC)?.tokens ?? (vc as? FriendVC)?.tokens
+                        else {return}
+                        cell?.setUpCircularProgress()
+                        if !tokens.contains(where: {$0 == picID}){
+                            tokens.append(picID)
+                            self.downloadProductImage(pictureProduct: cell, followingUID: user.uid, picID: picID, index: index, downloader: downloader, feedVC: vc as? FeedVC, friendVC: vc as? FriendVC, userVC: vc as? UserVC, fullVC: nil, type: type, product: user){_,_ in
+                                tokens.removeAll(where: {$0 == picID})
+                            }
+                        }
+                    }
                 }
             }
         }
     }
     
-    func downloadProductImage(pictureProduct: ProductCell?, followingUID: String, picID: String, index: Int, downloader: SDWebImageDownloader?, feedVC: FeedVC?, friendVC: FriendVC?, userVC: UserVC?, fullVC: FullProductVC?, type: String?, product: Product?, completed: @escaping () -> ()){
+    func downloadProductImage(pictureProduct: ProductCell?, followingUID: String, picID: String, index: Int, downloader: SDWebImageDownloader?, feedVC: FeedVC?, friendVC: FriendVC?, userVC: UserVC?, fullVC: FullProductVC?, type: String?, product: Product?, completed: @escaping (UIImage?, String?) -> ()){
                
-        if pictureProduct != nil{
-            pictureProduct?.circularProgress.isHidden = false
-            let cp = pictureProduct?.circularProgress
-            
-            var pic_id = picID
-            if product?.blurred ?? false{
-                pic_id = "blur_\(pic_id)"
+        let cp = pictureProduct?.circularProgress
+        cp?.isHidden = false
+
+        var pic_id = picID
+        if product?.blurred ?? false{
+            pic_id = "blur_\(pic_id)"
+        }
+        if fullVC == nil{
+            pic_id = "thumbnail_\(picID)"
+        }
+        
+        let ref = Storage.storage().reference().child("Users/" + followingUID + "/" + "Products/" + picID + "/" + pic_id + ".png")
+        ref.downloadURL(completion: { url, error in
+            if error != nil{
+                print(error?.localizedDescription ?? "")
+                completed(nil, picID)
             }
-            if fullVC == nil{
-                pic_id = "thumbnail_\(picID)"
-            }
-            
-            let ref = Storage.storage().reference().child("Users/" + followingUID + "/" + "Products/" + picID + "/" + pic_id + ".png")
-            ref.downloadURL(completion: { url, error in
-                if error != nil{
-                    print(error?.localizedDescription ?? "")
-                    completed()
-                }
-                else{
-                    var dub: CGFloat = 0
-                    var oldDub: CGFloat = 0
-                    downloader?.requestImage(with: url, options: [.highPriority, .continueInBackground, .scaleDownLargeImages], context: nil, progress: { (receivedSize: Int, expectedSize: Int, link) -> Void in
-                        dub = CGFloat(receivedSize) / CGFloat(expectedSize)
-                        print("Progress \(dub)")
-                        print("Old Progress \(oldDub)")
-                        DispatchQueue.main.sync {
-                            cp?.setProgressWithAnimation(duration: 0.0, value: dub, from: oldDub, finished: true){
-                                oldDub = dub
-                            }
+            else{
+                var dub: CGFloat = 0
+                var oldDub: CGFloat = 0
+                downloader?.requestImage(with: url, options: [.highPriority, .continueInBackground, .scaleDownLargeImages], context: nil, progress: { (receivedSize: Int, expectedSize: Int, link) -> Void in
+                    dub = CGFloat(receivedSize) / CGFloat(expectedSize)
+                    print("Progress \(dub)")
+                    print("Old Progress \(oldDub)")
+                    DispatchQueue.main.sync {
+                        cp?.setProgressWithAnimation(duration: 0.0, value: dub, from: oldDub, finished: true){
+                            oldDub = dub
                         }
-                    }, completed: {[weak self] (image, data, error, finished) in
-                        if error != nil{
-                            print(error?.localizedDescription ?? "")
-                            completed()
-                        }
-                        else{
-                            if let imgData = data{
-                                completed()
-                                if fullVC != nil{
-                                    cache.storeImageData(toDisk: imgData, forKey: picID)
-                                    if let cell = self?.cellForRow(at: IndexPath(row: 0, section: 0)) as? ProductCell{
-                                        fullVC?.rasterizeProductCellDisplay(cell: cell, image: image, product: product)
-                                    }
+                    }
+                }, completed: {[weak self] (image, data, error, finished) in
+                    if error != nil{
+                        print(error?.localizedDescription ?? "")
+                        completed(nil, picID)
+                    }
+                    else{
+                        if let imgData = data{
+                            completed(image, picID)
+                            if fullVC != nil{
+                                cache.storeImageData(toDisk: imgData, forKey: picID)
+                                if let cell = self?.cellForRow(at: IndexPath(row: 0, section: 0)) as? ProductCell{
+                                    fullVC?.rasterizeProductCellDisplay(cell: cell, image: image, product: product)
                                 }
-                                else{
-                                    guard let products = feedVC?.loadedProducts ?? userVC?.loadedProducts ?? friendVC?.loadedProducts else{return}
+                            }
+                            else{
+                                if let products = feedVC?.loadedProducts ?? userVC?.loadedProducts ?? friendVC?.loadedProducts {
                                     if let index = products.firstIndex(where: {$0.productID == picID}){
                                         if products.indices.contains(index){
                                             cache.storeImageData(toDisk: imgData, forKey: picID)
@@ -123,13 +133,11 @@ extension UITableView{
                                 }
                             }
                         }
-                    })
-                }
-            })
-        }
-        else{
-            completed()
-        }
+                    }
+                })
+            }
+        })
+        
     }
     
     func setCell(index: Int, image: UIImage?, templateID: String!){

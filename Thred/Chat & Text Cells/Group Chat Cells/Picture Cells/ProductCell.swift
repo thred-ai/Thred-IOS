@@ -59,6 +59,7 @@ class ProductCell: UITableViewCell {
                     .imageWithColor(selectedColor), for: .normal)
                 product.liked = true
             } else {
+                likeBtn.imageView?.stopAnimating()
                 likeBtn.setImage(unlikedImage, for: .normal)
                 if product.likes == 0{
                     likesLbl.text = "\(0)"
@@ -106,7 +107,7 @@ class ProductCell: UITableViewCell {
         isUserInteractionEnabled = false
         likeQueue.removeValue(forKey: product.productID)
         
-        if !(userInfo.userLiked?.contains(product.productID) ?? true){
+        if !isLiked{
             isLiked = true
             likeQueue.updateValue(true, forKey: product.productID)
             likesLbl.text = "\((product.likes) + 1)"
@@ -183,7 +184,9 @@ class ProductCell: UITableViewCell {
             if finished{
                 self.likeBtn.isEnabled = true
                 self.isUserInteractionEnabled = true
-                self.likeBtn.imageView?.startAnimating()
+                if self.isLiked{
+                    self.likeBtn.imageView?.startAnimating()
+                }
             }
         })
     }

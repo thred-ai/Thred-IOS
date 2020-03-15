@@ -29,8 +29,8 @@ class ExploreViewController: UITableViewController{
        
         tableView.addSubview(refresher)
         
-        getTemplates{
-            
+        getTemplates{_ in
+            self.isLoading = false
         }
     }
     
@@ -38,6 +38,21 @@ class ExploreViewController: UITableViewController{
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(true)
         showCenterBtn()
+
+        guard productToOpen != nil else{return}
+        
+        for section in colorSections{
+            tableView.syncPostLikes(loadedProducts: section["Array"] as? [Product] ?? [], vc: self)
+        }
+
+        guard let colorSection = self.colorSections.first(where: {$0["ID"] as? String == productToOpen.templateColor}) else{return}
+        guard let postArray = colorSection["Array"] as? [Product] else{return}
+        guard let post = postArray.first(where: {$0.productID == productToOpen.productID}) else{return}
+        post.liked = productToOpen.liked
+        post.likes = productToOpen.likes
+        post.username = productToOpen.username
+        post.fullName = productToOpen.fullName
+        
     }
     
     var isLoading = false
@@ -50,10 +65,12 @@ class ExploreViewController: UITableViewController{
                 sender.animateRefresh()
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                self.colorSections.removeAll()
-                self.tableView.reloadData()
-                cache.clearMemory()
-                self.getTemplates{
+                self.getTemplates{ error in
+                    
+                    if error == nil{
+                        self.colorSections.removeAll()
+                        cache.clearMemory()
+                    }
                     self.isLoading = false
                     sender.endRefreshing()
                 }
@@ -69,14 +86,15 @@ class ExploreViewController: UITableViewController{
         return colorSections.count
     }
     
-    func getTemplates(completed: @escaping () -> ()){
+    func getTemplates(completed: @escaping (Error?) -> ()){
         Firestore.firestore().document("Templates/Tees").getDocument(completion: { snap, error in
             if error != nil{
+                completed(error)
                 print(error?.localizedDescription ?? "")
             }
             else{
-                //for doc in snaps?.documents ?? []{}
                 guard let doc = snap else{return}
+                completed(nil)
                 let ids = doc["IDs"] as? [String]
                 for id in ids ?? []{
                     self.colorSections.append(["Array": nil, "ID": id, "Offset": 0, "Downloading" : []])
@@ -84,7 +102,6 @@ class ExploreViewController: UITableViewController{
                 DispatchQueue.main.async {
                     self.tableView.reloadData()
                 }
-                completed()
             }
         })
     }
@@ -136,6 +153,13 @@ class ExploreViewController: UITableViewController{
         }
     }
     
+    var selectedTemplateColor: String?
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        selectedTemplateColor = colorSections[indexPath.row]["ID"] as? String
+        self.performSegue(withIdentifier: "toColorSection", sender: nil)
+    }
+    
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 220
     }
@@ -144,7 +168,13 @@ class ExploreViewController: UITableViewController{
         if let fullVC = segue.destination as? FullProductVC{
             fullVC.fullProduct = productToOpen
         }
+        if let sectionVC = segue.destination as? ColorSectionVC{
+            guard let color = selectedTemplateColor else{return}
+            sectionVC.templateColor = color
+        }
     }
+    
+    
     
     /*
     func addDebitCard(){

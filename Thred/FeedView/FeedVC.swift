@@ -137,7 +137,6 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
     }
     
     override func awakeFromNib() {
-        loadUserInfo()
     }
     
     lazy var rightNavItems: UIBarButtonItem? = {
@@ -322,7 +321,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                             for document in documents{
                                 let uid = document.documentID
                                 let username = document["Username"] as? String
-                                let fullname = document["Full Name"] as? String
+                                let fullname = document["Full_Name"] as? String
                                 let bio = document["Bio"] as? String
                                 let dpLink = document["ProfilePicID"] as? String
                                 let notifID = document["Notification ID"] as? String
@@ -430,9 +429,8 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                 
         if !isLoading{
             isLoading = true
-            if sender.isRefreshing{
-                sender.animateRefresh()
-            }
+            sender.animateRefresh()
+            
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                 self.downloadProducts(){
                     self.isLoading = false
@@ -594,10 +592,6 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
     
     var currentproductsJSON: [DocumentSnapshot]!
 
-    
-    func getDate(){
-        
-    }
     
     func getProducts(fromInterval: Date?, completed: @escaping (Bool?, [DocumentSnapshot]?) -> ()){
         
@@ -793,6 +787,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
     }
     
     override func viewDidAppear(_ animated: Bool) {
+        
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -883,48 +878,3 @@ extension UITableView{
     }
 }
 
-extension UIViewController{
-    
-    func loadUserInfo(){
-        
-        UserDefaults.standard.set("aR6FMc9OR2VmBUrHCk8l3KQIDPj1", forKey: "UID") //Arta
-        //UserDefaults.standard.set("tl1oOs1NXdeHsium7ZygweBc7YO2", forKey: "UID") //Arvin
-        //UserDefaults.standard.set("te7lsnwiPUMyj85O4Q5Tkvuu3VH3", forKey: "UID") //Dad
-
-        let uid = UserDefaults.standard.string(forKey: "UID")!
-        userInfo.uid = uid
-        print(uid)
-        
-
-        //Crashlytics.sharedInstance().crash()
-        let username = UserDefaults.standard.string(forKey: "USERNAME") ?? "null"
-        userInfo.username = username
-        let fullname = UserDefaults.standard.string(forKey: "FULLNAME") ?? "null"
-        userInfo.fullName = fullname
-
-        if let bio = UserDefaults.standard.string(forKey: "BIO"){
-            userInfo.bio = bio
-        }
-        let dpID = UserDefaults.standard.string(forKey: "DP_ID") ?? "default"
-        userInfo.dpID = dpID
-        if let profilePic = cache.imageFromDiskCache(forKey: dpID){
-            userInfo.dp = profilePic
-        }
-
-        if let notifID = UserDefaults.standard.string(forKey: "NOTIF_ID"){
-            userInfo.notifID = notifID
-        }
-        if let userLiked = UserDefaults.standard.stringArray(forKey: "LikedPosts"){
-            userInfo.userLiked = userLiked
-        }
-        if let userFollowing = UserDefaults.standard.stringArray(forKey: "FOLLOWING"){
-            userInfo.userFollowing = userFollowing
-        }
-        if let likesToUpdate =         UserDefaults.standard.object(forKey: "likeQueue") as? [String : Bool]{
-            likeQueue = likesToUpdate
-        }
-        if let uploadPosts =         UserDefaults.standard.stringArray(forKey: "UploadingPosts"){
-            uploadingPosts = uploadPosts
-        }
-    }
-}

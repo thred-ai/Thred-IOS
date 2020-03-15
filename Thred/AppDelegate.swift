@@ -12,15 +12,78 @@ import Stripe
 
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate, MessagingDelegate {
     var window: UIWindow?
 
+    func loadUserInfo(){
+        UserDefaults.standard.set("6QetMxilaaN9YdyEb3DoAPiTjlu1", forKey: "UID") //Arta
+        
+        UserDefaults.standard.removeObject(forKey: "NOTIF_ID")
+        //UserDefaults.standard.set("tl1oOs1NXdeHsium7ZygweBc7YO2", forKey: "UID") //Arvin
+        //UserDefaults.standard.set("te7lsnwiPUMyj85O4Q5Tkvuu3VH3", forKey: "UID") //Dad
+        let uid = UserDefaults.standard.string(forKey: "UID")!
+        userInfo.uid = uid
+
+        let username = UserDefaults.standard.string(forKey: "USERNAME") ?? "null"
+        userInfo.username = username
+        let fullname = UserDefaults.standard.string(forKey: "FULLNAME") ?? "null"
+        userInfo.fullName = fullname
+
+        if let bio = UserDefaults.standard.string(forKey: "BIO"){
+            userInfo.bio = bio
+        }
+        let dpID = UserDefaults.standard.string(forKey: "DP_ID") ?? "default"
+        userInfo.dpID = dpID
+        if let profilePic = cache.imageFromDiskCache(forKey: dpID){
+            userInfo.dp = profilePic
+        }
+
+        if let notifID = UserDefaults.standard.string(forKey: "NOTIF_ID"){
+            userInfo.notifID = notifID
+        }
+        if let userLiked = UserDefaults.standard.stringArray(forKey: "LikedPosts"){
+            userInfo.userLiked = userLiked
+        }
+        if let userFollowing = UserDefaults.standard.stringArray(forKey: "FOLLOWING"){
+            userInfo.userFollowing = userFollowing
+        }
+        if let likesToUpdate =         UserDefaults.standard.object(forKey: "likeQueue") as? [String : Bool]{
+            likeQueue = likesToUpdate
+        }
+        if let uploadPosts =         UserDefaults.standard.stringArray(forKey: "UploadingPosts"){
+            uploadingPosts = uploadPosts
+        }
+    }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         FirebaseApp.configure()
+        loadUserInfo()
+        //login()
+        if userInfo.uid != String(){
+            registerNotifs(application: application)
+        }
+
         return true
         
+    }
+    
+    func registerNotifs(application: UIApplication){
+        if #available(iOS 10.0, *) {
+          // For iOS 10 display notification (sent via APNS)
+            UNUserNotificationCenter.current().delegate = self
+            Messaging.messaging().delegate = self
+            let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
+            UNUserNotificationCenter.current().requestAuthorization(
+            options: authOptions,
+            completionHandler: {_, _ in })
+        } else {
+          let settings: UIUserNotificationSettings =
+          UIUserNotificationSettings(types: [.alert, .badge, .sound], categories: nil)
+          application.registerUserNotificationSettings(settings)
+        }
+
+        application.registerForRemoteNotifications()
     }
 
     // MARK: UISceneSession Lifecycle
@@ -33,15 +96,43 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
     }
     
-    func json(from object:Any) -> Data? {
-        guard let data = try? JSONSerialization.data(withJSONObject: object, options: []) else {
-            return nil
-        }
-        return data
+    func login(){
+        Auth.auth().signIn(withEmail: "djkazi19@gmail.com", password: "123456", completion: { result, error in
+            if error != nil{
+                print(error?.localizedDescription ?? "")
+            }
+        })
+    }
+    
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        
     }
     
     
-    
+    func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String) {
+        InstanceID.instanceID().instanceID { (result, error) in
+            if let error = error {
+                print("Error fetching remote instance ID: \(error)")
+            } else if let result = result {
+                print("Remote instance ID token: \(result.token)")
+                let oldToken = UserDefaults.standard.string(forKey: "NOTIF_ID") ?? ""
+                
+                if oldToken != result.token || oldToken.isEmpty{
+                    
+                    let ref = Firestore.firestore().collection("Users").document(userInfo.uid)
+                    ref.updateData(["notification_tokens" : FieldValue.arrayUnion([result.token])], completion: { error in
+                        if error != nil{
+                            print(error?.localizedDescription ?? "")
+                        }
+                        else{
+                            UserDefaults.standard.set(result.token, forKey: "NOTIF_ID")
+                            ref.updateData(["notification_tokens" : FieldValue.arrayRemove([oldToken])])
+                        }
+                    })
+                }
+            }
+        }
+    }
     
     
     
@@ -67,6 +158,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         */
     }
+    
+    
     
     func applicationWillEnterForeground(_ application: UIApplication) {
         // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.

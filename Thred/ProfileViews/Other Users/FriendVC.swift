@@ -137,7 +137,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
                     self.downloader = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
                 }
                 self.downloader?.cancelAllDownloads()
-                self.tableView.downloadUserInfo(uid: self.friendInfo.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: true, downloader: self.downloader, userInfo: self.friendInfo, completed: { fullName, username, dpID, notifID, bio, image, userFollowing in
+                self.tableView.downloadUserInfo(uid: self.friendInfo.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: true, doNotDownloadDP: false, downloader: self.downloader, userInfo: self.friendInfo, completed: { fullName, username, dpID, notifID, bio, image, userFollowing in
                     
                     if username != nil{
                         

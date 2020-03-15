@@ -17,7 +17,7 @@ extension UITableView{
     func beginDownloadingUserInfo(uid: String, downloader: SDWebImageDownloader?, userVC: UserVC?, feedVC: FeedVC?, friendVC: FriendVC?, fullVC: FullProductVC?, section: Int){
         print(uid)
         
-        downloadUserInfo(uid: uid, userVC: userVC, feedVC: feedVC, downloadingPersonalDP: false, downloader: downloader, userInfo: nil, completed: {[weak self] fullName, username, dpUID, notifID, bio, imgData, userFollowing in
+        downloadUserInfo(uid: uid, userVC: userVC, feedVC: feedVC, downloadingPersonalDP: false, doNotDownloadDP: false, downloader: downloader, userInfo: nil, completed: {[weak self] fullName, username, dpUID, notifID, bio, imgData, userFollowing in
             
             if username != nil{
                 if userVC != nil{
@@ -35,7 +35,7 @@ extension UITableView{
         })
     }
     
-    func downloadUserInfo(uid: String, userVC: UserVC?, feedVC: FeedVC?, downloadingPersonalDP: Bool, downloader: SDWebImageDownloader?, userInfo: UserInfo?, completed: @escaping (String?, String?, String?, String?, String?, UIImage?, [String]?) -> ()){
+    func downloadUserInfo(uid: String, userVC: UserVC?, feedVC: FeedVC?, downloadingPersonalDP: Bool, doNotDownloadDP: Bool, downloader: SDWebImageDownloader?, userInfo: UserInfo?, completed: @escaping (String?, String?, String?, String?, String?, UIImage?, [String]?) -> ()){
         
         let ref = Firestore.firestore().collection("Users").document(uid)
         
@@ -48,10 +48,16 @@ extension UITableView{
             else{
                 let dpUID = document!["ProfilePicID"] as? String //UID OF COMMENT IMAGE
                 let username = document!["Username"] as? String //COMMENTER'S USERNAME
-                let fullName = document!["Full Name"] as? String
+                let fullName = document!["Full_Name"] as? String
                 let bio = document?["Bio"] as? String
                 let notifID = document?["Notification ID"] as? String
                 let userFollowing = document?["Following_List"] as? [String]
+                
+                if doNotDownloadDP{
+                    completed(fullName, username, nil, notifID, bio, nil, userFollowing)
+                    return
+                }
+                
                 var options = SDWebImageOptions(arrayLiteral: [.scaleDownLargeImages, .continueInBackground])
                 var storageRef: StorageReference?
                 storageRef = Storage.storage().reference().child("Users").child(uid).child("profile_pic-" + (dpUID ?? "") + ".jpeg") //STORAGE REFERENCE OF COMMENT IMAGE

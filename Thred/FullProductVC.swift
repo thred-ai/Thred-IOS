@@ -11,7 +11,7 @@ import SDWebImage
 import FirebaseFirestore
 
 
-class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableViewDelegate, UITableViewDataSource {
+class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableViewDelegate, UITableViewDataSource, UIGestureRecognizerDelegate {
 
     @IBOutlet weak var addToCartBtn: UIButton!
     
@@ -41,7 +41,8 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
         // self.navigationItem.rightBarButtonItem = self.editButtonItem
         tableView.delegate = self
         tableView.dataSource = self
-        
+        self.navigationController?.interactivePopGestureRecognizer?.delegate = self
+
         tableView.register(UINib(nibName: "ProductCell", bundle: nil), forCellReuseIdentifier: "PictureProduct")
         cache.removeImageFromMemory(forKey: fullProduct.picID)
     }
@@ -57,6 +58,14 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
         return 1000
     }
     
+    var isRasterizing = false
+    
+    func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        if isRasterizing{
+            return false
+        }
+        return true
+    }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(true)
@@ -103,6 +112,7 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
                     
                     EmptyDocuments:
                     if error != nil{
+                        
                         print(error?.localizedDescription ?? "")
                     }
                     else{
@@ -138,9 +148,11 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
     
     func navigationController(_ navigationController: UINavigationController, willShow viewController: UIViewController, animated: Bool) {
         
+        
     }
     
     func rasterizeProductCellDisplay(cell: ProductCell?, image: UIImage?, product: Product?){
+        isRasterizing = true
         cell?.canvasDisplayView.isHidden = false
         cell?.canvasDisplayView.image = image
         let bundlePath = Bundle.main.path(forResource: product?.templateColor, ofType: "png")
@@ -148,14 +160,21 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
         cell?.productPicture.image = img
         cell?.productPicture.addShadowToImageNotLayer()
         cell?.circularProgress.removeFromSuperview()
+        self.navigationController?.navigationBar.isUserInteractionEnabled = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             let fullData = cell?.productPicture.makeSnapshot(clear: true, subviewsToIgnore: [])?.pngData()
             cell?.canvasDisplayView.isHidden = true
+            self.navigationController?.navigationBar.isUserInteractionEnabled = true
+
+            self.navigationItem.hidesBackButton = false
             self.fullProduct.designImage = fullData
             guard let fullImgData = fullData else{return}
             cell?.productPicture.image = UIImage(data: fullImgData)
+            self.isRasterizing = false
         }
     }
+    
+    
 
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         

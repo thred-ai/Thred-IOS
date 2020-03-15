@@ -52,7 +52,7 @@ class UserVC: UITableViewController {
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                 self.downloader?.cancelAllDownloads()
-                self.tableView.downloadUserInfo(uid: userInfo.uid, userVC: self, feedVC: nil, downloadingPersonalDP: true, downloader: self.downloader, userInfo: userInfo, completed: { fullName, username, dpID, notifID, bio, image, userFollowing in
+                self.tableView.downloadUserInfo(uid: userInfo.uid, userVC: self, feedVC: nil, downloadingPersonalDP: true, doNotDownloadDP: false, downloader: self.downloader, userInfo: userInfo, completed: { fullName, username, dpID, notifID, bio, image, userFollowing in
                     
                     if image != nil{
                     }
@@ -186,7 +186,6 @@ class UserVC: UITableViewController {
 
         if self.navigationController?.viewControllers.first == self{
                 //Clicked on profile button
-            
             UIView.animate(withDuration: 0.2, animations: {
                 (self.downBtn?.customView?.subviews.first as? UIButton)?.transform = CGAffineTransform(scaleX: 1, y: -1)
             })

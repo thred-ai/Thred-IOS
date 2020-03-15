@@ -135,15 +135,15 @@ extension UITableView{
                         }
                     }
                     let otherViewControllers = (vc.tabBarController?.viewControllers ?? []).filter({$0 != vc.navigationController})
-                    for vc in otherViewControllers{
-                        var vcToCheck: UIViewController! = vc
+                    for viewController in otherViewControllers{
+                        var vcToCheck: UIViewController! = viewController
                         if let nav = vcToCheck as? UINavigationController{
                             vcToCheck = nav.viewControllers.last
                         }
-                        if vcToCheck == self{continue}
-                        guard let loadedProducts = (vcToCheck as? FriendVC)?.loadedProducts ?? (vcToCheck as? FeedVC)?.loadedProducts ?? (vcToCheck as? UserVC)?.loadedProducts else{continue}
+                        if vcToCheck == vc{continue}
+                        guard let loadedProducts = (vcToCheck as? FriendVC)?.loadedProducts ?? (vcToCheck as? FeedVC)?.loadedProducts ?? (vcToCheck as? UserVC)?.loadedProducts ?? (vcToCheck as? ColorSectionVC)?.loadedProducts else{continue}
                         if !loadedProducts.contains(where: {$0.productID == product.productID && $0.liked != product.liked}){
-                            if vc == otherViewControllers.last{
+                            if viewController == otherViewControllers.last{
                                 likeQueue.removeValue(forKey: product.productID)
                             }
                         }

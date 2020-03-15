@@ -14,13 +14,14 @@ extension UITableView{
     
     func checkTimes(user: Product, timestampLbl: UILabel?){
         
-        if user.timestamp == nil{
-            
-            return
-        }
-        user.timestampDiff = setTimeDifference(user: user, timeToUse: user.timestamp)
-        DispatchQueue.main.async {
-            timestampLbl?.text = "\(user.timestampDiff!) ago"
+        DispatchQueue(label: "Times").async {
+            if user.timestamp == nil{
+                return
+            }
+            user.timestampDiff = self.setTimeDifference(user: user, timeToUse: user.timestamp)
+            DispatchQueue.main.async {
+                timestampLbl?.text = "\(user.timestampDiff!) ago"
+            }
         }
     }
 
