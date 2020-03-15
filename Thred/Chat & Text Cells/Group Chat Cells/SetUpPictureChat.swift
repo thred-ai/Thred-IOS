@@ -79,7 +79,7 @@ extension UITableView{
         if product.price != nil{
             
             var price = "$\(product.price ?? 0.00)"
-            if price.count == 5{
+            if price.count >= 5{
                 price = price + "0"
             }
             cell?.price.text = price

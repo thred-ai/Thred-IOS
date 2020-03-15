@@ -179,11 +179,11 @@
             </objects>
             <point key="canvasLocation" x="62" y="457"/>
         </scene>
-        <!--5-->
+        <!--Navigation Controller-->
         <scene sceneID="Z5y-Eb-2Bc">
             <objects>
                 <navigationController extendedLayoutIncludesOpaqueBars="YES" automaticallyAdjustsScrollViewInsets="NO" id="myt-A0-mhg" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="5" id="1em-xL-7aa"/>
+                    <tabBarItem key="tabBarItem" title="" image="person" catalog="system" id="1em-xL-7aa"/>
                     <toolbarItems/>
                     <navigationItem key="navigationItem" id="2ND-0L-meP"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translucent="NO" id="XMl-fl-vXc">
@@ -298,10 +298,11 @@
             <objects>
                 <tabBarController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="e5I-jE-8Ag" customClass="MainTabBarViewController" customModule="Thred" customModuleProvider="target" sceneMemberID="viewController">
                     <navigationItem key="navigationItem" id="REK-eD-vzW"/>
-                    <tabBar key="tabBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="WeN-dd-xzC">
+                    <tabBar key="tabBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" itemPositioning="fill" id="WeN-dd-xzC">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="49"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <color key="selectedImageTintColor" name="LoadingColor"/>
                     </tabBar>
                     <connections>
                         <segue destination="u4A-57-s2t" kind="show" identifier="new" id="JhQ-nJ-glp"/>
@@ -336,7 +337,7 @@
         <scene sceneID="Lht-w2-ErK">
             <objects>
                 <navigationController extendedLayoutIncludesOpaqueBars="YES" automaticallyAdjustsScrollViewInsets="NO" id="7LV-k9-ssG" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" id="XEb-ZW-fGt"/>
+                    <tabBarItem key="tabBarItem" image="feed" id="XEb-ZW-fGt"/>
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translucent="NO" id="zwd-y5-Dgw">
                         <rect key="frame" x="0.0" y="44" width="375" height="44"/>
@@ -978,7 +979,7 @@
             </objects>
             <point key="canvasLocation" x="2493.5999999999999" y="-1218.4729064039409"/>
         </scene>
-        <!--4-->
+        <!--NotificationVC-->
         <scene sceneID="Oza-RW-hOA">
             <objects>
                 <viewController id="b26-ny-SLm" customClass="NotificationVC" customModule="Thred" customModuleProvider="target" sceneMemberID="viewController">
@@ -1000,7 +1001,7 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="Wq2-gn-OIK"/>
                     </view>
-                    <tabBarItem key="tabBarItem" title="4" id="ICw-1t-TqU"/>
+                    <tabBarItem key="tabBarItem" title="" image="tag" catalog="system" id="ICw-1t-TqU"/>
                     <connections>
                         <outlet property="tableView" destination="veH-Cx-jQZ" id="GbD-Mc-Elt"/>
                     </connections>
@@ -1013,7 +1014,7 @@
         <scene sceneID="wJ0-TV-PKT">
             <objects>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="Duy-9l-huh" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" id="qp5-FH-i2C"/>
+                    <tabBarItem key="tabBarItem" image="eye" catalog="system" id="qp5-FH-i2C"/>
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="zwW-ck-njO">
                         <rect key="frame" x="0.0" y="44" width="375" height="44"/>
@@ -1030,6 +1031,10 @@
         </scene>
     </scenes>
     <resources>
+        <image name="eye" catalog="system" width="64" height="40"/>
+        <image name="feed" width="30" height="30"/>
+        <image name="person" catalog="system" width="64" height="58"/>
+        <image name="tag" catalog="system" width="64" height="58"/>
         <image name="thred.logo" width="366.66665649414062" height="366.66665649414062"/>
         <namedColor name="LoadingColor">
             <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
@@ -1039,7 +1044,7 @@
         </namedColor>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="KmP-iV-8sc"/>
+        <segue reference="fTU-hH-zsJ"/>
         <segue reference="VaI-il-Tax"/>
         <segue reference="TBa-9t-l9t"/>
     </inferredMetricsTieBreakers>

@@ -16,7 +16,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     var window: UIWindow?
 
     func loadUserInfo(){
-        UserDefaults.standard.set("6QetMxilaaN9YdyEb3DoAPiTjlu1", forKey: "UID") //Arta
+        UserDefaults.standard.set("aR6FMc9OR2VmBUrHCk8l3KQIDPj1", forKey: "UID") //Arta
         
         UserDefaults.standard.removeObject(forKey: "NOTIF_ID")
         //UserDefaults.standard.set("tl1oOs1NXdeHsium7ZygweBc7YO2", forKey: "UID") //Arvin

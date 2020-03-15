@@ -47,6 +47,7 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
         cache.removeImageFromMemory(forKey: fullProduct.picID)
     }
     
+    
 
     
     override func viewDidLayoutSubviews() {

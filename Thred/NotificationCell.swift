@@ -15,6 +15,27 @@ class NotificationCell: UITableViewCell {
     @IBOutlet weak var notifLbl: UILabel!
     
     
+    var isDP: Bool = false{
+        
+        didSet{
+            notifPic.setNeedsLayout()
+            notifPic.layoutIfNeeded()
+            if isDP{
+                notifPic.layer.cornerRadius = notifPic.frame.height / 2
+                notifPic.layer.borderColor = UIColor(named: "ProfileMask")?.cgColor
+                notifPic.layer.borderWidth = notifPic.frame.height / 17.75
+            }
+            else{
+                notifPic.layer.cornerRadius = notifPic.frame.height / 8
+                notifPic.layer.borderWidth = 0
+            }
+        }
+    }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        notifPic.layer.borderColor = UIColor(named: "ProfileMask")?.cgColor
+    }
+    
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code

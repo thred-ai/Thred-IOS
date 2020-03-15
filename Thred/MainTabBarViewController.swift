@@ -57,12 +57,15 @@ class MainTabBarViewController: UITabBarController {
         let button = UIButton.init(frame: CGRect(x: x, y: y, width: width, height: height))
         button.backgroundColor = ColorCompatibility.systemBackground
             //UIColor.init(red: 0.976, green: 0.976, blue: 0.976, alpha: 1.0)
-        button.tintColor = UIColor.gray
+        button.tintColor = ColorCompatibility.label
         button.layer.borderColor = UIColor(named: "LoadingColor")?.cgColor 
         button.layer.borderWidth = 6.5
         button.layer.cornerRadius = button.frame.height / 2
         button.clipsToBounds = true
         button.addTarget(self, action: #selector(segueToCreationScreen(_:)), for: .touchUpInside)
+        let img = UIImage(named: "like")?.sd_resizedImage(with: CGSize(width: width / 2, height: height / 2), scaleMode: .aspectFill)?.withRenderingMode(.alwaysTemplate)
+        
+        button.setImage(img, for: .normal)
         button.setRadiusWithShadow()
         return button
     }()

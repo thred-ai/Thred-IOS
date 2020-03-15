@@ -121,9 +121,6 @@
 		AAD3F4032418B63700F8FF8F /* home@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3F22418B63700F8FF8F /* home@3x.png */; };
 		AAD3F4042418B63700F8FF8F /* profile@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3F32418B63700F8FF8F /* profile@2x.png */; };
 		AAD3F4052418B63700F8FF8F /* blank.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3F42418B63700F8FF8F /* blank.png */; };
-		AAD3F4062418B63700F8FF8F /* feed@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3F52418B63700F8FF8F /* feed@3x.png */; };
-		AAD3F4072418B63700F8FF8F /* feed@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3F62418B63700F8FF8F /* feed@2x.png */; };
-		AAD3F4082418B63700F8FF8F /* feed@1x.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3F72418B63700F8FF8F /* feed@1x.png */; };
 		AAD3F4092418B63700F8FF8F /* default_DP.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3F82418B63700F8FF8F /* default_DP.png */; };
 		AAD3F40A2418B63700F8FF8F /* profile@1x.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3F92418B63700F8FF8F /* profile@1x.png */; };
 		AAD3F40B2418B63700F8FF8F /* noFollowers.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3FA2418B63700F8FF8F /* noFollowers.png */; };
@@ -138,6 +135,8 @@
 		AAD3F41D241D8C6600F8FF8F /* NotificationVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD3F41C241D8C6600F8FF8F /* NotificationVC.swift */; };
 		AAD3F420241DEDB900F8FF8F /* NotificationCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD3F41E241DEDB900F8FF8F /* NotificationCell.swift */; };
 		AAD3F421241DEDB900F8FF8F /* NotificationCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F41F241DEDB900F8FF8F /* NotificationCell.xib */; };
+		AAD3F425241EABE800F8FF8F /* SalesCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F423241EABE800F8FF8F /* SalesCell.xib */; };
+		AAD3F427241EB02000F8FF8F /* SalesCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD3F426241EB02000F8FF8F /* SalesCell.swift */; };
 		AADAAD33241385D4003AD618 /* TemplateColorChooserCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AADAAD32241385D4003AD618 /* TemplateColorChooserCell.swift */; };
 		AADAAD352414DFC3003AD618 /* ColorCollectionLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = AADAAD342414DFC3003AD618 /* ColorCollectionLayout.swift */; };
 		BCDC21CE5CBC090FFA4D4117 /* Pods_ThredTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 16C51B907D7A34D7E04E2558 /* Pods_ThredTests.framework */; };
@@ -284,9 +283,6 @@
 		AAD3F3F22418B63700F8FF8F /* home@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "home@3x.png"; sourceTree = "<group>"; };
 		AAD3F3F32418B63700F8FF8F /* profile@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "profile@2x.png"; sourceTree = "<group>"; };
 		AAD3F3F42418B63700F8FF8F /* blank.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = blank.png; sourceTree = "<group>"; };
-		AAD3F3F52418B63700F8FF8F /* feed@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "feed@3x.png"; sourceTree = "<group>"; };
-		AAD3F3F62418B63700F8FF8F /* feed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "feed@2x.png"; sourceTree = "<group>"; };
-		AAD3F3F72418B63700F8FF8F /* feed@1x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "feed@1x.png"; sourceTree = "<group>"; };
 		AAD3F3F82418B63700F8FF8F /* default_DP.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = default_DP.png; sourceTree = "<group>"; };
 		AAD3F3F92418B63700F8FF8F /* profile@1x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "profile@1x.png"; sourceTree = "<group>"; };
 		AAD3F3FA2418B63700F8FF8F /* noFollowers.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = noFollowers.png; sourceTree = "<group>"; };
@@ -303,6 +299,8 @@
 		AAD3F41C241D8C6600F8FF8F /* NotificationVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationVC.swift; sourceTree = "<group>"; };
 		AAD3F41E241DEDB900F8FF8F /* NotificationCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationCell.swift; sourceTree = "<group>"; };
 		AAD3F41F241DEDB900F8FF8F /* NotificationCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NotificationCell.xib; sourceTree = "<group>"; };
+		AAD3F423241EABE800F8FF8F /* SalesCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SalesCell.xib; sourceTree = "<group>"; };
+		AAD3F426241EB02000F8FF8F /* SalesCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SalesCell.swift; sourceTree = "<group>"; };
 		AADAAD32241385D4003AD618 /* TemplateColorChooserCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateColorChooserCell.swift; sourceTree = "<group>"; };
 		AADAAD342414DFC3003AD618 /* ColorCollectionLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorCollectionLayout.swift; sourceTree = "<group>"; };
 		EE13770A87A7B3DCABF609DC /* Pods-Thred-ThredUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Thred-ThredUITests.debug.xcconfig"; path = "Target Support Files/Pods-Thred-ThredUITests/Pods-Thred-ThredUITests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -448,6 +446,8 @@
 				AAABC15E23C947AF00E48987 /* Main.storyboard */,
 				AAD3F41C241D8C6600F8FF8F /* NotificationVC.swift */,
 				AAD3F41E241DEDB900F8FF8F /* NotificationCell.swift */,
+				AAD3F423241EABE800F8FF8F /* SalesCell.xib */,
+				AAD3F426241EB02000F8FF8F /* SalesCell.swift */,
 				AAD3F41F241DEDB900F8FF8F /* NotificationCell.xib */,
 				AA0E2AD4240CCBCA004050B0 /* FullProductVC.swift */,
 				AAABC16623D12A8D00E48987 /* ExploreViewController.swift */,
@@ -720,9 +720,6 @@
 				AAD3F3F22418B63700F8FF8F /* home@3x.png */,
 				AAD3F3F32418B63700F8FF8F /* profile@2x.png */,
 				AAD3F3F42418B63700F8FF8F /* blank.png */,
-				AAD3F3F52418B63700F8FF8F /* feed@3x.png */,
-				AAD3F3F62418B63700F8FF8F /* feed@2x.png */,
-				AAD3F3F72418B63700F8FF8F /* feed@1x.png */,
 				AAD3F3F82418B63700F8FF8F /* default_DP.png */,
 				AAD3F3F92418B63700F8FF8F /* profile@1x.png */,
 				AAD3F3FA2418B63700F8FF8F /* noFollowers.png */,
@@ -868,8 +865,8 @@
 				AAD3F3D82418ABE300F8FF8F /* gray4.png in Resources */,
 				AAD3F3CE2418ABE300F8FF8F /* green2.png in Resources */,
 				AA4AF76423B4464800088F11 /* LaunchScreen.storyboard in Resources */,
-				AAD3F4072418B63700F8FF8F /* feed@2x.png in Resources */,
 				AAD3F3C92418ABE300F8FF8F /* green1.png in Resources */,
+				AAD3F425241EABE800F8FF8F /* SalesCell.xib in Resources */,
 				AAD3F3D62418ABE300F8FF8F /* gray5.png in Resources */,
 				AAD3F4092418B63700F8FF8F /* default_DP.png in Resources */,
 				AAD3F4102418B63700F8FF8F /* button.png in Resources */,
@@ -892,8 +889,6 @@
 				AAD3F3D92418ABE300F8FF8F /* navy2.png in Resources */,
 				AAD3F40B2418B63700F8FF8F /* noFollowers.png in Resources */,
 				AAD3F40F2418B63700F8FF8F /* mask.png in Resources */,
-				AAD3F4062418B63700F8FF8F /* feed@3x.png in Resources */,
-				AAD3F4082418B63700F8FF8F /* feed@1x.png in Resources */,
 				AA44092423F66DD1009F5774 /* HOPE-HYPE.ttf in Resources */,
 				AAD3F40C2418B63700F8FF8F /* arrowBtn.png in Resources */,
 				AAD3F3C52418ABE300F8FF8F /* red2.png in Resources */,
@@ -1149,6 +1144,7 @@
 				AAABC09023C9432700E48987 /* CollectionViewLayout.swift in Sources */,
 				AAABC16723D12A8D00E48987 /* ExploreViewController.swift in Sources */,
 				AA44091A23F3E4B1009F5774 /* ObjectAlignmentLines.swift in Sources */,
+				AAD3F427241EB02000F8FF8F /* SalesCell.swift in Sources */,
 				AA545B3523C43827005E7979 /* ViewController2.swift in Sources */,
 				AA8E68EA2407C43900C651A1 /* ExplorePageFlowLayout.swift in Sources */,
 				AA44092023F3E750009F5774 /* PhotoStickers.swift in Sources */,

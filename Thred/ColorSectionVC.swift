@@ -23,6 +23,7 @@ class ColorSectionVC: UICollectionViewController {
         super.viewDidLoad()
 
         
+        
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
 
@@ -40,6 +41,10 @@ class ColorSectionVC: UICollectionViewController {
     }
     var query: Query! = nil
     var isLoading = false
+    
+    override func viewWillAppear(_ animated: Bool) {
+        self.showCenterBtn()
+    }
 
     func getProducts(fromInterval: Date?, completed: @escaping ()->()){
         
