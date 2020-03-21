@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="TTd-by-I1I">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Nexa W01 Heavy.ttf">
+            <string>NexaW01-Heavy</string>
+        </array>
+    </customFonts>
+    <scenes>
+        <!--Full ProductVC-->
+        <scene sceneID="85x-FN-M5r">
+            <objects>
+                <viewController storyboardIdentifier="UIViewController-TTd-by-I1I" modalPresentationStyle="fullScreen" hidesBottomBarWhenPushed="YES" id="TTd-by-I1I" customClass="FullProductVC" customModule="Thred" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Mdn-7j-wMd">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="808"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="m3i-nE-n4Z">
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="699"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                            </tableView>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wLK-Kf-DT2">
+                                <rect key="frame" x="0.0" y="699" width="414" height="75"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="nUg-TC-cmh">
+                                        <rect key="frame" x="10" y="10" width="394" height="55"/>
+                                        <subviews>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="0Tz-3R-uDx">
+                                                <rect key="frame" x="0.0" y="0.0" width="394" height="55"/>
+                                                <color key="backgroundColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="22"/>
+                                                <state key="normal" title="Add to Cart">
+                                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                </state>
+                                                <connections>
+                                                    <action selector="addToCart:" destination="TTd-by-I1I" eventType="touchUpInside" id="Qb3-iA-dE7"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                    </stackView>
+                                </subviews>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="trailing" secondItem="nUg-TC-cmh" secondAttribute="trailing" constant="10" id="Adz-ff-L72"/>
+                                    <constraint firstItem="nUg-TC-cmh" firstAttribute="top" secondItem="wLK-Kf-DT2" secondAttribute="top" constant="10" id="IMq-T3-NVk"/>
+                                    <constraint firstItem="nUg-TC-cmh" firstAttribute="leading" secondItem="wLK-Kf-DT2" secondAttribute="leading" constant="10" id="V7N-hw-SRK"/>
+                                    <constraint firstAttribute="height" constant="75" id="amg-Na-1NL"/>
+                                    <constraint firstAttribute="bottom" secondItem="nUg-TC-cmh" secondAttribute="bottom" constant="10" id="kEY-b6-M9q"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <constraints>
+                            <constraint firstItem="xpv-8I-VK6" firstAttribute="trailing" secondItem="m3i-nE-n4Z" secondAttribute="trailing" id="0GK-h8-Qc0"/>
+                            <constraint firstItem="m3i-nE-n4Z" firstAttribute="top" secondItem="xpv-8I-VK6" secondAttribute="top" id="G2R-aD-fvB"/>
+                            <constraint firstItem="m3i-nE-n4Z" firstAttribute="leading" secondItem="xpv-8I-VK6" secondAttribute="leading" id="eQA-Hd-8CI"/>
+                            <constraint firstItem="wLK-Kf-DT2" firstAttribute="top" secondItem="m3i-nE-n4Z" secondAttribute="bottom" id="gxh-YD-yqv"/>
+                            <constraint firstItem="xpv-8I-VK6" firstAttribute="trailing" secondItem="wLK-Kf-DT2" secondAttribute="trailing" id="jbL-b5-KIg"/>
+                            <constraint firstItem="xpv-8I-VK6" firstAttribute="bottom" secondItem="wLK-Kf-DT2" secondAttribute="bottom" id="naE-CA-2ul"/>
+                            <constraint firstItem="wLK-Kf-DT2" firstAttribute="leading" secondItem="xpv-8I-VK6" secondAttribute="leading" id="q3y-Om-gFJ"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="xpv-8I-VK6"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="ImL-Gh-i3O"/>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO"/>
+                    <connections>
+                        <outlet property="addToCartBtn" destination="0Tz-3R-uDx" id="5Lr-pP-8R5"/>
+                        <outlet property="tableView" destination="m3i-nE-n4Z" id="Xye-RL-T1K"/>
+                        <segue destination="Wqj-YT-XeZ" kind="show" identifier="toFriend" id="lRg-j5-WXq"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="1Es-Dy-TkR" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3566" y="1343"/>
+        </scene>
+        <!--FriendVC-->
+        <scene sceneID="Y9O-MM-MaI">
+            <objects>
+                <viewControllerPlaceholder storyboardIdentifier="UITableViewController-Esw-Ig-1v3" storyboardName="FriendVC" id="Wqj-YT-XeZ" sceneMemberID="viewController"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="KJQ-h3-Sdy" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3566" y="1831"/>
+        </scene>
+    </scenes>
+</document>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Esw-Ig-1v3">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--FriendVC-->
+        <scene sceneID="fgm-44-kv3">
+            <objects>
+                <tableViewController storyboardIdentifier="UITableViewController-Esw-Ig-1v3" extendedLayoutIncludesOpaqueBars="YES" id="Esw-Ig-1v3" customClass="FriendVC" customModule="Thred" customModuleProvider="target" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="28" id="0ZM-af-j53">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <connections>
+                            <outlet property="dataSource" destination="Esw-Ig-1v3" id="DJk-er-MQh"/>
+                            <outlet property="delegate" destination="Esw-Ig-1v3" id="dVJ-2j-eRs"/>
+                        </connections>
+                    </tableView>
+                    <extendedEdge key="edgesForExtendedLayout" top="YES"/>
+                    <navigationItem key="navigationItem" id="4ei-cH-l6A"/>
+                    <connections>
+                        <segue destination="mZM-0x-K9d" kind="show" identifier="toFull" id="lA6-4U-3iu"/>
+                    </connections>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="CaN-0Y-gAQ" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3566" y="2161"/>
+        </scene>
+        <!--FullProductVC-->
+        <scene sceneID="0cK-1o-ypM">
+            <objects>
+                <viewControllerPlaceholder storyboardIdentifier="UIViewController-TTd-by-I1I" storyboardName="FullProductVC" id="mZM-0x-K9d" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="8Fr-Lf-jyb"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="7sd-C9-u6c" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="4396" y="2161"/>
+        </scene>
+    </scenes>
+</document>

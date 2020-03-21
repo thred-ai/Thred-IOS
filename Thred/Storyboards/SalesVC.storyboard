@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="5Nb-1k-bMs">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Nexa W01 Heavy.ttf">
+            <string>NexaW01-Heavy</string>
+        </array>
+    </customFonts>
+    <scenes>
+        <!--SalesVC-->
+        <scene sceneID="rOd-jU-2uh">
+            <objects>
+                <viewController storyboardIdentifier="UIViewController-5Nb-1k-bMs" id="5Nb-1k-bMs" customClass="SalesVC" customModule="Thred" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="mIL-nv-7Vl">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" translatesAutoresizingMaskIntoConstraints="NO" id="n4x-J8-Hlr">
+                                <rect key="frame" x="0.0" y="44" width="414" height="818"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="hZf-fZ-xIK">
+                                        <rect key="frame" x="20" y="20" width="374" height="277.5"/>
+                                        <subviews>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="vpg-bZ-JIg">
+                                                <rect key="frame" x="0.0" y="0.0" width="374" height="277.5"/>
+                                                <subviews>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="E86-W5-PMa">
+                                                        <rect key="frame" x="0.0" y="0.0" width="374" height="93.5"/>
+                                                        <subviews>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ffi-TE-Kdn">
+                                                                <rect key="frame" x="0.0" y="0.0" width="374" height="70"/>
+                                                                <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="60"/>
+                                                                <nil key="textColor"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Total Sales" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8ZX-re-eoa">
+                                                                <rect key="frame" x="0.0" y="70" width="374" height="23.5"/>
+                                                                <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="20"/>
+                                                                <color key="textColor" name="LoadingColor"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                        </subviews>
+                                                    </stackView>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="l97-dC-rf6">
+                                                        <rect key="frame" x="0.0" y="113.5" width="374" height="164"/>
+                                                        <subviews>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Funds" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Hbf-ba-Mlh">
+                                                                <rect key="frame" x="0.0" y="0.0" width="374" height="35.5"/>
+                                                                <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="21"/>
+                                                                <nil key="textColor"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                            <stackView opaque="NO" contentMode="scaleToFill" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="r8O-wi-Jqy">
+                                                                <rect key="frame" x="0.0" y="40.5" width="374" height="29.5"/>
+                                                                <subviews>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Pending:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="38P-Ub-0x5">
+                                                                        <rect key="frame" x="0.0" y="0.0" width="75" height="29.5"/>
+                                                                        <constraints>
+                                                                            <constraint firstAttribute="width" constant="75" id="R3I-aQ-2LT"/>
+                                                                        </constraints>
+                                                                        <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
+                                                                        <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                    </label>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="$0.00" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DKU-9J-pJ4">
+                                                                        <rect key="frame" x="95" y="0.0" width="279" height="29.5"/>
+                                                                        <fontDescription key="fontDescription" name="ArialMT" family="Arial" pointSize="17"/>
+                                                                        <nil key="textColor"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                    </label>
+                                                                </subviews>
+                                                            </stackView>
+                                                            <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="1Dt-pe-th0">
+                                                                <rect key="frame" x="0.0" y="75" width="374" height="29"/>
+                                                                <subviews>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Available:" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="F38-o3-ids">
+                                                                        <rect key="frame" x="0.0" y="0.0" width="85" height="29"/>
+                                                                        <constraints>
+                                                                            <constraint firstAttribute="width" constant="85" id="ZiW-4I-Udx"/>
+                                                                        </constraints>
+                                                                        <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
+                                                                        <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                    </label>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="$0.00" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Wc8-Jq-jQi">
+                                                                        <rect key="frame" x="95" y="0.0" width="279" height="29"/>
+                                                                        <fontDescription key="fontDescription" name="ArialRoundedMTBold" family="Arial Rounded MT Bold" pointSize="17"/>
+                                                                        <nil key="textColor"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                    </label>
+                                                                </subviews>
+                                                            </stackView>
+                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="wFS-e0-3fJ">
+                                                                <rect key="frame" x="0.0" y="109" width="374" height="55"/>
+                                                                <color key="backgroundColor" name="LoadingColor"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="height" constant="55" id="x3Z-OJ-t1r"/>
+                                                                </constraints>
+                                                                <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="18"/>
+                                                                <state key="normal" title="Payout Available Funds">
+                                                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                </state>
+                                                                <connections>
+                                                                    <action selector="payoutBalance:" destination="5Nb-1k-bMs" eventType="touchUpInside" id="0hX-gh-nG9"/>
+                                                                </connections>
+                                                            </button>
+                                                        </subviews>
+                                                    </stackView>
+                                                </subviews>
+                                            </stackView>
+                                        </subviews>
+                                    </stackView>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="bottom" secondItem="hZf-fZ-xIK" secondAttribute="bottom" constant="20" id="AGM-4o-YOk"/>
+                                    <constraint firstItem="hZf-fZ-xIK" firstAttribute="top" secondItem="n4x-J8-Hlr" secondAttribute="top" constant="20" id="Ad4-k1-heS"/>
+                                    <constraint firstItem="hZf-fZ-xIK" firstAttribute="leading" secondItem="n4x-J8-Hlr" secondAttribute="leading" constant="20" id="E35-JE-gZy"/>
+                                    <constraint firstItem="hZf-fZ-xIK" firstAttribute="centerX" secondItem="n4x-J8-Hlr" secondAttribute="centerX" id="Rt9-KK-Tog"/>
+                                    <constraint firstAttribute="trailing" secondItem="hZf-fZ-xIK" secondAttribute="trailing" constant="20" id="uAg-cN-mln"/>
+                                </constraints>
+                                <viewLayoutGuide key="contentLayoutGuide" id="mRA-tK-5GX"/>
+                                <viewLayoutGuide key="frameLayoutGuide" id="RPw-BP-KGe"/>
+                            </scrollView>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <constraints>
+                            <constraint firstItem="n4x-J8-Hlr" firstAttribute="leading" secondItem="k9u-K5-InD" secondAttribute="leading" id="49F-Ql-rfz"/>
+                            <constraint firstItem="k9u-K5-InD" firstAttribute="bottom" secondItem="n4x-J8-Hlr" secondAttribute="bottom" id="73t-Du-L2C"/>
+                            <constraint firstItem="n4x-J8-Hlr" firstAttribute="trailing" secondItem="k9u-K5-InD" secondAttribute="trailing" id="TS0-7A-PDd"/>
+                            <constraint firstItem="k9u-K5-InD" firstAttribute="top" secondItem="n4x-J8-Hlr" secondAttribute="top" id="s0I-5e-Vlj"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="k9u-K5-InD"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="Sm9-Ov-uZY"/>
+                    <connections>
+                        <outlet property="availableLbl" destination="Wc8-Jq-jQi" id="reB-Gj-7K7"/>
+                        <outlet property="payoutBtn" destination="wFS-e0-3fJ" id="pah-AO-HWy"/>
+                        <outlet property="pendingLbl" destination="DKU-9J-pJ4" id="KEC-jU-3BD"/>
+                        <outlet property="salesLbl" destination="Ffi-TE-Kdn" id="QzV-MH-DzE"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Dqu-YW-eia" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2493.5999999999999" y="2695.5665024630543"/>
+        </scene>
+    </scenes>
+    <resources>
+        <namedColor name="LoadingColor">
+            <color red="0.089999999999999997" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>

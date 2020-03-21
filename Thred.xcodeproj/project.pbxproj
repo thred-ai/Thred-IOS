@@ -36,6 +36,19 @@
 		AA8E68EA2407C43900C651A1 /* ExplorePageFlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8E68E92407C43900C651A1 /* ExplorePageFlowLayout.swift */; };
 		AA8E68ED240B2B5C00C651A1 /* carouselCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8E68EB240B2B5C00C651A1 /* carouselCollectionViewCell.swift */; };
 		AAA4B027242693AA007BC407 /* DesignVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AAA4B026242693AA007BC407 /* DesignVC.storyboard */; };
+		AAA4B029242695CF007BC407 /* FeedVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AAA4B028242695CF007BC407 /* FeedVC.storyboard */; };
+		AAA4B02B24269635007BC407 /* ExploreVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AAA4B02A24269635007BC407 /* ExploreVC.storyboard */; };
+		AAA4B02D24269676007BC407 /* NotificationVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AAA4B02C24269676007BC407 /* NotificationVC.storyboard */; };
+		AAA4B02F24269694007BC407 /* UserVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AAA4B02E24269694007BC407 /* UserVC.storyboard */; };
+		AAA4B031242696DB007BC407 /* ColorSectionVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AAA4B030242696DB007BC407 /* ColorSectionVC.storyboard */; };
+		AAA4B0332426972C007BC407 /* FullProductVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AAA4B0322426972C007BC407 /* FullProductVC.storyboard */; };
+		AAA4B03524269765007BC407 /* EditProfileVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AAA4B03424269765007BC407 /* EditProfileVC.storyboard */; };
+		AAA4B03724269989007BC407 /* EditBioVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AAA4B03624269989007BC407 /* EditBioVC.storyboard */; };
+		AAA4B039242699D6007BC407 /* EditUsernameVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AAA4B038242699D6007BC407 /* EditUsernameVC.storyboard */; };
+		AAA4B03B242699F4007BC407 /* EditFullNameVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AAA4B03A242699F4007BC407 /* EditFullNameVC.storyboard */; };
+		AAA4B03D24269A22007BC407 /* FriendVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AAA4B03C24269A22007BC407 /* FriendVC.storyboard */; };
+		AAA4B03F24269A3B007BC407 /* ShoppingCartVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AAA4B03E24269A3B007BC407 /* ShoppingCartVC.storyboard */; };
+		AAA4B04124269A51007BC407 /* SalesVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AAA4B04024269A51007BC407 /* SalesVC.storyboard */; };
 		AAABC06A23C9432700E48987 /* Nexa W01 Heavy.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AAABBFFD23C9431400E48987 /* Nexa W01 Heavy.ttf */; };
 		AAABC06B23C9432700E48987 /* FriendVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAABC00023C9431500E48987 /* FriendVC.swift */; };
 		AAABC06C23C9432700E48987 /* ProfileHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAABC00123C9431500E48987 /* ProfileHeaderView.swift */; };
@@ -202,6 +215,19 @@
 		AA8E68E92407C43900C651A1 /* ExplorePageFlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplorePageFlowLayout.swift; sourceTree = "<group>"; };
 		AA8E68EB240B2B5C00C651A1 /* carouselCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = carouselCollectionViewCell.swift; sourceTree = "<group>"; };
 		AAA4B026242693AA007BC407 /* DesignVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = DesignVC.storyboard; sourceTree = "<group>"; };
+		AAA4B028242695CF007BC407 /* FeedVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = FeedVC.storyboard; sourceTree = "<group>"; };
+		AAA4B02A24269635007BC407 /* ExploreVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = ExploreVC.storyboard; sourceTree = "<group>"; };
+		AAA4B02C24269676007BC407 /* NotificationVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = NotificationVC.storyboard; sourceTree = "<group>"; };
+		AAA4B02E24269694007BC407 /* UserVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = UserVC.storyboard; sourceTree = "<group>"; };
+		AAA4B030242696DB007BC407 /* ColorSectionVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = ColorSectionVC.storyboard; sourceTree = "<group>"; };
+		AAA4B0322426972C007BC407 /* FullProductVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = FullProductVC.storyboard; sourceTree = "<group>"; };
+		AAA4B03424269765007BC407 /* EditProfileVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = EditProfileVC.storyboard; sourceTree = "<group>"; };
+		AAA4B03624269989007BC407 /* EditBioVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = EditBioVC.storyboard; sourceTree = "<group>"; };
+		AAA4B038242699D6007BC407 /* EditUsernameVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = EditUsernameVC.storyboard; sourceTree = "<group>"; };
+		AAA4B03A242699F4007BC407 /* EditFullNameVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = EditFullNameVC.storyboard; sourceTree = "<group>"; };
+		AAA4B03C24269A22007BC407 /* FriendVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = FriendVC.storyboard; sourceTree = "<group>"; };
+		AAA4B03E24269A3B007BC407 /* ShoppingCartVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = ShoppingCartVC.storyboard; sourceTree = "<group>"; };
+		AAA4B04024269A51007BC407 /* SalesVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = SalesVC.storyboard; sourceTree = "<group>"; };
 		AAABBFFD23C9431400E48987 /* Nexa W01 Heavy.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Nexa W01 Heavy.ttf"; sourceTree = "<group>"; };
 		AAABC00023C9431500E48987 /* FriendVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FriendVC.swift; sourceTree = "<group>"; };
 		AAABC00123C9431500E48987 /* ProfileHeaderView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProfileHeaderView.swift; sourceTree = "<group>"; };
@@ -493,6 +519,19 @@
 			isa = PBXGroup;
 			children = (
 				AAABC15E23C947AF00E48987 /* Main.storyboard */,
+				AAA4B04024269A51007BC407 /* SalesVC.storyboard */,
+				AAA4B03E24269A3B007BC407 /* ShoppingCartVC.storyboard */,
+				AAA4B03C24269A22007BC407 /* FriendVC.storyboard */,
+				AAA4B03424269765007BC407 /* EditProfileVC.storyboard */,
+				AAA4B03A242699F4007BC407 /* EditFullNameVC.storyboard */,
+				AAA4B038242699D6007BC407 /* EditUsernameVC.storyboard */,
+				AAA4B03624269989007BC407 /* EditBioVC.storyboard */,
+				AAA4B0322426972C007BC407 /* FullProductVC.storyboard */,
+				AAA4B030242696DB007BC407 /* ColorSectionVC.storyboard */,
+				AAA4B02E24269694007BC407 /* UserVC.storyboard */,
+				AAA4B02C24269676007BC407 /* NotificationVC.storyboard */,
+				AAA4B02A24269635007BC407 /* ExploreVC.storyboard */,
+				AAA4B028242695CF007BC407 /* FeedVC.storyboard */,
 				AAA4B026242693AA007BC407 /* DesignVC.storyboard */,
 			);
 			path = Storyboards;
@@ -872,13 +911,17 @@
 			buildActionMask = 2147483647;
 			files = (
 				AAD3F3D42418ABE300F8FF8F /* gray1.png in Resources */,
+				AAA4B03524269765007BC407 /* EditProfileVC.storyboard in Resources */,
 				AAD3F40A2418B63700F8FF8F /* profile@1x.png in Resources */,
 				AAD3F3CF2418ABE300F8FF8F /* yellow1.png in Resources */,
 				AAD3F3D02418ABE300F8FF8F /* orange.png in Resources */,
 				AAD3F421241DEDB900F8FF8F /* NotificationCell.xib in Resources */,
+				AAA4B029242695CF007BC407 /* FeedVC.storyboard in Resources */,
 				AAD3F3D82418ABE300F8FF8F /* gray4.png in Resources */,
+				AAA4B02B24269635007BC407 /* ExploreVC.storyboard in Resources */,
 				AAD3F3CE2418ABE300F8FF8F /* green2.png in Resources */,
 				AA4AF76423B4464800088F11 /* LaunchScreen.storyboard in Resources */,
+				AAA4B03F24269A3B007BC407 /* ShoppingCartVC.storyboard in Resources */,
 				AAD3F3C92418ABE300F8FF8F /* green1.png in Resources */,
 				AAD3F425241EABE800F8FF8F /* SalesCell.xib in Resources */,
 				AAD3F3D62418ABE300F8FF8F /* gray5.png in Resources */,
@@ -887,6 +930,7 @@
 				AAD3F4052418B63700F8FF8F /* blank.png in Resources */,
 				AAD3F3C62418ABE300F8FF8F /* pink.png in Resources */,
 				AAD3F3C82418ABE300F8FF8F /* blue2.png in Resources */,
+				AAA4B03D24269A22007BC407 /* FriendVC.storyboard in Resources */,
 				AAD3F3D32418ABE300F8FF8F /* gray2.png in Resources */,
 				AAABC06D23C9432700E48987 /* ProfileHeaderView.xib in Resources */,
 				AAABC06A23C9432700E48987 /* Nexa W01 Heavy.ttf in Resources */,
@@ -904,28 +948,36 @@
 				AAD3F40B2418B63700F8FF8F /* noFollowers.png in Resources */,
 				AAD3F40F2418B63700F8FF8F /* mask.png in Resources */,
 				AA44092423F66DD1009F5774 /* HOPE-HYPE.ttf in Resources */,
+				AAA4B0332426972C007BC407 /* FullProductVC.storyboard in Resources */,
 				AAD3F40C2418B63700F8FF8F /* arrowBtn.png in Resources */,
 				AAD3F3C52418ABE300F8FF8F /* red2.png in Resources */,
 				AA4CE2772406F69B009BAC92 /* ExploreColorCell.xib in Resources */,
 				AAD3F3C32418ABE300F8FF8F /* red1.png in Resources */,
 				AAD3F4012418B63700F8FF8F /* home@2x.png in Resources */,
+				AAA4B03724269989007BC407 /* EditBioVC.storyboard in Resources */,
 				AAD3F40E2418B63700F8FF8F /* home@1x.png in Resources */,
 				AAABC07023C9432700E48987 /* SearchUserTableViewCell.xib in Resources */,
 				AAD3F3D52418ABE300F8FF8F /* navy3.png in Resources */,
 				AAD3F3CC2418ABE300F8FF8F /* green3.png in Resources */,
+				AAA4B039242699D6007BC407 /* EditUsernameVC.storyboard in Resources */,
 				AAA4B027242693AA007BC407 /* DesignVC.storyboard in Resources */,
 				AAD3F3D22418ABE300F8FF8F /* cyan.png in Resources */,
 				AAD3F3D12418ABE300F8FF8F /* gray3.png in Resources */,
 				AAD3F3C72418ABE300F8FF8F /* blue3.png in Resources */,
 				AAD3F3D72418ABE300F8FF8F /* white.png in Resources */,
+				AAA4B031242696DB007BC407 /* ColorSectionVC.storyboard in Resources */,
 				AAABC0B423C9432700E48987 /* ProductCell.xib in Resources */,
 				AA4CE27B24076701009BAC92 /* ExploreProductCell.xib in Resources */,
+				AAA4B04124269A51007BC407 /* SalesVC.storyboard in Resources */,
 				AAD3F3CB2418ABE300F8FF8F /* yellow2.png in Resources */,
 				AAD3F4002418B63700F8FF8F /* profile@3x.png in Resources */,
 				AAD3F3DB2418ABE300F8FF8F /* navy1.png in Resources */,
+				AAA4B02D24269676007BC407 /* NotificationVC.storyboard in Resources */,
 				AAD3F41B241D0BAA00F8FF8F /* GoogleService-Info.plist in Resources */,
 				AAD3F40D2418B63700F8FF8F /* night.png in Resources */,
+				AAA4B02F24269694007BC407 /* UserVC.storyboard in Resources */,
 				AAABC09623C9432700E48987 /* PhotosCell.xib in Resources */,
+				AAA4B03B242699F4007BC407 /* EditFullNameVC.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

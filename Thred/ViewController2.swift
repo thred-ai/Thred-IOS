@@ -67,7 +67,7 @@ class ViewController2: UIViewController, WKNavigationDelegate {
                 print(error?.localizedDescription ?? "")
             }
             else{
-                //Done
+                UserDefaults.standard.set(true, forKey: "BankInfoSet")
             }
         })
     }
@@ -75,7 +75,7 @@ class ViewController2: UIViewController, WKNavigationDelegate {
     
     var requestIDString = ""
     var stripeID = "ca_GNV7BNqwGxdwvAojN6YJYzO4CdDuLFB6"
-    let email = "Arta Kouroshniaorp@gmail.com"
+    let email = "artathecanadian@gmail.com"
     let accountType = "company"
 
     override func viewDidDisappear(_ animated: Bool) {

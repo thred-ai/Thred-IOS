@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="9Od-F7-dik">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Edit UsernameVC-->
+        <scene sceneID="9cV-CM-y2f">
+            <objects>
+                <viewController storyboardIdentifier="UIViewController-9Od-F7-dik" id="9Od-F7-dik" customClass="EditUsernameVC" customModule="Thred" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="ymM-Ms-7x7">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="d29-kr-mQD">
+                                <rect key="frame" x="0.0" y="44" width="414" height="818"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="OXX-z6-FDx">
+                                        <rect key="frame" x="0.0" y="0.0" width="414" height="818"/>
+                                        <subviews>
+                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Username" textAlignment="natural" minimumFontSize="17" clearButtonMode="always" translatesAutoresizingMaskIntoConstraints="NO" id="9QR-Jv-tHn">
+                                                <rect key="frame" x="10" y="10" width="394" height="45"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="45" id="LZe-Y2-rhk"/>
+                                                </constraints>
+                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                <textInputTraits key="textInputTraits"/>
+                                            </textField>
+                                        </subviews>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                        <constraints>
+                                            <constraint firstItem="9QR-Jv-tHn" firstAttribute="top" secondItem="OXX-z6-FDx" secondAttribute="top" constant="10" id="Nja-Wn-NRf"/>
+                                            <constraint firstAttribute="trailing" secondItem="9QR-Jv-tHn" secondAttribute="trailing" constant="10" id="ex7-cx-zV9"/>
+                                            <constraint firstItem="9QR-Jv-tHn" firstAttribute="leading" secondItem="OXX-z6-FDx" secondAttribute="leading" constant="10" id="uRO-sl-9aK"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="OXX-z6-FDx" firstAttribute="bottom" secondItem="QAe-WO-a5j" secondAttribute="bottom" id="USC-vu-pMX"/>
+                                    <constraint firstItem="OXX-z6-FDx" firstAttribute="centerX" secondItem="d29-kr-mQD" secondAttribute="centerX" id="YYu-fG-OC1"/>
+                                    <constraint firstItem="OXX-z6-FDx" firstAttribute="top" secondItem="d29-kr-mQD" secondAttribute="top" id="itg-cQ-rVW"/>
+                                    <constraint firstAttribute="trailing" secondItem="OXX-z6-FDx" secondAttribute="trailing" id="lAE-Yt-y8w"/>
+                                    <constraint firstItem="OXX-z6-FDx" firstAttribute="leading" secondItem="d29-kr-mQD" secondAttribute="leading" id="uQP-uA-dXx"/>
+                                    <constraint firstAttribute="bottom" secondItem="OXX-z6-FDx" secondAttribute="bottom" id="vac-kF-v9B"/>
+                                </constraints>
+                                <viewLayoutGuide key="contentLayoutGuide" id="dRF-Ls-NoD"/>
+                                <viewLayoutGuide key="frameLayoutGuide" id="QAe-WO-a5j"/>
+                            </scrollView>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <constraints>
+                            <constraint firstItem="d29-kr-mQD" firstAttribute="leading" secondItem="edi-4s-JMU" secondAttribute="leading" id="6Ce-Va-WDx"/>
+                            <constraint firstItem="edi-4s-JMU" firstAttribute="trailing" secondItem="d29-kr-mQD" secondAttribute="trailing" id="RXC-0l-0ac"/>
+                            <constraint firstItem="d29-kr-mQD" firstAttribute="top" secondItem="edi-4s-JMU" secondAttribute="top" id="bke-Qx-0nV"/>
+                            <constraint firstItem="edi-4s-JMU" firstAttribute="bottom" secondItem="d29-kr-mQD" secondAttribute="bottom" id="l7Q-UP-gPV"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="edi-4s-JMU"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="X9E-JS-L6t">
+                        <barButtonItem key="rightBarButtonItem" systemItem="done" id="KzT-La-mgg">
+                            <connections>
+                                <action selector="done:" destination="9Od-F7-dik" id="LjJ-k0-Dqe"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="doneBtn" destination="KzT-La-mgg" id="qwn-c5-o5m"/>
+                        <outlet property="usernameField" destination="9QR-Jv-tHn" id="8SW-I1-elQ"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="m94-0h-XDW" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="9953" y="1343"/>
+        </scene>
+    </scenes>
+</document>
