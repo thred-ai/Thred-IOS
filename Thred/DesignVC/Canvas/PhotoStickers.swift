@@ -39,6 +39,35 @@ extension DesignViewController{
         })
     }
     
+    @objc func configurePhotos(_ sender: UIButton) {
+        if self.cameraRollCollectionView.isHidden{
+            sender.tintColor = .cyan
+            drawBtn.isSelected = true
+            closeDrawCanvas(drawBtn)
+            exitTapper.isEnabled = true
+            doneBtn.isEnabled = false
+            showCamRoll(sender: sender)
+            canvas.gestureRecognizers?.first?.isEnabled = false
+        }
+        else{
+            exitTapper.isEnabled = false
+            doneBtn.isEnabled = true
+            sender.tintColor = UIColor(named: "LoadingColor")
+            cameraRollCollectionView.animatehideCameraRoll(viewToCarry: self.bottomBar, backgroundView: view, tableView: nil){
+                self.canvas.gestureRecognizers?.first?.isEnabled = true
+            }
+        }
+    }
+    
+    @objc func closeCamera(_ sender: UIButton?){
+        titleView.isHidden = false
+        bottomBar.isHidden = false
+        canvas.gestureRecognizers?.first?.isEnabled = true
+        cameraView.hideCameraAnimate(viewToCarry: bottomBar) {
+            self.cameraView.resetDisplayImage()
+        }
+    }
+    
     @objc func exitPhotosTap(_ sender: UITapGestureRecognizer){
         if !self.cameraRollCollectionView.isHidden{
             self.configurePhotos(photosBtn)

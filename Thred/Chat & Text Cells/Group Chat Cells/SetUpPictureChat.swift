@@ -11,7 +11,6 @@ import UIKit
 import SDWebImage
 import FirebaseFirestore
 
-
 extension UITableView{
     
 
@@ -20,13 +19,25 @@ extension UITableView{
         let cell = dequeueReusableCell(withIdentifier: "PictureProduct", for: indexPath) as? ProductCell
         
         cell?.selectionStyle = .none
-        guard let userLbl = cell?.username else {return cell!}
-        guard let fullLbl = cell?.fullName else {return cell!}
-        guard let dp = cell?.userImage else {return cell!}
-        guard let picID = product.picID else{return cell!}
+        guard let userLbl = cell?.username else {
+            
+            return cell!}
+        guard let fullLbl = cell?.fullName else {
+            
+            return cell!}
+        guard let dp = cell?.userImage else {
+            
+            return cell!}
+        guard let picID = product.picID else{
+            
+            return cell!}
         
-        guard let nameMasks = cell?.nameMaskingViews else {return cell!}
-        guard let dpMasks = cell?.dpMaskingViews else {return cell!}
+        guard let nameMasks = cell?.nameMaskingViews else {
+            
+            return cell!}
+        guard let dpMasks = cell?.dpMaskingViews else {
+            
+            return cell!}
 
         if cell?.nameSkeletonView.layer.mask == nil{
             cell?.nameSkeletonView.setMaskingViews(nameMasks)
@@ -42,11 +53,13 @@ extension UITableView{
         cell?.productDescription.text = nil
         cell?.productPicture?.image = nil
         cell?.canvasDisplayView.image = nil
+        cell?.commentBtn.setTitle("View 0 comments", for: .normal)
         cell?.likesLbl.text = "\(0)"
         cell?.productPicture.removeShadow()
         cell?.product = product
         cell?.vc = productLocation
         cell?.setGestureRecognizers()
+        
         
         if let uploadView = cell?.uploadView{
             if uploadingPosts.contains(product.productID){
@@ -63,12 +76,13 @@ extension UITableView{
             }
         }
         
-        if product.liked ?? false || userInfo.userLiked?.contains(product.productID) ?? false{
+        if product.liked ?? false{
             cell?.isLiked = true
         }
         else{
             cell?.isLiked = false
         }
+        
         
         if product.description != nil{
             cell?.productDescription.text = product.description
@@ -77,7 +91,6 @@ extension UITableView{
             cell?.title.text = product.name
         }
         if product.price != nil{
-            
             var price = "$\(product.price ?? 0.00)"
             if price.count >= 5{
                 price = price + "0"
@@ -88,6 +101,15 @@ extension UITableView{
         
         
         cell?.likesLbl.text = "\(product.likes)"
+        
+        var plural = ""
+        if product.comments != 1{
+            plural = "s"
+        }
+        
+        cell?.commentBtn.setTitle("View \(product.comments) comment\(plural)", for: .normal)
+      
+        
         
         checkTimes(user: product, timestampLbl: cell?.timestampLbl)
         switch productLocation{
@@ -112,6 +134,9 @@ extension UITableView{
         }
         return cell!
     }
+    
+    
+    
     
     func syncPostLikes(loadedProducts: [Product], vc: UIViewController){
         for like in likeQueue{

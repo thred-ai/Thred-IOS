@@ -37,7 +37,6 @@ class carouselCollectionViewCell: UICollectionViewCell {
         view.layer.borderColor = UIColor.white.cgColor
         view.layer.borderWidth = 1
         view.isUserInteractionEnabled = true
-        view.backgroundColor = .white
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()

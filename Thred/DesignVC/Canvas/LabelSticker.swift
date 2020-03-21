@@ -12,55 +12,26 @@ import UIKit
 extension DesignViewController{
     
     @objc func changeTextStyle(_ sender: UIButton){
-        if let textView = self.canvas.subviews.first(where: {$0.isFirstResponder}) as? UITextView{
-            switch currentLabelStyle{
+        if let textView = self.canvas.subviews.first(where: {$0.isFirstResponder}) as? CanvasTextView{
+            switch textView.labelStyle{
             case .large:
-                currentLabelStyle = .normal
+                textView.labelStyle = .normal
                 sender.setTitle("Normal", for: .normal)
-                textView.font = UIFont.systemFont(ofSize: currentFontSize ?? CGFloat(defaultFontSize))
-                textView.textColor = textSlider.color
-                textView.backgroundColor = .clear
-                textView.textAlignment = .left
             case .normal:
-                currentLabelStyle = .nexa
+                textView.labelStyle = .nexa
                 sender.setTitle("Nexa", for: .normal)
-                textView.font = UIFont(name: "NexaW01-Heavy", size: currentFontSize ?? CGFloat(defaultFontSize))
-                textView.textColor = textSlider.color
-                textView.backgroundColor = .clear
-                textView.textAlignment = .center
             case .nexa:
-                currentLabelStyle = .fancy
+                textView.labelStyle = .fancy
                 sender.setTitle("Fancy", for: .normal)
-                textView.font = UIFont(name: "akaDora", size: currentFontSize ?? CGFloat(defaultFontSize))
-                textView.textColor = textSlider.color
-                textView.backgroundColor = .clear
-                textView.textAlignment = .center
             case .fancy:
-                currentLabelStyle = .fill
+                textView.labelStyle = .fill
                 sender.setTitle("Fill", for: .normal)
-                textView.font = UIFont.boldSystemFont(ofSize: currentFontSize ?? CGFloat(defaultFontSize))
-                if textSlider.color == UIColor(red: 1, green: 1, blue: 1, alpha: 1){
-                    textView.textColor = .black
-                }
-                else{
-                    textView.textColor = .white
-                }
-                textView.backgroundColor = textSlider.color
-                textView.textAlignment = .center
             case .fill:
-                currentLabelStyle = .hype
+                textView.labelStyle = .hype
                 sender.setTitle("Hype", for: .normal)
-                textView.font = UIFont(name: "HOPE-HYPE", size: currentFontSize ?? CGFloat(defaultFontSize))
-                textView.textColor = textSlider.color
-                textView.backgroundColor = .clear
-                textView.textAlignment = .center
             case .hype:
-                currentLabelStyle = .large
+                textView.labelStyle = .large
                 sender.setTitle("Large", for: .normal)
-                textView.font = UIFont.boldSystemFont(ofSize: currentFontSize ?? CGFloat(defaultFontSize))
-                textView.textColor = textSlider.color
-                textView.backgroundColor = .clear
-                textView.textAlignment = .center
             default:
                 break
             }
@@ -68,55 +39,27 @@ extension DesignViewController{
         }
     }
     
-    func setTextStyle(_ sender: UIButton, textView: UITextView){
-        switch currentLabelStyle{
+    func setTextStyle(_ sender: UIButton, textView: CanvasTextView){
+        
+        textSlider.color = textView.color
+        textSlider.previewView?.center.x = 0
+        fontSlider.value = Float(textView.currentFontSize)
+        shadowBtn.isSelected = !textView.hasShadow
+        configureTextShadow(shadowBtn)
+        
+        switch textView.labelStyle{
         case .normal:
-            currentLabelStyle = .normal
             sender.setTitle("Normal", for: .normal)
-            textView.font = UIFont.systemFont(ofSize: currentFontSize ?? CGFloat(defaultFontSize))
-            textView.textColor = textSlider.color
-            textView.backgroundColor = .clear
-            textView.textAlignment = .left
         case .nexa:
-            currentLabelStyle = .nexa
             sender.setTitle("Nexa", for: .normal)
-            textView.font = UIFont(name: "NexaW01-Heavy", size: currentFontSize ?? CGFloat(defaultFontSize))
-            textView.textColor = textSlider.color
-            textView.backgroundColor = .clear
-            textView.textAlignment = .center
         case .fancy:
-            currentLabelStyle = .fancy
             sender.setTitle("Fancy", for: .normal)
-            textView.font = UIFont(name: "akaDora", size: currentFontSize ?? CGFloat(defaultFontSize))
-            textView.textColor = textSlider.color
-            textView.backgroundColor = .clear
-            textView.textAlignment = .center
         case .fill:
-            currentLabelStyle = .fill
             sender.setTitle("Fill", for: .normal)
-            textView.font = UIFont.boldSystemFont(ofSize: currentFontSize ?? CGFloat(defaultFontSize))
-            if textSlider.color == UIColor(red: 1, green: 1, blue: 1, alpha: 1){
-                textView.textColor = .black
-            }
-            else{
-                textView.textColor = .white
-            }
-            textView.backgroundColor = textSlider.color
-            textView.textAlignment = .center
         case .hype:
-            currentLabelStyle = .hype
             sender.setTitle("Hype", for: .normal)
-            textView.font = UIFont(name: "HOPE-HYPE", size: currentFontSize ?? CGFloat(defaultFontSize))
-            textView.textColor = textSlider.color
-            textView.backgroundColor = .clear
-            textView.textAlignment = .center
         case .large:
-            currentLabelStyle = .large
             sender.setTitle("Large", for: .normal)
-            textView.font = UIFont.boldSystemFont(ofSize: currentFontSize ?? CGFloat(defaultFontSize))
-            textView.textColor = textSlider.color
-            textView.backgroundColor = .clear
-            textView.textAlignment = .center
         default:
             break
         }
@@ -129,32 +72,31 @@ extension DesignViewController{
         }
         if !canvas.subviews.contains(where: {($0.isKind(of: UITextView.self) && $0.isFirstResponder)}){
             
-            let label = UITextView.init(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: 80))
+            let label = CanvasTextView.init(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: 80))
             label.center = canvas.center
             label.center.y = canvas.center.y - 200
             label.textAlignment = .center
             label.backgroundColor = .clear
-            if shadowBtn != nil{
-                if shadowBtn.isSelected{
-                    label.setRadiusWithShadow()
-                }
+            label.color = lastTextView?.color ?? .white
+            label.defaultFontSize = defaultFontSize
+            if let fontSize = lastTextView?.currentFontSize{
+                label.currentFontSize = fontSize
             }
-            if textSlider != nil{
-                label.textColor = textSlider.color
+            if lastTextView?.hasShadow ?? false{
+                label.setRadiusWithShadow()
             }
-            else{
-                label.textColor = .white
-            }
+            label.labelStyle = lastTextView?.labelStyle ?? .large
+            
             label.autoresizesSubviews = true
             label.showsVerticalScrollIndicator = false
             label.isScrollEnabled = false
             label.delegate = self
             label.inputAccessoryView = textToolBar
+            label.keyboardAppearance = .dark
             label.becomeFirstResponder()
             makeMovable(view: label)
             canvas.addSubview(label)
             canvas.gestureRecognizers?.first?.isEnabled = false
-            setTextStyle(textStyleBtn, textView: label)
             let labelPreview = UIImageView.init(frame: CGRect(x: 0, y: 0, width: label.frame.width, height: label.frame.height))
             labelPreview.isUserInteractionEnabled = false
             labelPreview.backgroundColor = .clear
@@ -179,7 +121,8 @@ extension DesignViewController{
     
     @objc func doneLabelTyping(_ sender: Any){
         textDoneBtn.isEnabled = false
-        if let textView = self.canvas.subviews.first(where: {$0.isFirstResponder}) as? UITextView{
+        if let textView = self.canvas.subviews.first(where: {$0.isFirstResponder}) as? CanvasTextView{
+            lastTextView = textView
             textView.resignFirstResponder()
             textView.isScrollEnabled = false
             textStyleBtn.superview?.isHidden = true
@@ -206,12 +149,11 @@ extension DesignViewController{
                             imageView.image = img
                         }
                         textView.accessibilityIdentifier = textView.text
-                        //textView.text.removeAll()
+                        textView.text = nil
                         if self.editingTransform != nil && self.editingCenter != nil{
                             textView.transform = self.editingTransform
                             textView.center = self.editingCenter
                         }
-                        
                     }
                 }
                 else{
@@ -244,10 +186,9 @@ extension DesignViewController{
     }
     
     @objc func resizeFont(_ sender: UISlider){
-        if let textView = self.canvas.subviews.first(where: {$0.isFirstResponder}) as? UITextView{
+        if let textView = self.canvas.subviews.first(where: {$0.isFirstResponder}) as? CanvasTextView{
             let size = CGFloat(sender.value)
-            textView.font = textView.font?.withSize(size)
-            currentFontSize = size
+            textView.currentFontSize = size
             textViewDidChange(textView)
         }
     }

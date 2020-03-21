@@ -14,21 +14,25 @@ import Photos
 extension DesignViewController{
     @objc func maximiseDrawingArea(displayView: UIImageView){
         
-        
         if let selectedIndex = carousel.collectionView.indexPathsForVisibleItems.first?.item{
             aspectRatio = displayView.frame.height / displayView.frame.width
             let viewY = displayView.frame.origin.y
             let width = view.frame.width
-            let height = view.frame.width * aspectRatio
-            let difference = (height - canvas.frame.height).magnitude
-            garbageBtn.center.y -= difference
-            self.titleView.isUserInteractionEnabled = false
-            self.canvasDisplayView.isHidden = false
-            self.canvasDisplayView.frame.size = displayView.frame.size
-            self.canvasDisplayView.frame.origin.y = viewY
+            var height = view.frame.width * aspectRatio
+            let y = self.displayView.frame.origin.y
+            var bottomBarY = y + height + view.safeAreaInsets.top
+            if bottomBarY >= view.frame.maxY - bottomBar.frame.height{
+                bottomBarY = view.frame.maxY - bottomBar.frame.height
+                height = bottomBarY - view.safeAreaInsets.top
+            }
+            garbageBtn.center.y = bottomBarY - (garbageBtn.frame.height / 2) - view.safeAreaInsets.top
+            titleView.isUserInteractionEnabled = false
+            canvasDisplayView.isHidden = false
+            canvasDisplayView.frame.size = displayView.frame.size
+            canvasDisplayView.frame.origin.y = viewY
             displayView.isHidden = true
             nextBtn.isEnabled = false
-            self.carousel.displayImage = self.canvasDisplayView.image
+            carousel.displayImage = canvasDisplayView.image
             selectedView = displayView
             DispatchQueue.main.async {
                 self.scrollview.setContentOffset(.zero, animated: true)
@@ -41,11 +45,6 @@ extension DesignViewController{
                 self.textCoverView.isHidden = true
                 self.bottomBar.isHidden = false
                 self.bottomSafeAreaView.isHidden = false
-                let y = self.displayView.frame.origin.y
-                var bottomBarY = y + height + self.view.safeAreaInsets.top
-                if bottomBarY >= self.view.frame.maxY - self.bottomBar.frame.height{
-                    bottomBarY = self.view.frame.maxY - self.bottomBar.frame.height
-                }
                 self.bottomBar.frame.origin.y = bottomBarY
                 self.bottomSafeAreaView.frame.origin.y = self.bottomBar.frame.maxY
                 self.bottomSafeAreaView.frame.size.height = self.view.frame.maxY - self.bottomSafeAreaView.frame.origin.y
@@ -60,9 +59,8 @@ extension DesignViewController{
                 }, completion: { finished in
                     if finished{
                         //self.displayView.image = nil
-                        self.garbageBtn.center.y = self.bottomBar.frame.minY - (self.garbageBtn.frame.height / 2) - self.view.safeAreaInsets.top
                         self.lineTypeView.isHidden = true
-                         self.descriptionView.isHidden = true
+                        self.descriptionView.isHidden = true
                         self.canvas.isHidden = false
                         self.drawCanvas.isHidden = false
                     }
@@ -128,36 +126,6 @@ extension DesignViewController{
         }
     }
     
-    @objc func closeDrawCanvas(_ sender: UIButton){
-        for label in canvas.subviews.filter({$0.isKind(of: UITextView.self)}){
-            label.isUserInteractionEnabled = true
-        }
-        drawToolBar.isHidden = true
-        canvas.gestureRecognizers?.first?.isEnabled = true
-        drawToolBar.isHidden = true
-        drawCanvas.isUserInteractionEnabled = false
-        drawBtn.superview?.isHidden = false
-        drawCanvas.isEnabled = false
-        drawBtn.isSelected = false
-    }
-
-    @objc func openDrawCanvas(_ sender: UIButton){
-        
-        drawToolBar.isHidden = false
-        sender.superview?.isHidden = true
-        if !cameraRollCollectionView.isHidden{
-            configurePhotos(photosBtn)
-        }
-        for label in canvas.subviews.filter({$0.isKind(of: UITextView.self)}){
-            label.isUserInteractionEnabled = false
-            canvas.bringSubviewToFront(label)
-        }
-        drawCanvas.isEnabled = true
-        canvas.gestureRecognizers?.first?.isEnabled = false
-        drawCanvas.isUserInteractionEnabled = true
-        sender.isSelected = true
-        
-    }
     
     
     @objc func handleObjectPan(_ sender: UIPanGestureRecognizer){
@@ -169,6 +137,7 @@ extension DesignViewController{
                 canvas.bringSubviewToFront(viewDrag)
             }
             canvas.bringSubviewToFront(drawCanvas)
+            canvas.bringSubviewToFront(alignmentCanvas)
             angleLine.isHidden = true
             configureOtherStickersGestures(ignoredView: viewDrag, disable: true)
             let translation = sender.translation(in: view)
@@ -228,15 +197,53 @@ extension DesignViewController{
         }
     }
     
-    @objc func saveToCameraRoll(_ sender: UIButton){
-        guard let image = displayView.makeSnapshot(clear: false, subviewsToIgnore: [zoomBtn, saveBtn]) else{return}
-        image.saveToPhotos { (success) in
-            if success {
-                // image saved to photos
-            }
-            else {
-                // image not saved
-            }
+    
+    @objc func showSaveView(_ sender: UIButton?){
+        displayView.bringSubviewToFront(saveToPhotosLbl)
+        saveToPhotosLbl.isHidden = false
+    }
+    
+    @objc func hideSaveView(_ sender: UIButton?){
+        saveToPhotosLbl.isHidden = true
+    }
+    
+    
+    @IBAction func saveToCameraRoll(_ sender: UIButton){
+        
+        if let thredLabel = self.thredWatermark.arrangedSubviews.first(where: {$0.isKind(of: UILabel.self)}) as? UILabel{
+            hideSaveView(nil)
+            thredLabel.text = "saving"
+            saveBtn.isEnabled = false
+            UIView.animate(withDuration: 0.15, animations: {
+                sender.transform = CGAffineTransform(rotationAngle: CGFloat.pi)
+                sender.alpha = 1.0
+                thredLabel.alpha = 1.0
+            }, completion: { finished in
+                sender.transform = CGAffineTransform.identity
+                thredLabel.text = "thred"
+                guard let image = self.displayView.makeSnapshot(clear: false, subviewsToIgnore: [self.zoomBtn]) else{return}
+                thredLabel.text = "saving"
+                sender.transform = CGAffineTransform(rotationAngle: CGFloat.pi)
+                image.saveToPhotos { (success) in
+                    DispatchQueue.main.async {
+                        thredLabel.text = "thred"
+                        self.saveBtn.isEnabled = true
+                        UIView.animate(withDuration: 0.2, animations: {
+                            sender.transform = CGAffineTransform.identity
+                        }, completion: { finished in
+                            if finished{
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.75){
+                                    UIView.animate(withDuration: 0.15, animations: {
+                                    }, completion: { finished in
+                                        if finished{
+                                        }
+                                    })
+                                }
+                            }
+                        })
+                    }
+                }
+            })
         }
     }
     
@@ -249,6 +256,7 @@ extension DesignViewController{
                 canvas.bringSubviewToFront(viewDrag)
             }
             canvas.bringSubviewToFront(drawCanvas)
+            canvas.bringSubviewToFront(alignmentCanvas)
             let scale = sender.scale
             sender.view!.transform = sender.view!.transform.scaledBy(x: scale, y: scale)
             sender.scale = 1
@@ -269,6 +277,7 @@ extension DesignViewController{
                     canvas.bringSubviewToFront(viewDrag)
                 }
                 canvas.bringSubviewToFront(drawCanvas)
+                canvas.bringSubviewToFront(alignmentCanvas)
                 sender.view!.transform = sender.view!.transform.rotated(by: sender.rotation)
                 checkRotation(viewDrag: viewDrag)
                 sender.rotation = 0

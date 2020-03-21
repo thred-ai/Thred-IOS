@@ -21,11 +21,12 @@ class TemplateColorChooserCell: UICollectionViewCell {
         self.colorView.clipsToBounds = true
         if isSelected{
             self.colorView.layer.borderColor = UIColor(named: "LoadingColor")?.withAlphaComponent(0.75).cgColor
+            self.colorView.layer.borderWidth = self.colorView.frame.height / 7.5
         }
         else{
             self.colorView.layer.borderColor = UIColor(named: "ProfileMask")?.cgColor
+            self.colorView.layer.borderWidth = self.colorView.frame.height / 17.75
         }
-        self.colorView.layer.borderWidth = self.colorView.frame.height / 17.75
     }
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -40,9 +41,15 @@ class TemplateColorChooserCell: UICollectionViewCell {
     override var isSelected: Bool {
         didSet {
             if self.isSelected {
-                self.colorView.layer.borderColor = UIColor(named: "LoadingColor")?.withAlphaComponent(0.75).cgColor
+                UIView.animate(withDuration: 0.2, animations: {
+                    self.colorView.layer.borderColor = UIColor(named: "LoadingColor")?.withAlphaComponent(0.75).cgColor
+                    self.colorView.layer.borderWidth = self.colorView.frame.height / 7.5
+                })
             } else {
-                self.colorView.layer.borderColor = UIColor(named: "ProfileMask")?.cgColor
+                UIView.animate(withDuration: 0.2, animations: {
+                    self.colorView.layer.borderColor = UIColor(named: "ProfileMask")?.cgColor
+                    self.colorView.layer.borderWidth = self.colorView.frame.height / 17.75
+                })
             }
         }
     }

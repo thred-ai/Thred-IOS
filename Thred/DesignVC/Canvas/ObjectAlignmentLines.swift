@@ -19,8 +19,9 @@ extension DesignViewController{
                 midXLine.center.x = centeredX
                 viewDrag.center.x = centeredX
                 midXLine.isHidden = false
+                canvas.bringSubviewToFront(midXLine)
                 if !viewCenteredX{
-                AudioServicesPlaySystemSound(1519)
+                    AudioServicesPlaySystemSound(1519)
                     viewCenteredX = true
                 }
             }
@@ -44,6 +45,7 @@ extension DesignViewController{
                 midYLine.center.y = centeredY
                 viewDrag.center.y = centeredY
                 midYLine.isHidden = false
+                canvas.bringSubviewToFront(midYLine)
                 if !viewCenteredY{
                     AudioServicesPlaySystemSound(1519)
                     viewCenteredY = true

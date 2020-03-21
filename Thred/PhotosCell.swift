@@ -12,6 +12,18 @@ class PhotosCell: UICollectionViewCell {
 
     @IBOutlet weak var photoImageView: UIImageView!
     
+    var photo: UIImage? = nil{
+        didSet{
+            photoImageView.image = photo
+            if photo == nil{
+                isUserInteractionEnabled = false
+            }
+            else{
+                isUserInteractionEnabled = true
+            }
+        }
+    }
+    
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
@@ -24,7 +36,12 @@ class PhotosCell: UICollectionViewCell {
     
     override var isSelected: Bool{
         didSet{
-            photoImageView.alpha = 0.8
+            if isSelected{
+                photoImageView.alpha = 0.8
+            }
+            else{
+                photoImageView.alpha = 1.0
+            }
         }
     }
 }

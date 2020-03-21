@@ -128,7 +128,6 @@ extension UITableView{
             if userInfo.dp != nil{
                 dp.image = userInfo.dp
             }
-            
             userLbl.text = "@" + userInfo.username
             fullLbl.text = userInfo.fullName
             picCell?.removeLabelLoad()

@@ -41,10 +41,11 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
         // self.navigationItem.rightBarButtonItem = self.editButtonItem
         tableView.delegate = self
         tableView.dataSource = self
-        self.navigationController?.interactivePopGestureRecognizer?.delegate = self
+        navigationController?.interactivePopGestureRecognizer?.delegate = self
 
         tableView.register(UINib(nibName: "ProductCell", bundle: nil), forCellReuseIdentifier: "PictureProduct")
         cache.removeImageFromMemory(forKey: fullProduct.picID)
+        
     }
     
     
@@ -74,13 +75,11 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
         if downloader == nil{
             downloader = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
         }
-        getProduct {
-            DispatchQueue.main.async {
-                self.tableView.reloadData()
-            }
+        DispatchQueue.main.async {
+            self.tableView.reloadData()
         }
-        if self.navigationController != nil{
-           self.navigationController?.delegate = self // Update assignment here
+        if navigationController != nil{
+           navigationController?.delegate = self // Update assignment here
         }
         else {
             print("navigation controller does not exist")
@@ -89,52 +88,7 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
     }
     
     
-    func getProduct(completed: @escaping () -> ()){
-        Firestore.firestore().collection("Users").document(fullProduct.uid).collection("Products").document(fullProduct.productID).getDocument(completion: { doc, error in
-            if error != nil{
-                print(error?.localizedDescription ?? "")
-                completed()
-            }
-            else{
-                
-                guard let snap = doc else{return}
-                let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
-                let uid = snap["UID"] as! String
-                let description = snap["Description"] as? String
-                let name = snap["Name"] as? String
-                let blurred = snap["Blurred"] as? Bool
-                let templateColor = snap["Template_Color"] as? String
-                let likes = snap["Likes"] as? Int
-                guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
-                
-                Firestore.firestore().collection("Users").document(self.fullProduct.uid).collection("Products").document(self.fullProduct.productID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userInfo.uid).getDocuments(completion: { snaps, error in
-                    
-                    var liked: Bool!
-                    
-                    EmptyDocuments:
-                    if error != nil{
-                        
-                        print(error?.localizedDescription ?? "")
-                    }
-                    else{
-                        guard let docs = snaps?.documents, !docs.isEmpty else{
-                            liked = false
-                            userInfo.userLiked?.removeAll(where: {$0 == snap.documentID})
-                            break EmptyDocuments
-                        }
-                        
-                        liked = true
-                        if (userInfo.userLiked?.contains(snap.documentID) ?? true){
-                            userInfo.userLiked?.append(snap.documentID)
-                        }
-                    }
-                    let product = Product(uid: uid, picID: snap.documentID, description: description, fullName: self.fullProduct.fullName, username: self.fullProduct.username, productID: snap.documentID, userImageID: self.fullProduct.userImageID, timestamp: timestamp, index: nil, timestampDiff: self.fullProduct.timestampDiff, fromCache: false, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: self.fullProduct.designImage)
-                    self.fullProduct = product
-                    completed()
-                })
-            }
-        })
-    }
+    
     
     
     
@@ -161,7 +115,7 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
         cell?.productPicture.image = img
         cell?.productPicture.addShadowToImageNotLayer()
         cell?.circularProgress.removeFromSuperview()
-        self.navigationController?.navigationBar.isUserInteractionEnabled = false
+        navigationController?.navigationBar.isUserInteractionEnabled = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             let fullData = cell?.productPicture.makeSnapshot(clear: true, subviewsToIgnore: [])?.pngData()
             cell?.canvasDisplayView.isHidden = true

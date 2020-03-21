@@ -119,4 +119,8 @@ extension UIView{
         self.layer.shadowRadius = 0.0
         self.layer.shadowOpacity = 0.0
     }
+    
+    var hasShadow: Bool{
+        return layer.shadowOpacity != 0.0 && layer.shadowRadius != 0.0
+    }
 }

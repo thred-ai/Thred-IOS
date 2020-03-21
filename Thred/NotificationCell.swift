@@ -13,7 +13,7 @@ class NotificationCell: UITableViewCell {
     @IBOutlet weak var notifPic: UIImageView!
     
     @IBOutlet weak var notifLbl: UILabel!
-    
+    @IBOutlet weak var timestampLbl: UILabel!
     
     var isDP: Bool = false{
         

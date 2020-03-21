@@ -35,6 +35,8 @@
 		AA8CD7FD23DE0F1300DCA929 /* FlappingButterflyRefreshControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8CD7FC23DE0F1300DCA929 /* FlappingButterflyRefreshControl.swift */; };
 		AA8E68EA2407C43900C651A1 /* ExplorePageFlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8E68E92407C43900C651A1 /* ExplorePageFlowLayout.swift */; };
 		AA8E68ED240B2B5C00C651A1 /* carouselCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8E68EB240B2B5C00C651A1 /* carouselCollectionViewCell.swift */; };
+		AAA4B0252426936A007BC407 /* DesignVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AAA4B0242426936A007BC407 /* DesignVC.storyboard */; };
+		AAA4B027242693AA007BC407 /* DesignVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AAA4B026242693AA007BC407 /* DesignVC.storyboard */; };
 		AAABC06A23C9432700E48987 /* Nexa W01 Heavy.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AAABBFFD23C9431400E48987 /* Nexa W01 Heavy.ttf */; };
 		AAABC06B23C9432700E48987 /* FriendVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAABC00023C9431500E48987 /* FriendVC.swift */; };
 		AAABC06C23C9432700E48987 /* ProfileHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAABC00123C9431500E48987 /* ProfileHeaderView.swift */; };
@@ -137,6 +139,7 @@
 		AAD3F421241DEDB900F8FF8F /* NotificationCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F41F241DEDB900F8FF8F /* NotificationCell.xib */; };
 		AAD3F425241EABE800F8FF8F /* SalesCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F423241EABE800F8FF8F /* SalesCell.xib */; };
 		AAD3F427241EB02000F8FF8F /* SalesCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD3F426241EB02000F8FF8F /* SalesCell.swift */; };
+		AAD3F429241F35C500F8FF8F /* SalesVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD3F428241F35C500F8FF8F /* SalesVC.swift */; };
 		AADAAD33241385D4003AD618 /* TemplateColorChooserCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AADAAD32241385D4003AD618 /* TemplateColorChooserCell.swift */; };
 		AADAAD352414DFC3003AD618 /* ColorCollectionLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = AADAAD342414DFC3003AD618 /* ColorCollectionLayout.swift */; };
 		BCDC21CE5CBC090FFA4D4117 /* Pods_ThredTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 16C51B907D7A34D7E04E2558 /* Pods_ThredTests.framework */; };
@@ -199,6 +202,8 @@
 		AA8CD7FC23DE0F1300DCA929 /* FlappingButterflyRefreshControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlappingButterflyRefreshControl.swift; sourceTree = "<group>"; };
 		AA8E68E92407C43900C651A1 /* ExplorePageFlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplorePageFlowLayout.swift; sourceTree = "<group>"; };
 		AA8E68EB240B2B5C00C651A1 /* carouselCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = carouselCollectionViewCell.swift; sourceTree = "<group>"; };
+		AAA4B0242426936A007BC407 /* DesignVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = DesignVC.storyboard; sourceTree = "<group>"; };
+		AAA4B026242693AA007BC407 /* DesignVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = DesignVC.storyboard; sourceTree = "<group>"; };
 		AAABBFFD23C9431400E48987 /* Nexa W01 Heavy.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Nexa W01 Heavy.ttf"; sourceTree = "<group>"; };
 		AAABC00023C9431500E48987 /* FriendVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FriendVC.swift; sourceTree = "<group>"; };
 		AAABC00123C9431500E48987 /* ProfileHeaderView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProfileHeaderView.swift; sourceTree = "<group>"; };
@@ -301,6 +306,7 @@
 		AAD3F41F241DEDB900F8FF8F /* NotificationCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NotificationCell.xib; sourceTree = "<group>"; };
 		AAD3F423241EABE800F8FF8F /* SalesCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SalesCell.xib; sourceTree = "<group>"; };
 		AAD3F426241EB02000F8FF8F /* SalesCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SalesCell.swift; sourceTree = "<group>"; };
+		AAD3F428241F35C500F8FF8F /* SalesVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SalesVC.swift; sourceTree = "<group>"; };
 		AADAAD32241385D4003AD618 /* TemplateColorChooserCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateColorChooserCell.swift; sourceTree = "<group>"; };
 		AADAAD342414DFC3003AD618 /* ColorCollectionLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorCollectionLayout.swift; sourceTree = "<group>"; };
 		EE13770A87A7B3DCABF609DC /* Pods-Thred-ThredUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Thred-ThredUITests.debug.xcconfig"; path = "Target Support Files/Pods-Thred-ThredUITests/Pods-Thred-ThredUITests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -443,11 +449,12 @@
 				AAD3F3A92418ABE200F8FF8F /* Tee Templates */,
 				AAABC00F23C9431800E48987 /* UIKit Extensions */,
 				AAABC03E23C9432100E48987 /* UsernameCell.swift */,
-				AAABC15E23C947AF00E48987 /* Main.storyboard */,
+				AAD3F428241F35C500F8FF8F /* SalesVC.swift */,
 				AAD3F41C241D8C6600F8FF8F /* NotificationVC.swift */,
-				AAD3F41E241DEDB900F8FF8F /* NotificationCell.swift */,
+				AAA4B022242692B4007BC407 /* Storyboards */,
 				AAD3F423241EABE800F8FF8F /* SalesCell.xib */,
 				AAD3F426241EB02000F8FF8F /* SalesCell.swift */,
+				AAD3F41E241DEDB900F8FF8F /* NotificationCell.swift */,
 				AAD3F41F241DEDB900F8FF8F /* NotificationCell.xib */,
 				AA0E2AD4240CCBCA004050B0 /* FullProductVC.swift */,
 				AAABC16623D12A8D00E48987 /* ExploreViewController.swift */,
@@ -482,6 +489,16 @@
 				AA4AF77B23B4464800088F11 /* Info.plist */,
 			);
 			path = ThredUITests;
+			sourceTree = "<group>";
+		};
+		AAA4B022242692B4007BC407 /* Storyboards */ = {
+			isa = PBXGroup;
+			children = (
+				AAABC15E23C947AF00E48987 /* Main.storyboard */,
+				AAA4B026242693AA007BC407 /* DesignVC.storyboard */,
+				AAA4B0242426936A007BC407 /* DesignVC.storyboard */,
+			);
+			path = Storyboards;
 			sourceTree = "<group>";
 		};
 		AAABBFFE23C9431500E48987 /* ProfileViews */ = {
@@ -895,10 +912,12 @@
 				AA4CE2772406F69B009BAC92 /* ExploreColorCell.xib in Resources */,
 				AAD3F3C32418ABE300F8FF8F /* red1.png in Resources */,
 				AAD3F4012418B63700F8FF8F /* home@2x.png in Resources */,
+				AAA4B0252426936A007BC407 /* DesignVC.storyboard in Resources */,
 				AAD3F40E2418B63700F8FF8F /* home@1x.png in Resources */,
 				AAABC07023C9432700E48987 /* SearchUserTableViewCell.xib in Resources */,
 				AAD3F3D52418ABE300F8FF8F /* navy3.png in Resources */,
 				AAD3F3CC2418ABE300F8FF8F /* green3.png in Resources */,
+				AAA4B027242693AA007BC407 /* DesignVC.storyboard in Resources */,
 				AAD3F3D22418ABE300F8FF8F /* cyan.png in Resources */,
 				AAD3F3D12418ABE300F8FF8F /* gray3.png in Resources */,
 				AAD3F3C72418ABE300F8FF8F /* blue3.png in Resources */,
@@ -1113,6 +1132,7 @@
 				AAABC0A123C9432700E48987 /* EditUsernameVC.swift in Sources */,
 				AAABC09F23C9432700E48987 /* UsernameCell.swift in Sources */,
 				AAABC0A923C9432700E48987 /* DownloadImageForPictureChat.swift in Sources */,
+				AAD3F429241F35C500F8FF8F /* SalesVC.swift in Sources */,
 				AAABC0B523C9432700E48987 /* SetUpPictureChat.swift in Sources */,
 				AADAAD352414DFC3003AD618 /* ColorCollectionLayout.swift in Sources */,
 				AAABC07123C9432700E48987 /* FeedSearchTable.swift in Sources */,

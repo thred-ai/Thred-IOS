@@ -21,6 +21,8 @@ class MainTabBarViewController: UITabBarController {
         super.viewDidLoad()
 
         tabBar.isTranslucent = false
+        
+        tabBar.items?[2].isEnabled = false
         templates.checkAndLoadTemplates(type: "TeeTemplates"){}
         
        // if let userVC = viewControllers?.last as? UserVC{

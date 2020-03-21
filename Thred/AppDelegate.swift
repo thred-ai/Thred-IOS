@@ -47,10 +47,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         if let userFollowing = UserDefaults.standard.stringArray(forKey: "FOLLOWING"){
             userInfo.userFollowing = userFollowing
         }
-        if let likesToUpdate =         UserDefaults.standard.object(forKey: "likeQueue") as? [String : Bool]{
+        if let likesToUpdate = UserDefaults.standard.object(forKey: "likeQueue") as? [String : Bool]{
             likeQueue = likesToUpdate
         }
-        if let uploadPosts =         UserDefaults.standard.stringArray(forKey: "UploadingPosts"){
+        if let uploadPosts = UserDefaults.standard.stringArray(forKey: "UploadingPosts"){
             uploadingPosts = uploadPosts
         }
     }

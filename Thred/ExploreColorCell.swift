@@ -59,9 +59,10 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
                         let templateColor = snap["Template_Color"] as? String
                         guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                         let likes = snap["Likes"] as? Int
+                        let comments = ((snap["Comments"]) as? Int) ?? 0
 
                         if self.templateColor == color{
-                            self.postArray?.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked?.contains(snap.documentID), designImage: nil))
+                            self.postArray?.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked?.contains(snap.documentID), designImage: nil, comments: comments))
                         }
                     }
                     self.postArray?.sort(by: {$0.likes > $1.likes})
@@ -190,11 +191,9 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
 
 extension UICollectionView{
     func downloadExploreProductImage(pictureProduct: ExploreProductCell?, followingUID: String, picID: String, index: Int, product: Product?, downloader: SDWebImageDownloader?, completed: @escaping () -> ()){
-               
         if pictureProduct != nil{
             pictureProduct?.circularProgress.isHidden = false
             let cp = pictureProduct?.circularProgress
-            
             var pic_id = picID
             if product?.blurred ?? false{
                 pic_id = "blur_\(pic_id)"
@@ -233,6 +232,54 @@ extension UICollectionView{
         }
         else{
             completed()
+        }
+    }
+    
+    
+    func downloadThredListImage(isThumbnail: Bool, cell: PhotosCell?, followingUID: String, picID: String, downloader: SDWebImageDownloader?, completed: @escaping (UIImage?) -> ()){
+        
+        if cell != nil{
+            //cell?.circularProgress.isHidden = false
+            //let cp = pictureProduct?.circularProgress
+            var pic_id = picID
+            //if product?.blurred ?? false{
+               // pic_id = "blur_\(pic_id)"
+            //}
+            
+            if isThumbnail{
+                pic_id = "thumbnail_\(picID)"
+            }
+            
+            let ref = Storage.storage().reference().child("Users/" + followingUID + "/" + "Products/" + picID + "/" + pic_id + ".png")
+            ref.downloadURL(completion: { url, error in
+                if error != nil{
+                    print(error?.localizedDescription ?? "")
+                    completed(nil)
+                }
+                else{
+                    var dub: CGFloat = 0
+                    var oldDub: CGFloat = 0
+                    downloader?.requestImage(with: url, options: [.highPriority, .continueInBackground, .scaleDownLargeImages, .avoidDecodeImage], context: nil, progress: { (receivedSize: Int, expectedSize: Int, link) -> Void in
+                        dub = CGFloat(receivedSize) / CGFloat(expectedSize)
+                        DispatchQueue.main.async {
+                            //cp?.setProgressWithAnimation(duration: 0.0, value: dub, from: oldDub, finished: true){
+                                oldDub = dub
+                            //}
+                        }
+                    }, completed: { (image, data, error, finished) in
+                        if error != nil{
+                            print(error?.localizedDescription ?? "")
+                            completed(nil)
+                        }
+                        else{
+                            completed(image)
+                        }
+                    })
+                }
+            })
+        }
+        else{
+            completed(nil)
         }
     }
 }

@@ -45,7 +45,7 @@ class ExploreViewController: UITableViewController{
             tableView.syncPostLikes(loadedProducts: section["Array"] as? [Product] ?? [], vc: self)
         }
 
-        guard let colorSection = self.colorSections.first(where: {$0["ID"] as? String == productToOpen.templateColor}) else{return}
+        guard let colorSection = colorSections.first(where: {$0["ID"] as? String == productToOpen.templateColor}) else{return}
         guard let postArray = colorSection["Array"] as? [Product] else{return}
         guard let post = postArray.first(where: {$0.productID == productToOpen.productID}) else{return}
         post.liked = productToOpen.liked

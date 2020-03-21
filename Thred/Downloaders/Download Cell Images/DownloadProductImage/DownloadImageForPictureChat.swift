@@ -126,7 +126,12 @@ extension UITableView{
                                 if let products = feedVC?.loadedProducts ?? userVC?.loadedProducts ?? friendVC?.loadedProducts {
                                     if let index = products.firstIndex(where: {$0.productID == picID}){
                                         if products.indices.contains(index){
-                                            cache.storeImageData(toDisk: imgData, forKey: picID)
+                                            if index <= 8{
+                                                cache.storeImageData(toDisk: imgData, forKey: picID)
+                                            }
+                                            else{
+                                                cache.storeImage(toMemory: image, forKey: picID)
+                                            }
                                             self?.setCell(index: index, image: image, templateID: product?.templateColor)
                                         }
                                     }

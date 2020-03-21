@@ -201,7 +201,6 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
             }
             else{
                 for i in 0..<self.loadedProducts.count{
-                    self.loadedProducts[i].fromCache = false
                     self.tableView.performBatchUpdates({
                         self.tableView.reloadRows(at: [IndexPath(row: i, section: 0)], with: .automatic)
                     }, completion: { completed in
@@ -269,6 +268,8 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
                             let templateColor = snap["Template_Color"] as? String
                             let likes = snap["Likes"] as? Int
                             guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
+                            let comments = ((snap["Comments"]) as? Int) ?? 0
+
                             Firestore.firestore().collection("Users").document(uid).collection("Products").document(snap.documentID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userInfo.uid).getDocuments(completion: { snapLikes, error in
                             
                                 var liked: Bool!
@@ -294,7 +295,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
                                     }
                                 }
                                 
-                                productsToUse.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil))
+                                productsToUse.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments))
                                 
                                 if productsToUse.count == (snaps.count){
                                     UserDefaults.standard.set(userInfo.userLiked, forKey: "LikedPosts")

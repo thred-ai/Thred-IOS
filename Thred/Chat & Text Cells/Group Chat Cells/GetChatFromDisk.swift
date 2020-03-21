@@ -18,14 +18,12 @@ extension Array where Iterator.Element == Product{
             
         case .some:
             
-            guard let count = diskLoadedProducts?.count else{
-                
-                
-                return}
+            guard let count = diskLoadedProducts?.count
+                else{return}
             
             for product in diskLoadedProducts!{
                 
-                let post = Product(uid: product.uid, picID: product.picID, description: product.description, fullName: product.fullName, username: product.username, productID: product.productID, userImageID: product.userImageID, timestamp: product.timestamp, index: product.index, timestampDiff: product.timestampDiff, fromCache: true, blurred: product.blurred, price: product.price, name: product.name, templateColor: product.templateColor, likes: product.likes, liked: product.liked, designImage: nil)
+                let post = Product(uid: product.uid, picID: product.picID, description: product.description, fullName: product.fullName, username: product.username, productID: product.productID, userImageID: product.userImageID, timestamp: product.timestamp, index: product.index, timestampDiff: product.timestampDiff, blurred: product.blurred, price: product.price, name: product.name, templateColor: product.templateColor, likes: product.likes, liked: product.liked, designImage: nil, comments: product.comments)
                 
 
                 self.append(post)

@@ -335,14 +335,11 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
         
     }()
     
-    lazy var cameraRollCollectionView: CameraRollView = {
+    lazy var cameraRollCollectionView: PhotosView = {
         
         let y = self.view.frame.midY
-        let collectionView = CameraRollView.init(frame: CGRect(x: 0, y: self.view.frame.height - y, width: self.view.frame.width, height: y), collectionViewLayout: CollectionViewLayout())
+        let collectionView = PhotosView.init(frame: CGRect(x: 0, y: self.view.frame.height - y, width: self.view.frame.width, height: y))
         
-        if let backView = collectionView.backgroundView{
-            backView.addViewSpinner(centerX: backView.center.x, centerY: (collectionView.visibleSize.height / 2) - 20, width: 40, height: 40)
-        }
         self.view.addSubview(collectionView)
         collectionView.isHidden = true
 

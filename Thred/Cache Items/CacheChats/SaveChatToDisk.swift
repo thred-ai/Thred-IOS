@@ -54,35 +54,22 @@ extension Array where Iterator.Element == Product{
     }
     
     
-    func removeOldFeedPosts(newPosts: [Product]?, completed: @escaping () -> ()){
+    func removeOldFeedPosts(newPosts: [Product]?){
         
         if self.count == 0{
-            completed()
             return
         }
         else{
-            for (index, product) in self.enumerated(){
+            for product in self{
                 if (!(newPosts?.contains(where: {$0.picID == product.picID}) ?? true)) || newPosts?.contains(where: {$0.picID == product.picID && $0.blurred != product.blurred}) ?? false{
                     
                     cache.removeImage(forKey: product.productID, withCompletion: {
                         if product.uid != userInfo.uid{
                             cache.removeImage(forKey: product.userImageID, withCompletion: {
-                                if index == self.count - 1{
-                                    completed()
-                                }
+                                
                             })
                         }
-                        else{
-                            if index == self.count - 1{
-                                completed()
-                            }
-                        }
                     })
-                }
-                else{
-                    if index == self.count - 1{
-                        completed()
-                    }
                 }
             }
         }

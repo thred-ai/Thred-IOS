@@ -23,6 +23,7 @@ class ProductCell: UITableViewCell {
     
     @IBOutlet var nameMaskingViews: [UIView]!
     
+    @IBOutlet weak var commentBtn: UIButton!
     
     @IBOutlet weak var timestampLbl: UILabel!
     
@@ -61,10 +62,6 @@ class ProductCell: UITableViewCell {
             } else {
                 likeBtn.imageView?.stopAnimating()
                 likeBtn.setImage(unlikedImage, for: .normal)
-                if product.likes == 0{
-                    likesLbl.text = "\(0)"
-                    product.likes = 0
-                }
                 product.liked = false
             }
         }
@@ -77,26 +74,50 @@ class ProductCell: UITableViewCell {
     let selectedColor = UIColor(red: 1, green: 0, blue: 0.3137, alpha: 0.9) /* #ff0050 */
     
     @objc func toProfile(_ sender: UITapGestureRecognizer) {
-        
         if vc is FeedVC || vc is FullProductVC{
             
-            if product.uid == userInfo.uid{
-                vc?.tabBarController?.selectedIndex = 4
+            switch vc {
+            case let full as FullProductVC:
+                if full.isRasterizing{
+                    return
+                }
+                if let vcs = full.navigationController?.viewControllers{
+                    if vcs.indices.contains(vcs.count - 2){
+                        let secondLastVC = vcs[vcs.count - 2]
+                        if secondLastVC.isKind(of: UserVC.self) || secondLastVC.isKind(of: FriendVC.self){
+                            full.navigationController?.popViewController(animated: true)
+                            return
+                        }
+                        else{
+                            fallthrough
+                        }
+                    }
+                }
+            default:
+                if product.uid == userInfo.uid{
+                    vc?.tabBarController?.selectedIndex = 4
+                    return
+                }
             }
-            else{
-                
-                let info = UserInfo(uid: product.uid, dp: self.userImage.image, dpID: product.userImageID ?? "null", username: product.username ?? "", fullName: product.fullName ?? "", bio: "", notifID: "", userFollowing: nil, userLiked: nil)
-                
-                (vc as? FullProductVC)?.friendInfo = info
-                
-                (vc as? FeedVC)?.selectedUser = info
-                vc?.performSegue(withIdentifier: "toFriend", sender: nil)
-            }
+            
+            let info = UserInfo(uid: product.uid, dp: self.userImage.image, dpID: product.userImageID ?? "null", username: product.username ?? "", fullName: product.fullName ?? "", bio: "", notifID: "", userFollowing: nil, userLiked: nil)
+            (vc as? FullProductVC)?.friendInfo = info
+            (vc as? FeedVC)?.selectedUser = info
+            vc?.performSegue(withIdentifier: "toFriend", sender: nil)
         }
-        else if let userVC = vc as? UserVC{
+        else if let userVC = vc as? UserVC ?? vc as? FriendVC{
             userVC.tableView.setContentOffset(CGPoint(x: 0, y: -userVC.view.safeAreaInsets.top), animated: true)
         }
     }
+    
+    
+    
+    
+    @IBAction func commentOnDesign(_ sender: UIButton) {
+        vc?.performSegue(withIdentifier: "toComments", sender: nil)
+    }
+    
+    
     
     let likedImage = UIImage(named: "liked")
     let unlikedImage = UIImage(named: "like")
@@ -106,7 +127,6 @@ class ProductCell: UITableViewCell {
         sender.isEnabled = false
         isUserInteractionEnabled = false
         likeQueue.removeValue(forKey: product.productID)
-        
         if !isLiked{
             isLiked = true
             likeQueue.updateValue(true, forKey: product.productID)
@@ -117,7 +137,9 @@ class ProductCell: UITableViewCell {
         else{
             isLiked = false
             likeQueue.updateValue(false, forKey: product.productID)
-            if product.likes == 0{
+            
+            switch product.likes{
+            case 0:
                 let products = (vc as? FeedVC)?.loadedProducts ?? (vc as? UserVC)?.loadedProducts ?? (vc as? FriendVC)?.loadedProducts
                     userInfo.userLiked?.removeAll(where: {$0 == self.product.productID})
                     UserDefaults.standard.set(userInfo.userLiked, forKey: "LikedPosts")
@@ -130,8 +152,7 @@ class ProductCell: UITableViewCell {
                     sender.isEnabled = true
                     isUserInteractionEnabled = true
                 return
-            }
-            else{
+            default:
                 likesLbl.text = "\((product.likes) - 1)"
                 product.likes -= 1
             }
@@ -139,7 +160,6 @@ class ProductCell: UITableViewCell {
         }
         UserDefaults.standard.set(likeQueue, forKey: "likeQueue")
         setProductInArray()
-
         if let feed = vc as? FeedVC{
             updateLiking(loadedProducts: feed.loadedProducts, saveType: "FeedProducts")
         }
@@ -149,7 +169,6 @@ class ProductCell: UITableViewCell {
         else{
             updateLiking(loadedProducts: nil, saveType: nil)
         }
-        
     }
     
     lazy var uploadView: UIView = {
@@ -160,7 +179,6 @@ class ProductCell: UITableViewCell {
         cp.accessibilityIdentifier = "uploadSpinner"
         view.addSubview(cp)
         cp.center = view.center
-        
         let retryBtn = view
         
         return view
@@ -169,7 +187,6 @@ class ProductCell: UITableViewCell {
     func setProductInArray(){
         let products = (vc as? FeedVC)?.loadedProducts ?? (vc as? FriendVC)?.loadedProducts ?? (vc as? UserVC)?.loadedProducts
         guard let productInArray = products?.first(where: {$0.productID == product.productID}) ?? (vc as? FullProductVC)?.fullProduct else{return}
-        
         productInArray.likes = product.likes
         productInArray.liked = product.liked
     }
@@ -264,17 +281,10 @@ class ProductCell: UITableViewCell {
             dpMask.clipsToBounds = true
         }
         setUpCircularProgress()
-        
         productPicture.isUserInteractionEnabled = true
-        
         let tap = UITapGestureRecognizer(target: self, action: #selector(toProfile(_:)))
-        
         userInfoView.addGestureRecognizer(tap)
         
-        
-        // Here some basic setup
-        //view.addSubView(overlay)
-        //view.bringSubViewToFront(imageView)
         productPicture.addSubview(canvasDisplayView)
         addSubview(uploadView)
 

@@ -16,6 +16,15 @@ import ColorSlider
 import AVKit
 
 
+public enum LabelStyle {
+    case large
+    case normal
+    case nexa
+    case fancy
+    case fill
+    case hype
+}
+
 class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDelegate, UIGestureRecognizerDelegate, UITextFieldDelegate, SwiftyDrawViewDelegate, UICollectionViewDelegate, UICollectionViewDataSource {
     
     var cameraBtn: UIButton!
@@ -25,7 +34,9 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     var doneBtn: UIButton!
     @IBOutlet weak var colorCollectionView: UICollectionView!
     
+    @IBOutlet weak var thredWatermark: UIStackView!
     
+    @IBOutlet weak var saveToPhotosLbl: UIView!
     @IBOutlet weak var scrollview: UIScrollView!
     @IBOutlet weak var titleView: UITextField!
     @IBOutlet weak var nextBtn: UIBarButtonItem!
@@ -36,6 +47,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     
     var product: ProductInProgress! = ProductInProgress()
 
+    
 
     @IBAction func doneDesigning(_ sender: UIBarButtonItem) {
         
@@ -92,15 +104,6 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     }()
     
     
-    @objc func closeCamera(_ sender: UIButton?){
-        titleView.isHidden = false
-        bottomBar.isHidden = false
-        canvas.gestureRecognizers?.first?.isEnabled = true
-        cameraView.hideCameraAnimate(viewToCarry: bottomBar) {
-            self.cameraView.resetDisplayImage()
-        }
-    }
-    
     lazy var drawToolBar: UIStackView = {
         
         let stack = UIStackView(frame: CGRect(x: 10, y: 5, width: view.frame.width - 20, height: 35))
@@ -128,7 +131,6 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         undo.tintColor = UIColor(named: "LoadingColor")
         undo.addTarget(self, action: #selector(undoColors(_:)), for: .touchUpInside)
         undo.setImage(UIImage(nameOrSystemName: "arrow.uturn.left.circle", systemPointSize: 25, iconSize: 9), for: .normal)
-        undo.isEnabled = false
         
         brushBtn = UIButton(frame: btnFrame)
         brushBtn.tintColor = UIColor(named: "LoadingColor")
@@ -136,14 +138,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         brushBtn.setImage(UIImage(nameOrSystemName: "pencil.circle", systemPointSize: 25, iconSize: 9), for: .normal)
         brushBtn.isEnabled = true
         
-        clearBtn = UIButton(frame: btnFrame)
-        clearBtn.tintColor = UIColor(named: "LoadingColor")
-        clearBtn.addTarget(self, action: #selector(clearCanvas(_:)), for: .touchUpInside)
-        clearBtn.setImage(UIImage(nameOrSystemName: "xmark.circle", systemPointSize: 25, iconSize: 9), for: .normal)
-        clearBtn.isEnabled = true
-
         stack.addArrangedSubview(brushBtn)
-        stack.addArrangedSubview(clearBtn)
         stack.addArrangedSubview(slider)
         stack.addArrangedSubview(undo)
         stack.addArrangedSubview(done)
@@ -155,58 +150,12 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     
     var undo: UIButton!
     var brushBtn: UIButton!
-    var clearBtn: UIButton!
     var done: UIButton!
     var slider: ColorSlider!
     var garbageBtn: UIButton!
-    var activeLbl: UITextView?
+    var activeLbl: CanvasTextView?
     
-    @objc func colorChanged(_ sender: ColorSlider){
-        if sender == slider{
-            drawCanvas.brush.color = Color(sender.color)
-        }
-        else if sender == textSlider{
-            if currentLabelStyle == .fill{
-                activeLbl?.backgroundColor = sender.color
-                if sender.color == UIColor(red: 1, green: 1, blue: 1, alpha: 1){
-                    activeLbl?.textColor = .black
-                }
-                else{
-                    activeLbl?.textColor = .white
-                }
-            }
-            else{
-                activeLbl?.textColor = sender.color
-            }
-        }
-    }
-    
-    @objc func clearCanvas(_ sender: ColorSlider){
-        drawCanvas.clear()
-    }
-    
-    @objc func undoColors(_ sender: UIButton){
-        drawCanvas.undo()
-        if drawCanvas.lines.isEmpty{
-            undo.isEnabled = false
-        }
-    }
-    
-    @objc func switchBrush(_ sender: UIButton){
         
-        if drawCanvas.brush.blendMode == .clear{
-            brushBtn.setImage(UIImage(nameOrSystemName: "pencil.circle", systemPointSize: 25, iconSize: 9), for: .normal)
-            drawCanvas.brush.blendMode = .normal
-            drawCanvas.brush.color = Color(slider.color)
-        }
-        else{
-            brushBtn.setImage(UIImage(nameOrSystemName: "wand.and.rays.inverse", systemPointSize: 23, iconSize: 9), for: .normal)
-            drawCanvas.brush.blendMode = .clear
-        }
-    }
-    
-    
-    
     
     func makeMovable(view: UIView){
         let pan = UIPanGestureRecognizer(target: self, action: #selector(handleObjectPan(_:)))
@@ -272,14 +221,19 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
                     })
                 }
                 else{
-                    if let textView = canvas.subviews.first(where: {$0.isFirstResponder && $0.isKind(of: UITextView.self)}) as? UITextView{
+                    if let textView = canvas.subviews.first(where: {$0.isFirstResponder && $0.isKind(of: UITextView.self)}) as? CanvasTextView{
                         activeLbl = textView
                         editingTransform = textView.transform
                         editingCenter = textView.center
-                        if !(textView.accessibilityIdentifier?.isEmpty ?? false){
-                            textView.text = textView.accessibilityIdentifier
+                        
+                        if let identifier = textView.accessibilityIdentifier{
+                            if !(identifier.isEmpty){
+                                textView.text = identifier
+                            }
                         }
+                        
                         textStyleBtn.superview?.isHidden = false
+                        setTextStyle(textStyleBtn, textView: textView)
                         fontSlider.isHidden = false
                         textCoverView.isHidden = false
                         UIView.animate(withDuration: 0.15, animations: {
@@ -320,7 +274,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     
     lazy var textToolBar: UIView = {
         let view = UIView(frame: CGRect(x: 0, y: 0, width: canvas.frame.width, height: 45))
-        view.backgroundColor = ColorCompatibility.systemBackground
+        view.backgroundColor = .black
         
         let stack = UIStackView.init(frame: CGRect(x: 20, y: 10, width: view.frame.width - 40, height: view.frame.height - 20))
         stack.axis = .horizontal
@@ -487,9 +441,13 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     var midXLine: UIView!
     var midYLine: UIView!
     var angleLine: UIView!
-    
     var lineTypeView: UIView!
+    var alignmentCanvas: UIView!
     
+    
+    var lastTextView: CanvasTextView!
+    
+
     lazy var canvas: UIView = {
         let view = UIImageView(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: self.view.frame.height * aspectRatio))
         view.isUserInteractionEnabled = true
@@ -507,12 +465,11 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         drawCanvas.brush.color = Color(.cyan)
         drawCanvas.isUserInteractionEnabled = false
         drawCanvas.addSubview(brushCircle)
+        drawCanvas.addSubview(drawTopToolBar)
         brushCircle.isHidden = true
+        drawTopToolBar.isHidden = true
         let gesture = UIPinchGestureRecognizer(target: self, action: #selector(changeBrushSize(_:)))
         drawCanvas.addGestureRecognizer(gesture)
-        
-        let holdGesture = UILongPressGestureRecognizer(target: self, action: #selector(activateStraightLine(_:)))
-        drawCanvas.addGestureRecognizer(holdGesture)
         
         lineTypeView = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
         let lineImageView = UIImageView(frame: CGRect(x: 0, y: 0, width: lineTypeView.frame.width, height: lineTypeView.frame.height))
@@ -561,14 +518,13 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         let backView = UIView(frame: CGRect(x: 10, y: 10, width: 100, height: 30))
         backView.backgroundColor = UIColor.black.withAlphaComponent(0.5)
         backView.layer.borderColor = UIColor(named: "LoadingColor")?.cgColor
-        backView.layer.borderWidth = 1
+        backView.layer.borderWidth = 3
         backView.layer.cornerRadius = backView.frame.height / 2
         backView.clipsToBounds = true
         textStyleBtn = UIButton.init(frame: CGRect(x: 5, y: 5, width: backView.frame.width - 10, height: backView.frame.height - 10))
         textStyleBtn.setTitle("Large", for: .normal)
         textStyleBtn.setTitleColor(UIColor(named: "LoadingColor"), for: .normal)
         textStyleBtn.addTarget(self, action: #selector(changeTextStyle(_:)), for: .touchUpInside)
-        currentLabelStyle = .large
         textStyleBtn.showsTouchWhenHighlighted = true
         backView.addSubview(textStyleBtn)
         textCoverView = UIView.init(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: view.frame.height))
@@ -581,53 +537,26 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         fontSlider.value = Float(defaultFontSize)
         fontSlider.maximumTrackTintColor = UIColor(named: "LoadingColor")
         fontSlider.minimumTrackTintColor = UIColor(named: "LoadingColor")
-        currentFontSize = CGFloat(defaultFontSize)
         fontSlider.addTarget(self, action: #selector(resizeFont(_:)), for: .valueChanged)
+        
+        
+        alignmentCanvas = UIView(frame: view.bounds)
+        alignmentCanvas.isUserInteractionEnabled = false
+        alignmentCanvas.addSubview(midXLine)
+        alignmentCanvas.addSubview(midYLine)
+        alignmentCanvas.addSubview(angleLine)
+        
+        
         view.addSubview(garbageBtn)
         view.addSubview(textCoverView)
         view.addSubview(backView)
         view.addSubview(fontSlider)
-        view.addSubview(midXLine)
-        view.addSubview(midYLine)
-        view.addSubview(angleLine)
         view.addSubview(drawCanvas)
+        view.addSubview(alignmentCanvas)
         return view
     }()
     
-    @objc func activateStraightLine(_ sender: UILongPressGestureRecognizer){
-        if sender.state == .began{
-            drawCanvas.undo()
-            if let lineImageView = lineTypeView.subviews.first(where: {$0.isKind(of: UIImageView.self)}) as? UIImageView{
-                lineTypeView.center = drawCanvas.center
-                lineTypeView.center.y = drawCanvas.center.y - self.view.safeAreaInsets.top
-                lineImageView.frame.origin = CGPoint.zero
-                lineTypeView.tintColor = slider.color
-                lineTypeView.isHidden = false
-                AudioServicesPlaySystemSound(1519)
-                if drawCanvas.shouldDrawStraight{
-                    drawCanvas.shouldDrawStraight = false
-                    lineImageView.image = UIImage(named: "scribble.mode")
-                }
-                else{
-                    drawCanvas.shouldDrawStraight = true
-                    lineImageView.image = UIImage(named: "straight.mode")
-                }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5){
-                    UIView.animate(withDuration: 0.2, animations: {
-                        self.lineTypeView.alpha = 0.0
-                    }, completion: { finished in
-                        if finished{
-                            self.lineTypeView.alpha = 1.0
-                            self.lineTypeView.isHidden = true
-                        }
-                    })
-                }
-            }
-            else{
-                
-            }
-        }
-    }
+    
     
     lazy var brushCircle: UIView = {
         let view = UIView.init(frame: CGRect(x: 0, y: 0, width: drawCanvas.brush.originalWidth, height: drawCanvas.brush.originalWidth))
@@ -650,16 +579,6 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     
     var fontSlider: UISlider!
     
-    var currentLabelStyle: LabelStyle!
-    
-    public enum LabelStyle {
-        case large
-        case normal
-        case nexa
-        case fancy
-        case fill
-        case hype
-    }
     
     var currentFontSize: CGFloat!
      
@@ -678,14 +597,11 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     
     
     
-    lazy var cameraRollCollectionView: CameraRollView = {
+    lazy var cameraRollCollectionView: PhotosView = {
         
         let y = view.frame.midY
-        let collectionView = CameraRollView.init(frame: CGRect(x: 0, y: view.frame.height - y, width: view.frame.width, height: y), collectionViewLayout: CollectionViewLayout())
+        let collectionView = PhotosView.init(frame: CGRect(x: 0, y: view.frame.height - y, width: view.frame.width, height: y))
         
-        if let backView = collectionView.backgroundView{
-            backView.addViewSpinner(centerX: backView.center.x, centerY: (collectionView.visibleSize.height / 2) - 20, width: 40, height: 40)
-        }
         view.addSubview(collectionView)
         collectionView.isHidden = true
 
@@ -750,25 +666,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     
     
     
-    @objc func configurePhotos(_ sender: UIButton) {
-        if self.cameraRollCollectionView.isHidden{
-            sender.tintColor = .cyan
-            drawBtn.isSelected = true
-            closeDrawCanvas(drawBtn)
-            exitTapper.isEnabled = true
-            doneBtn.isEnabled = false
-            showCamRoll(sender: sender)
-            canvas.gestureRecognizers?.first?.isEnabled = false
-        }
-        else{
-            exitTapper.isEnabled = false
-            doneBtn.isEnabled = true
-            sender.tintColor = UIColor(named: "LoadingColor")
-            cameraRollCollectionView.animatehideCameraRoll(viewToCarry: self.bottomBar, backgroundView: view, tableView: nil){
-                self.canvas.gestureRecognizers?.first?.isEnabled = true
-            }
-        }
-    }
+    
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return self.tees.count
@@ -849,11 +747,52 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         }
     }
     
+    lazy var drawTopToolBar: UIView = {
+        let view = UIView.init(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: 45))
+        view.backgroundColor = .clear
+        
+        let stack = UIStackView(frame: CGRect(x: 0, y: 5, width: 110, height: 35))
+        stack.center.x = view.center.x
+        stack.axis = .horizontal
+        stack.distribution = .fill
+        let color = UIColor(named: "LoadingColor")
+        stack.spacing = 10
+        view.addSubview(stack)
+        let button = UIButton.init(frame: CGRect(x: 5, y: 5, width: 90, height: 35))
+        button.backgroundColor = UIColor.black.withAlphaComponent(0.5)
+        button.setTitle("Scribble", for: .normal)
+        button.setTitleColor(color, for: .normal)
+        button.layer.cornerRadius = button.frame.height / 2
+        button.clipsToBounds = true
+        button.layer.borderWidth = 3
+        button.layer.borderColor = color?.cgColor
+        button.showsTouchWhenHighlighted = true
+        button.addTarget(self, action: #selector(activateStraightLine(_:)), for: .touchUpInside)
+        stack.addArrangedSubview(button)
+        
+        button.setRadiusWithShadow()
+        return view
+    }()
+    
+    @IBOutlet weak var saveBtn: UIButton!
+   
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.colorCollectionView.delegate = self
-        self.colorCollectionView.dataSource = self
+        colorCollectionView.delegate = self
+        colorCollectionView.dataSource = self
+        
+        saveBtn.addTarget(self, action: #selector(showSaveView(_:)), for: .touchDown)
+        saveBtn.addTarget(self, action: #selector(showSaveView(_:)), for: .touchDragEnter)
+        saveBtn.addTarget(self, action: #selector(hideSaveView(_:)), for: .touchDragOutside)
+        saveBtn.adjustsImageWhenDisabled = false
+
+        saveToPhotosLbl.layer.cornerRadius = saveToPhotosLbl.frame.height / 2
+        saveToPhotosLbl.clipsToBounds = true
+        saveToPhotosLbl.isHidden = true
+        
         scrollview.alwaysBounceVertical = false
         navigationController?.navigationBar.setBackgroundImage(UIImage.init(), for: UIBarMetrics.default)
         navigationController?.navigationBar.shadowImage = UIImage.init()
@@ -864,6 +803,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         priceView.text = minimumPrice
         priceView.inputAccessoryView = toolBar
         displayView.addSubview(carousel)
+        displayView.bringSubviewToFront(thredWatermark)
         setCarouselConstraints()
         setLeftNavigationItem(image: UIImage(nameOrSystemName: "xmark", systemPointSize: 18, iconSize: 9), style: .plain, target: self, action: #selector(cancelDesigning(_:)))
         setPlaceholder(textView: descriptionView, textColor: ColorCompatibility.tertiaryLabel)
@@ -884,9 +824,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
                 self.bottomBar.addSubview(self.drawToolBar)
                 self.drawToolBar.isHidden = true
                 self.displayView.addSubview(self.zoomBtn)
-                self.displayView.addSubview(self.saveBtn)
-                self.saveBtn.frame.origin = CGPoint(x: 5, y: self.displayView.frame.maxY - self.zoomBtn.frame.height - 5)
-                self.zoomBtn.frame.origin = CGPoint(x: self.saveBtn.frame.origin.x, y: self.saveBtn.frame.origin.y - self.zoomBtn.frame.height)
+                self.zoomBtn.frame.origin = CGPoint(x: 5, y: self.displayView.frame.maxY - self.zoomBtn.frame.height - 5)
                 self.view.addSubview(self.zoomableView)
                 self.zoomableView.isHidden = true
                 self.nextBtn.isEnabled = false
@@ -894,15 +832,6 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         }
         // Do any additional setup after loading the view.
     }
-    
-    lazy var saveBtn: UIButton = {
-        
-        let btn = UIButton.init(frame: CGRect(x: 0, y: 0, width: 45, height: 45))
-        btn.tintColor = UIColor(named: "LoadingColor")
-        btn.addTarget(self, action: #selector(saveToCameraRoll(_:)), for: .touchUpInside)
-        btn.setImage(UIImage(nameOrSystemName: "square.and.arrow.down.fill", systemPointSize: 18, iconSize: 9), for: .normal)
-        return btn
-    }()
     
     @objc func cancelDesigning(_ sender: UIBarButtonItem){
         product = nil
@@ -1012,3 +941,100 @@ extension UIImage {
 }
 
 
+extension UIViewController {
+
+    /**
+     *  Height of status bar + navigation bar (if navigation bar exist)
+     */
+
+    var topbarHeight: CGFloat {
+        if #available(iOS 13.0, *) {
+            return (view.window?.windowScene?.statusBarManager?.statusBarFrame.height ?? 0.0) +
+                (self.navigationController?.navigationBar.frame.height ?? 0.0)
+        } else {
+            return UIApplication.shared.statusBarFrame.height + (self.navigationController?.navigationBar.frame.height ?? 0.0)
+        }
+    }
+}
+
+class CanvasTextView: UITextView {
+
+    var currentFontSize: CGFloat!{
+        didSet{
+            font = font?.withSize(currentFontSize)
+        }
+    }
+    var defaultFontSize: Int!{
+        didSet{
+            currentFontSize = CGFloat(defaultFontSize)
+        }
+    }
+    var color: UIColor!{
+        didSet{
+            if labelStyle == .fill{
+                determineFillColor()
+            }
+            else{
+                textColor = color
+            }
+        }
+    }
+    
+    var labelStyle: LabelStyle!{
+        didSet{
+            switch labelStyle {
+
+            case .large:
+                self.font = UIFont.boldSystemFont(ofSize: currentFontSize ?? CGFloat(defaultFontSize))
+                self.textColor = color
+                self.backgroundColor = .clear
+                self.textAlignment = .center
+            case .normal:
+                self.font = UIFont.systemFont(ofSize: currentFontSize ?? CGFloat(defaultFontSize))
+                self.textColor = color
+                self.backgroundColor = .clear
+                self.textAlignment = .left
+            case .nexa:
+                self.font = UIFont(name: "NexaW01-Heavy", size: currentFontSize ?? CGFloat(defaultFontSize))
+                self.textColor = color
+                self.backgroundColor = .clear
+                self.textAlignment = .center
+            case .fancy:
+                self.font = UIFont(name: "akaDora", size: currentFontSize ?? CGFloat(defaultFontSize))
+                self.textColor = color
+                self.backgroundColor = .clear
+                self.textAlignment = .center
+                
+            case .fill:
+                self.font = UIFont.boldSystemFont(ofSize: currentFontSize ?? CGFloat(defaultFontSize))
+                determineFillColor()
+                self.textAlignment = .center
+            case .hype:
+                self.font = UIFont(name: "HOPE-HYPE", size: currentFontSize ?? CGFloat(defaultFontSize))
+                self.textColor = color
+                self.backgroundColor = .clear
+                self.textAlignment = .center
+            default:
+                return
+            }
+        }
+    }
+    
+    func determineFillColor(){
+        if color == UIColor(red: 1, green: 1, blue: 1, alpha: 1){
+            self.textColor = .black
+        }
+        else{
+            self.textColor = .white
+        }
+        self.backgroundColor = color
+    }
+    
+    override init(frame: CGRect, textContainer: NSTextContainer?) {
+        super.init(frame: frame, textContainer: textContainer)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}

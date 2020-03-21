@@ -84,7 +84,6 @@ class UserVC: UITableViewController {
     
     func downloadProducts(completed: @escaping () -> ()){
         self.getProducts(fromInterval: nil, refresh: true) {[weak self] hasDiffproducts, snapDocs in
-            
             completed()
             if hasDiffproducts ?? false{
                 self?.loadedProducts.removeAll()
@@ -92,9 +91,6 @@ class UserVC: UITableViewController {
                 self?.tableView.reloadData()
             }
             else{
-                for i in 0..<(self?.loadedProducts.count ?? 0){
-                    self?.loadedProducts[i].fromCache = false
-                }
                 DispatchQueue.main.async { [weak self] in
                     self?.tableView.reloadData()
                 }
@@ -278,7 +274,7 @@ class UserVC: UITableViewController {
             uploadingPosts.append(doc.documentID)
             UserDefaults.standard.set(uploadingPosts, forKey: "UploadingPosts")
 
-            let product = Product(uid: userInfo.uid, picID: doc.documentID, description: post.caption, fullName: userInfo.fullName, username: userInfo.username, productID: doc.documentID, userImageID: userInfo.dpID, timestamp: date, index: nil, timestampDiff: "1 second", fromCache: false, blurred: false, price: (post.price ?? 2000) / 100, name: post.name, templateColor: post.templateColor, likes: 0, liked: false, designImage: nil)
+            let product = Product(uid: userInfo.uid, picID: doc.documentID, description: post.caption, fullName: userInfo.fullName, username: userInfo.username, productID: doc.documentID, userImageID: userInfo.dpID, timestamp: date, index: nil, timestampDiff: "1 second", blurred: false, price: (post.price ?? 2000) / 100, name: post.name, templateColor: post.templateColor, likes: 0, liked: false, designImage: nil, comments: 0)
             
             cache.storeImageData(toDisk: designData, forKey: doc.documentID)
             self.loadedProducts.insert(product, at: 0)
@@ -304,7 +300,8 @@ class UserVC: UITableViewController {
                     "Blurred" : false,
                     "Timestamp" : date,
                     "Template_Color" : post.templateColor ?? "null",
-                    "Likes" : 0
+                    "Likes" : 0,
+                    "Comments" : 0
                 ] as [String : Any]
                 
                 doc.setData(data, completion: { error in
@@ -357,9 +354,9 @@ class UserVC: UITableViewController {
                 if snapDocuments?.isEmpty ?? true{
                     if refresh{
                         completed(true, nil)
-                        self.loadedProducts.removeOldFeedPosts(newPosts: nil){
-                            self.loadedProducts.removeAllObjects(type: "Products")
-                        }
+                        self.loadedProducts.removeOldFeedPosts(newPosts: nil)
+                        self.loadedProducts.removeAllObjects(type: "Products")
+                        
                     }
                     else{
                         completed(false, nil)
@@ -388,8 +385,9 @@ class UserVC: UITableViewController {
                                 let likes = snap["Likes"] as? Int ?? 0
 
                                 guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
-                                
-                                localLoaded.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: nil, designImage: nil))
+                                let comments = ((snap["Comments"]) as? Int) ?? 0
+
+                                localLoaded.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: nil, designImage: nil, comments: comments))
 
                                 if localLoaded.count == snaps.count{
                                     let isSame = localLoaded == self.loadedProducts
@@ -398,12 +396,11 @@ class UserVC: UITableViewController {
                                     print(self.loadedProducts.count)
                                     
                                     if !isSame{
-                                        self.loadedProducts.removeOldFeedPosts(newPosts: localLoaded){
-                                            localLoaded = nil
-                                            completed(true, snaps)
-                                            self.sortDownloadedProducts(snaps: snaps){
-                                                self.loadedProducts.saveAllObjects(type: "Products")
-                                            }
+                                        self.loadedProducts.removeOldFeedPosts(newPosts: localLoaded)
+                                        localLoaded = nil
+                                        completed(true, snaps)
+                                        self.sortDownloadedProducts(snaps: snaps){
+                                            self.loadedProducts.saveAllObjects(type: "Products")
                                         }
                                     }
                                     else{
@@ -439,7 +436,8 @@ class UserVC: UITableViewController {
                 let templateColor = snap["Template_Color"] as? String
                 let likes = snap["Likes"] as? Int
                 guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
-                
+                let comments = ((snap["Comments"]) as? Int) ?? 0
+
                 
                 
                 Firestore.firestore().collection("Users").document(uid).collection("Products").document(snap.documentID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userInfo.uid).getDocuments(completion: { snapLikes, error in
@@ -467,7 +465,7 @@ class UserVC: UITableViewController {
                         }
                     }
                     
-                    productsToUse.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil))
+                    productsToUse.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments))
                     
                     print("ProductsToUse: \(productsToUse.count)")
                     print("Snaps: \(snaps.count)")

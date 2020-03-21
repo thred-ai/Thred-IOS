@@ -35,13 +35,10 @@ class Product: Codable, Equatable{
         let timeCon = lhs.timestamp == rhs.timestamp
         let blurCon = lhs.blurred == rhs.blurred
         let likesCon = lhs.likes == rhs.likes
-
-
-        return nameCon && descriptionCon && productIDCon && priceCon && picIDCon && timeCon && blurCon && likesCon
+        let commentCon = lhs.comments == rhs.comments
+        return nameCon && descriptionCon && productIDCon && priceCon && picIDCon && timeCon && blurCon && likesCon && commentCon
         
     }
-    
-    
     
     var uid = String()
     var picID: String? = nil
@@ -53,7 +50,6 @@ class Product: Codable, Equatable{
     var timestamp: Date! = nil
     var index: Int! = nil
     var timestampDiff: String! = nil
-    var fromCache = Bool()
     var blurred: Bool!
     var price: Double? = 0
     var name: String? = nil
@@ -61,9 +57,10 @@ class Product: Codable, Equatable{
     var likes = Int()
     var liked: Bool!
     var designImage: Data!
+    var comments = Int()
 
     
-    init(uid: String, picID: String?, description: String?, fullName: String?, username: String?, productID: String, userImageID: String?, timestamp: Date!, index: Int!, timestampDiff: String!, fromCache: Bool, blurred: Bool!, price: Double?, name: String?, templateColor: String!, likes: Int!, liked: Bool!, designImage: Data!) {
+    init(uid: String, picID: String?, description: String?, fullName: String?, username: String?, productID: String, userImageID: String?, timestamp: Date!, index: Int!, timestampDiff: String!, blurred: Bool!, price: Double?, name: String?, templateColor: String!, likes: Int!, liked: Bool!, designImage: Data!, comments: Int!) {
         
         self.uid = uid
         self.picID = picID
@@ -75,7 +72,6 @@ class Product: Codable, Equatable{
         self.timestamp = timestamp
         self.index = index
         self.timestampDiff = timestampDiff
-        self.fromCache = fromCache
         self.blurred = blurred
         self.price = price
         self.name = name
@@ -83,10 +79,11 @@ class Product: Codable, Equatable{
         self.likes = likes
         self.liked = liked
         self.designImage = designImage
+        self.comments = comments
     }
     
     convenience init() {
-        self.init(uid: "", picID: nil, description: nil, fullName: nil, username: "", productID: "", userImageID: nil, timestamp: nil,  index: nil, timestampDiff: nil, fromCache: false, blurred: false, price: nil, name: nil, templateColor: nil, likes: 0, liked: false, designImage: nil)
+        self.init(uid: "", picID: nil, description: nil, fullName: nil, username: "", productID: "", userImageID: nil, timestamp: nil,  index: nil, timestampDiff: nil, blurred: false, price: nil, name: nil, templateColor: nil, likes: 0, liked: false, designImage: nil, comments: 0)
     }
     
 }
@@ -456,7 +453,6 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
             }
             else{
                 for i in 0..<(self.loadedProducts.count){
-                    self.loadedProducts[i].fromCache = false
                     if self.loadedProducts[i].uid == userInfo.uid{
                         continue
                     }
@@ -648,20 +644,20 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
 
                                 guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                                 
+                                let comments = ((snap["Comments"]) as? Int) ?? 0
                                 
-                                localLoaded.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked?.contains(snap.documentID), designImage: nil))
+                                localLoaded.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked?.contains(snap.documentID), designImage: nil, comments: comments))
 
                                 if localLoaded.count == snaps.count{
                                     let isSame = localLoaded == self.loadedProducts
                                     
                                         
                                     if !isSame{
-                                        self.loadedProducts.removeOldFeedPosts(newPosts: localLoaded){
-                                            localLoaded = nil
-                                            completed(true, snaps)
-                                            self.sortDownloadedProducts(snaps: snaps){
-                                                self.loadedProducts.saveAllObjects(type: "FeedProducts")
-                                            }
+                                        self.loadedProducts.removeOldFeedPosts(newPosts: localLoaded)
+                                        localLoaded = nil
+                                        completed(true, snaps)
+                                        self.sortDownloadedProducts(snaps: snaps){
+                                            self.loadedProducts.saveAllObjects(type: "FeedProducts")
                                         }
                                     }
                                     else{
@@ -705,7 +701,9 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                 let templateColor = snap["Template_Color"] as? String
                 let likes = snap["Likes"] as? Int
                 guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
+                let comments = ((snap["Comments"]) as? Int) ?? 0
                 
+            
                 
                 
                 Firestore.firestore().collection("Users").document(uid).collection("Products").document(snap.documentID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userInfo.uid).getDocuments(completion: { snapLikes, error in
@@ -733,7 +731,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                         }
                     }
                     
-                    productsToUse.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, fromCache: false, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil))
+                    productsToUse.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments))
                     
                     print(snaps.count)
            
