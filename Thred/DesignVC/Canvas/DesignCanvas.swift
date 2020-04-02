@@ -211,6 +211,8 @@ extension DesignViewController{
     @IBAction func saveToCameraRoll(_ sender: UIButton){
         
         if let thredLabel = self.thredWatermark.arrangedSubviews.first(where: {$0.isKind(of: UILabel.self)}) as? UILabel{
+            guard let cellIndex = carousel.collectionView.indexPathsForVisibleItems.first else{return}
+            guard let colorLbl = (carousel.collectionView.cellForItem(at: cellIndex) as? CarouselCollectionViewCell)?.colorDisplayLabel else{return}
             hideSaveView(nil)
             thredLabel.text = "saving"
             saveBtn.isEnabled = false
@@ -221,12 +223,17 @@ extension DesignViewController{
             }, completion: { finished in
                 sender.transform = CGAffineTransform.identity
                 thredLabel.text = "thred"
-                guard let image = self.displayView.makeSnapshot(clear: false, subviewsToIgnore: [self.zoomBtn]) else{return}
+                guard let image = self.displayView.makeSnapshot(clear: false, subviewsToIgnore: [self.zoomBtn, colorLbl]) else{return}
                 thredLabel.text = "saving"
                 sender.transform = CGAffineTransform(rotationAngle: CGFloat.pi)
                 image.saveToPhotos { (success) in
                     DispatchQueue.main.async {
-                        thredLabel.text = "thred"
+                        if success{
+                            thredLabel.text = "thred"
+                        }
+                        else{
+                            thredLabel.text = "error!"
+                        }
                         self.saveBtn.isEnabled = true
                         UIView.animate(withDuration: 0.2, animations: {
                             sender.transform = CGAffineTransform.identity
@@ -234,6 +241,9 @@ extension DesignViewController{
                             if finished{
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.75){
                                     UIView.animate(withDuration: 0.15, animations: {
+                                        if thredLabel.text != "thred"{
+                                            thredLabel.text = "thred"
+                                        }
                                     }, completion: { finished in
                                         if finished{
                                         }

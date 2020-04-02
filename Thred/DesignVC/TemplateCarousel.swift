@@ -22,7 +22,7 @@ class TemplateCarousel: UIView, UICollectionViewDelegateFlowLayout, UICollection
     
     func setCarouselTemplates(templates: [Template]){
         for (index, template) in templates.enumerated(){
-            let slide = TemplateCarouselSlide(canvasColor: UIColor(named: templates[index].templateID)?.withAlphaComponent(0.25), canvasName: template.templateID)
+            let slide = TemplateCarouselSlide(canvasColor: UIColor(named: templates[index].templateID)?.withAlphaComponent(0.25), canvasName: template.templateDisplayName, canvasID: template.templateID)
             slides.append(slide)
             self.collectionView.performBatchUpdates({
                 self.collectionView.insertItems(at: [IndexPath(item: index, section: 0)])
@@ -39,7 +39,7 @@ class TemplateCarousel: UIView, UICollectionViewDelegateFlowLayout, UICollection
         cv.dataSource = self
         cv.isPagingEnabled = true
         cv.isPrefetchingEnabled = false
-        cv.register(carouselCollectionViewCell.self, forCellWithReuseIdentifier: "slideCell")
+        cv.register(CarouselCollectionViewCell.self, forCellWithReuseIdentifier: "slideCell")
         cv.clipsToBounds = true
         cv.backgroundColor = .clear
         cv.showsHorizontalScrollIndicator = false
@@ -73,7 +73,7 @@ class TemplateCarousel: UIView, UICollectionViewDelegateFlowLayout, UICollection
     }
     
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "slideCell", for: indexPath) as? carouselCollectionViewCell
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "slideCell", for: indexPath) as? CarouselCollectionViewCell
         
         cell?.canvasDisplayView.image = nil
         cell?.backgroundImageView.image = nil
@@ -92,7 +92,7 @@ class TemplateCarousel: UIView, UICollectionViewDelegateFlowLayout, UICollection
             cell?.canvasDisplayView.layer.borderWidth = 1
             cell?.touchHereLabel.isHidden = false
             
-            if slide.canvasColorName == "white"{
+            if slide.canvasColorID == "white"{
                 cell?.canvasDisplayView.layer.borderColor = UIColor.lightGray.cgColor
                 cell?.touchHereLabel.textColor = .lightGray
             }

@@ -68,19 +68,6 @@ extension Array{
 
 extension Array where Iterator.Element == Template{
     
-    mutating func checkAndLoadTemplates(type: String, with completed: @escaping () -> ()){
-            
-        let diskLoadedProducts = self.getAllObjects(type: type, name: "TemplateData")
-        switch diskLoadedProducts{
-            
-        case .some:
-            self = diskLoadedProducts!
-            completed()
-        case .none:
-            completed()
-        }
-    }
-    
     func getAllObjects(type: String, name: String) -> [Template]? {
         if let objects = self.loadClass(withName: name, type: type) {
             let decoder = JSONDecoder()

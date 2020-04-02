@@ -45,26 +45,42 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     var currentItemIndex: Int! = 0
     
     
-    var product: ProductInProgress! = ProductInProgress()
+    var product: ProductInProgress!
+    var isEditingProduct = false
+    var deletingPost = false
 
+    @IBOutlet weak var deletePostBtn: UIButton!
     
-
+    @IBAction func deletePost(_ sender: UIButton) {
+        deletingPost = true
+        performSegue(withIdentifier: "DoneDesigning", sender: nil)
+    }
+    
     @IBAction func doneDesigning(_ sender: UIBarButtonItem) {
         
         let canPost = canPostDesign()
         if canPost.0{
-            if let indexPath = carousel.collectionView.indexPathsForVisibleItems.first{
-                if let cell = carousel.collectionView.cellForItem(at: indexPath) as? carouselCollectionViewCell{
-                    if cell.canvasDisplayView.image != nil{
-                        guard let price = priceView.text else{return}
-                        guard let decimalPrice = Double(price) else{return}
-                        product.design = cell.canvasDisplayView.image
-                        product.caption = descriptionView.text
-                        product.uid = userInfo.uid
-                        product.name = titleView.text
-                        product.templateColor = tees[indexPath.item].templateID
-                        product.price = decimalPrice * 100
-                        performSegue(withIdentifier: "DoneDesigning", sender: nil)
+            if isEditingProduct{
+                product.caption = descriptionView.text
+                product.uid = userInfo.uid
+                product.name = titleView.text
+                performSegue(withIdentifier: "DoneDesigning", sender: nil)
+            }
+            else{
+                if let indexPath = carousel.collectionView.indexPathsForVisibleItems.first{
+                    if let cell = carousel.collectionView.cellForItem(at: indexPath) as? CarouselCollectionViewCell{
+                        if cell.canvasDisplayView.image != nil{
+                            guard let price = priceView.text else{return}
+                            guard let decimalPrice = Double(price) else{return}
+                            product = ProductInProgress()
+                            product.design = cell.canvasDisplayView.image
+                            product.caption = descriptionView.text
+                            product.uid = userInfo.uid
+                            product.name = titleView.text
+                            product.templateColor = tees[indexPath.item].templateID
+                            product.price = decimalPrice * 100
+                            performSegue(withIdentifier: "DoneDesigning", sender: nil)
+                        }
                     }
                 }
             }
@@ -209,7 +225,16 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
             if (notification.userInfo?[UIResponder.keyboardIsLocalUserInfoKey] as? Bool ?? true){
                 let keyboardFrame = keyboardFrame.cgRectValue
                 keyboardHeight = keyboardFrame.height
-                if canvas.isHidden{
+                
+                switch product{
+                case .none:
+                    if canvas.isHidden{
+                        fallthrough
+                    }
+                    else{
+                        configureCanvasLabel()
+                    }
+                default:
                     UIView.animate(withDuration: 0.2, animations: {
                         if self.scrollview.contentInset.bottom == 0{
                             self.scrollview.contentOffset.y -= self.keyboardHeight - bottomPadding
@@ -220,50 +245,49 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
                         if finished{}
                     })
                 }
-                else{
-                    if let textView = canvas.subviews.first(where: {$0.isFirstResponder && $0.isKind(of: UITextView.self)}) as? CanvasTextView{
-                        activeLbl = textView
-                        editingTransform = textView.transform
-                        editingCenter = textView.center
-                        
-                        if let identifier = textView.accessibilityIdentifier{
-                            if !(identifier.isEmpty){
-                                textView.text = identifier
-                            }
-                        }
-                        
-                        textStyleBtn.superview?.isHidden = false
-                        setTextStyle(textStyleBtn, textView: textView)
-                        fontSlider.isHidden = false
-                        textCoverView.isHidden = false
-                        UIView.animate(withDuration: 0.15, animations: {
-                            textView.transform = CGAffineTransform.identity
-                        }, completion: { finished in
-                            if finished{
-                                self.textViewDidChange(textView)
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) {
-                                    self.textDoneBtn.isEnabled = true
-                                }
-                                if let textStyleView = self.textStyleBtn.superview{
-                                    self.canvas.bringSubviewToFront(self.textCoverView)
-                                    self.canvas.bringSubviewToFront(textStyleView)
-                                    self.canvas.bringSubviewToFront(self.fontSlider)
-                                    self.canvas.bringSubviewToFront(textView)
-                                }
-                                textView.center.x = self.canvas.center.x
-                                if let imageView = textView.subviews.first(where: {$0.isKind(of: UIImageView.self)}) as? UIImageView{
-                                    imageView.isHidden = true
-                                }
-                                for gesture in textView.gestureRecognizers ?? []{
-                                    if gesture.accessibilityLabel == "pan" || gesture.accessibilityLabel == "pinch" || gesture.accessibilityLabel == "rotate"{
-                                        gesture.isEnabled = false
-                                    }
-                                }
-                            }
-                        })
-                    }
+            }
+        }
+    }
+    
+    func configureCanvasLabel(){
+        if let textView = canvas.subviews.first(where: {$0.isFirstResponder && $0.isKind(of: UITextView.self)}) as? CanvasTextView{
+            activeLbl = textView
+            editingTransform = textView.transform
+            editingCenter = textView.center
+            if let identifier = textView.accessibilityIdentifier{
+                if !(identifier.isEmpty){
+                    textView.text = identifier
                 }
             }
+            textStyleBtn.superview?.isHidden = false
+            setTextStyle(textStyleBtn, textView: textView)
+            fontSlider.isHidden = false
+            textCoverView.isHidden = false
+            UIView.animate(withDuration: 0.15, animations: {
+                textView.transform = CGAffineTransform.identity
+            }, completion: { finished in
+                if finished{
+                    self.textViewDidChange(textView)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) {
+                        self.textDoneBtn.isEnabled = true
+                    }
+                    if let textStyleView = self.textStyleBtn.superview{
+                        self.canvas.bringSubviewToFront(self.textCoverView)
+                        self.canvas.bringSubviewToFront(textStyleView)
+                        self.canvas.bringSubviewToFront(self.fontSlider)
+                        self.canvas.bringSubviewToFront(textView)
+                    }
+                    textView.center.x = self.canvas.center.x
+                    if let imageView = textView.subviews.first(where: {$0.isKind(of: UIImageView.self)}) as? UIImageView{
+                        imageView.isHidden = true
+                    }
+                    for gesture in textView.gestureRecognizers ?? []{
+                        if gesture.accessibilityLabel == "pan" || gesture.accessibilityLabel == "pinch" || gesture.accessibilityLabel == "rotate"{
+                            gesture.isEnabled = false
+                        }
+                    }
+                }
+            })
         }
     }
     
@@ -374,13 +398,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
                             let maxY = p1 - bottomInset - 10
                             
                             textView.frame.size.height = maxY - minY
-                            
-                            print(self.view.frame.width)
-                            print(self.view.frame.height)
-                            print(minY)
-                            
-                            print(maxY)
-                            
+                          
                             if textView.text.count > 250{
                                     textView.text.removeLast(textView.text.count - 250)
                             }
@@ -809,28 +827,47 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         setPlaceholder(textView: descriptionView, textColor: ColorCompatibility.tertiaryLabel)
         textViewDidChange(descriptionView)
         setKeyBoardNotifs()
-        loadDesigns(){
-            DispatchQueue.main.async {
-                self.colorCollectionView.reloadData()
-                self.colorCollectionView.selectItem(at: IndexPath(item: 0, section: 0), animated: false, scrollPosition: .centeredHorizontally)
-                self.carousel.setCarouselTemplates(templates: self.tees)
-                self.scrollview.addSubview(self.canvasDisplayView)
-                self.view.addSubview(self.canvas)
-                self.canvas.isHidden = true
-                self.view.addSubview(self.bottomBar)
-                self.bottomBar.isHidden = true
-                self.view.addSubview(self.bottomSafeAreaView)
-                self.bottomSafeAreaView.isHidden = true
-                self.bottomBar.addSubview(self.drawToolBar)
-                self.drawToolBar.isHidden = true
-                self.displayView.addSubview(self.zoomBtn)
-                self.zoomBtn.frame.origin = CGPoint(x: 5, y: self.displayView.frame.maxY - self.zoomBtn.frame.height - 5)
-                self.view.addSubview(self.zoomableView)
-                self.zoomableView.isHidden = true
-                self.nextBtn.isEnabled = false
+        
+        if product != nil{
+            isEditingProduct = true
+            tees.append(Template(templateID: product.templateColor, templateDisplayName: ""))
+            colorCollectionView.isHidden = true
+            carousel.displayImage = product.design
+            carousel.setCarouselTemplates(templates: tees)
+            carousel.collectionView.isUserInteractionEnabled = false
+            priceView.isEnabled = false
+            guard let price = product.price else{return}
+            priceView.text = "\(price)"
+            textFieldDidEndEditing(priceView)
+            descriptionView.text = product.caption
+            titleView.text = product.name
+            nextBtn.title = "Update"
+            textViewDidChange(descriptionView)
+        }
+        else{
+            deletePostBtn.isHidden = true
+            loadDesigns(){
+                DispatchQueue.main.async {
+                    self.colorCollectionView.reloadData()
+                    self.colorCollectionView.selectItem(at: IndexPath(item: 0, section: 0), animated: false, scrollPosition: .centeredHorizontally)
+                    self.carousel.setCarouselTemplates(templates: self.tees)
+                    self.scrollview.addSubview(self.canvasDisplayView)
+                    self.view.addSubview(self.canvas)
+                    self.canvas.isHidden = true
+                    self.view.addSubview(self.bottomBar)
+                    self.bottomBar.isHidden = true
+                    self.view.addSubview(self.bottomSafeAreaView)
+                    self.bottomSafeAreaView.isHidden = true
+                    self.bottomBar.addSubview(self.drawToolBar)
+                    self.drawToolBar.isHidden = true
+                    self.displayView.addSubview(self.zoomBtn)
+                    self.zoomBtn.frame.origin = CGPoint(x: 5, y: self.displayView.frame.maxY - self.zoomBtn.frame.height - 5)
+                    self.view.addSubview(self.zoomableView)
+                    self.zoomableView.isHidden = true
+                    self.nextBtn.isEnabled = false
+                }
             }
         }
-        // Do any additional setup after loading the view.
     }
     
     @objc func cancelDesigning(_ sender: UIBarButtonItem){
@@ -895,8 +932,9 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let tabVC = segue.destination as? MainTabBarViewController{
             if product != nil{
-                tabVC.posted = true
                 tabVC.product = product
+                tabVC.deletingPost = deletingPost
+                tabVC.posted = !isEditingProduct
             }
             else{
                 tabVC.posted = false

@@ -10,7 +10,6 @@ import UIKit
 import FirebaseFirestore
 import SDWebImage
 
-
 class ColorSectionVC: UICollectionViewController {
 
     private let reuseIdentifier = "ColorSectionCell"
@@ -45,68 +44,78 @@ class ColorSectionVC: UICollectionViewController {
     override func viewWillAppear(_ animated: Bool) {
         self.showCenterBtn()
     }
+    
+    var last: DocumentSnapshot!
 
-    func getProducts(fromInterval: Date?, completed: @escaping ()->()){
+    func getProducts(fromInterval: Int?, completed: @escaping ()->()){
         
         if fromInterval == nil{
-            query = Firestore.firestore().collectionGroup("Products").whereField("Timestamp", isLessThanOrEqualTo: Timestamp(date: Date())).order(by: "Timestamp", descending: true).whereField("Template_Color", isEqualTo: templateColor).order(by: "Likes", descending: false).limit(to: 12)
+            query = Firestore.firestore().collectionGroup("Products").whereField("Template_Color", isEqualTo: templateColor).whereField("Has_Picture", isEqualTo: true).order(by: "Likes", descending: true).limit(to: 12)
         }
-        else{
-            guard let interval = fromInterval else{ completed(); return}
-            query = Firestore.firestore().collectionGroup("Products").whereField("Timestamp", isLessThan: Timestamp(date: interval)).order(by: "Timestamp", descending: true).whereField("Template_Color", isEqualTo: templateColor).order(by: "Likes", descending: false).limit(to: 12)
+        else if last != nil{
+            query = Firestore.firestore().collectionGroup("Products").whereField("Template_Color", isEqualTo: templateColor).whereField("Has_Picture", isEqualTo: true).order(by: "Likes", descending: true).start(afterDocument: last).limit(to: 12)
         }
         
-        
-        query.getDocuments(completion: { snaps, err in
-            if err != nil{
-                completed()
-                print(err?.localizedDescription ?? "")
-            }
-            else{
-                if let docs = snaps?.documents, !docs.isEmpty{
-                    
-                    for (index, snap) in docs.enumerated(){ // LOADED DOCUMENTS FROM \(snapDocuments)
-                        let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
-                        let uid = snap["UID"] as! String
-                        let description = snap["Description"] as? String
-                        let name = snap["Name"] as? String
-                        let blurred = snap["Blurred"] as? Bool
-                        let templateColor = snap["Template_Color"] as? String
-                        guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
-                        let likes = snap["Likes"] as? Int
-                        let comments = ((snap["Comments"]) as? Int) ?? 0
-
-                        self.loadedProducts.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked?.contains(snap.documentID), designImage: nil, comments: comments))
-                        
-                        self.collectionView.performBatchUpdates({
-                            self.collectionView.insertItems(at: [IndexPath(item: self.loadedProducts.count - 1, section: 0)])
-                        }, completion: { finished in
-                            if finished{
-                                if snap == snaps?.documents.last{
-                                    completed()
-                                }
-                            }
-                        })
-                    }
+        guard let userUID = userInfo.uid else{return}
+        refreshLists(userUID: userUID){
+            self.query.getDocuments(completion: { snaps, err in
+                if err != nil{
+                    completed()
+                    print(err?.localizedDescription ?? "")
                 }
                 else{
-                    completed()
+                    if let docs = snaps?.documents, !docs.isEmpty{
+                        for (index, snap) in docs.enumerated(){ // LOADED DOCUMENTS FROM \(snapDocuments)
+                            let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
+                            let uid = snap["UID"] as! String
+                            
+                            if userInfo.usersBlocking.contains(uid){
+                                continue
+                            }
+                            
+                            let description = snap["Description"] as? String
+                            let name = snap["Name"] as? String
+                            let blurred = snap["Blurred"] as? Bool
+                            let templateColor = snap["Template_Color"] as? String
+                            guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
+                            let likes = snap["Likes"] as? Int
+                            let comments = ((snap["Comments"]) as? Int) ?? 0
+
+                            self.loadedProducts.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments))
+                            
+                            self.collectionView.performBatchUpdates({
+                                self.collectionView.insertItems(at: [IndexPath(item: self.loadedProducts.count - 1, section: 0)])
+                            }, completion: { finished in
+                                if finished{
+                                    if snap == docs.last{
+                                        self.last = docs.last
+                                        completed()
+                                    }
+                                }
+                            })
+                        }
+                    }
+                    else{
+                        completed()
+                    }
                 }
-            }
-        })
+            })
+        }
     }
     
     override func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         
+        
+        
+        
         if scrollView.contentOffset.y >= (scrollView.contentSize.height - scrollView.frame.size.height){
             print("fromScroll")
             if let last = loadedProducts.last{
-                if let interval = last.timestamp{
-                    if !isLoading{
-                        isLoading = true
-                        getProducts(fromInterval: interval){
-                            self.isLoading = false
-                        }
+                let interval = last.likes
+                if !isLoading{
+                    isLoading = true
+                    getProducts(fromInterval: interval){
+                        self.isLoading = false
                     }
                 }
             }

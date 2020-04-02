@@ -9,21 +9,22 @@
 import UIKit
 import AudioToolbox
 import ColorCompatibility
+import Firebase
+import FirebaseFirestore
 
-var templates: [Template]! = [Template]()
 
-class MainTabBarViewController: UITabBarController {
+class MainTabBarViewController: UITabBarController, UITabBarControllerDelegate {
 
     var posted: Bool!
+    var deletingPost: Bool!
     var product: ProductInProgress!
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        delegate = self
         tabBar.isTranslucent = false
-        
         tabBar.items?[2].isEnabled = false
-        templates.checkAndLoadTemplates(type: "TeeTemplates"){}
         
        // if let userVC = viewControllers?.last as? UserVC{
             //userVC.setPageInfo()
@@ -32,8 +33,28 @@ class MainTabBarViewController: UITabBarController {
         // Do any additional setup after loading the view.
     }
     
+    func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
+        
+        
+        
+    }
     
-    
+    func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
+        if let vc = (viewController as? UINavigationController)?.viewControllers.first{
+            if selectedViewController == viewController{
+                if let tableView =
+                    (vc as? UITableViewController)?.tableView ??
+                    (vc as? NotificationVC)?.tableView ?? (vc as? ExploreViewController)?.tableView{
+                    var y: CGFloat = 0
+                    if vc is UITableViewController{
+                        y = -(vc.view.safeAreaInsets.top)
+                    }
+                    tableView.setContentOffset(CGPoint(x: 0, y: y), animated: true)
+                }
+            }
+        }
+        return true
+    }
     
     @IBAction func unwindToTabBar(segue:  UIStoryboardSegue) {
         
@@ -43,7 +64,22 @@ class MainTabBarViewController: UITabBarController {
                 profileVC.uploadPost(post: product, isRetryingWithID: nil)
             }
         }
+        else{
+            if product != nil{
+                if let vc = (selectedViewController as? UINavigationController)?.viewControllers.first{
+                    if let tableView = (vc as? UITableViewController)?.tableView ?? (vc as? FullProductVC)?.tableView{
+                        if deletingPost{
+                            tableView.deletingPost(post: product, vc: vc)
+                        }
+                        else{
+                            tableView.updatePost(post: product, vc: vc)
+                        }
+                    }
+                }
+            }
+        }
     }
+    
     
     
     
@@ -115,4 +151,98 @@ class MainTabBarViewController: UITabBarController {
     }
     */
 
+}
+
+extension UITableView{
+    
+    func updatePost(post: ProductInProgress, vc: UIViewController?){
+        
+        var index = 0
+        
+        guard let productID = post.productID else{return}
+        uploadingPosts.append(productID)
+        
+        if let products = (vc as? FeedVC)?.loadedProducts ?? (vc as? UserVC)?.loadedProducts{
+            guard let matchingIndex = products.firstIndex(where: {$0.productID == productID}) else{return}
+            index = matchingIndex
+            products[index].description = post.caption
+            products[index].name = post.name
+        }
+        else{
+            guard let product = (vc as? FullProductVC)?.fullProduct else{return}
+            product.description = post.caption
+            product.name = post.name
+        }
+        let indexPath = IndexPath(row: index, section: 0)
+        if let cell = cellForRow(at: indexPath) as? ProductCell{
+            cell.optionMenu.isHidden = true
+            performBatchUpdates({
+                reloadRows(at: [indexPath], with: .none)
+            }, completion: { finished in
+                if finished{
+                    self.scrollToRow(at: IndexPath(row: index, section: 0), at: .top, animated: true)
+                }
+            })
+        }
+        let doc = Firestore.firestore().collection("Users").document(post.uid).collection("Products").document(productID)
+        let data = [
+            "Name": post.name!,
+            "Search_Name" : post.name.lowercased(),
+            "Description" : post.caption ?? "",
+        ] as [String : Any]
+        
+        doc.updateData(data, completion: { error in
+            if error != nil{
+                print(error?.localizedDescription ?? "")
+            }
+            else{
+                uploadingPosts.removeAll(where: {$0 == productID})
+                self.performBatchUpdates({
+                    self.reloadRows(at: [indexPath], with: .none)
+                }, completion: { finished in
+                    if finished{
+                        self.scrollToRow(at: IndexPath(row: index, section: 0), at: .top, animated: true)
+                    }
+                })
+            }
+        })
+    }
+    
+    func deletingPost(post: ProductInProgress, vc: UIViewController?){
+        
+        
+        guard let productID = post.productID else{return}
+        let products = ((vc as? FeedVC)?.loadedProducts ?? (vc as? UserVC)?.loadedProducts)
+        let index = products?.firstIndex(where: {$0.productID == productID}) ?? 0
+        (vc as? FeedVC)?.loadedProducts.removeAll(where: {$0.productID == productID})
+        (vc as? UserVC)?.loadedProducts.removeAll(where: {$0.productID == productID})
+
+        if vc is FeedVC || vc is UserVC{
+            let indexPath = IndexPath(row: index, section: 0)
+            if let cell = cellForRow(at: indexPath) as? ProductCell{
+                cell.optionMenu.isHidden = true
+                performBatchUpdates({
+                    deleteRows(at: [indexPath], with: .none)
+                }, completion: { finished in
+                    if finished{
+                    }
+                })
+            }
+        }
+        else{
+            vc?.navigationController?.popViewController(animated: true)
+        }
+        let data = [
+            "uid" : post.uid,
+            "product_id" : post.productID
+        ]
+        Functions.functions().httpsCallable("deletePost").call(data, completion: { result, error in
+            if let err = error{
+                print(err.localizedDescription)
+            }
+            else{
+                
+            }
+        })
+    }
 }

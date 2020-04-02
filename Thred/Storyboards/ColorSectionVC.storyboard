@@ -10,9 +10,9 @@
         <!--Color SectionVC-->
         <scene sceneID="7IQ-SG-teH">
             <objects>
-                <collectionViewController storyboardIdentifier="UICollectionViewController-gfR-Fx-Tf9" id="gfR-Fx-Tf9" customClass="ColorSectionVC" customModule="Thred" customModuleProvider="target" sceneMemberID="viewController">
+                <collectionViewController storyboardIdentifier="UICollectionViewController-gfR-Fx-Tf9" extendedLayoutIncludesOpaqueBars="YES" id="gfR-Fx-Tf9" customClass="ColorSectionVC" customModule="Thred" customModuleProvider="target" sceneMemberID="viewController">
                     <collectionView key="view" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" id="89D-4t-qXF">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="813"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="secondarySystemBackgroundColor" red="0.94901960780000005" green="0.94901960780000005" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="3" minimumInteritemSpacing="2" id="exQ-xC-t2t" customClass="ColorSectionFlowLayout" customModule="Thred" customModuleProvider="target">
@@ -27,7 +27,10 @@
                             <outlet property="delegate" destination="gfR-Fx-Tf9" id="NSl-tl-bcp"/>
                         </connections>
                     </collectionView>
+                    <extendedEdge key="edgesForExtendedLayout" top="YES"/>
                     <navigationItem key="navigationItem" id="Ax6-lT-clw"/>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO"/>
+                    <simulatedTabBarMetrics key="simulatedBottomBarMetrics" translucent="NO"/>
                     <connections>
                         <segue destination="rVI-IL-sxN" kind="show" identifier="toFull" id="VaI-il-Tax"/>
                     </connections>

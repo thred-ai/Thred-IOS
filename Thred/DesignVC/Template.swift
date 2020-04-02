@@ -11,13 +11,15 @@ import Foundation
 class Template: Codable{
     
     var templateID: String!
+    var templateDisplayName: String!
     
-    init(templateID: String!){
+    init(templateID: String!, templateDisplayName: String!){
         self.templateID = templateID
+        self.templateDisplayName = templateDisplayName
     }
     
     convenience init() {
-        self.init(templateID: nil)
+        self.init(templateID: nil, templateDisplayName: nil)
     }
     
     static func == (lhs: Template, rhs: Template) -> Bool {

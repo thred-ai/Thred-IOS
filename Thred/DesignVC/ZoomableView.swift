@@ -12,7 +12,7 @@ import UIKit
 extension DesignViewController{
     @objc func showZoomableView(_ sender: UIButton){
         if let indexPath = carousel.collectionView.indexPathsForVisibleItems.first{
-            if let cell = carousel.collectionView.cellForItem(at: indexPath) as? carouselCollectionViewCell{
+            if let cell = carousel.collectionView.cellForItem(at: indexPath) as? CarouselCollectionViewCell{
                 zoomableView.isHidden = false
                 self.navigationItem.leftBarButtonItem?.isEnabled = false
                 self.navigationItem.rightBarButtonItem?.isEnabled = false
@@ -21,7 +21,7 @@ extension DesignViewController{
                 if cell.canvasDisplayView.image == nil{
                     cell.canvasDisplayView.isHidden = true
                 }
-                imageView?.image = sender.superview?.makeSnapshot(clear: true, subviewsToIgnore: [sender])
+                imageView?.image = sender.superview?.makeSnapshot(clear: true, subviewsToIgnore: [sender, cell.colorDisplayLabel])
                 cell.canvasDisplayView.isHidden = false
 
                 zoomableView.alpha = 0.0

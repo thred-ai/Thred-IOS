@@ -14,7 +14,6 @@ import AudioToolbox
 import AVFoundation
 import SDWebImage
 import ColorCompatibility
-import Crashlytics
 
 
 
@@ -94,321 +93,21 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
     var isLoading = Bool()
     let uid = UserDefaults.standard.string(forKey: "UID")
     var downloader = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
-
     var tokens = [String]()
     var downloadCount = 0
-    
-    struct TimeUnits{
-        
-        let stringUnits: [String] = []
-        let cmpntUnits: [DateComponents] = []
-        
-    }
-    
-    private struct Const {
-        /// Image height/width for Large NavBar state
-        static let ImageSizeForLargeState: CGFloat = 60
-        /// Margin from right anchor of safe area to right anchor of Image
-        static let ImageRightMargin: CGFloat = 20 //
-        /// Margin from bottom anchor of NavBar to bottom anchor of Image for Large NavBar state
-        static let ImageBottomMarginForLargeState: CGFloat = 15 //
-        /// Margin from bottom anchor of NavBar to bottom anchor of Image for Small NavBar state
-        static let ImageBottomMarginForSmallState: CGFloat = 15
-        /// Image height/width for Small NavBar state
-        static let ImageSizeForSmallState: CGFloat = 60
-        /// Height of NavBar for Small state. Usually it's just 44
-        static let NavBarHeightSmallState: CGFloat = 44
-        /// Height of NavBar for Large state. Usually it's just 96.5 but if you have a custom font for the title, please make sure to edit this value since it changes the height for Large state of NavBar
-        static let NavBarHeightLargeState: CGFloat = 96.5
-    }
-    
-    
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        
-        if tableView == self.tableView{
-            return loadedProducts.count
-        }
-        else{
-            return loadedUsers.count
-        }
-    }
-    
-    override func awakeFromNib() {
-    }
-    
-    lazy var rightNavItems: UIBarButtonItem? = {
-     
-
-        guard let navigationBar = navigationController?.navigationBar else { return nil }
-
-        let view = UIView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        
-        let heightToSet = navigationBar.frame.height - 10
-        
-        NSLayoutConstraint.activate([
-            view.heightAnchor.constraint(equalToConstant: heightToSet),
-        ])
-        
-        let stack = UIStackView()
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        stack.axis = .horizontal
-        stack.spacing = 0
-        stack.alignment = .fill
-        stack.distribution = .fillEqually
-        view.addSubview(stack)
-
-        NSLayoutConstraint.activate([
-            stack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
-            stack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
-            stack.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 0),
-            stack.topAnchor.constraint(equalTo: view.topAnchor, constant: 0)
-        ])
-        
-        let button = UIButton(frame: CGRect(x: 0, y: 0, width: heightToSet, height: heightToSet))
-        button.accessibilityIdentifier = "ProfileBtn"
-        button.layer.cornerRadius = button.frame.height / 2
-        button.clipsToBounds = true
-        button.layer.borderWidth = 2
-        button.addTarget(self, action: #selector(segueToProfile(_:)), for: .touchUpInside)
-        button.setImage(userInfo.dp, for: .normal)
-        button.imageView?.contentMode = .scaleAspectFill
-        button.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            button.heightAnchor.constraint(equalToConstant: heightToSet),
-            button.widthAnchor.constraint(equalTo: button.heightAnchor)
-        ])
-        
-        let cancelBtn = UIButton()
-        cancelBtn.accessibilityIdentifier = "CancelBtn"
-        cancelBtn.setTitle("Cancel", for: .normal)
-        cancelBtn.setTitleColor(ColorCompatibility.label, for: .normal)
-        cancelBtn.addTarget(self, action: #selector(cancelSearch), for: .touchUpInside)
-        cancelBtn.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            cancelBtn.heightAnchor.constraint(equalToConstant: heightToSet),
-            cancelBtn.widthAnchor.constraint(greaterThanOrEqualTo: cancelBtn.heightAnchor)
-        ])
-
-        stack.addArrangedSubview(button)
-        stack.addArrangedSubview(cancelBtn)
-        cancelBtn.isHidden = true
-        
-        return UIBarButtonItem(customView: view)
-    }()
-    
-    
-    
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        if let button = self.getProfileBtn(){
-            button.layer.borderColor = UIColor(named: "ProfileMask")?.cgColor
-        }
-    }
-    
-    func getProfileBtn() -> UIButton?{
-        guard let view = rightNavItems?.customView
-            else{return nil}
-        guard let stack = view.subviews.first as? UIStackView
-            else{return nil}
-        guard let button = stack.arrangedSubviews.first(where: {$0.accessibilityIdentifier == "ProfileBtn"}) as? UIButton
-            else{return nil}
-        return button
-    }
-    
-    private func setupUI(image: UIImage) {
-
-        if let button = getProfileBtn(){
-            button.setImage(image, for: .normal)
-            button.layer.borderColor = UIColor(named: "ProfileMask")?.cgColor
-        }
-        
-        navigationItem.setRightBarButton(rightNavItems, animated: false)
-
-    }
-    
-    
-    func showCancelBtn(){
-        guard let buttons = (self.rightNavItems?.customView?.subviews.first as? UIStackView)?.arrangedSubviews as? [UIButton] else{
-            return}
-        
-        let profileBtn = buttons.first(where: {$0.accessibilityIdentifier == "ProfileBtn"})
-        let cancelBtn = buttons.first(where: {$0.accessibilityIdentifier == "CancelBtn"})
-
-        profileBtn?.isHidden = true
-        
-        cancelBtn?.alpha = 0.0
-        UIView.animate(withDuration: 0.1, animations: {
-            cancelBtn?.isHidden = false
-            cancelBtn?.alpha = 1.0
-            self.navigationController?.navigationBar.setNeedsLayout()
-            self.navigationController?.navigationBar.layoutIfNeeded()
-        })
-    }
-    
-    func hideCancelBtn(){
-        guard let buttons = (self.rightNavItems?.customView?.subviews.first as? UIStackView)?.arrangedSubviews as? [UIButton] else{
-            return}
-        
-        let profileBtn = buttons.first(where: {$0.accessibilityIdentifier == "ProfileBtn"})
-        let cancelBtn = buttons.first(where: {$0.accessibilityIdentifier == "CancelBtn"})
-
-        cancelBtn?.isHidden = true
-        profileBtn?.alpha = 0.0
-        UIView.animate(withDuration: 0.1, animations: {
-            profileBtn?.isHidden = false
-            profileBtn?.alpha = 1.0
-            self.navigationController?.navigationBar.setNeedsLayout()
-            self.navigationController?.navigationBar.layoutIfNeeded()
-        })
-    }
-
-    func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
-        FeedVC.searchTable.isHidden = false
-        tableView.isScrollEnabled = false
-        showCancelBtn()
-        UIView.animate(withDuration: 0.1, animations: {
-            FeedVC.searchTable.alpha = 1.0
-        }, completion: {(finished : Bool) in })
-    }
-    
-    @objc func cancelSearch(){
-        FeedVC.searchBar.resignFirstResponder()
-        self.loadedUsers.removeAll()
-        FeedVC.searchTable.reloadData()
-        FeedVC.searchBar.text?.removeAll()
-        UIView.animate(withDuration: 0.1, animations: {
-            
-            FeedVC.searchTable.alpha = 0.0
-        }, completion: {(finished : Bool) in
-            FeedVC.searchTable.isHidden = true
-            self.tableView.isScrollEnabled = true
-        })
-        hideCancelBtn()
-    }
-    
-    
-    
-    var loadedUsers = [UserInfo]()
-    var selectedUser: UserInfo? = UserInfo()
-    
-    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        
-        
-        
-        if searchText == ""{
-            loadedUsers.removeAll()
-            FeedVC.searchTable.reloadData()
-            //self.getFollowers()
-            
-        }
-        else{
-            //searchBar.isLoading = true
-            let lowerCaseSearchText = searchText.lowercased()
-            Firestore.firestore().collection("Users").whereField("Username", isGreaterThanOrEqualTo: lowerCaseSearchText).whereField("Username", isLessThanOrEqualTo: lowerCaseSearchText + "\u{f8ff}").limit(to: 8).getDocuments(completion: {[weak self] query, error in
-                
-                //searchBar.isLoading = false
-                if error != nil{
-                    print(error?.localizedDescription ?? "null")
-                }
-                else{
-                    self?.loadedUsers.removeAll()
-                    if let documents = query?.documents{
-                        if documents.count != 0{
-                            print(documents)
-                            for document in documents{
-                                let uid = document.documentID
-                                let username = document["Username"] as? String
-                                let fullname = document["Full_Name"] as? String
-                                let bio = document["Bio"] as? String
-                                let dpLink = document["ProfilePicID"] as? String
-                                let notifID = document["Notification ID"] as? String
-                                
-                                let user = UserInfo(uid: uid, dp: nil, dpID: dpLink ?? "nil", username: username ?? "null", fullName: fullname ?? "null", bio: bio ?? "", notifID: notifID ?? "", userFollowing: nil, userLiked: nil)
-
-                                if uid == userInfo.uid{
-                                    user.dp = userInfo.dp
-                                    user.dpID = userInfo.dpID
-                                    self?.loadedUsers.append(user)
-                                    FeedVC.searchTable.reloadData()
-                                    continue
-                                }
-                                
-                                self?.loadedUsers.append(user)
-                                FeedVC.searchTable.reloadData()
-                                let ref = Storage.storage().reference()
-                                ref.child("Users/" + uid + "/" + "profile_pic-" + (dpLink ?? "null") +
-                                    ".jpeg").downloadURL(completion: { url, error in
-                                    if error != nil{
-                                        print(error?.localizedDescription ?? "")
-                                    }
-                                    else{
-                                        
-                                        self?.downloader.requestImage(with: url, options: [.scaleDownLargeImages, .refreshCached], context: nil, progress: nil, completed: {[weak self] (image, data, error, finished) in
-                                            if error != nil{
-                                                print(error?.localizedDescription ?? "")
-                                                return
-                                            }
-                                            else{
-                                                user.dp = image
-                                                if let index = self?.loadedUsers.firstIndex(where: {$0.uid == uid}){
-                                                    FeedVC.searchTable.performBatchUpdates({
-                                                        FeedVC.searchTable.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
-                                                    }, completion: nil)
-                                                }
-                                            }
-                                        })
-                                    }
-                                })
-                            }
-                        }
-                        else{
-                            FeedVC.searchTable.reloadData() //No Results
-                        }
-                    }
-                }
-            })
-        }
-    }
-    
-    
-    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-    }
-    
-    
-    
-    
-    @objc func segueToProfile(_ sender: UIButton){
-        
-        self.performSegue(withIdentifier: "ToProfile", sender: nil)
-    }
-        
-    
     var downloadingProfiles = [String]()
+    var selectedUser: UserInfo?
+
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return loadedProducts.count
+    }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        if tableView == self.tableView{
-            let user = self.loadedProducts[indexPath.row]
-            let cell = tableView.setPictureCell(indexPath: indexPath, product: user, productLocation: self)
-            return cell
-        }
-        else{
-            let cell = tableView.dequeueReusableCell(withIdentifier: "search", for: indexPath) as? SearchUserTableViewCell
-            let user = self.loadedUsers[indexPath.row]
-            cell?.userImageView.image = nil
-
-            if let dp = user.dp{
-                cell?.spinner.isHidden = true
-                cell?.userImageView.image = dp
-            }
-            else{
-                cell?.spinner.isHidden = false
-                cell?.spinner.animate()
-            }
-            cell?.usernameLbl.text = "@" + user.username
-            cell?.fullnameLbl.text = user.fullName
-            return cell!
-        }
+        let user = self.loadedProducts[indexPath.row]
+        let cell = tableView.setPictureCell(indexPath: indexPath, product: user, productLocation: self)
+        return cell
+        
     }
     
     override func didReceiveMemoryWarning() {
@@ -438,6 +137,8 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         }
     }
     
+
+    
     
     func clearTableView(){
         self.loadedProducts.removeAll()
@@ -446,55 +147,76 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
     }
     
     func downloadProducts(completed: @escaping () -> ()){
-        getProducts(fromInterval: nil) { hasDiffproducts, snapDocs in
-            completed()
-            if hasDiffproducts ?? false{
-                self.clearTableView()
-            }
-            else{
-                for i in 0..<(self.loadedProducts.count){
-                    if self.loadedProducts[i].uid == userInfo.uid{
-                        continue
-                    }
-                    self.loadedProducts[i].userImageID = nil
+        guard let uid = userInfo.uid else{completed(); return}
+        refreshLists(userUID: uid){
+            self.getProducts(fromInterval: nil) { hasDiffproducts, snapDocs in
+                completed()
+                if hasDiffproducts ?? false{
+                    self.clearTableView()
                 }
-                self.tableView.reloadData()
+                else{
+                    for i in 0..<(self.loadedProducts.count){
+                        if self.loadedProducts[i].uid == userInfo.uid{
+                            continue
+                        }
+                        self.loadedProducts[i].userImageID = nil
+                    }
+                }
             }
         }
     }
     
     @IBAction func unwindToFeed(segue:  UIStoryboardSegue) {
         
-        if let button = getProfileBtn(){
-            button.setImage(userInfo.dp, for: .normal)
-        }
+        //if let button = getProfileBtn(){
+         //   button.setImage(userInfo.dp, for: .normal)
+        //}
     }
-    
-    override func viewDidLayoutSubviews() {
-        
-        
-    }
-    
-    
-    
     
 
+    /*
+    func addTemplates(){
+        let idData = [
+            ["Code": "black", "Display": "Black"],
+            ["Code": "blue1", "Display": "Light Blue"],
+            ["Code": "blue2", "Display": "Royal Blue (Heather)"],
+            ["Code": "blue3", "Display": "Royal Blue"],
+            ["Code": "cyan", "Display": "Sapphire Blue"],
+            ["Code": "gray1", "Display": "Silver"],
+            ["Code": "gray2", "Display": "Athletic Gray (Heather)"],
+            ["Code": "gray3", "Display": "Medium Gray"],
+            ["Code": "gray4", "Display": "Charcoal Gray"],
+            ["Code": "gray5", "Display": "Dark Gray (Heather)"],
+            ["Code": "green1", "Display": "Lime Green"],
+            ["Code": "green2", "Display": "Kelly Green"],
+            ["Code": "green3", "Display": "Dark Green"],
+            ["Code": "navy1", "Display": "Navy Blue (Heather)"],
+            ["Code": "navy2", "Display": "Navy Blue"],
+            ["Code": "navy3", "Display": "Dark Navy Blue"],
+            ["Code": "orange", "Display": "Orange"],
+            ["Code": "pink", "Display": "Sangria Pink"],
+            ["Code": "purple", "Display": "Purple"],
+            ["Code": "red1", "Display": "Red (Heather)"],
+            ["Code": "red2", "Display": "Red"],
+            ["Code": "red3", "Display": "Maroon"],
+            ["Code": "white", "Display": "White"],
+            ["Code": "yellow1", "Display": "Yellow"],
+            ["Code": "yellow2", "Display": "Gold"],
+        ]
+        let data = [
+            "IDs" : idData,
+        ]
+        Firestore.firestore().collection("Templates").document("Tees").setData(data)
+    }
+*/
  
-    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         //tableView.allowsSelection = false
         //cache.config.maxMemoryCost = 15 * 1024 * 1024
-
+        
         tableView.register(UINib(nibName: "ProductCell", bundle: nil), forCellReuseIdentifier: "PictureProduct")
         tableView.register(UINib(nibName: "ProductWithTextCell", bundle: nil), forCellReuseIdentifier: "TextProduct")
-        FeedVC.searchTable.delegate = self
-        FeedVC.searchTable.dataSource = self
-        setSearchTableConstraints()
-        
-        //FeedVC.searchBar.delegate = self
-        FeedVC.searchTable.register(UINib(nibName: "SearchUserTableViewCell", bundle: nil), forCellReuseIdentifier: "search")
         //FeedVC.searchTable.register(EmptyFeedVC.searchTableViewCell.self, forCellReuseIdentifier: "emptySearch")
         navigationController?.navigationBar.layer.shadowColor = nil
         
@@ -548,7 +270,6 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
             DispatchQueue.main.async{
                 switch count{
                 case 0:
-                    print("hey")
                     self.refresh(refresher)
                 default:
                     DispatchQueue.main.async {
@@ -582,36 +303,32 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
     }
     
     var query: Query! = nil
-
-    override func scrollViewDidScroll(_ scrollView: UIScrollView) {
+    
+    func loadProducts(){
+        
+        
     }
-    
-    var currentproductsJSON: [DocumentSnapshot]!
 
-    
     func getProducts(fromInterval: Date?, completed: @escaping (Bool?, [DocumentSnapshot]?) -> ()){
         
-    
-        guard var followArray = userInfo.userFollowing else{
-            return
-        }
 
-        
+        guard let userUID = userInfo.uid else{
+            completed(false, nil)
+        return}
+
         //REMOVE LATER
-        if !followArray.contains(userInfo.uid){
-            followArray.append(userInfo.uid)
+        if !userInfo.userFollowing.contains(userUID){
+            userInfo.userFollowing.append(userUID)
         }
         query = nil
         if fromInterval == nil{
-            query = Firestore.firestore().collectionGroup("Products").whereField("UID", in: followArray).whereField("Timestamp", isLessThanOrEqualTo: Timestamp(date: Date())).limit(to: 8).order(by: "Timestamp", descending: true)
+            query = Firestore.firestore().collectionGroup("Products").whereField("UID", in: userInfo.userFollowing ).whereField("Timestamp", isLessThanOrEqualTo: Timestamp(date: Date())).whereField("Has_Picture", isEqualTo: true).limit(to: 8).order(by: "Timestamp", descending: true)
         }
         if let last = fromInterval{
-            query = Firestore.firestore().collectionGroup("Products").whereField("UID", in: followArray).whereField("Timestamp", isLessThan: Timestamp(date: last)).limit(to: 8).order(by: "Timestamp", descending: true)
+            query = Firestore.firestore().collectionGroup("Products").whereField("UID", in: userInfo.userFollowing).whereField("Timestamp", isLessThan: Timestamp(date: last)).whereField("Has_Picture", isEqualTo: true).limit(to: 8).order(by: "Timestamp", descending: true)
         }
         
-        
-        
-        query.getDocuments(completion: { (snapDocuments, err) in
+        self.query.getDocuments(completion: { (snapDocuments, err) in
             if let err = err {
                 print("Error getting documents: \(err)")
                 completed(false, nil)
@@ -630,44 +347,40 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                     else{
                         
                         var localLoaded: [Product]! = [Product]()
+                        for (index, snap) in snaps.enumerated(){
+                            let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
+                            let uid = snap["UID"] as! String
+                            if userInfo.usersBlocking.contains(uid){
+                                continue
+                            }
+                            let description = snap["Description"] as? String
+                            let name = snap["Name"] as? String
+                            let blurred = snap["Blurred"] as? Bool
+                            let templateColor = snap["Template_Color"] as? String
+                            let likes = snap["Likes"] as? Int
+                            guard let priceCents = (snap["Price_Cents"] as? Double) else{continue}
+                            let comments = ((snap["Comments"]) as? Int) ?? 0
+                            localLoaded.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments))
+                        
+                        }
                         switch fromInterval{
                         case .none:
-                            for (index, snap) in snaps.enumerated(){
-                                
-                                let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
-                                let uid = snap["UID"] as! String
-                                let description = snap["Description"] as? String
-                                let name = snap["Name"] as? String
-                                let blurred = snap["Blurred"] as? Bool
-                                let templateColor = snap["Template_Color"] as? String
-                                let likes = snap["Likes"] as? Int
-
-                                guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
-                                
-                                let comments = ((snap["Comments"]) as? Int) ?? 0
-                                
-                                localLoaded.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked?.contains(snap.documentID), designImage: nil, comments: comments))
-
-                                if localLoaded.count == snaps.count{
-                                    let isSame = localLoaded == self.loadedProducts
-                                    
-                                        
-                                    if !isSame{
-                                        self.loadedProducts.removeOldFeedPosts(newPosts: localLoaded)
-                                        localLoaded = nil
-                                        completed(true, snaps)
-                                        self.sortDownloadedProducts(snaps: snaps){
-                                            self.loadedProducts.saveAllObjects(type: "FeedProducts")
-                                        }
-                                    }
-                                    else{
-                                        localLoaded = nil
-                                        completed(false, snaps)
-                                    }
+                            let isSame = localLoaded == self.loadedProducts
+                            if !isSame{
+                                self.loadedProducts.removeOldFeedPosts(newPosts: localLoaded)
+                                completed(true, snaps)
+                                self.sortDownloadedProducts(products: localLoaded){
+                                    localLoaded = nil
+                                    self.loadedProducts.saveAllObjects(type: "FeedProducts")
                                 }
                             }
+                            else{
+                                localLoaded = nil
+                                completed(false, snaps)
+                            }
                         default:
-                            self.sortDownloadedProducts(snaps: snaps){
+                            self.sortDownloadedProducts(products: localLoaded){
+                                localLoaded = nil
                                 completed(true, snaps)
                             }
                         }
@@ -677,65 +390,42 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         })
     }
     
-    func sortDownloadedProducts(snaps: [QueryDocumentSnapshot], completed: @escaping () -> ()){
+    func sortDownloadedProducts(products: [Product], completed: @escaping () -> ()){
         
         var productsToUse: [Product]! = [Product]()
+        for product in products{ // LOADED DOCUMENTS FROM \(snapDocuments)
         
-        var snapsToCheck = snaps
-        
-        for snapToCheck in snapsToCheck{
-            if loadedProducts.contains(where: {$0.productID == snapToCheck.documentID}){
-                snapsToCheck.removeAll(where: {$0 == snapToCheck})
-            }
-        }
-        
-        for (index, snap) in snapsToCheck.enumerated(){ // LOADED DOCUMENTS FROM \(snapDocuments)
-        
-            if !loadedProducts.contains(where: {$0.productID == snap.documentID}){
+            if !loadedProducts.contains(where: {$0.productID == product.productID}){
                 
-                let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
-                let uid = snap["UID"] as! String
-                let description = snap["Description"] as? String
-                let name = snap["Name"] as? String
-                let blurred = snap["Blurred"] as? Bool
-                let templateColor = snap["Template_Color"] as? String
-                let likes = snap["Likes"] as? Int
-                guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
-                let comments = ((snap["Comments"]) as? Int) ?? 0
+                guard let userUID = userInfo.uid else{return}
+                Firestore.firestore().collection("Users").document(product.uid).collection("Products").document(product.productID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userUID).getDocuments(completion: { snapLikes, error in
                 
-            
-                
-                
-                Firestore.firestore().collection("Users").document(uid).collection("Products").document(snap.documentID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userInfo.uid).getDocuments(completion: { snapLikes, error in
-                
-                    var liked: Bool!
                     
                     if error != nil{
                         print(error?.localizedDescription ?? "")
                     }
                     else{
-                        userInfo.userLiked?.removeAll(where: {$0 == snap.documentID})
+                        userInfo.userLiked.removeAll(where: {$0 == product.productID})
                         if let likeDocs = snapLikes?.documents{
                             if likeDocs.isEmpty{
-                                liked = false
+                                product.liked = false
                             }
                             else{
-                                liked = true
-                                if !(userInfo.userLiked?.contains(snap.documentID) ?? true){
-                                    userInfo.userLiked?.append(snap.documentID)
+                                product.liked = true
+                                if !(userInfo.userLiked.contains(product.productID)){
+                                    userInfo.userLiked.append(product.productID)
                                 }
                             }
                         }
                         else{
-                            liked = false
+                            product.liked = false
                         }
                     }
                     
-                    productsToUse.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments))
-                    
-                    print(snaps.count)
+                    productsToUse.append(product)
            
-                    if productsToUse.count == snapsToCheck.count{
+                    if productsToUse.count == products.count{
+                        
                         UserDefaults.standard.set(userInfo.userLiked, forKey: "LikedPosts")
                         let sorted = productsToUse.sorted(by: {$0.timestamp > $1.timestamp})
                         for product in sorted{
@@ -775,39 +465,18 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
     
     
     
-    //LOAD COMMENTER'S PROFILE PICTURE INTO THE COMMENT CELL
     
-    var productToOpen = Product()
+    var productToOpen: Product!
 
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        
-    }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(true)
-        selectedUser = nil
         
         self.showCenterBtn()
         
         tableView.syncPostLikes(loadedProducts: loadedProducts, vc: self)
         loadedProducts.saveAllObjects(type: "FeedProducts")
         
-        if let indexPath = FeedVC.searchTable.indexPathForSelectedRow{
-            FeedVC.searchTable.deselectRow(at: indexPath, animated: true)
-        }
-        
-        if loadedUsers.contains(where: {$0.username.isEmpty || $0.fullName.isEmpty || $0.dp == nil}){
-            loadedUsers.removeAll()
-            FeedVC.searchBar.text?.removeAll()
-            DispatchQueue.main.async {
-                FeedVC.searchTable.reloadData()
-            }
-        }
         for post in loadedProducts.filter({$0.uid == userInfo.uid && $0.userImageID != userInfo.dpID}){
             
             if let index = loadedProducts.firstIndex(where: {$0.productID == post.productID}){
@@ -822,7 +491,6 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        if tableView == self.tableView{
             let product = loadedProducts[indexPath.row]
             guard let cell = tableView.cellForRow(at: indexPath) as? ProductCell else{return}
             guard let imageData = product.designImage ?? cell.productPicture.makeSnapshot(clear: false, subviewsToIgnore: [])?.pngData() else{
@@ -833,16 +501,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                 self.productToOpen = product
                 self.performSegue(withIdentifier: "toFull", sender: nil)
             }
-        }
-        else if tableView == FeedVC.searchTable{
-            selectedUser = loadedUsers[indexPath.row]
-            if selectedUser?.uid == userInfo.uid{
-                performSegue(withIdentifier: "toProfileFromSearch", sender: nil)
-            }
-            else{
-                performSegue(withIdentifier: "ToFriend", sender: nil)
-            }
-        }
+        
     }
     
     // MARK: - Navigation
@@ -853,15 +512,23 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         if let fullVC = segue.destination as? FullProductVC{
             fullVC.fullProduct = productToOpen
         }
+        if let commentsVC = segue.destination as? CommentsVC{
+            commentsVC.post = productToOpen
+        }
         else if let friend = segue.destination as? FriendVC{
             friend.friendInfo = selectedUser!
         }
-        
-        
- 
+        else if let designVC = (segue.destination as? UINavigationController)?.viewControllers.first as? DesignViewController{
+            if let img = cache.imageFromCache(forKey: productToOpen.productID){
+                designVC.product = ProductInProgress(templateColor: productToOpen.templateColor, design: img, uid: productToOpen.uid, caption: productToOpen.description, name: productToOpen.name, price: productToOpen.price, productID: productToOpen.productID)
+            }
+        }
+        else if let reportVC = (segue.destination as? UINavigationController)?.viewControllers.first as? ReportVC{
+            reportVC.reportLevel = .post
+        }
     }
-    
 }
+
 
 
 extension UITableView{
@@ -876,3 +543,19 @@ extension UITableView{
     }
 }
 
+
+extension UIViewController{
+    
+    func refreshLists(userUID: String, completed: @escaping () -> ()){
+        Firestore.firestore().collection("Users").document(userUID).getDocument(completion: { doc, error in
+            if let err = error{
+                print(err.localizedDescription)
+            }
+            else{
+                userInfo.usersBlocking = (doc?["Users_Blocking"] as? [String]) ?? []
+                userInfo.userFollowing = (doc?["Following_List"] as? [String]) ?? []
+            }
+            completed()
+        })
+    }
+}

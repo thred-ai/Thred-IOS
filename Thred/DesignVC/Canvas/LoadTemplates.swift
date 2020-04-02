@@ -13,9 +13,11 @@ import SDWebImage
 
 extension DesignViewController{
     func loadDesigns(completed: @escaping ()->()){
-        if let loadedTees = UserDefaults.standard.stringArray(forKey: "TemplateTeeIDs"){
+        if let loadedTees = UserDefaults.standard.object(forKey: "TemplateTeeIDs") as? [[String : String]]{
             for id in loadedTees{
-                self.tees.append(Template(templateID: id))
+                guard let code = id["Code"] else{continue}
+                guard let displayName = id["Display"] else{continue}
+                self.tees.append(Template(templateID: code, templateDisplayName: displayName))
             }
             completed()
         }
@@ -27,9 +29,12 @@ extension DesignViewController{
                 else{
                     //for doc in snaps?.documents ?? []{}
                     guard let doc = snap else{return}
-                    let ids = doc["IDs"] as? [String]
+                    let ids = doc["IDs"] as? [[String : String]]
                     for id in ids ?? []{
-                        self.tees.append(Template(templateID: id))
+                        guard let code = id["Code"] else{continue}
+                        guard let displayName = id["Display"] else{continue}
+                        
+                        self.tees.append(Template(templateID: code, templateDisplayName: displayName))
                     }
                     UserDefaults.standard.set(ids, forKey: "TemplateTeeIDs")
                     completed()

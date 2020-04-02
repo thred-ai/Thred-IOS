@@ -22,7 +22,7 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
     
     var fullProduct = Product()
     var downloader: SDWebImageDownloader? = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
-    
+    var selectedComment: Comment!
     var friendInfo: UserInfo! = UserInfo()
 
     @IBOutlet weak var tableView: UITableView!
@@ -44,8 +44,15 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
         navigationController?.interactivePopGestureRecognizer?.delegate = self
 
         tableView.register(UINib(nibName: "ProductCell", bundle: nil), forCellReuseIdentifier: "PictureProduct")
-        cache.removeImageFromMemory(forKey: fullProduct.picID)
         
+        if let vcs = navigationController?.viewControllers{
+            if vcs.indices.contains(vcs.count - 2){
+                let secondLastVC = vcs[vcs.count - 2]
+                if !(secondLastVC.isKind(of: UserVC.self) || secondLastVC.isKind(of: FeedVC.self)){
+                    cache.removeImageFromMemory(forKey: fullProduct.picID)
+                }
+            }
+        }
     }
     
     
@@ -59,6 +66,7 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
     func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
         return 1000
     }
+    
     
     var isRasterizing = false
     
@@ -103,7 +111,51 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
     
     func navigationController(_ navigationController: UINavigationController, willShow viewController: UIViewController, animated: Bool) {
         
-        
+        guard let uid = userInfo.uid else{return}
+        if viewController == self{
+            guard let index = navigationController.viewControllers.firstIndex(of: self) else{return}
+            let vc = navigationController.viewControllers[index - 1]
+            if vc is ExploreViewController || vc is ColorSectionVC{
+                
+                let cell = self.tableView.cellForRow(at: IndexPath(row: 0, section: 0)) as? ProductCell
+                cell?.isUserInteractionEnabled = false
+                    
+                if !(userInfo.userLiked.contains(fullProduct.productID)){
+                    Firestore.firestore().collection("Users").document(fullProduct.uid).collection("Products").document(fullProduct.productID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: uid).getDocuments(completion: { snapLikes, error in
+                        
+                        var liked: Bool!
+                        
+                        if error != nil{
+                            print(error?.localizedDescription ?? "")
+                        }
+                        else{
+                            userInfo.userLiked.removeAll(where: {$0 == self.fullProduct.productID})
+                            if let likeDocs = snapLikes?.documents{
+                                if likeDocs.isEmpty{
+                                    liked = false
+                                }
+                                else{
+                                    liked = true
+                                    if !(userInfo.userLiked.contains(self.fullProduct.uid)){
+                                        userInfo.userLiked.append(self.fullProduct.uid)
+                                    }
+                                }
+                            }
+                            else{
+                                liked = false
+                            }
+                        }
+                        cell?.isUserInteractionEnabled = true
+                        UserDefaults.standard.set(userInfo.userLiked, forKey: "LikedPosts")
+                        self.fullProduct.liked = liked
+                        DispatchQueue.main.async {
+                            self.tableView.reloadData()
+                        }
+                    })
+                }
+                
+            }
+        }
     }
     
     func rasterizeProductCellDisplay(cell: ProductCell?, image: UIImage?, product: Product?){
@@ -126,6 +178,11 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
             guard let fullImgData = fullData else{return}
             cell?.productPicture.image = UIImage(data: fullImgData)
             self.isRasterizing = false
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+            if self.selectedComment != nil{
+                self.performSegue(withIdentifier: "toComments", sender: nil)
+            }
         }
     }
     
@@ -198,8 +255,20 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
         if let friendVC = segue.destination as? FriendVC{
             friendVC.friendInfo = friendInfo
         }
+        if let commentsVC = segue.destination as? CommentsVC{
+            commentsVC.post = fullProduct
+            commentsVC.selectedComment = selectedComment
+            selectedComment = nil
+        }
+        else if let designVC = (segue.destination as? UINavigationController)?.viewControllers.first as? DesignViewController{
+            if let img = cache.imageFromCache(forKey: fullProduct.productID){
+                designVC.product = ProductInProgress(templateColor: fullProduct.templateColor, design: img, uid: fullProduct.uid, caption: fullProduct.description, name: fullProduct.name, price: fullProduct.price, productID: fullProduct.productID)
+            }
+        }
+        else if let reportVC = (segue.destination as? UINavigationController)?.viewControllers.first as? ReportVC{
+            reportVC.reportLevel = .post
+        }
     }
-    
 
 }
 

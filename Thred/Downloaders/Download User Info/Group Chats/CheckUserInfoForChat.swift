@@ -20,7 +20,7 @@ extension UITableView{
         case userInfo.uid:
             dp.image = userInfo.dp
             fullLbl.text = userInfo.fullName
-            userLbl.text = "@" + userInfo.username
+            userLbl.text = "@" + (userInfo.username ?? "null")
             picCell?.removeLabelLoad()
             picCell?.removeDpLoad()
         default:
@@ -64,7 +64,7 @@ extension UITableView{
                 if user.uid == userInfo.uid, userInfo.dp != nil{
                     dp.image = userInfo.dp
                     fullLbl.text = userInfo.fullName
-                    userLbl.text = "@" + (userInfo.username)
+                    userLbl.text = "@" + (userInfo.username ?? "null")
                     picCell?.removeLabelLoad()
                     picCell?.removeDpLoad()
                 }
@@ -128,7 +128,7 @@ extension UITableView{
             if userInfo.dp != nil{
                 dp.image = userInfo.dp
             }
-            userLbl.text = "@" + userInfo.username
+            userLbl.text = "@" + (userInfo.username ?? "null")
             fullLbl.text = userInfo.fullName
             picCell?.removeLabelLoad()
             picCell?.removeDpLoad()

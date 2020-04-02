@@ -17,7 +17,8 @@ extension UITableView{
     func beginDownloadingUserInfo(uid: String, downloader: SDWebImageDownloader?, userVC: UserVC?, feedVC: FeedVC?, friendVC: FriendVC?, fullVC: FullProductVC?, section: Int){
         print(uid)
         
-        downloadUserInfo(uid: uid, userVC: userVC, feedVC: feedVC, downloadingPersonalDP: false, doNotDownloadDP: false, downloader: downloader, userInfo: nil, completed: {[weak self] fullName, username, dpUID, notifID, bio, imgData, userFollowing in
+        guard let vc = feedVC ?? fullVC ?? friendVC ?? userVC else{return}
+        vc.downloadUserInfo(uid: uid, userVC: userVC, feedVC: feedVC, downloadingPersonalDP: false, doNotDownloadDP: false, downloader: downloader, userInfoToUse: nil, queryOnUsername: false, completed: {[weak self] uid, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followersCount, followingCount in
             
             if username != nil{
                 if userVC != nil{
@@ -33,74 +34,6 @@ extension UITableView{
                 self?.setCellUserInfo(image: imgData, info: [uid, fullName, username, dpUID], feedVC: feedVC, userVC: userVC, friendVC: friendVC, fullVC: fullVC, section: section)
             }
         })
-    }
-    
-    func downloadUserInfo(uid: String, userVC: UserVC?, feedVC: FeedVC?, downloadingPersonalDP: Bool, doNotDownloadDP: Bool, downloader: SDWebImageDownloader?, userInfo: UserInfo?, completed: @escaping (String?, String?, String?, String?, String?, UIImage?, [String]?) -> ()){
-        
-        let ref = Firestore.firestore().collection("Users").document(uid)
-        
-        ref.getDocument(){(document, err) in
-            if err != nil{
-                print("Error getting documents: \(err?.localizedDescription ?? "")") // LOCALIZED DESCRIPTION OF ERROR
-                completed(nil, nil, nil, nil, nil, userInfo?.dp ?? defaultDP, nil)
-                return
-            }
-            else{
-                let dpUID = document!["ProfilePicID"] as? String //UID OF COMMENT IMAGE
-                let username = document!["Username"] as? String //COMMENTER'S USERNAME
-                let fullName = document!["Full_Name"] as? String
-                let bio = document?["Bio"] as? String
-                let notifID = document?["Notification ID"] as? String
-                let userFollowing = document?["Following_List"] as? [String]
-                
-                if doNotDownloadDP{
-                    completed(fullName, username, nil, notifID, bio, nil, userFollowing)
-                    return
-                }
-                
-                var options = SDWebImageOptions(arrayLiteral: [.scaleDownLargeImages, .continueInBackground])
-                var storageRef: StorageReference?
-                storageRef = Storage.storage().reference().child("Users").child(uid).child("profile_pic-" + (dpUID ?? "") + ".jpeg") //STORAGE REFERENCE OF COMMENT IMAGE
-                
-                if downloadingPersonalDP{
-                    options.insert(.refreshCached)
-                }
-              
-                if let image = cache.imageFromCache(forKey: dpUID){
-                    completed(fullName, username, dpUID, notifID, bio, image, userFollowing)
-                    return
-                }
-                else{
-                    completed(fullName, username, dpUID, notifID, bio, nil, userFollowing)
-                }
-                storageRef?.downloadURL(completion: { url, error in
-                    if error != nil{
-                        print(error?.localizedDescription ?? "")
-                        return
-                    }
-                    else{
-                        
-                        downloader?.requestImage(with: url, options: options, context: nil, progress: nil, completed: { (image, data, error, finished) in
-                            if finished{
-                                
-                                if error != nil{
-                                    print(error?.localizedDescription ?? "") //LOCALIZED DESCRIPTION OF ERROR
-                                    return
-                                }
-                                else{
-                                    if let imgData = data{
-                                        if userVC != nil || feedVC != nil{
-                                            cache.storeImageData(toDisk: imgData, forKey: dpUID)
-                                        }
-                                        completed(fullName, username, dpUID, notifID, bio, UIImage(data: imgData), userFollowing)
-                                    }
-                                }
-                            }
-                        })
-                    }
-                })
-            }
-        }
     }
     
     
@@ -205,3 +138,103 @@ extension UITableViewCell{
     }
 }
 
+
+extension UIViewController{
+    func downloadUserInfo(uid: String?, userVC: UserVC?, feedVC: FeedVC?, downloadingPersonalDP: Bool, doNotDownloadDP: Bool, downloader: SDWebImageDownloader?, userInfoToUse: UserInfo?, queryOnUsername: Bool, completed: @escaping (String?, String?, String?, String?, String?, String?, UIImage?, [String], [String], Int?, Int?, Int?) -> ()){
+        
+        let ref = Firestore.firestore().collection("Users")
+
+        var query: Query!
+        
+        if queryOnUsername{
+            guard let username = userInfoToUse?.username?.replacingOccurrences(of: " ", with: "") else{
+            return}
+            print(username)
+            
+            query = ref.whereField("Username", isEqualTo: username)
+        }
+        else{
+            guard let userUID = uid else{
+                
+                return}
+            query = ref.whereField(FieldPath.documentID(), isEqualTo: userUID)
+        }
+        
+        query.getDocuments(){(querySnaps, err) in
+            if err != nil{
+                print("Error getting documents: \(err?.localizedDescription ?? "")") // LOCALIZED DESCRIPTION OF ERROR
+                completed(nil, nil, nil, nil, nil, nil, userInfoToUse?.dp ?? defaultDP, [], [], nil, nil, nil)
+                return
+            }
+            else{
+                
+                guard let snapDocs = querySnaps?.documents, !snapDocs.isEmpty else{
+                    completed(nil, nil, nil, nil, nil, nil, userInfoToUse?.dp ?? defaultDP, [], [], nil, nil, nil)
+                    return
+                }
+                
+                for document in snapDocs{
+                    let dpUID = document["ProfilePicID"] as? String //UID OF COMMENT IMAGE
+                    let username = document["Username"] as? String //COMMENTER'S USERNAME
+                    let fullName = document["Full_Name"] as? String
+                    let bio = document["Bio"] as? String
+                    let notifID = document["Notification ID"] as? String
+                    let userFollowing = (document["Following_List"] as? [String]) ?? []
+                    let usersBlocking = (document["Users_Blocking"] as? [String]) ?? []
+                    let followerCount = document["Followers_Count"] as? Int
+                    let followingCount = document["Following_Count"] as? Int
+                    let postCount = document["Posts_Count"] as? Int
+                    if userInfo.usersBlocking.contains(document.documentID){
+                        completed(document.documentID, fullName, username, nil, notifID, bio, nil, userFollowing, usersBlocking, postCount, followerCount, followingCount)
+                        return
+                    }
+                    
+                    
+                    if doNotDownloadDP{
+                        completed(document.documentID, fullName, username, nil, notifID, bio, nil, userFollowing, usersBlocking, postCount, followerCount, followingCount)
+                        return
+                    }
+                    var options = SDWebImageOptions(arrayLiteral: [.scaleDownLargeImages, .continueInBackground])
+                    var storageRef: StorageReference?
+                    storageRef = Storage.storage().reference().child("Users").child(document.documentID).child("profile_pic-" + (dpUID ?? "") + ".jpeg") //STORAGE REFERENCE OF COMMENT IMAGE
+                    
+                    if downloadingPersonalDP{
+                        options.insert(.refreshCached)
+                    }
+                    
+                    if let image = cache.imageFromCache(forKey: dpUID){
+                        completed(document.documentID, fullName, username, dpUID, notifID, bio, image, userFollowing, usersBlocking, postCount, followerCount, followingCount)
+                        return
+                    }
+                    else{
+                        completed(document.documentID, fullName, username, dpUID, notifID, bio, nil, userFollowing, usersBlocking, postCount, followerCount, followingCount)
+                    }
+                    storageRef?.downloadURL(completion: { url, error in
+                        if error != nil{
+                            print(error?.localizedDescription ?? "")
+                            return
+                        }
+                        else{
+                            downloader?.requestImage(with: url, options: options, context: nil, progress: nil, completed: { (image, data, error, finished) in
+                                  if finished{
+                                      if error != nil{
+                                          print(error?.localizedDescription ?? "")
+                                          return
+                                      }
+                                      else{
+                                        if let imgData = data{
+                                            if userVC != nil || feedVC != nil{
+                                                cache.storeImageData(toDisk: imgData, forKey: dpUID)
+                                            }
+                                            completed(document.documentID, fullName, username, dpUID, notifID, bio, UIImage(data: imgData), userFollowing, usersBlocking, postCount, followerCount, followingCount)
+                                        }
+                                    }
+                                }
+                            })
+                        }
+                    })
+                }
+            }
+        }
+    }
+}

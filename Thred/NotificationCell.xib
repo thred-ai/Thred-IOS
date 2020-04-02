@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
-    <device id="retina5_9" orientation="portrait" appearance="light"/>
+    <device id="retina4_0" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
@@ -11,95 +11,87 @@
         <array key="Nexa W01 Heavy.ttf">
             <string>NexaW01-Heavy</string>
         </array>
+        <array key="Nexa W01 Regular.ttf">
+            <string>NexaW01-Regular</string>
+        </array>
     </customFonts>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="NotifCell" rowHeight="75" id="KGk-i7-Jjw" customClass="NotificationCell" customModule="Thred" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="320" height="75"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="NotifCell" rowHeight="70" id="KGk-i7-Jjw" customClass="NotificationCell" customModule="Thred" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="70"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
-                <rect key="frame" x="0.0" y="0.0" width="320" height="75"/>
+                <rect key="frame" x="0.0" y="0.0" width="375" height="70"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Tsq-LA-5dL">
-                        <rect key="frame" x="10" y="10" width="300" height="55"/>
+                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="lP9-g1-1VD">
+                        <rect key="frame" x="10" y="10" width="55" height="55"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="55" id="AaO-Lk-0yW"/>
+                            <constraint firstAttribute="width" secondItem="lP9-g1-1VD" secondAttribute="height" multiplier="1:1" id="Sd1-04-88u"/>
+                        </constraints>
+                    </imageView>
+                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="Z9I-2Y-99c">
+                        <rect key="frame" x="75" y="10" width="290" height="50"/>
                         <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="lP9-g1-1VD">
-                                <rect key="frame" x="0.0" y="0.0" width="55" height="55"/>
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" userInteractionEnabled="NO" contentMode="scaleToFill" scrollEnabled="NO" editable="NO" text="&quot;Notification Message&quot; &quot;Notification Message&quot; &quot;Notification Message&quot;" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2Gf-nY-RgU">
+                                <rect key="frame" x="0.0" y="0.0" width="290" height="30"/>
+                                <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+                                <fontDescription key="fontDescription" name="NexaW01-Regular" family="NexaW01-Regular" pointSize="14"/>
+                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                            </textView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="&quot;Timestamp&quot;" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.69999999999999996" translatesAutoresizingMaskIntoConstraints="NO" id="puQ-i9-hhY">
+                                <rect key="frame" x="0.0" y="30" width="290" height="20"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" secondItem="lP9-g1-1VD" secondAttribute="height" multiplier="1:1" id="Sd1-04-88u"/>
+                                    <constraint firstAttribute="height" constant="20" id="1h6-JH-swk"/>
                                 </constraints>
-                            </imageView>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2Tb-wy-cw2">
-                                <rect key="frame" x="55" y="0.0" width="245" height="55"/>
-                                <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="Z9I-2Y-99c">
-                                        <rect key="frame" x="10" y="10" width="225" height="35"/>
-                                        <subviews>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="JbC-l5-qcj">
-                                                <rect key="frame" x="0.0" y="0.0" width="225" height="20"/>
-                                                <subviews>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="&quot;Notification Message&quot;" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.69999998807907104" translatesAutoresizingMaskIntoConstraints="NO" id="bsf-0J-3SA">
-                                                        <rect key="frame" x="0.0" y="0.0" width="225" height="20"/>
-                                                        <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="15"/>
-                                                        <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
-                                                        <nil key="highlightedColor"/>
-                                                    </label>
-                                                </subviews>
-                                                <constraints>
-                                                    <constraint firstItem="bsf-0J-3SA" firstAttribute="leading" secondItem="JbC-l5-qcj" secondAttribute="leading" id="48E-qW-4WX"/>
-                                                    <constraint firstItem="bsf-0J-3SA" firstAttribute="top" secondItem="JbC-l5-qcj" secondAttribute="top" id="7mH-YH-TWR"/>
-                                                    <constraint firstAttribute="trailing" secondItem="bsf-0J-3SA" secondAttribute="trailing" id="Dok-RT-OLs"/>
-                                                    <constraint firstAttribute="height" constant="20" id="Rcb-p1-opf"/>
-                                                    <constraint firstAttribute="bottom" secondItem="bsf-0J-3SA" secondAttribute="bottom" id="Zq1-pg-pxy"/>
-                                                </constraints>
-                                            </view>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vji-mz-5Jx">
-                                                <rect key="frame" x="0.0" y="20" width="225" height="15"/>
-                                                <subviews>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="&quot;Timestamp&quot;" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.69999999999999996" translatesAutoresizingMaskIntoConstraints="NO" id="puQ-i9-hhY">
-                                                        <rect key="frame" x="0.0" y="0.0" width="225" height="15"/>
-                                                        <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="13"/>
-                                                        <color key="textColor" systemColor="tertiaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.29999999999999999" colorSpace="custom" customColorSpace="sRGB"/>
-                                                        <nil key="highlightedColor"/>
-                                                    </label>
-                                                </subviews>
-                                                <constraints>
-                                                    <constraint firstItem="puQ-i9-hhY" firstAttribute="leading" secondItem="vji-mz-5Jx" secondAttribute="leading" id="GHf-wF-oeb"/>
-                                                    <constraint firstAttribute="trailing" secondItem="puQ-i9-hhY" secondAttribute="trailing" id="JFw-32-yCg"/>
-                                                    <constraint firstAttribute="height" constant="15" id="ZTH-IG-XOU"/>
-                                                    <constraint firstAttribute="bottom" secondItem="puQ-i9-hhY" secondAttribute="bottom" id="gvg-SZ-Yb6"/>
-                                                    <constraint firstItem="puQ-i9-hhY" firstAttribute="top" secondItem="vji-mz-5Jx" secondAttribute="top" id="mC8-jp-imK"/>
-                                                </constraints>
-                                            </view>
-                                        </subviews>
-                                    </stackView>
-                                </subviews>
-                                <constraints>
-                                    <constraint firstAttribute="trailing" secondItem="Z9I-2Y-99c" secondAttribute="trailing" constant="10" id="5fU-U6-Tt9"/>
-                                    <constraint firstItem="Z9I-2Y-99c" firstAttribute="top" secondItem="2Tb-wy-cw2" secondAttribute="top" constant="10" id="YBx-t6-sC7"/>
-                                    <constraint firstAttribute="bottom" secondItem="Z9I-2Y-99c" secondAttribute="bottom" constant="10" id="i7S-Al-3ru"/>
-                                    <constraint firstItem="Z9I-2Y-99c" firstAttribute="leading" secondItem="2Tb-wy-cw2" secondAttribute="leading" constant="10" id="jGg-Xu-PLw"/>
-                                </constraints>
-                            </view>
+                                <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="13"/>
+                                <color key="textColor" systemColor="tertiaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.29999999999999999" colorSpace="custom" customColorSpace="sRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                     </stackView>
+                    <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="awq-R6-wTd">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="70"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="This notification does not exist" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="6aF-VJ-sad">
+                                <rect key="frame" x="20" y="20" width="335" height="30"/>
+                                <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="16"/>
+                                <color key="textColor" systemColor="systemFillColor" red="0.47058823529999999" green="0.47058823529999999" blue="0.50196078430000002" alpha="0.20000000000000001" colorSpace="custom" customColorSpace="sRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <constraints>
+                            <constraint firstItem="6aF-VJ-sad" firstAttribute="leading" secondItem="awq-R6-wTd" secondAttribute="leading" constant="20" symbolic="YES" id="8hb-wb-tOH"/>
+                            <constraint firstItem="6aF-VJ-sad" firstAttribute="top" secondItem="awq-R6-wTd" secondAttribute="top" constant="20" symbolic="YES" id="8wG-fG-EyS"/>
+                            <constraint firstAttribute="bottom" secondItem="6aF-VJ-sad" secondAttribute="bottom" constant="20" symbolic="YES" id="lrm-cW-SaT"/>
+                            <constraint firstAttribute="trailing" secondItem="6aF-VJ-sad" secondAttribute="trailing" constant="20" symbolic="YES" id="yaM-SU-W2y"/>
+                        </constraints>
+                    </view>
                 </subviews>
                 <constraints>
-                    <constraint firstItem="Tsq-LA-5dL" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="10" id="8ZZ-mn-PwC"/>
-                    <constraint firstAttribute="trailing" secondItem="Tsq-LA-5dL" secondAttribute="trailing" constant="10" id="DZW-ax-GAX"/>
-                    <constraint firstItem="Tsq-LA-5dL" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="10" id="mJb-2W-sNe"/>
-                    <constraint firstAttribute="bottom" secondItem="Tsq-LA-5dL" secondAttribute="bottom" constant="10" id="xU5-Fm-7dg"/>
+                    <constraint firstItem="lP9-g1-1VD" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="10" id="95n-ga-CON"/>
+                    <constraint firstAttribute="trailing" secondItem="awq-R6-wTd" secondAttribute="trailing" id="D7R-Gy-P8I"/>
+                    <constraint firstAttribute="trailing" secondItem="Z9I-2Y-99c" secondAttribute="trailing" constant="10" id="JnC-Ge-kAj"/>
+                    <constraint firstAttribute="bottom" secondItem="Z9I-2Y-99c" secondAttribute="bottom" constant="10" id="Nfo-fy-TzS"/>
+                    <constraint firstItem="Z9I-2Y-99c" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="10" id="RSk-yZ-SC4"/>
+                    <constraint firstItem="awq-R6-wTd" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="ZEi-AT-6pZ"/>
+                    <constraint firstAttribute="bottom" secondItem="awq-R6-wTd" secondAttribute="bottom" id="ehR-Ed-kpq"/>
+                    <constraint firstItem="lP9-g1-1VD" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="10" id="eoC-o5-fUX"/>
+                    <constraint firstItem="Z9I-2Y-99c" firstAttribute="leading" secondItem="lP9-g1-1VD" secondAttribute="trailing" constant="10" id="jXF-E4-obH"/>
+                    <constraint firstItem="awq-R6-wTd" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" id="swI-Ke-vkb"/>
                 </constraints>
             </tableViewCellContentView>
             <viewLayoutGuide key="safeArea" id="njF-e1-oar"/>
             <connections>
-                <outlet property="notifLbl" destination="bsf-0J-3SA" id="MMO-2T-Jmt"/>
+                <outlet property="notifLbl" destination="2Gf-nY-RgU" id="KfZ-IM-bbH"/>
                 <outlet property="notifPic" destination="lP9-g1-1VD" id="eB3-Uy-hki"/>
+                <outlet property="removedNotifView" destination="awq-R6-wTd" id="dnS-tS-I5t"/>
                 <outlet property="timestampLbl" destination="puQ-i9-hhY" id="nIA-d5-HIC"/>
             </connections>
-            <point key="canvasLocation" x="176" y="118.5960591133005"/>
+            <point key="canvasLocation" x="225.9375" y="114.08450704225352"/>
         </tableViewCell>
     </objects>
 </document>

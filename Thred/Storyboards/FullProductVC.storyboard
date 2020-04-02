@@ -16,17 +16,17 @@
         <!--Full ProductVC-->
         <scene sceneID="85x-FN-M5r">
             <objects>
-                <viewController storyboardIdentifier="UIViewController-TTd-by-I1I" modalPresentationStyle="fullScreen" hidesBottomBarWhenPushed="YES" id="TTd-by-I1I" customClass="FullProductVC" customModule="Thred" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="UIViewController-TTd-by-I1I" extendedLayoutIncludesOpaqueBars="YES" modalPresentationStyle="fullScreen" hidesBottomBarWhenPushed="YES" id="TTd-by-I1I" customClass="FullProductVC" customModule="Thred" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Mdn-7j-wMd">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="808"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="m3i-nE-n4Z">
-                                <rect key="frame" x="0.0" y="0.0" width="414" height="699"/>
+                                <rect key="frame" x="0.0" y="88" width="414" height="699"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                             </tableView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wLK-Kf-DT2">
-                                <rect key="frame" x="0.0" y="699" width="414" height="75"/>
+                                <rect key="frame" x="0.0" y="787" width="414" height="75"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="nUg-TC-cmh">
                                         <rect key="frame" x="10" y="10" width="394" height="55"/>
@@ -73,6 +73,9 @@
                         <outlet property="addToCartBtn" destination="0Tz-3R-uDx" id="5Lr-pP-8R5"/>
                         <outlet property="tableView" destination="m3i-nE-n4Z" id="Xye-RL-T1K"/>
                         <segue destination="Wqj-YT-XeZ" kind="show" identifier="toFriend" id="lRg-j5-WXq"/>
+                        <segue destination="bEb-vl-rHS" kind="show" identifier="toComments" id="7ii-ii-2UH"/>
+                        <segue destination="U7G-ow-PIx" kind="show" identifier="toEdit" id="AxK-vP-dBn"/>
+                        <segue destination="cMp-Hd-vXM" kind="show" identifier="toReport" id="xdL-Vx-MKR"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="1Es-Dy-TkR" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -85,7 +88,37 @@
                 <viewControllerPlaceholder storyboardIdentifier="UITableViewController-Esw-Ig-1v3" storyboardName="FriendVC" id="Wqj-YT-XeZ" sceneMemberID="viewController"/>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="KJQ-h3-Sdy" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3566" y="1831"/>
+            <point key="canvasLocation" x="2945" y="1831"/>
+        </scene>
+        <!--CommentsVC-->
+        <scene sceneID="bDa-Lt-AuH">
+            <objects>
+                <viewControllerPlaceholder storyboardName="CommentsVC" id="bEb-vl-rHS" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="Plr-kp-IOl"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="RLs-z2-cSA" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3784" y="1831"/>
+        </scene>
+        <!--ReportScreen-->
+        <scene sceneID="pWR-bb-1Or">
+            <objects>
+                <viewControllerPlaceholder storyboardName="ReportScreen" id="cMp-Hd-vXM" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="xem-Mr-rka"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="qV2-xc-oQV" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="4201" y="1831"/>
+        </scene>
+        <!--DesignVC-->
+        <scene sceneID="hnq-3D-fUa">
+            <objects>
+                <viewControllerPlaceholder storyboardName="DesignVC" id="U7G-ow-PIx" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="hf8-kU-3bl"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="SbN-i8-qaA" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3330" y="1831"/>
         </scene>
     </scenes>
 </document>

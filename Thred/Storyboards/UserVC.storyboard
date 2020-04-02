@@ -8,16 +8,14 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--Navigation Controller-->
+        <!--Me-->
         <scene sceneID="Z5y-Eb-2Bc">
             <objects>
                 <navigationController storyboardIdentifier="UINavigationController-myt-A0-mhg" extendedLayoutIncludesOpaqueBars="YES" automaticallyAdjustsScrollViewInsets="NO" id="myt-A0-mhg" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="" image="person" catalog="system" id="1em-xL-7aa"/>
+                    <tabBarItem key="tabBarItem" title="Me" image="person" catalog="system" id="1em-xL-7aa"/>
                     <toolbarItems/>
                     <navigationItem key="navigationItem" id="2ND-0L-meP"/>
-                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO">
-                        <color key="tintColor" name="LoadingColor"/>
-                    </simulatedNavigationBarMetrics>
+                    <simulatedTabBarMetrics key="simulatedBottomBarMetrics" translucent="NO"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translucent="NO" id="XMl-fl-vXc">
                         <rect key="frame" x="0.0" y="44" width="414" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -50,11 +48,14 @@
                         </connections>
                     </tableView>
                     <navigationItem key="navigationItem" id="tPg-DD-zLd"/>
-                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO"/>
+                    <simulatedTabBarMetrics key="simulatedBottomBarMetrics" translucent="NO"/>
                     <connections>
                         <segue destination="DqI-nG-dRU" kind="unwind" identifier="ToFeed" unwindAction="unwindToFeedWithSegue:" id="a1G-vz-Ve8"/>
                         <segue destination="1ni-Pa-iJy" kind="presentation" identifier="editProfile" modalPresentationStyle="overFullScreen" id="81a-Y1-tZX"/>
                         <segue destination="hxm-5g-nJo" kind="show" identifier="toFull" id="wH1-P4-f7O"/>
+                        <segue destination="HuG-d4-ma7" kind="show" identifier="toComments" id="Z1Y-ar-773"/>
+                        <segue destination="uEf-Oe-AUL" kind="show" identifier="toEdit" id="aj1-W6-Mae"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="XDY-13-Hf2" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -68,7 +69,7 @@
                 <viewControllerPlaceholder storyboardName="EditProfileVC" id="1ni-Pa-iJy" sceneMemberID="viewController"/>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="C5F-JH-GVr" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="4338" y="1092"/>
+            <point key="canvasLocation" x="4894" y="1092"/>
         </scene>
         <!--FullProductVC-->
         <scene sceneID="Agd-7I-hMy">
@@ -76,16 +77,33 @@
                 <viewControllerPlaceholder storyboardIdentifier="UIViewController-TTd-by-I1I" storyboardName="FullProductVC" id="hxm-5g-nJo" sceneMemberID="viewController"/>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="1gm-qM-29G" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2804" y="1092"/>
+            <point key="canvasLocation" x="2273" y="1092"/>
+        </scene>
+        <!--CommentsVC-->
+        <scene sceneID="55H-2b-2lp">
+            <objects>
+                <viewControllerPlaceholder storyboardName="CommentsVC" id="HuG-d4-ma7" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="J6r-Sh-jLc"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="J2h-nW-nlI" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2972" y="1092"/>
+        </scene>
+        <!--DesignVC-->
+        <scene sceneID="EQP-dI-s8Z">
+            <objects>
+                <viewControllerPlaceholder storyboardName="DesignVC" id="uEf-Oe-AUL" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="mjw-pp-dRk"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="ruO-gE-yIi" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="4150" y="1092"/>
         </scene>
     </scenes>
     <resources>
         <image name="person" catalog="system" width="64" height="58"/>
         <namedColor name="LoadingColor">
-            <color red="0.089999999999999997" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
-        <namedColor name="LoadingColor">
-            <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+            <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

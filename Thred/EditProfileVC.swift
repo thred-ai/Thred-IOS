@@ -81,10 +81,10 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
     }
     
     func setEditUserInfo(){
-        self.editUserInfo.username = userInfo.username
-        self.editUserInfo.fullName = userInfo.fullName
-        self.editUserInfo.dp = userInfo.dp
-        self.editUserInfo.bio = userInfo.bio
+        editUserInfo.username = userInfo.username
+        editUserInfo.fullName = userInfo.fullName
+        editUserInfo.dp = userInfo.dp
+        editUserInfo.bio = userInfo.bio
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -135,17 +135,29 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
     }
     
     
-    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    
+    
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         
+        let label = UILabel()
+        label.font = UIFont(name: "NexaW01-Heavy", size: 16)
+        label.textColor = ColorCompatibility.tertiaryLabel
+        var title = String()
         if section == 0{
-            return "Full Name:"
+            title = "Full Name:"
         }
         else if section == 1{
-            return "Username:"
+            title = "Username:"
         }
         else{
-            return "Bio:"
+            title = "Bio:"
         }
+        label.text = title
+        return label
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 20
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -217,6 +229,12 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
     
     func save(completed: @escaping () -> ()){
         
+        guard let uid = userInfo.uid else{
+            
+            
+            
+            return}
+
         let data = [
             "Bio" : editUserInfo.bio,
             "Username" : editUserInfo.username,
@@ -235,7 +253,7 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
                     guard let imageData = self.editUserInfo.dp?.sd_resizedImage(with: CGSize(width: 200, height: 200), scaleMode: .aspectFit)?.jpegData(compressionQuality: 0.6) else {return}
 
                     let picID = NSUUID().uuidString.replacingOccurrences(of: "-", with: "")
-                    let ref = Storage.storage().reference().child("Users/" + userInfo.uid + "/" + "profile_pic-" + picID + ".jpeg")
+                    let ref = Storage.storage().reference().child("Users/" + uid + "/" + "profile_pic-" + picID + ".jpeg")
                     ref.putData(imageData, metadata: nil, completion: { metaData, error in
                         
                         if error != nil{
@@ -262,8 +280,8 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
         
         sender.isEnabled = false
         
-        self.save {
-            self.setUserInfo(username: self.editUserInfo.username, fullname: self.editUserInfo.fullName, image: self.editUserInfo.dp, bio: self.editUserInfo.bio, notifID: self.editUserInfo.notifID, dpUID: self.editUserInfo.dpID, userFollowing: self.editUserInfo.userFollowing)
+        save {
+            self.setUserInfo(username: self.editUserInfo.username, fullname: self.editUserInfo.fullName, image: self.editUserInfo.dp, bio: self.editUserInfo.bio, notifID: self.editUserInfo.notifID, dpUID: self.editUserInfo.dpID, userFollowing: userInfo.userFollowing, followerCount: userInfo.followerCount, postCount: userInfo.postCount, followingCount: userInfo.followingCount, usersBlocking: userInfo.usersBlocking)
             self.performSegue(withIdentifier: "backToProfile", sender: nil)
         }
  
@@ -422,7 +440,6 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
             self.cameraRollCollectionView.animatehideCameraRoll(viewToCarry: self.optionMenu, backgroundView: self.view, tableView: nil){
             }
         }
-        
     }
     
     

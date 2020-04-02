@@ -16,6 +16,13 @@ class ProfileHeaderView: UIView{
     // An empty implementation adversely affects performance during animation.
     override func draw(_ rect: CGRect) {
     }
+    @IBOutlet weak var optionBtn: UIButton!
+    
+    
+    @IBOutlet weak var followingNum: UILabel!
+    @IBOutlet weak var followerNum: UILabel!
+    @IBOutlet weak var postNum: UILabel!
+    
     
     @IBOutlet weak var userContentView: UIView!
     @IBOutlet weak var fullnameLbl: UILabel!
@@ -23,7 +30,7 @@ class ProfileHeaderView: UIView{
     @IBOutlet weak var bioView: UITextView!
     @IBOutlet weak var actionBtn: UIButton!
     @IBOutlet weak var profileImgView: UIImageView!
-    var headerActionBtnTitle: String = "Follow"
+    var headerActionBtnTitle: String = "Loading"
 
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -57,6 +64,7 @@ class ProfileHeaderView: UIView{
         }
     }
     
+
     func updateFollowBtn(didFollow: Bool, animated: Bool){
         var animationDuration = 0.0
         
@@ -80,15 +88,17 @@ class ProfileHeaderView: UIView{
         self.actionBtn.setTitle(headerActionBtnTitle, for: .normal)
     }
     
-    func setUpInfo(username: String?, fullname: String?, bio: String?, notifID: String?, dpUID: String?, image: UIImage?, actionBtnTitle: String){
+    func setUpInfo(username: String?, fullname: String?, bio: String?, notifID: String?, dpUID: String?, image: UIImage?, actionBtnTitle: String, followerCount: Int, followingCount : Int, postCount: Int){
         usernameLbl.text = "@" + (username ?? "null")
         fullnameLbl.text = fullname ?? "null"
         bioView.text = bio
+        followerNum.text = "\(followerCount)"
+        followingNum.text = "\(followingCount)"
+        postNum.text = "\(postCount)"
         actionBtn.setTitle(actionBtnTitle, for: .normal)
         setNeedsLayout()
         layoutIfNeeded()
         guard let img = image else{
-            
             return}
         profileImgView.image = img
     }
@@ -103,10 +113,10 @@ class ProfileHeaderView: UIView{
         adjustBioHeight()
         userContentView.layer.cornerRadius =  userContentView.frame.width / 25
         userContentView.clipsToBounds = true
+        userContentView.backgroundColor = UIColor(named: "ProfileMask")?.withAlphaComponent(0.25)
         profileImgView.layer.cornerRadius =  profileImgView.frame.height / 2
         profileImgView.clipsToBounds = true
         profileImgView.layer.borderColor = UIColor(named: "ProfileMask")?.cgColor
-        userContentView.backgroundColor = UIColor(named: "ProfileMask")?.withAlphaComponent(0.25)
         profileImgView.layer.borderWidth = profileImgView.frame.width / 17.75
         actionBtn.layer.cornerRadius = actionBtn.frame.height / 4
         actionBtn.clipsToBounds = true

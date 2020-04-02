@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="7QI-eE-7ei">
-    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <device id="retina6_5" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -13,24 +14,35 @@
             <objects>
                 <viewController id="b26-ny-SLm" customClass="NotificationVC" customModule="Thred" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Qyz-T9-x73">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="725"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="75" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="veH-Cx-jQZ">
-                                <rect key="frame" x="0.0" y="88" width="414" height="774"/>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="veH-Cx-jQZ">
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="725"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                             </tableView>
                         </subviews>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <color key="backgroundColor" name="TopBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="Wq2-gn-OIK" firstAttribute="trailing" secondItem="veH-Cx-jQZ" secondAttribute="trailing" id="KAT-MS-Kst"/>
-                            <constraint firstItem="Wq2-gn-OIK" firstAttribute="bottom" secondItem="veH-Cx-jQZ" secondAttribute="bottom" id="Sb7-ij-LBs"/>
-                            <constraint firstItem="veH-Cx-jQZ" firstAttribute="leading" secondItem="Wq2-gn-OIK" secondAttribute="leading" id="dtQ-yA-ApR"/>
-                            <constraint firstItem="veH-Cx-jQZ" firstAttribute="top" secondItem="Wq2-gn-OIK" secondAttribute="top" id="sAr-pt-P97"/>
+                            <constraint firstItem="veH-Cx-jQZ" firstAttribute="trailing" secondItem="Wq2-gn-OIK" secondAttribute="trailing" id="IeL-hL-OW5"/>
+                            <constraint firstAttribute="bottom" secondItem="veH-Cx-jQZ" secondAttribute="bottom" id="XyX-eU-bQ6"/>
+                            <constraint firstItem="veH-Cx-jQZ" firstAttribute="leading" secondItem="Wq2-gn-OIK" secondAttribute="leading" id="cfm-8B-Isk"/>
+                            <constraint firstItem="veH-Cx-jQZ" firstAttribute="top" secondItem="Wq2-gn-OIK" secondAttribute="top" id="f2x-8n-IRd"/>
+                            <constraint firstItem="veH-Cx-jQZ" firstAttribute="top" secondItem="Wq2-gn-OIK" secondAttribute="top" id="uQx-Ts-VWq"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="Wq2-gn-OIK"/>
                     </view>
-                    <navigationItem key="navigationItem" id="sMD-LP-3Ri"/>
+                    <extendedEdge key="edgesForExtendedLayout" bottom="YES"/>
+                    <navigationItem key="navigationItem" id="sMD-LP-3Ri">
+                        <nil key="title"/>
+                        <barButtonItem key="leftBarButtonItem" image="cart" catalog="system" id="FIa-rd-HO2">
+                            <color key="tintColor" name="LoadingColor"/>
+                        </barButtonItem>
+                        <barButtonItem key="rightBarButtonItem" image="creditcard.fill" catalog="system" id="agr-0f-dMy">
+                            <color key="tintColor" name="LoadingColor"/>
+                        </barButtonItem>
+                    </navigationItem>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO"/>
                     <connections>
                         <outlet property="tableView" destination="veH-Cx-jQZ" id="GbD-Mc-Elt"/>
                         <segue destination="eBo-n3-iA3" kind="show" identifier="toCart" id="XyQ-gD-haw"/>
@@ -41,17 +53,20 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="M8y-kh-zqS" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2494" y="266"/>
+            <point key="canvasLocation" x="2492.753623188406" y="265.84821428571428"/>
         </scene>
-        <!--Navigation Controller-->
+        <!--Notifications-->
         <scene sceneID="OPt-qg-wgf">
             <objects>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="7QI-eE-7ei" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="" image="tag" catalog="system" id="ICw-1t-TqU"/>
+                    <tabBarItem key="tabBarItem" title="Notifications" image="tag" catalog="system" id="ICw-1t-TqU"/>
                     <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="tEY-YW-Znp">
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO"/>
+                    <simulatedTabBarMetrics key="simulatedBottomBarMetrics" translucent="NO"/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translucent="NO" id="tEY-YW-Znp">
                         <rect key="frame" x="0.0" y="44" width="414" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
+                        <color key="tintColor" name="LoadingColor"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
                     <connections>
@@ -96,6 +111,14 @@
         </scene>
     </scenes>
     <resources>
+        <image name="cart" catalog="system" width="64" height="50"/>
+        <image name="creditcard.fill" catalog="system" width="64" height="44"/>
         <image name="tag" catalog="system" width="64" height="58"/>
+        <namedColor name="LoadingColor">
+            <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="TopBackgroundColor">
+            <color red="0.80699998140335083" green="0.95499998331069946" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
     </resources>
 </document>

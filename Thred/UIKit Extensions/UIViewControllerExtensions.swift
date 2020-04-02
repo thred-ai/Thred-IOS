@@ -10,7 +10,6 @@ import Foundation
 import UIKit
 import FirebaseAuth
 import FirebaseFirestore
-import OneSignal
 
 
 extension UIViewController{
@@ -122,7 +121,6 @@ extension UIViewController{
         UserDefaults.standard.removePersistentDomain(forName: domain)
         UserDefaults.standard.synchronize()
         self.clearDocumentsDirectory()
-        OneSignal.setSubscription(false)
         UserDefaults.standard.removePersistentDomain(forName: Bundle.main.bundleIdentifier ?? "")
         do{
             try Auth.auth().signOut()

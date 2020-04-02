@@ -31,14 +31,6 @@ extension Array{
     }
 }
 
-extension Array where Iterator.Element == Template{
-    func saveTemplates(type: String, name: String) {
-        let encoder = JSONEncoder()
-        if let encoded = try? encoder.encode(self){
-            saveClass(encoded, name: "TemplateData", type: type)
-        }
-    }
-}
 
 extension Array where Iterator.Element == Product{
     

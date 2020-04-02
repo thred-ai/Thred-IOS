@@ -23,25 +23,27 @@
                     </tableView>
                     <navigationItem key="navigationItem" id="xna-bW-ePJ"/>
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO"/>
+                    <simulatedTabBarMetrics key="simulatedBottomBarMetrics" translucent="NO"/>
                     <connections>
                         <segue destination="fBw-bI-gyy" kind="show" identifier="toFriend" id="TBa-9t-l9t"/>
                         <segue destination="qXz-36-KxZ" kind="show" identifier="toProfileFromSearch" id="KmP-iV-8sc"/>
                         <segue destination="hA8-V3-9WM" kind="show" identifier="toFull" id="CHH-Ke-CRk"/>
+                        <segue destination="b87-RR-reN" kind="show" identifier="toComments" id="JSf-ZP-UBs"/>
+                        <segue destination="Fee-QS-3Nk" kind="show" identifier="toEdit" id="iIr-3J-S4m"/>
+                        <segue destination="AW9-x7-stO" kind="show" identifier="toReport" id="Q9G-ZQ-F4F"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="m53-NO-336" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-1023" y="457"/>
         </scene>
-        <!--Navigation Controller-->
+        <!--Home-->
         <scene sceneID="Lht-w2-ErK">
             <objects>
                 <navigationController extendedLayoutIncludesOpaqueBars="YES" automaticallyAdjustsScrollViewInsets="NO" id="7LV-k9-ssG" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" image="feed" id="XEb-ZW-fGt"/>
+                    <tabBarItem key="tabBarItem" title="Home" image="feed" id="XEb-ZW-fGt"/>
                     <toolbarItems/>
-                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO">
-                        <color key="tintColor" name="LoadingColor"/>
-                    </simulatedNavigationBarMetrics>
+                    <simulatedTabBarMetrics key="simulatedBottomBarMetrics" translucent="NO"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translucent="NO" id="zwd-y5-Dgw">
                         <rect key="frame" x="0.0" y="44" width="414" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -65,7 +67,7 @@
                 <viewControllerPlaceholder storyboardName="FriendVC" id="fBw-bI-gyy" sceneMemberID="viewController"/>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="JEz-En-T9y" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-2090" y="1156"/>
+            <point key="canvasLocation" x="-2646" y="1156"/>
         </scene>
         <!--UserVC-->
         <scene sceneID="0Jv-pw-u0c">
@@ -73,7 +75,27 @@
                 <viewControllerPlaceholder storyboardName="UserVC" id="qXz-36-KxZ" sceneMemberID="viewController"/>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Uiq-Do-WzA" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="68" y="1156"/>
+            <point key="canvasLocation" x="-565" y="1156"/>
+        </scene>
+        <!--DesignVC-->
+        <scene sceneID="Fdb-ch-9uI">
+            <objects>
+                <viewControllerPlaceholder storyboardName="DesignVC" id="Fee-QS-3Nk" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="hg0-WA-WBc"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Lm2-2a-hzb" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="104" y="1156"/>
+        </scene>
+        <!--ReportScreen-->
+        <scene sceneID="9Zl-hy-C2D">
+            <objects>
+                <viewControllerPlaceholder storyboardName="ReportScreen" id="AW9-x7-stO" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="Qo5-EI-CgS"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Lwc-5p-2Me" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="675" y="1156"/>
         </scene>
         <!--FullProductVC-->
         <scene sceneID="SJD-xA-qV4">
@@ -81,16 +103,23 @@
                 <viewControllerPlaceholder storyboardName="FullProductVC" id="hA8-V3-9WM" sceneMemberID="viewController"/>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="gKq-ua-22Y" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-1022" y="1156"/>
+            <point key="canvasLocation" x="-2130" y="1156"/>
+        </scene>
+        <!--CommentsVC-->
+        <scene sceneID="I1s-1M-Rdx">
+            <objects>
+                <viewControllerPlaceholder storyboardName="CommentsVC" id="b87-RR-reN" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="fQ8-AJ-xHK"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="lyh-04-jmw" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-1501" y="1156"/>
         </scene>
     </scenes>
     <resources>
         <image name="feed" width="30" height="30"/>
         <namedColor name="LoadingColor">
-            <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
-        </namedColor>
-        <namedColor name="LoadingColor">
-            <color red="0.089999999999999997" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

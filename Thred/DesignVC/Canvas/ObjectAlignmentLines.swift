@@ -32,14 +32,8 @@ extension DesignViewController{
         }
         
         //Check Y Centering
-        var centeredY = canvas.center.y - self.view.safeAreaInsets.top
-        let y = self.canvas.frame.origin.y
-        let height = self.canvas.frame.height
-        let bottomBarY = y + height + self.view.safeAreaInsets.top
-        if bottomBarY >= self.view.frame.maxY - self.bottomBar.frame.height{
-            let difference = (bottomBarY - self.view.frame.maxY - self.bottomBar.frame.height).magnitude
-            centeredY -= difference
-        }
+        let centeredY = canvas.center.y - self.view.safeAreaInsets.top
+        
         if viewDrag.center.y != centeredY{
             if viewDrag.center.y <= centeredY + 2 && viewDrag.center.y >= centeredY - 2{
                 midYLine.center.y = centeredY

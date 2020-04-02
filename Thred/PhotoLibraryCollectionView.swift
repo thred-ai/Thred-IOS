@@ -22,7 +22,7 @@ class PhotosView: UIView{
         
         let control = UISegmentedControl.init(frame: CGRect(x: 5, y: 5, width: self.frame.width - 10, height: 45))
         control.insertSegment(withTitle: "Photos", at: 0, animated: false)
-        control.insertSegment(withTitle: "Threds", at: 1, animated: false)
+        control.insertSegment(withTitle: "My Threds", at: 1, animated: false)
         control.layer.cornerRadius = 0
         control.selectedSegmentIndex = 0
         control.clipsToBounds = true
@@ -458,12 +458,14 @@ class ThredListView: UICollectionView, UICollectionViewDelegate, UICollectionVie
         var query: Query! = nil
         //REMOVE LATER
         //
+        guard let uid = userInfo.uid else{return}
+
         
         if fromInterval == nil{
-            query = Firestore.firestore().collection("Users").document(userInfo.uid).collection("Products").whereField("Timestamp", isLessThanOrEqualTo: Timestamp(date: Date())).limit(to: 15).order(by: "Timestamp", descending: true)
+            query = Firestore.firestore().collection("Users").document(uid).collection("Products").whereField("Timestamp", isLessThanOrEqualTo: Timestamp(date: Date())).limit(to: 15).order(by: "Timestamp", descending: true)
         }
         else if let last = fromInterval{
-            query = Firestore.firestore().collection("Users").document(userInfo.uid).collection("Products").whereField("Timestamp", isLessThan: Timestamp(date: last)).limit(to: 15).order(by: "Timestamp", descending: true)
+            query = Firestore.firestore().collection("Users").document(uid).collection("Products").whereField("Timestamp", isLessThan: Timestamp(date: last)).limit(to: 15).order(by: "Timestamp", descending: true)
         }
         query.getDocuments(completion: { (snapDocuments, err) in
             if let err = err {
@@ -473,7 +475,7 @@ class ThredListView: UICollectionView, UICollectionViewDelegate, UICollectionVie
             }
             else{
                 if snapDocuments?.isEmpty ?? true{
-                    
+                    return
                 }
                 else{
                     guard let snaps = snapDocuments?.documents else
@@ -504,6 +506,7 @@ class ThredListView: UICollectionView, UICollectionViewDelegate, UICollectionVie
         cell?.photo = nil
         let design = self.images[indexPath.item]
         guard let designID = design["ID"] as? String else{return cell!}
+        guard let uid = userInfo.uid else{return cell!}
         let designImg = design["Image"] as? UIImage
 
         if designImg != nil{
@@ -518,7 +521,7 @@ class ThredListView: UICollectionView, UICollectionViewDelegate, UICollectionVie
                 if !(tokens.contains(designID)){
                         //cell?.circularProgress.isHidden = false
                     tokens.append(designID)
-                    self.downloadThredListImage(isThumbnail: true, cell: cell, followingUID: userInfo.uid, picID: designID, downloader: SDWebImageDownloader.shared){ img in
+                    self.downloadThredListImage(isThumbnail: true, cell: cell, followingUID: uid, picID: designID, downloader: SDWebImageDownloader.shared){ img in
                         self.tokens.removeAll(where: {$0 == designID})
                         if self.images.indices.contains(indexPath.item){
                             self.images[indexPath.item]["Image"] = img
@@ -537,12 +540,13 @@ class ThredListView: UICollectionView, UICollectionViewDelegate, UICollectionVie
         guard let cell = collectionView.cellForItem(at: indexPath) as? PhotosCell else{return}
         let design = images[indexPath.item]
         guard let designID = design["ID"] as? String else{return}
+        guard let uid = userInfo.uid else{return}
         let photosView = superview as? PhotosView
         let designImg = design["Image"] as? UIImage
         photosView?.selectedImage = designImg
         photosView?.sendPicBtn.isHidden = false
         
-        downloadThredListImage(isThumbnail: false, cell: cell, followingUID: userInfo.uid, picID: designID, downloader: SDWebImageDownloader.shared){ img in
+        downloadThredListImage(isThumbnail: false, cell: cell, followingUID: uid, picID: designID, downloader: SDWebImageDownloader.shared){ img in
             
             self.tokens.removeAll(where: {$0 == designID})
             

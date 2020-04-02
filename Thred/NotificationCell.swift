@@ -8,13 +8,15 @@
 
 import UIKit
 
-class NotificationCell: UITableViewCell {
+class NotificationCell: UITableViewCell{
 
     @IBOutlet weak var notifPic: UIImageView!
     
-    @IBOutlet weak var notifLbl: UILabel!
+    @IBOutlet weak var notifLbl: UITextView!
     @IBOutlet weak var timestampLbl: UILabel!
+    weak var vc: NotificationVC!
     
+    @IBOutlet weak var removedNotifView: UIView!
     var isDP: Bool = false{
         
         didSet{

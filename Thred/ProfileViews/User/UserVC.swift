@@ -26,7 +26,6 @@ class UserVC: UITableViewController {
 
     var tokens = [String]()
         
-
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let user = self.loadedProducts[indexPath.row]
 
@@ -50,16 +49,17 @@ class UserVC: UITableViewController {
             if downloader == nil{
                 downloader = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
             }
+            guard let uid = userInfo.uid else{return}
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                 self.downloader?.cancelAllDownloads()
-                self.tableView.downloadUserInfo(uid: userInfo.uid, userVC: self, feedVC: nil, downloadingPersonalDP: true, doNotDownloadDP: false, downloader: self.downloader, userInfo: userInfo, completed: { fullName, username, dpID, notifID, bio, image, userFollowing in
+                self.downloadUserInfo(uid: uid, userVC: self, feedVC: nil, downloadingPersonalDP: true, doNotDownloadDP: false, downloader: self.downloader, userInfoToUse: userInfo, queryOnUsername: false, completed: {uid, fullName, username, dpID, notifID, bio, image, userFollowing, usersBlocking, postCount, followerCount, followingCount in
                     
                     if image != nil{
                     }
                     if username != nil{
                         
-                        self.header?.setUpInfo(username: username, fullname: fullName, bio: bio, notifID: notifID, dpUID: dpID, image: image, actionBtnTitle: "Edit Profile")
-                        self.setUserInfo(username: username, fullname: fullName, image: image, bio: bio, notifID: notifID, dpUID: dpID, userFollowing: userFollowing)
+                        self.header?.setUpInfo(username: username, fullname: fullName, bio: bio, notifID: notifID, dpUID: dpID, image: image, actionBtnTitle: "Edit Profile", followerCount: followerCount ?? 0, followingCount: followingCount ?? 0, postCount: postCount ?? 0)
+                        self.setUserInfo(username: username, fullname: fullName, image: image, bio: bio, notifID: notifID, dpUID: dpID, userFollowing: userFollowing, followerCount: followerCount, postCount: postCount, followingCount: followingCount, usersBlocking: usersBlocking)
                         
                         for product in self.loadedProducts{
                             if product.uid == userInfo.uid{
@@ -73,7 +73,8 @@ class UserVC: UITableViewController {
                         }, completion: nil)
                     }
                 })
-                self.downloadProducts(){                    self.isLoading = false
+                self.downloadProducts(){
+                    self.isLoading = false
                     if sender.isRefreshing{
                         sender.endRefreshing()
                     }
@@ -122,8 +123,9 @@ class UserVC: UITableViewController {
         tableView.register(UINib(nibName: "ProductCell", bundle: nil), forCellReuseIdentifier: "PictureProduct")
         header = tableView.loadUserHeaderFromNib()
         header?.actionBtn.addTarget(self, action: #selector(editProfile(_:)), for: .touchUpInside)
+        header?.optionBtn.setImage(UIImage(named: "gear"), for: .normal)
         if let image = userInfo.dp{
-            header?.setUpInfo(username: userInfo.username, fullname: userInfo.fullName, bio: userInfo.bio, notifID: userInfo.notifID, dpUID: nil, image: image, actionBtnTitle: "Edit Profile")
+            header?.setUpInfo(username: userInfo.username, fullname: userInfo.fullName, bio: userInfo.bio, notifID: userInfo.notifID, dpUID: userInfo.dpID, image: image, actionBtnTitle: "Edit Profile", followerCount: userInfo.followerCount ?? 0, followingCount: userInfo.followingCount ?? 0, postCount: userInfo.postCount ?? 0)
         }
         tableView.addSubview(refresher)
 
@@ -136,7 +138,7 @@ class UserVC: UITableViewController {
                 else{
                     for postID in uploadingPosts{
                         guard let post = self.loadedProducts.first(where: {$0.productID == postID}) else{continue}
-                        self.uploadPost(post: ProductInProgress(templateColor: post.templateColor, design: cache.imageFromCache(forKey: postID), uid: post.uid, caption: post.description, name: post.name, price: (post.price ?? 20) * 100), isRetryingWithID: postID)
+                        self.uploadPost(post: ProductInProgress(templateColor: post.templateColor, design: cache.imageFromCache(forKey: postID), uid: post.uid, caption: post.description, name: post.name, price: (post.price ?? 20) * 100, productID: postID), isRetryingWithID: postID)
                     }
                 }
             }
@@ -165,7 +167,7 @@ class UserVC: UITableViewController {
     @IBAction func unwindToUser(segue:  UIStoryboardSegue) {
         if let image = userInfo.dp{
             
-            self.header?.setUpInfo(username: userInfo.username, fullname: userInfo.fullName, bio: userInfo.bio, notifID: userInfo.notifID, dpUID: nil, image: image, actionBtnTitle: "Edit Profile")
+            self.header?.setUpInfo(username: userInfo.username, fullname: userInfo.fullName, bio: userInfo.bio, notifID: userInfo.notifID, dpUID: userInfo.dpID, image: image, actionBtnTitle: "Edit Profile", followerCount: userInfo.followerCount ?? 0, followingCount: userInfo.followingCount ?? 0, postCount: userInfo.postCount ?? 0)
             DispatchQueue.main.async {
                 self.tableView.reloadData()
             }
@@ -265,16 +267,16 @@ class UserVC: UITableViewController {
         return}
         
         var doc: DocumentReference!
-        
+        guard let uid = userInfo.uid else{return}
         if let docID = isRetryingWithID{
-            doc = Firestore.firestore().collection("Users").document(userInfo.uid).collection("Products").document(docID)
+            doc = Firestore.firestore().collection("Users").document(uid).collection("Products").document(docID)
         }
         else{
-            doc = Firestore.firestore().collection("Users").document(userInfo.uid).collection("Products").document()
+            doc = Firestore.firestore().collection("Users").document(uid).collection("Products").document()
             uploadingPosts.append(doc.documentID)
             UserDefaults.standard.set(uploadingPosts, forKey: "UploadingPosts")
 
-            let product = Product(uid: userInfo.uid, picID: doc.documentID, description: post.caption, fullName: userInfo.fullName, username: userInfo.username, productID: doc.documentID, userImageID: userInfo.dpID, timestamp: date, index: nil, timestampDiff: "1 second", blurred: false, price: (post.price ?? 2000) / 100, name: post.name, templateColor: post.templateColor, likes: 0, liked: false, designImage: nil, comments: 0)
+            let product = Product(uid: uid, picID: doc.documentID, description: post.caption, fullName: userInfo.fullName, username: userInfo.username, productID: doc.documentID, userImageID: userInfo.dpID, timestamp: date, index: nil, timestampDiff: "1 second", blurred: false, price: (post.price ?? 2000) / 100, name: post.name, templateColor: post.templateColor, likes: 0, liked: false, designImage: nil, comments: 0)
             
             cache.storeImageData(toDisk: designData, forKey: doc.documentID)
             self.loadedProducts.insert(product, at: 0)
@@ -285,26 +287,42 @@ class UserVC: UITableViewController {
             }
         }
         
-        let designRef = Storage.storage().reference().child("Users/" + userInfo.uid + "/" + "Products/" + doc.documentID + "/" + doc.documentID + ".png")
+        let batch = Firestore.firestore().batch()
         
-        designRef.putData(designData, metadata: nil, completion: { metaData, error in
+        let userRef = Firestore.firestore().collection("Users").document(uid)
+        
+        
+        
+        
+        let data = [
+            "Name" : post.name!,
+            "Search_Name" : post.name.lowercased(),
+            "Description" : post.caption ?? "",
+            "Price_Cents" : post.price ?? "2000",
+            "UID" : uid,
+            "Blurred" : false,
+            "Timestamp" : date,
+            "Template_Color" : post.templateColor ?? "null",
+            "Likes" : 0,
+            "Comments" : 0,
+            "Has_Picture" : false
+        ] as [String : Any]
+        
+        
+        let productCountData =  [
+            "Posts_Count" : FieldValue.increment(1.0)
+        ]
+        
+        batch.setData(data, forDocument: doc)
+        batch.updateData(productCountData, forDocument: userRef)
+        
+        batch.commit(completion: { error in
             if error != nil{
                 print(error?.localizedDescription ?? "")
             }
             else{
-                let data = [
-                    "Name": post.name!,
-                    "Description" : post.caption ?? "",
-                    "Price_Cents" : post.price ?? "2000",
-                    "UID" : userInfo.uid,
-                    "Blurred" : false,
-                    "Timestamp" : date,
-                    "Template_Color" : post.templateColor ?? "null",
-                    "Likes" : 0,
-                    "Comments" : 0
-                ] as [String : Any]
-                
-                doc.setData(data, completion: { error in
+                let designRef = Storage.storage().reference().child("Users/" + uid + "/" + "Products/" + doc.documentID + "/" + doc.documentID + ".png")
+                designRef.putData(designData, metadata: nil, completion: { metaData, error in
                     if error != nil{
                         print(error?.localizedDescription ?? "")
                     }
@@ -337,12 +355,14 @@ class UserVC: UITableViewController {
         var query: Query! = nil
         //REMOVE LATER
         //
+        guard let uid = userInfo.uid else{return}
+
         
         if fromInterval == nil{
-            query = Firestore.firestore().collection("Users").document(userInfo.uid).collection("Products").whereField("Timestamp", isLessThanOrEqualTo: Timestamp(date: Date())).limit(to: 8).order(by: "Timestamp", descending: true)
+            query = Firestore.firestore().collection("Users").document(uid).collection("Products").whereField("Timestamp", isLessThanOrEqualTo: Timestamp(date: Date())).limit(to: 8).order(by: "Timestamp", descending: true)
         }
         else if let last = fromInterval{
-            query = Firestore.firestore().collection("Users").document(userInfo.uid).collection("Products").whereField("Timestamp", isLessThan: Timestamp(date: last)).limit(to: 8).order(by: "Timestamp", descending: true)
+            query = Firestore.firestore().collection("Users").document(uid).collection("Products").whereField("Timestamp", isLessThan: Timestamp(date: last)).limit(to: 8).order(by: "Timestamp", descending: true)
         }
         query.getDocuments(completion: { (snapDocuments, err) in
             if let err = err {
@@ -438,9 +458,9 @@ class UserVC: UITableViewController {
                 guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                 let comments = ((snap["Comments"]) as? Int) ?? 0
 
+                guard let userUID = userInfo.uid else{return}
                 
-                
-                Firestore.firestore().collection("Users").document(uid).collection("Products").document(snap.documentID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userInfo.uid).getDocuments(completion: { snapLikes, error in
+                Firestore.firestore().collection("Users").document(uid).collection("Products").document(snap.documentID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userUID).getDocuments(completion: { snapLikes, error in
                 
                     var liked: Bool!
                     
@@ -448,15 +468,15 @@ class UserVC: UITableViewController {
                         print(error?.localizedDescription ?? "")
                     }
                     else{
-                        userInfo.userLiked?.removeAll(where: {$0 == snap.documentID})
+                        userInfo.userLiked.removeAll(where: {$0 == snap.documentID})
                         if let likeDocs = snapLikes?.documents{
                             if likeDocs.isEmpty{
                                 liked = false
                             }
                             else{
                                 liked = true
-                                if !(userInfo.userLiked?.contains(snap.documentID) ?? true){
-                                    userInfo.userLiked?.append(snap.documentID)
+                                if !(userInfo.userLiked.contains(snap.documentID)){
+                                    userInfo.userLiked.append(snap.documentID)
                                 }
                             }
                         }
@@ -545,6 +565,14 @@ class UserVC: UITableViewController {
         if let fullVC = segue.destination as? FullProductVC{
             fullVC.fullProduct = productToOpen
         }
+        if let commentsVC = segue.destination as? CommentsVC{
+            commentsVC.post = productToOpen
+        }
+        else if let designVC = (segue.destination as? UINavigationController)?.viewControllers.first as? DesignViewController{
+            if let img = cache.imageFromCache(forKey: productToOpen.productID){
+                designVC.product = ProductInProgress(templateColor: productToOpen.templateColor, design: img, uid: productToOpen.uid, caption: productToOpen.description, name: productToOpen.name, price: productToOpen.price, productID: productToOpen.productID)
+            }
+        }
     }
 }
 
@@ -552,7 +580,7 @@ class UserVC: UITableViewController {
 
 extension UIViewController{
     
-    func setUserInfo(username: String?, fullname: String?, image: UIImage?, bio: String?, notifID: String?, dpUID: String?, userFollowing: [String]?){
+    func setUserInfo(username: String?, fullname: String?, image: UIImage?, bio: String?, notifID: String?, dpUID: String?, userFollowing: [String]?, followerCount: Int?, postCount: Int?, followingCount: Int?, usersBlocking: [String]?){
         if let usernameToSet = username{
             UserDefaults.standard.set(usernameToSet, forKey: "USERNAME")
             userInfo.username = usernameToSet
@@ -573,6 +601,22 @@ extension UIViewController{
             UserDefaults.standard.set(userFollowing, forKey: "FOLLOWING")
             userInfo.userFollowing = userFollowing
         }
+        if let followerCount = followerCount{
+            UserDefaults.standard.set(followerCount, forKey: "FOLLOWER_COUNT")
+            userInfo.followerCount = followerCount
+        }
+        if let postCount = postCount{
+            UserDefaults.standard.set(postCount, forKey: "POST_COUNT")
+            userInfo.postCount = postCount
+        }
+        if let followingCount = followingCount{
+            UserDefaults.standard.set(followingCount, forKey: "FOLLOWING_COUNT")
+            userInfo.followingCount = followingCount
+        }
+        if let usersBlocking = usersBlocking{
+            userInfo.usersBlocking = usersBlocking
+        }
+        
         if let dpIDToSet = dpUID{
             UserDefaults.standard.set(dpIDToSet, forKey: "DP_ID")
             userInfo.dpID = dpIDToSet

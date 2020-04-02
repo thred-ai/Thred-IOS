@@ -14,6 +14,7 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
     
     @IBOutlet weak var collectionView: UICollectionView!
     @IBOutlet weak var colorIcon: UIView!
+    @IBOutlet weak var colorNameLbl: UILabel!
     
     var collectionViewOffset: CGFloat {
         get {
@@ -44,7 +45,7 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
         if postArray == nil{
             postArray = [Product]()
             let color = templateColor
-            Firestore.firestore().collectionGroup("Products").whereField("Timestamp", isLessThanOrEqualTo: Timestamp(date: Date())).order(by: "Timestamp", descending: true).whereField("Template_Color", isEqualTo: templateColor ?? "").order(by: "Likes", descending: false).limit(to: 8).getDocuments(completion: { snaps, err in
+            Firestore.firestore().collectionGroup("Products").whereField("Template_Color", isEqualTo: templateColor ?? "").whereField("Has_Picture", isEqualTo: true).order(by: "Likes", descending: true).limit(to: 8).getDocuments(completion: { snaps, err in
                 if err != nil{
                     completed()
                     print(err?.localizedDescription ?? "")
@@ -60,9 +61,11 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
                         guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                         let likes = snap["Likes"] as? Int
                         let comments = ((snap["Comments"]) as? Int) ?? 0
-
+                        if userInfo.usersBlocking.contains(uid){
+                            continue
+                        }
                         if self.templateColor == color{
-                            self.postArray?.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked?.contains(snap.documentID), designImage: nil, comments: comments))
+                            self.postArray?.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments))
                         }
                     }
                     self.postArray?.sort(by: {$0.likes > $1.likes})
@@ -140,11 +143,13 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
                                     if let arrayIndex = array.firstIndex(where: {$0.picID == self.postArray[indexPath.item].picID}){
                                         if array.indices.contains(arrayIndex){
                                             if self.postArray.indices.contains(indexPath.item){
-                                                if cell != nil{
-                                                    if self.collectionView.numberOfItems(inSection: 0) > 0{
-                                                        self.collectionView.performBatchUpdates({
-                                                            self.collectionView.reloadItems(at: [indexPath])
-                                                        }, completion: nil)
+                                                if self.templateColor == (products[index]["ID"] as? String){
+                                                    if cell != nil{
+                                                        if self.collectionView.numberOfItems(inSection: 0) > 0{
+                                                            self.collectionView.performBatchUpdates({
+                                                                self.collectionView.reloadItems(at: [indexPath])
+                                                            }, completion: nil)
+                                                        }
                                                     }
                                                 }
                                             }

@@ -33,7 +33,20 @@ extension UITableView{
             }
             notif.timestampDiff = self.setNotifTimeDifference(notif: notif, timeToUse: notif.timestamp)
             DispatchQueue.main.async {
-                timestampLbl?.text = "\(notif.timestampDiff!) ago"
+                timestampLbl?.text = "\(notif.timestampDiff ?? "some time") ago"
+            }
+        }
+    }
+    
+    func checkCommentTimes(comment: Comment, timestampLbl: UILabel?){
+        
+        DispatchQueue(label: "Times").async {
+            if comment.timestamp == nil{
+                return
+            }
+            comment.timestampDiff = self.setCommentTimeDifference(comment: comment, timeToUse: comment.timestamp)
+            DispatchQueue.main.async {
+                timestampLbl?.text = "\(comment.timestampDiff!) ago"
             }
         }
     }
@@ -58,6 +71,20 @@ extension UITableView{
         case .some:
             
             notif.timestampDiff = nil
+            fallthrough
+              //return user.timestampDiff
+        default:
+            guard let time = timeToUse else{return "0 seconds"}
+            return calculateTimeDifference(time: time) ?? "0 seconds"
+        }
+    }
+    
+    func setCommentTimeDifference(comment: Comment, timeToUse: Date?) -> String{
+        
+        switch comment.timestampDiff{
+        case .some:
+            
+            comment.timestampDiff = nil
             fallthrough
               //return user.timestampDiff
         default:

@@ -62,6 +62,7 @@ class EditUsernameVC: UIViewController, UITextFieldDelegate, UINavigationControl
         
         sender.isEnabled = false
         guard let fieldText = usernameField.text else{return}
+        guard let uid = userInfo.uid else{return}
         Firestore.firestore().collection("Users").whereField("Username", isEqualTo: fieldText).getDocuments(completion: { snaps, error in
             
             if error != nil{
@@ -75,7 +76,7 @@ class EditUsernameVC: UIViewController, UITextFieldDelegate, UINavigationControl
                     let data = [
                         "Username": fieldText,
                     ]
-                Firestore.firestore().collection("Users").document(userInfo.uid).updateData(data, completion: {[weak self] error in
+                Firestore.firestore().collection("Users").document(uid).updateData(data, completion: {[weak self] error in
                         if error != nil{
                             print(error?.localizedDescription ?? "")
                             sender.isEnabled = true

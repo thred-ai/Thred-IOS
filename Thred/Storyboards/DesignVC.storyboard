@@ -27,7 +27,7 @@
                                 <rect key="frame" x="0.0" y="88" width="414" height="788"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="VEL-zP-aSz">
-                                        <rect key="frame" x="0.0" y="0.0" width="414" height="927.5"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="414" height="959.5"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="qLm-Kb-6lh">
                                                 <rect key="frame" x="0.0" y="0.0" width="414" height="414"/>
@@ -195,6 +195,16 @@
                                                     <constraint firstAttribute="bottom" secondItem="NlV-xD-JS9" secondAttribute="bottom" constant="10" id="xQZ-KP-T3T"/>
                                                 </constraints>
                                             </view>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YdK-Cu-KM6">
+                                                <rect key="frame" x="0.0" y="927.5" width="414" height="32"/>
+                                                <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
+                                                <state key="normal" title="Delete Post">
+                                                    <color key="titleColor" red="1" green="0.14913141730000001" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                </state>
+                                                <connections>
+                                                    <action selector="deletePost:" destination="2ds-qa-UJI" eventType="touchUpInside" id="RmO-eY-Jlw"/>
+                                                </connections>
+                                            </button>
                                         </subviews>
                                     </stackView>
                                 </subviews>
@@ -238,6 +248,7 @@
                     <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
                     <connections>
                         <outlet property="colorCollectionView" destination="flj-6G-13h" id="jym-qf-Oq1"/>
+                        <outlet property="deletePostBtn" destination="YdK-Cu-KM6" id="vzj-9R-Qlr"/>
                         <outlet property="descriptionView" destination="NlV-xD-JS9" id="qxb-6D-a83"/>
                         <outlet property="displayView" destination="qLm-Kb-6lh" id="y3g-iJ-QHJ"/>
                         <outlet property="nextBtn" destination="R9k-9G-77h" id="RXs-bG-CR7"/>
@@ -280,7 +291,7 @@
     <resources>
         <image name="thred.logo" width="550" height="550"/>
         <namedColor name="LoadingColor">
-            <color red="0.089999999999999997" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="black">
             <color red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

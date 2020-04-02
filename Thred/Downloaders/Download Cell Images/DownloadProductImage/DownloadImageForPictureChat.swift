@@ -29,6 +29,9 @@ extension UITableView{
                 if let img = UIImage(data: user.designImage){
                     cell?.productPicture.image = img
                     cell?.circularProgress.removeFromSuperview()
+                    if fullVC.selectedComment != nil{
+                        fullVC.performSegue(withIdentifier: "toComments", sender: nil)
+                    }
                 }
                 else{
                     fallthrough
@@ -39,7 +42,6 @@ extension UITableView{
                     fullVC.rasterizeProductCellDisplay(cell: cell, image: image, product: user)
                 }
                 else{
-                    
                     self.downloadProductImage(pictureProduct: cell, followingUID: user.uid, picID: picID, index: index, downloader: downloader, feedVC: nil, friendVC: nil, userVC: nil, fullVC: vc as? FullProductVC, type: type, product: user){_,_ in
                         return
                     }
@@ -50,13 +52,11 @@ extension UITableView{
             
             DispatchQueue(label: "cache").async {
                 let img = cache.imageFromCache(forKey: picID)
-                
+                let bundlePath = Bundle.main.path(forResource: user.templateColor, ofType: "png")
+                let image = UIImage(contentsOfFile: bundlePath!)
                 DispatchQueue.main.async {
                     if let imgFromCache = img{
                         circularProgress?.removeFromSuperview()
-                        
-                        let bundlePath = Bundle.main.path(forResource: user.templateColor, ofType: "png")
-                        let image = UIImage(contentsOfFile: bundlePath!)
                         cell?.productPicture.image = image
                         cell?.productPicture.addShadowToImageNotLayer()
                         cell?.canvasDisplayView.image = imgFromCache
@@ -83,9 +83,9 @@ extension UITableView{
         cp?.isHidden = false
 
         var pic_id = picID
-        if product?.blurred ?? false{
-            pic_id = "blur_\(pic_id)"
-        }
+        //if product?.blurred ?? false{
+         //   pic_id = "blur_\(pic_id)"
+        //}
         if fullVC == nil{
             pic_id = "thumbnail_\(picID)"
         }
@@ -126,13 +126,15 @@ extension UITableView{
                                 if let products = feedVC?.loadedProducts ?? userVC?.loadedProducts ?? friendVC?.loadedProducts {
                                     if let index = products.firstIndex(where: {$0.productID == picID}){
                                         if products.indices.contains(index){
-                                            if index <= 8{
-                                                cache.storeImageData(toDisk: imgData, forKey: picID)
+                                            DispatchQueue(label: "store").async {
+                                                if index <= 8{
+                                                    cache.storeImageData(toDisk: imgData, forKey: picID)
+                                                }
+                                                else{
+                                                    cache.storeImage(toMemory: image, forKey: picID)
+                                                }
+                                                self?.setCell(index: index, image: image, templateID: product?.templateColor)
                                             }
-                                            else{
-                                                cache.storeImage(toMemory: image, forKey: picID)
-                                            }
-                                            self?.setCell(index: index, image: image, templateID: product?.templateColor)
                                         }
                                     }
                                 }
@@ -146,19 +148,19 @@ extension UITableView{
     }
     
     func setCell(index: Int, image: UIImage?, templateID: String!){
-        if let cell = cellForRow(at: IndexPath(row: index, section: 0)) as? ProductCell{
-            
-            let bundlePath = Bundle.main.path(forResource: templateID, ofType: "png")
-            let img = UIImage(contentsOfFile: bundlePath!)
-            
-            
-            cell.productPicture.image = img
-            cell.canvasDisplayView.image = image
-            cell.productPicture.addShadowToImageNotLayer()
-            cell.circularProgress.removeFromSuperview()
+        
+        let bundlePath = Bundle.main.path(forResource: templateID, ofType: "png")
+        let img = UIImage(contentsOfFile: bundlePath!)
+        
+        DispatchQueue.main.async {
+            if let cell = self.cellForRow(at: IndexPath(row: index, section: 0)) as? ProductCell{
+                cell.productPicture.image = img
+                cell.canvasDisplayView.image = image
+                cell.productPicture.addShadowToImageNotLayer()
+                cell.circularProgress.removeFromSuperview()
+            }
         }
     }
-    
     
 }
 

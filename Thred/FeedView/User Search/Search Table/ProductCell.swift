@@ -46,7 +46,7 @@ class ProductCell: UITableViewCell {
     @IBOutlet weak var productDescription: UITextView!
     
     @IBOutlet weak var price: UILabel!
-    @IBOutlet weak var title: UILabel!
+    @IBOutlet weak var title: UITextField!
     weak var vc: UIViewController?
     
     @IBOutlet weak var userInfoView: UIView!
@@ -100,7 +100,7 @@ class ProductCell: UITableViewCell {
                 }
             }
             
-            let info = UserInfo(uid: product.uid, dp: self.userImage.image, dpID: product.userImageID ?? "null", username: product.username ?? "", fullName: product.fullName ?? "", bio: "", notifID: "", userFollowing: nil, userLiked: nil)
+            let info = UserInfo(uid: product.uid, dp: self.userImage.image, dpID: product.userImageID ?? "null", username: product.username ?? "", fullName: product.fullName ?? "", bio: "", notifID: "", userFollowing: [], userLiked: [], followerCount: nil, postCount: nil, followingCount: nil, usersBlocking: [])
             (vc as? FullProductVC)?.friendInfo = info
             (vc as? FeedVC)?.selectedUser = info
             vc?.performSegue(withIdentifier: "toFriend", sender: nil)
@@ -114,9 +114,24 @@ class ProductCell: UITableViewCell {
     
     
     @IBAction func commentOnDesign(_ sender: UIButton) {
+        
+        
+        let productToOpen = Product(uid: product.uid, picID: product.picID, description: product.description, fullName: product.fullName, username: product.username, productID: product.productID, userImageID: product.userImageID, timestamp: product.timestamp, index: product.index, timestampDiff: product.timestampDiff, blurred: product.blurred, price: product.price, name: product.name, templateColor: product.templateColor, likes: product.likes, liked: product.liked, designImage: product.designImage, comments: product.comments)
+        
+        switch vc{
+            
+        case let feed as FeedVC:
+            feed.productToOpen = productToOpen
+        case let friend as FriendVC:
+            friend.productToOpen = productToOpen
+        case let user as UserVC:
+            user.productToOpen = productToOpen
+        default:
+            break
+        }
+        
         vc?.performSegue(withIdentifier: "toComments", sender: nil)
     }
-    
     
     
     let likedImage = UIImage(named: "liked")
@@ -141,7 +156,7 @@ class ProductCell: UITableViewCell {
             switch product.likes{
             case 0:
                 let products = (vc as? FeedVC)?.loadedProducts ?? (vc as? UserVC)?.loadedProducts ?? (vc as? FriendVC)?.loadedProducts
-                    userInfo.userLiked?.removeAll(where: {$0 == self.product.productID})
+                    userInfo.userLiked.removeAll(where: {$0 == self.product.productID})
                     UserDefaults.standard.set(userInfo.userLiked, forKey: "LikedPosts")
                     if vc is FeedVC{
                         products?.saveAllObjects(type: "FeedProducts")
@@ -221,10 +236,13 @@ class ProductCell: UITableViewCell {
     }
     
     func updateLiking(loadedProducts: [Product]?, saveType: String?){
+        
+        guard let uid = userInfo.uid else{return}
+
         let data = [
             "product_id" : product.productID,
             "creator_uid" : product.uid,
-            "uid" : userInfo.uid,
+            "uid" : uid,
             "is_liking" : isLiked
             ] as [String : Any]
         Functions.functions().httpsCallable("updateLiking").call(data, completion: { result, error in
@@ -233,10 +251,10 @@ class ProductCell: UITableViewCell {
             }
             else{
                 if self.isLiked{
-                    userInfo.userLiked?.append(self.product.productID)
+                    userInfo.userLiked.append(self.product.productID)
                 }
                 else{
-                    userInfo.userLiked?.removeAll(where: {$0 == self.product.productID})
+                    userInfo.userLiked.removeAll(where: {$0 == self.product.productID})
                 }
                 UserDefaults.standard.set(userInfo.userLiked, forKey: "LikedPosts")
                 guard let type = saveType else{return}
@@ -320,11 +338,11 @@ class ProductCell: UITableViewCell {
     }
     
     override func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
-        self.likeBtn.isHidden = true
-        self.likesLbl.isHidden = true
-        (vc as? FullProductVC)?.tableView.isScrollEnabled = false
-        return true
+        guard let fullVC = (vc as? FullProductVC) else{return false}
+        return !fullVC.isRasterizing
     }
+    
+    
     
     
     func setUpCircularProgress(){
@@ -358,12 +376,47 @@ class ProductCell: UITableViewCell {
     
     @IBOutlet weak var openOptionMenuBtn: UIButton!
     
-    @IBAction func openOptionMenu(_ sender: UIButton) {
+    @objc func optionMenuAction1(_ sender: UIButton){
+        if sender.titleLabel?.text == "Edit"{
+            editProduct()
+        }
+        else if sender.titleLabel?.text == "Report"{
+            reportProduct()
+        }
+    }
+    
+    func editProduct(){
         
+        guard product != nil else{return}
+        (vc as? UserVC)?.productToOpen = product
+        (vc as? FeedVC)?.productToOpen = product
+        openOptionMenu(nil)
+        vc?.performSegue(withIdentifier: "toEdit", sender: nil)
+    }
+    
+    func reportProduct(){
+        openOptionMenu(nil)
+        (vc as? FriendVC)?.reportType = .post
+        vc?.performSegue(withIdentifier: "toReport", sender: nil)
+    }
+    
+    @IBAction @objc func openOptionMenu(_ sender: UIButton?) {
         
         if !productPicture.subviews.contains(optionMenu){
             productPicture.addSubview(optionMenu)
+            let tableView = (vc as? FeedVC)?.tableView ?? (vc as? UserVC)?.tableView ?? (vc as? FriendVC)?.tableView
+            if let indexPath = tableView?.indexPath(for: self){
+                tableView?.scrollToRow(at: indexPath, at: .top, animated: true)
+            }
+            tableView?.isScrollEnabled = false
+            tableView?.allowsSelection = false
             optionMenu.isHidden = false
+            if product?.uid == userInfo.uid{
+                optionMenuActionBtn1.setTitle("Edit", for: .normal)
+            }
+            else{
+                optionMenuActionBtn1.setTitle("Report", for: .normal)
+            }
             optionMenu.alpha = 0.0
             UIView.animate(withDuration: 0.1, animations: {
                 self.optionMenu.alpha = 1.0
@@ -372,22 +425,21 @@ class ProductCell: UITableViewCell {
             })
         }
         else{
+            let tableView = (vc as? FeedVC)?.tableView ?? (vc as? UserVC)?.tableView ?? (vc as? FriendVC)?.tableView
+            tableView?.isScrollEnabled = true
+            tableView?.allowsSelection = true
             optionMenu.removeFromSuperview()
         }
     }
+    
+    
     override func layoutSubviews() {
         super.layoutSubviews()
 
-        
-        
         self.userImage.layer.cornerRadius = self.userImage.frame.height / 2
         self.userImage.clipsToBounds = true
         self.userImage.layer.borderColor = UIColor(named: "ProfileMask")?.cgColor
         self.userImage.layer.borderWidth = self.userImage.frame.height / 17.75
-
-        //self.circularProgress.center.y = self.productPicture.center.y
-        //self.circularProgress.center.x = self.productPicture.center.x
-
         
     }
     
@@ -420,8 +472,8 @@ class ProductCell: UITableViewCell {
         optionMenuActionBtn1.layer.cornerRadius = optionMenuActionBtn1.frame.height / 2
         optionMenuActionBtn1.clipsToBounds = true
         optionMenuActionBtn1.center = optionMenuView1.center
+        optionMenuActionBtn1.addTarget(self, action: #selector(optionMenuAction1(_:)), for: .touchUpInside)
         optionMenuView1.addSubview(optionMenuActionBtn1)
-        
         
         let optionMenuView2 = UIView.init(frame: CGRect(x: 0, y:0, width: stackView.frame.width / 2, height: stackView.frame.height))
         optionMenuCancelBtn = UIButton.init(frame: CGRect(x: 0, y:0, width: buttonSize, height: buttonSize))
@@ -431,13 +483,17 @@ class ProductCell: UITableViewCell {
         optionMenuCancelBtn.layer.cornerRadius = optionMenuCancelBtn.frame.height / 2
         optionMenuCancelBtn.clipsToBounds = true
         optionMenuCancelBtn.center = optionMenuView2.center
+        optionMenuCancelBtn.addTarget(self, action: #selector(openOptionMenu(_:)), for: .touchUpInside)
         optionMenuView2.addSubview(optionMenuCancelBtn)
         
+        let gesture = UITapGestureRecognizer.init(target: self, action: #selector(openOptionMenu(_:)))
+        view.addGestureRecognizer(gesture)
         stackView.addArrangedSubview(optionMenuView1)
         stackView.addArrangedSubview(optionMenuView2)
-        
-
         view.addSubview(stackView)
+        
+    
+        
         
         return view
     }()
@@ -445,6 +501,7 @@ class ProductCell: UITableViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         productPicture?.image = nil
+        optionMenu.removeFromSuperview()
         //Stop or reset anything else that is needed here
     }
     
@@ -476,6 +533,9 @@ class ProductCell: UITableViewCell {
         
         switch gesture.state {
         case .began, .changed:
+            self.likeBtn.isHidden = true
+            self.likesLbl.isHidden = true
+            (vc as? FullProductVC)?.tableView.isScrollEnabled = false
             let translation = gesture.translation(in: self.contentView)
             gesture.view?.center = CGPoint(x: gesture.view!.center.x + translation.x, y: gesture.view!.center.y + translation.y)
             gesture.setTranslation(.zero, in: self.contentView)

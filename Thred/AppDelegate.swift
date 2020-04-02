@@ -9,63 +9,32 @@
 import UIKit
 import Firebase
 import Stripe
+import BRYXBanner
+import FirebaseFirestore
+import SwiftKeychainWrapper
+import FirebaseMessaging
 
+var isMerchant = false
+var hasCard = false
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate, MessagingDelegate {
     var window: UIWindow?
 
-    func loadUserInfo(){
-        UserDefaults.standard.set("aR6FMc9OR2VmBUrHCk8l3KQIDPj1", forKey: "UID") //Arta
-        
-        UserDefaults.standard.removeObject(forKey: "NOTIF_ID")
-        //UserDefaults.standard.set("tl1oOs1NXdeHsium7ZygweBc7YO2", forKey: "UID") //Arvin
-        //UserDefaults.standard.set("te7lsnwiPUMyj85O4Q5Tkvuu3VH3", forKey: "UID") //Dad
-        let uid = UserDefaults.standard.string(forKey: "UID")!
-        userInfo.uid = uid
-
-        let username = UserDefaults.standard.string(forKey: "USERNAME") ?? "null"
-        userInfo.username = username
-        let fullname = UserDefaults.standard.string(forKey: "FULLNAME") ?? "null"
-        userInfo.fullName = fullname
-
-        if let bio = UserDefaults.standard.string(forKey: "BIO"){
-            userInfo.bio = bio
-        }
-        let dpID = UserDefaults.standard.string(forKey: "DP_ID") ?? "default"
-        userInfo.dpID = dpID
-        if let profilePic = cache.imageFromDiskCache(forKey: dpID){
-            userInfo.dp = profilePic
-        }
-
-        if let notifID = UserDefaults.standard.string(forKey: "NOTIF_ID"){
-            userInfo.notifID = notifID
-        }
-        if let userLiked = UserDefaults.standard.stringArray(forKey: "LikedPosts"){
-            userInfo.userLiked = userLiked
-        }
-        if let userFollowing = UserDefaults.standard.stringArray(forKey: "FOLLOWING"){
-            userInfo.userFollowing = userFollowing
-        }
-        if let likesToUpdate = UserDefaults.standard.object(forKey: "likeQueue") as? [String : Bool]{
-            likeQueue = likesToUpdate
-        }
-        if let uploadPosts = UserDefaults.standard.stringArray(forKey: "UploadingPosts"){
-            uploadingPosts = uploadPosts
-        }
-    }
-
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         FirebaseApp.configure()
-        loadUserInfo()
-        //login()
-        if userInfo.uid != String(){
-            registerNotifs(application: application)
-        }
 
+        if Auth.auth().currentUser?.uid != nil{
+            registerNotifs(application: application)
+            let mainStoryboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
+            if let signedInVC: UINavigationController = mainStoryboard.instantiateViewController(withIdentifier: "SignedInVC") as? UINavigationController{
+                signedInVC.loadUserInfo()
+                self.window?.rootViewController = signedInVC
+                self.window?.makeKeyAndVisible()
+            }
+        }
         return true
-        
     }
     
     func registerNotifs(application: UIApplication){
@@ -96,36 +65,79 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         
     }
     
-    func login(){
-        Auth.auth().signIn(withEmail: "djkazi19@gmail.com", password: "123456", completion: { result, error in
-            if error != nil{
-                print(error?.localizedDescription ?? "")
-            }
-        })
+
+    
+    
+    lazy var didTapBlock: () -> () = {
+        let rootViewController = self.window!.rootViewController as? MainTabBarViewController
+        rootViewController?.selectedIndex = 3
     }
     
-    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+    
+   
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         
+        
+        if let payload = notification.request.content.userInfo["aps"] as? [String : Any]{
+            if let alert = payload["alert"] as? [String:Any]{
+                if let message = alert["body"] as? String{
+                    if let rootViewController = self.window!.rootViewController as? MainTabBarViewController{
+                        if rootViewController.selectedIndex != 3{
+                            if let navVC = rootViewController.viewControllers?[3]{
+                                navVC.tabBarItem.badgeColor = UIColor(named: "LoadingColor")
+                                navVC.tabBarItem.badgeValue = " "
+                                let banner = Banner(title: nil, subtitle: message, image: UIImage(named: "thred.logo"), backgroundColor: UIColor(named: "LoadingColor")!)
+                                banner.dismissesOnTap = true
+                                banner.didTapBlock = didTapBlock
+                                banner.show(duration: 5.0)
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
+    
+    
+
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+      // If you are receiving a notification message while your app is in the background,
+      // this callback will not be fired till the user taps on the notification launching the application.
+      // TODO: Handle data of notification
+
+      // With swizzling disabled you must let Messaging know about the message, for Analytics
+      // Messaging.messaging().appDidReceiveMessage(userInfo)
+      // Print message ID.
+        if Auth.auth().currentUser != nil{
+            if let payload = userInfo["aps"] as? [String : String]{
+                print(payload)
+            }
+            let rootViewController = self.window!.rootViewController as? MainTabBarViewController
+            rootViewController?.selectedIndex = 3
+        }
+        
+        completionHandler(UIBackgroundFetchResult.newData)
+    }
+    
     
     
     func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String) {
+        
         InstanceID.instanceID().instanceID { (result, error) in
             if let error = error {
                 print("Error fetching remote instance ID: \(error)")
             } else if let result = result {
                 print("Remote instance ID token: \(result.token)")
-                let oldToken = UserDefaults.standard.string(forKey: "NOTIF_ID") ?? ""
-                
+                let oldToken = KeychainWrapper.standard.string(forKey: "NOTIF_ID") ?? ""
                 if oldToken != result.token || oldToken.isEmpty{
-                    
-                    let ref = Firestore.firestore().collection("Users").document(userInfo.uid)
+                    guard let uid = userInfo.uid else{return}
+                    let ref = Firestore.firestore().collection("Users").document(uid)
                     ref.updateData(["notification_tokens" : FieldValue.arrayUnion([result.token])], completion: { error in
                         if error != nil{
                             print(error?.localizedDescription ?? "")
                         }
                         else{
-                            UserDefaults.standard.set(result.token, forKey: "NOTIF_ID")
+                            KeychainWrapper.standard.set(result.token, forKey: "NOTIF_ID")
                             ref.updateData(["notification_tokens" : FieldValue.arrayRemove([oldToken])])
                         }
                     })
@@ -140,23 +152,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
         
-        /*
-        guard userInfo.uid.isEmpty else{return}
-        
-        breakNoLikes:
-        if let userLiked = userInfo.userLiked, !userLiked.isEmpty{
-            guard let likedData = json(from: userLiked) else{
-                break breakNoLikes
-            }
-
-            likedData
-            
-        }
-        
-        if let userFollowing = userInfo.userFollowing, !userFollowing.isEmpty{
-            
-        }
-        */
+      
     }
     
     
@@ -183,3 +179,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 
 }
 
+extension UIApplication {
+    class func topViewController(base: UIViewController? = UIApplication.shared.keyWindow?.rootViewController) -> UIViewController? {
+        if let nav = base as? UINavigationController {
+            return topViewController(base: nav.visibleViewController)
+        }
+        if let tab = base as? UITabBarController {
+            let moreNavigationController = tab.moreNavigationController
+
+            if let top = moreNavigationController.topViewController, top.view.window != nil {
+                return topViewController(base: top)
+            } else if let selected = tab.selectedViewController {
+                return topViewController(base: selected)
+            }
+        }
+        if let presented = base?.presentedViewController {
+            return topViewController(base: presented)
+        }
+        return base
+    }
+}

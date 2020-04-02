@@ -13,18 +13,22 @@ let defaultDP = UIImage.init(named: "default_DP.png")
 
 class UserInfo{
    
-    var uid: String = String()
+    var uid: String?
     var dp: UIImage?
-    var dpID: String = String()
-    var username: String = String()
-    var fullName: String = String()
-    var bio: String = String()
-    var notifID: String = String()
-    var userFollowing: [String]? = [String]()
-    var userLiked: [String]? = [String]()
-    var pendingLiked: [String : Bool]? = [String : Bool]()
+    var dpID: String?
+    var username: String?
+    var fullName: String?
+    var bio: String?
+    var notifID: String?
+    var userFollowing = [String]()
+    var userLiked: [String]
+    var followerCount: Int?
+    var postCount: Int?
+    var followingCount: Int?
+    var pendingLiked = [String : Bool]()
+    var usersBlocking = [String]()
     
-    init(uid: String, dp: UIImage?, dpID: String, username: String, fullName: String, bio: String, notifID: String, userFollowing: [String]?, userLiked: [String]?) {
+    init(uid: String?, dp: UIImage?, dpID: String?, username: String?, fullName: String?, bio: String?, notifID: String?, userFollowing: [String], userLiked: [String], followerCount: Int?, postCount: Int?, followingCount: Int?, usersBlocking: [String]) {
         
         self.uid = uid
         self.dp = dp
@@ -35,9 +39,13 @@ class UserInfo{
         self.notifID = notifID
         self.userFollowing = userFollowing
         self.userLiked = userLiked
+        self.followerCount = followerCount
+        self.postCount = postCount
+        self.followingCount = followingCount
+        self.usersBlocking = usersBlocking
     }
     
     convenience init() {
-        self.init(uid: "", dp: nil,  dpID: "", username: "", fullName: "", bio: "", notifID: "", userFollowing: [], userLiked: [])
+        self.init(uid: nil, dp: nil,  dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: nil, postCount: nil, followingCount: nil, usersBlocking: [])
     }
 }

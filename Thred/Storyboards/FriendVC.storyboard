@@ -22,13 +22,26 @@
                     </tableView>
                     <extendedEdge key="edgesForExtendedLayout" top="YES"/>
                     <navigationItem key="navigationItem" id="4ei-cH-l6A"/>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO"/>
                     <connections>
                         <segue destination="mZM-0x-K9d" kind="show" identifier="toFull" id="lA6-4U-3iu"/>
+                        <segue destination="zFD-Rz-raB" kind="show" identifier="toComments" id="KRh-BL-hWk"/>
+                        <segue destination="I0D-VI-6Hw" kind="show" identifier="toReport" id="xyE-Lh-ERc"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="CaN-0Y-gAQ" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="3566" y="2161"/>
+        </scene>
+        <!--ReportScreen-->
+        <scene sceneID="UUj-6W-OEK">
+            <objects>
+                <viewControllerPlaceholder storyboardName="ReportScreen" id="I0D-VI-6Hw" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="Z4L-N4-GLy"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="MaF-wy-FI1" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3566" y="2613"/>
         </scene>
         <!--FullProductVC-->
         <scene sceneID="0cK-1o-ypM">
@@ -38,7 +51,17 @@
                 </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="7sd-C9-u6c" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="4396" y="2161"/>
+            <point key="canvasLocation" x="3902" y="2613"/>
+        </scene>
+        <!--CommentsVC-->
+        <scene sceneID="WyA-Pc-OSJ">
+            <objects>
+                <viewControllerPlaceholder storyboardName="CommentsVC" id="zFD-Rz-raB" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="cPd-uE-40u"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="36H-0R-D0R" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3248" y="2613"/>
         </scene>
     </scenes>
 </document>

@@ -35,8 +35,9 @@ class SalesVC: UIViewController {
     
     func loadSalesCount(){
         
+        guard let uid = userInfo.uid else{return}
         
-        Firestore.firestore().collection("Users/\(userInfo.uid)/Stripe_Info").document("Seller_Stats").getDocument(completion: { snap, error in
+        Firestore.firestore().collection("Users/\(uid)/Stripe_Info").document("Seller_Stats").getDocument(completion: { snap, error in
             if error != nil{
                 print(error?.localizedDescription ?? "")
             }
