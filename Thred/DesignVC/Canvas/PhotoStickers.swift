@@ -14,6 +14,7 @@ extension DesignViewController{
     @objc func openCamera(_ sender: UIButton) {
         //self.animateOptionMenuCameraRollButton(didOpen: false)
         cameraView.isHidden = true
+        doneBtn.isEnabled = true
         cameraRollCollectionView.hidePhotosCollectionView {
             photosBtn.tintColor = UIColor(named: "LoadingColor")
             cameraView.isHidden = false
@@ -87,6 +88,7 @@ extension DesignViewController{
             configurePhotos(photosBtn)
         }
         
+        doneBtn.isHidden = false
         let aspectRatio = selectedImage.size.height / selectedImage.size.width
         
         let width = canvas.frame.width / 2

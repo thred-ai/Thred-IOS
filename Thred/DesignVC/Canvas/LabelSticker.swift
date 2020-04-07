@@ -30,6 +30,12 @@ extension DesignViewController{
                 textView.labelStyle = .hype
                 sender.setTitle("Hype", for: .normal)
             case .hype:
+                textView.labelStyle = .thriller
+                sender.setTitle("Thriller", for: .normal)
+            case .thriller:
+                textView.labelStyle = .subway
+                sender.setTitle("Subway", for: .normal)
+            case .subway:
                 textView.labelStyle = .large
                 sender.setTitle("Large", for: .normal)
             default:

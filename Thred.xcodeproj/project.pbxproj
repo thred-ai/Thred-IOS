@@ -36,9 +36,22 @@
 		AA44092023F3E750009F5774 /* PhotoStickers.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA44091F23F3E750009F5774 /* PhotoStickers.swift */; };
 		AA44092223F3E863009F5774 /* LoadTemplates.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA44092123F3E863009F5774 /* LoadTemplates.swift */; };
 		AA44092423F66DD1009F5774 /* HOPE-HYPE.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA44092323F66DD0009F5774 /* HOPE-HYPE.ttf */; };
+		AA453A742435AA3E00BA2B12 /* SizeCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA453A732435AA3E00BA2B12 /* SizeCell.swift */; };
+		AA453A772435C8CB00BA2B12 /* EmptyProductsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA453A752435C8CB00BA2B12 /* EmptyProductsView.swift */; };
+		AA453A782435C8CB00BA2B12 /* EmptyProductsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = AA453A762435C8CB00BA2B12 /* EmptyProductsView.xib */; };
+		AA453A7A2435F3D500BA2B12 /* EmptyNotifView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA453A792435F3D500BA2B12 /* EmptyNotifView.swift */; };
+		AA453A7C2435F3E900BA2B12 /* EmptyNotifView.xib in Resources */ = {isa = PBXBuildFile; fileRef = AA453A7B2435F3E900BA2B12 /* EmptyNotifView.xib */; };
+		AA453A7E24365ECA00BA2B12 /* EmptyProfileProductsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = AA453A7D24365ECA00BA2B12 /* EmptyProfileProductsView.xib */; };
+		AA453A8024365EDB00BA2B12 /* EmptyProfileProductsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA453A7F24365EDB00BA2B12 /* EmptyProfileProductsView.swift */; };
+		AA453A8224366D8800BA2B12 /* EmptyCartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA453A8124366D8800BA2B12 /* EmptyCartView.swift */; };
+		AA453A8424366D9600BA2B12 /* EmptyCartView.xib in Resources */ = {isa = PBXBuildFile; fileRef = AA453A8324366D9600BA2B12 /* EmptyCartView.xib */; };
+		AA453A862436752C00BA2B12 /* ShoppingCartVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA453A852436752C00BA2B12 /* ShoppingCartVC.swift */; };
 		AA4593182434638700C9D5DC /* PhoneAuthViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4593172434638700C9D5DC /* PhoneAuthViewController.swift */; };
 		AA45931A243463F900C9D5DC /* CodeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA459319243463F900C9D5DC /* CodeViewController.swift */; };
 		AA45931C243464BE00C9D5DC /* countries.json in Resources */ = {isa = PBXBuildFile; fileRef = AA45931B243464BE00C9D5DC /* countries.json */; };
+		AA4858B82439354F0043BE6F /* AguafinaScript-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA4858B7243935210043BE6F /* AguafinaScript-Regular.ttf */; };
+		AA4858BA243937820043BE6F /* HeyNovember-eZZ2l.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA4858B9243937740043BE6F /* HeyNovember-eZZ2l.ttf */; };
+		AA4858BC24393B370043BE6F /* Whoa2-1GP7j.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA4858BB24393B370043BE6F /* Whoa2-1GP7j.ttf */; };
 		AA4AF75823B4464500088F11 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4AF75723B4464500088F11 /* AppDelegate.swift */; };
 		AA4AF75C23B4464500088F11 /* DesignViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4AF75B23B4464500088F11 /* DesignViewController.swift */; };
 		AA4AF76423B4464800088F11 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA4AF76223B4464800088F11 /* LaunchScreen.storyboard */; };
@@ -49,6 +62,11 @@
 		AA4CE27A24076701009BAC92 /* ExploreProductCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4CE27824076701009BAC92 /* ExploreProductCell.swift */; };
 		AA4CE27B24076701009BAC92 /* ExploreProductCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = AA4CE27924076701009BAC92 /* ExploreProductCell.xib */; };
 		AA545B3523C43827005E7979 /* ViewController2.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA545B3423C43827005E7979 /* ViewController2.swift */; };
+		AA5FDBA5243776DA0008EE2E /* SettingsVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5FDBA4243776DA0008EE2E /* SettingsVC.swift */; };
+		AA5FDBA72437864E0008EE2E /* ReportSubCategoryVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5FDBA62437864E0008EE2E /* ReportSubCategoryVC.swift */; };
+		AA5FDBA924378C6A0008EE2E /* ReportDoneVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5FDBA824378C6A0008EE2E /* ReportDoneVC.swift */; };
+		AA5FDBAB2437D8EF0008EE2E /* EmailLinkVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5FDBAA2437D8EF0008EE2E /* EmailLinkVC.swift */; };
+		AA5FDBAD24386B0F0008EE2E /* black.png in Resources */ = {isa = PBXBuildFile; fileRef = AA5FDBAC24386B0E0008EE2E /* black.png */; };
 		AA8CD7FD23DE0F1300DCA929 /* FlappingButterflyRefreshControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8CD7FC23DE0F1300DCA929 /* FlappingButterflyRefreshControl.swift */; };
 		AA8E68EA2407C43900C651A1 /* ExplorePageFlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8E68E92407C43900C651A1 /* ExplorePageFlowLayout.swift */; };
 		AA8E68ED240B2B5C00C651A1 /* CarouselCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8E68EB240B2B5C00C651A1 /* CarouselCollectionViewCell.swift */; };
@@ -130,7 +148,6 @@
 		AAD3F3C72418ABE300F8FF8F /* blue3.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3AE2418ABE200F8FF8F /* blue3.png */; };
 		AAD3F3C82418ABE300F8FF8F /* blue2.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3AF2418ABE200F8FF8F /* blue2.png */; };
 		AAD3F3C92418ABE300F8FF8F /* green1.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3B02418ABE200F8FF8F /* green1.png */; };
-		AAD3F3CA2418ABE300F8FF8F /* black.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3B12418ABE200F8FF8F /* black.png */; };
 		AAD3F3CB2418ABE300F8FF8F /* yellow2.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3B22418ABE200F8FF8F /* yellow2.png */; };
 		AAD3F3CC2418ABE300F8FF8F /* green3.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3B32418ABE200F8FF8F /* green3.png */; };
 		AAD3F3CD2418ABE300F8FF8F /* blue1.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3B42418ABE200F8FF8F /* blue1.png */; };
@@ -225,9 +242,22 @@
 		AA44091F23F3E750009F5774 /* PhotoStickers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoStickers.swift; sourceTree = "<group>"; };
 		AA44092123F3E863009F5774 /* LoadTemplates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadTemplates.swift; sourceTree = "<group>"; };
 		AA44092323F66DD0009F5774 /* HOPE-HYPE.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "HOPE-HYPE.ttf"; sourceTree = "<group>"; };
+		AA453A732435AA3E00BA2B12 /* SizeCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SizeCell.swift; sourceTree = "<group>"; };
+		AA453A752435C8CB00BA2B12 /* EmptyProductsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyProductsView.swift; sourceTree = "<group>"; };
+		AA453A762435C8CB00BA2B12 /* EmptyProductsView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = EmptyProductsView.xib; sourceTree = "<group>"; };
+		AA453A792435F3D500BA2B12 /* EmptyNotifView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyNotifView.swift; sourceTree = "<group>"; };
+		AA453A7B2435F3E900BA2B12 /* EmptyNotifView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = EmptyNotifView.xib; sourceTree = "<group>"; };
+		AA453A7D24365ECA00BA2B12 /* EmptyProfileProductsView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = EmptyProfileProductsView.xib; sourceTree = "<group>"; };
+		AA453A7F24365EDB00BA2B12 /* EmptyProfileProductsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyProfileProductsView.swift; sourceTree = "<group>"; };
+		AA453A8124366D8800BA2B12 /* EmptyCartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyCartView.swift; sourceTree = "<group>"; };
+		AA453A8324366D9600BA2B12 /* EmptyCartView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = EmptyCartView.xib; sourceTree = "<group>"; };
+		AA453A852436752C00BA2B12 /* ShoppingCartVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShoppingCartVC.swift; sourceTree = "<group>"; };
 		AA4593172434638700C9D5DC /* PhoneAuthViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhoneAuthViewController.swift; sourceTree = "<group>"; };
 		AA459319243463F900C9D5DC /* CodeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CodeViewController.swift; sourceTree = "<group>"; };
 		AA45931B243464BE00C9D5DC /* countries.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = countries.json; sourceTree = "<group>"; };
+		AA4858B7243935210043BE6F /* AguafinaScript-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "AguafinaScript-Regular.ttf"; sourceTree = "<group>"; };
+		AA4858B9243937740043BE6F /* HeyNovember-eZZ2l.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "HeyNovember-eZZ2l.ttf"; sourceTree = "<group>"; };
+		AA4858BB24393B370043BE6F /* Whoa2-1GP7j.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Whoa2-1GP7j.ttf"; sourceTree = "<group>"; };
 		AA4AF75423B4464500088F11 /* Thred.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Thred.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA4AF75723B4464500088F11 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		AA4AF75B23B4464500088F11 /* DesignViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignViewController.swift; sourceTree = "<group>"; };
@@ -244,6 +274,11 @@
 		AA4CE27824076701009BAC92 /* ExploreProductCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreProductCell.swift; sourceTree = "<group>"; };
 		AA4CE27924076701009BAC92 /* ExploreProductCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ExploreProductCell.xib; sourceTree = "<group>"; };
 		AA545B3423C43827005E7979 /* ViewController2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController2.swift; sourceTree = "<group>"; };
+		AA5FDBA4243776DA0008EE2E /* SettingsVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsVC.swift; sourceTree = "<group>"; };
+		AA5FDBA62437864E0008EE2E /* ReportSubCategoryVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportSubCategoryVC.swift; sourceTree = "<group>"; };
+		AA5FDBA824378C6A0008EE2E /* ReportDoneVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportDoneVC.swift; sourceTree = "<group>"; };
+		AA5FDBAA2437D8EF0008EE2E /* EmailLinkVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailLinkVC.swift; sourceTree = "<group>"; };
+		AA5FDBAC24386B0E0008EE2E /* black.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = black.png; sourceTree = "<group>"; };
 		AA8CD7FC23DE0F1300DCA929 /* FlappingButterflyRefreshControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlappingButterflyRefreshControl.swift; sourceTree = "<group>"; };
 		AA8E68E92407C43900C651A1 /* ExplorePageFlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplorePageFlowLayout.swift; sourceTree = "<group>"; };
 		AA8E68EB240B2B5C00C651A1 /* CarouselCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarouselCollectionViewCell.swift; sourceTree = "<group>"; };
@@ -323,7 +358,6 @@
 		AAD3F3AE2418ABE200F8FF8F /* blue3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = blue3.png; sourceTree = "<group>"; };
 		AAD3F3AF2418ABE200F8FF8F /* blue2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = blue2.png; sourceTree = "<group>"; };
 		AAD3F3B02418ABE200F8FF8F /* green1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = green1.png; sourceTree = "<group>"; };
-		AAD3F3B12418ABE200F8FF8F /* black.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = black.png; sourceTree = "<group>"; };
 		AAD3F3B22418ABE200F8FF8F /* yellow2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = yellow2.png; sourceTree = "<group>"; };
 		AAD3F3B32418ABE200F8FF8F /* green3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = green3.png; sourceTree = "<group>"; };
 		AAD3F3B42418ABE200F8FF8F /* blue1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = blue1.png; sourceTree = "<group>"; };
@@ -414,7 +448,10 @@
 			children = (
 				AAABBFFD23C9431400E48987 /* Nexa W01 Heavy.ttf */,
 				AA02AA2D242818BA0003CFCE /* NexaDemo-Light.ttf */,
+				AA4858BB24393B370043BE6F /* Whoa2-1GP7j.ttf */,
 				AA02AA31242AE7D30003CFCE /* Nexa W01 Regular.ttf */,
+				AA4858B7243935210043BE6F /* AguafinaScript-Regular.ttf */,
+				AA4858B9243937740043BE6F /* HeyNovember-eZZ2l.ttf */,
 				AA44092323F66DD0009F5774 /* HOPE-HYPE.ttf */,
 				AA3151D023EC0800003BF268 /* akaDora.ttf */,
 			);
@@ -484,8 +521,8 @@
 				AAABC03623C9431E00E48987 /* BioCell.swift */,
 				AAABC0BB23C9435C00E48987 /* UserInfo.swift */,
 				AAABC0BA23C9435B00E48987 /* InternetConnection.swift */,
-				AAABC04123C9432400E48987 /* Cache Items */,
 				AAABC05423C9432700E48987 /* Chat & Text Cells */,
+				AAABC04123C9432400E48987 /* Cache Items */,
 				AAABC02E23C9431D00E48987 /* CollectionViewLayout.swift */,
 				AAABC03023C9431D00E48987 /* PhotoLibraryCollectionView.swift */,
 				AAABC03123C9431D00E48987 /* PhotosCell.swift */,
@@ -511,13 +548,18 @@
 				AA02AA35242E9DC50003CFCE /* sale.caf */,
 				AAA4B022242692B4007BC407 /* Storyboards */,
 				AA2067C524326A0A00459478 /* ReportVC.swift */,
+				AA5FDBA62437864E0008EE2E /* ReportSubCategoryVC.swift */,
+				AA5FDBA824378C6A0008EE2E /* ReportDoneVC.swift */,
 				AA19283924344F8600C16F28 /* Assets.xcassets */,
 				AA45931B243464BE00C9D5DC /* countries.json */,
+				AA453A852436752C00BA2B12 /* ShoppingCartVC.swift */,
+				AA5FDBA4243776DA0008EE2E /* SettingsVC.swift */,
 				AA192837243449D000C16F28 /* FirstViewController.swift */,
 				AA19283B24345AA100C16F28 /* SignUpViewController.swift */,
 				AA4593172434638700C9D5DC /* PhoneAuthViewController.swift */,
 				AA459319243463F900C9D5DC /* CodeViewController.swift */,
 				AA242AFD24353C8D00C4DD24 /* EmailVC.swift */,
+				AA5FDBAA2437D8EF0008EE2E /* EmailLinkVC.swift */,
 				AA242AFF243542AC00C4DD24 /* UsernameSetupVC.swift */,
 				AAA4B0462426AE89007BC407 /* CommentsVC.swift */,
 				AA02AA33242D3B530003CFCE /* UITextField+Extension.swift */,
@@ -525,6 +567,7 @@
 				AAD3F41E241DEDB900F8FF8F /* NotificationCell.swift */,
 				AAD3F41F241DEDB900F8FF8F /* NotificationCell.xib */,
 				AA0E2AD4240CCBCA004050B0 /* FullProductVC.swift */,
+				AA453A732435AA3E00BA2B12 /* SizeCell.swift */,
 				AAABC16623D12A8D00E48987 /* ExploreViewController.swift */,
 				AAD3F412241AE1C200F8FF8F /* ColorSectionVC.swift */,
 				AAD3F416241AE52D00F8FF8F /* ColorSectionFlowLayout.swift */,
@@ -777,6 +820,14 @@
 			isa = PBXGroup;
 			children = (
 				AAABC06323C9432700E48987 /* ProductCell.xib */,
+				AA453A752435C8CB00BA2B12 /* EmptyProductsView.swift */,
+				AA453A762435C8CB00BA2B12 /* EmptyProductsView.xib */,
+				AA453A7D24365ECA00BA2B12 /* EmptyProfileProductsView.xib */,
+				AA453A7F24365EDB00BA2B12 /* EmptyProfileProductsView.swift */,
+				AA453A792435F3D500BA2B12 /* EmptyNotifView.swift */,
+				AA453A7B2435F3E900BA2B12 /* EmptyNotifView.xib */,
+				AA453A8324366D9600BA2B12 /* EmptyCartView.xib */,
+				AA453A8124366D8800BA2B12 /* EmptyCartView.swift */,
 			);
 			path = "Picture Cells";
 			sourceTree = "<group>";
@@ -791,13 +842,13 @@
 				AAD3F3AE2418ABE200F8FF8F /* blue3.png */,
 				AAD3F3AF2418ABE200F8FF8F /* blue2.png */,
 				AAD3F3B02418ABE200F8FF8F /* green1.png */,
-				AAD3F3B12418ABE200F8FF8F /* black.png */,
 				AAD3F3B22418ABE200F8FF8F /* yellow2.png */,
 				AAD3F3B32418ABE200F8FF8F /* green3.png */,
 				AAD3F3B42418ABE200F8FF8F /* blue1.png */,
 				AAD3F3B52418ABE200F8FF8F /* green2.png */,
 				AAD3F3B62418ABE200F8FF8F /* yellow1.png */,
 				AAD3F3B72418ABE200F8FF8F /* orange.png */,
+				AA5FDBAC24386B0E0008EE2E /* black.png */,
 				AAD3F3B82418ABE200F8FF8F /* gray3.png */,
 				AAD3F3B92418ABE200F8FF8F /* cyan.png */,
 				AAD3F3BA2418ABE200F8FF8F /* gray2.png */,
@@ -965,10 +1016,12 @@
 				AAD3F421241DEDB900F8FF8F /* NotificationCell.xib in Resources */,
 				AAA4B029242695CF007BC407 /* FeedVC.storyboard in Resources */,
 				AAD3F3D82418ABE300F8FF8F /* gray4.png in Resources */,
+				AA453A8424366D9600BA2B12 /* EmptyCartView.xib in Resources */,
 				AAA4B02B24269635007BC407 /* ExploreVC.storyboard in Resources */,
 				AAD3F3CE2418ABE300F8FF8F /* green2.png in Resources */,
 				AA4AF76423B4464800088F11 /* LaunchScreen.storyboard in Resources */,
 				AAA4B03F24269A3B007BC407 /* ShoppingCartVC.storyboard in Resources */,
+				AA4858BC24393B370043BE6F /* Whoa2-1GP7j.ttf in Resources */,
 				AAD3F3C92418ABE300F8FF8F /* green1.png in Resources */,
 				AAD3F3D62418ABE300F8FF8F /* gray5.png in Resources */,
 				AAD3F4092418B63700F8FF8F /* default_DP.png in Resources */,
@@ -988,8 +1041,8 @@
 				AAD3F3CD2418ABE300F8FF8F /* blue1.png in Resources */,
 				AAABC15F23C947AF00E48987 /* Main.storyboard in Resources */,
 				AAD3F3C42418ABE300F8FF8F /* red3.png in Resources */,
-				AAD3F3CA2418ABE300F8FF8F /* black.png in Resources */,
 				AAD3F3DA2418ABE300F8FF8F /* purple.png in Resources */,
+				AA453A7C2435F3E900BA2B12 /* EmptyNotifView.xib in Resources */,
 				AAD3F4032418B63700F8FF8F /* home@3x.png in Resources */,
 				AA2067C2243185D300459478 /* SearchProductTableViewCell.xib in Resources */,
 				AA02AA2E242818CA0003CFCE /* NexaDemo-Light.ttf in Resources */,
@@ -997,17 +1050,20 @@
 				AAD3F3D92418ABE300F8FF8F /* navy2.png in Resources */,
 				AAD3F40B2418B63700F8FF8F /* noFollowers.png in Resources */,
 				AAD3F40F2418B63700F8FF8F /* mask.png in Resources */,
+				AA4858BA243937820043BE6F /* HeyNovember-eZZ2l.ttf in Resources */,
 				AA44092423F66DD1009F5774 /* HOPE-HYPE.ttf in Resources */,
 				AAA4B0332426972C007BC407 /* FullProductVC.storyboard in Resources */,
 				AAD3F3C52418ABE300F8FF8F /* red2.png in Resources */,
 				AA4CE2772406F69B009BAC92 /* ExploreColorCell.xib in Resources */,
 				AAD3F3C32418ABE300F8FF8F /* red1.png in Resources */,
+				AA453A782435C8CB00BA2B12 /* EmptyProductsView.xib in Resources */,
 				AA02AA36242E9DC50003CFCE /* sale.caf in Resources */,
 				AAD3F4012418B63700F8FF8F /* home@2x.png in Resources */,
 				AA02AA32242AE7D30003CFCE /* Nexa W01 Regular.ttf in Resources */,
 				AAA4B03724269989007BC407 /* EditBioVC.storyboard in Resources */,
 				AAD3F40E2418B63700F8FF8F /* home@1x.png in Resources */,
 				AAABC07023C9432700E48987 /* SearchUserTableViewCell.xib in Resources */,
+				AA4858B82439354F0043BE6F /* AguafinaScript-Regular.ttf in Resources */,
 				AAD3F3D52418ABE300F8FF8F /* navy3.png in Resources */,
 				AA19283A24344F8600C16F28 /* Assets.xcassets in Resources */,
 				AAD3F3CC2418ABE300F8FF8F /* green3.png in Resources */,
@@ -1020,6 +1076,7 @@
 				AAA4B031242696DB007BC407 /* ColorSectionVC.storyboard in Resources */,
 				AAABC0B423C9432700E48987 /* ProductCell.xib in Resources */,
 				AA4CE27B24076701009BAC92 /* ExploreProductCell.xib in Resources */,
+				AA5FDBAD24386B0F0008EE2E /* black.png in Resources */,
 				AAA4B04124269A51007BC407 /* SalesVC.storyboard in Resources */,
 				AAD3F3CB2418ABE300F8FF8F /* yellow2.png in Resources */,
 				AAD3F4002418B63700F8FF8F /* profile@3x.png in Resources */,
@@ -1030,6 +1087,7 @@
 				AA45931C243464BE00C9D5DC /* countries.json in Resources */,
 				AAA4B02F24269694007BC407 /* UserVC.storyboard in Resources */,
 				AAABC09623C9432700E48987 /* PhotosCell.xib in Resources */,
+				AA453A7E24365ECA00BA2B12 /* EmptyProfileProductsView.xib in Resources */,
 				AAA4B03B242699F4007BC407 /* EditFullNameVC.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1207,6 +1265,7 @@
 				AAABC09923C9432700E48987 /* SkeletonView.swift in Sources */,
 				AAABC07823C9432700E48987 /* UIImageExtensions.swift in Sources */,
 				AAABC08F23C9432700E48987 /* DateExtensions.swift in Sources */,
+				AA5FDBA5243776DA0008EE2E /* SettingsVC.swift in Sources */,
 				AAABC07423C9432700E48987 /* EditFullnameVC.swift in Sources */,
 				AA192838243449D000C16F28 /* FirstViewController.swift in Sources */,
 				AA44090A23EDFB75009F5774 /* TemplateCarousel.swift in Sources */,
@@ -1222,8 +1281,11 @@
 				AADAAD352414DFC3003AD618 /* ColorCollectionLayout.swift in Sources */,
 				AAABC07123C9432700E48987 /* FeedSearchTable.swift in Sources */,
 				AA2067C624326A0A00459478 /* ReportVC.swift in Sources */,
+				AA5FDBA72437864E0008EE2E /* ReportSubCategoryVC.swift in Sources */,
 				AAABC09E23C9432700E48987 /* FullNameCell.swift in Sources */,
 				AAABC0A623C9432700E48987 /* CheckUserInfoForChat.swift in Sources */,
+				AA453A862436752C00BA2B12 /* ShoppingCartVC.swift in Sources */,
+				AA5FDBA924378C6A0008EE2E /* ReportDoneVC.swift in Sources */,
 				AA2067C1243185D300459478 /* SearchProductTableViewCell.swift in Sources */,
 				AAD3F413241AE1C200F8FF8F /* ColorSectionVC.swift in Sources */,
 				AAABC07723C9432700E48987 /* UIViewControllerExtensions.swift in Sources */,
@@ -1239,6 +1301,7 @@
 				AAABC09B23C9432700E48987 /* UIViewMasking.swift in Sources */,
 				AA44091223F3E084009F5774 /* DesignCanvas.swift in Sources */,
 				AA242B00243542AC00C4DD24 /* UsernameSetupVC.swift in Sources */,
+				AA453A7A2435F3D500BA2B12 /* EmptyNotifView.swift in Sources */,
 				AAABC06C23C9432700E48987 /* ProfileHeaderView.swift in Sources */,
 				AA242AFE24353C8D00C4DD24 /* EmailVC.swift in Sources */,
 				AAABC0B323C9432700E48987 /* ProductCell.swift in Sources */,
@@ -1246,6 +1309,7 @@
 				AAABC08D23C9432700E48987 /* ArrayExtensions.swift in Sources */,
 				AAA4B0472426AE89007BC407 /* CommentsVC.swift in Sources */,
 				AAABC09823C9432700E48987 /* BioCell.swift in Sources */,
+				AA453A8224366D8800BA2B12 /* EmptyCartView.swift in Sources */,
 				AAABC07223C9432700E48987 /* FeedSearchBar.swift in Sources */,
 				AA44091423F3E16D009F5774 /* LabelSticker.swift in Sources */,
 				AAABC06B23C9432700E48987 /* FriendVC.swift in Sources */,
@@ -1258,11 +1322,15 @@
 				AA545B3523C43827005E7979 /* ViewController2.swift in Sources */,
 				AA8E68EA2407C43900C651A1 /* ExplorePageFlowLayout.swift in Sources */,
 				AA44092023F3E750009F5774 /* PhotoStickers.swift in Sources */,
+				AA453A742435AA3E00BA2B12 /* SizeCell.swift in Sources */,
+				AA453A772435C8CB00BA2B12 /* EmptyProductsView.swift in Sources */,
 				AAABC09223C9432700E48987 /* PhotoLibraryCollectionView.swift in Sources */,
 				AAABC07923C9432700E48987 /* UIViewExtensions.swift in Sources */,
 				AAABC07A23C9432700E48987 /* UIButtonExtensions.swift in Sources */,
+				AA5FDBAB2437D8EF0008EE2E /* EmailLinkVC.swift in Sources */,
 				AAABC09423C9432700E48987 /* CameraView.swift in Sources */,
 				AA4AF75823B4464500088F11 /* AppDelegate.swift in Sources */,
+				AA453A8024365EDB00BA2B12 /* EmptyProfileProductsView.swift in Sources */,
 				AAD3F41D241D8C6600F8FF8F /* NotificationVC.swift in Sources */,
 				AAABC0A323C9432700E48987 /* GetPicturesFromDisk.swift in Sources */,
 				AAABC0A423C9432700E48987 /* SaveChatToDisk.swift in Sources */,
@@ -1446,6 +1514,7 @@
 				CODE_SIGN_ENTITLEMENTS = Thred/ThredDebug.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = WA263Q86P5;
 				INFOPLIST_FILE = Thred/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
@@ -1469,6 +1538,7 @@
 				CODE_SIGN_ENTITLEMENTS = Thred/ThredRelease.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = WA263Q86P5;
 				INFOPLIST_FILE = Thred/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;

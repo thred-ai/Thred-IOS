@@ -9,7 +9,7 @@
 import Foundation
 import UIKit
 
-let defaultDP = UIImage.init(named: "default_DP.png")
+let defaultDP = UIImage.init(named: "default_DP")
 
 class UserInfo{
    
@@ -22,13 +22,13 @@ class UserInfo{
     var notifID: String?
     var userFollowing = [String]()
     var userLiked: [String]
-    var followerCount: Int?
-    var postCount: Int?
-    var followingCount: Int?
+    var followerCount = Int()
+    var postCount = Int()
+    var followingCount = Int()
     var pendingLiked = [String : Bool]()
     var usersBlocking = [String]()
     
-    init(uid: String?, dp: UIImage?, dpID: String?, username: String?, fullName: String?, bio: String?, notifID: String?, userFollowing: [String], userLiked: [String], followerCount: Int?, postCount: Int?, followingCount: Int?, usersBlocking: [String]) {
+    init(uid: String?, dp: UIImage?, dpID: String?, username: String?, fullName: String?, bio: String?, notifID: String?, userFollowing: [String], userLiked: [String], followerCount: Int, postCount: Int, followingCount: Int, usersBlocking: [String]) {
         
         self.uid = uid
         self.dp = dp
@@ -46,6 +46,6 @@ class UserInfo{
     }
     
     convenience init() {
-        self.init(uid: nil, dp: nil,  dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: nil, postCount: nil, followingCount: nil, usersBlocking: [])
+        self.init(uid: nil, dp: nil,  dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [])
     }
 }

@@ -16,6 +16,12 @@ class UsernameCell: UITableViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
+        usernameField.backgroundColor = ColorCompatibility.secondarySystemBackground
+    }
+    
+    override func layoutSubviews() {
+        usernameField.layer.cornerRadius = usernameField.frame.height / 2
+        usernameField.clipsToBounds = true
     }
     
     override func setSelected(_ selected: Bool, animated: Bool) {

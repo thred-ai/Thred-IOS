@@ -22,24 +22,26 @@ extension DesignViewController{
             completed()
         }
         else{
-            Firestore.firestore().document("Templates/Tees").getDocument(completion: { snap, error in
-                if error != nil{
-                    print(error?.localizedDescription ?? "")
-                }
-                else{
-                    //for doc in snaps?.documents ?? []{}
-                    guard let doc = snap else{return}
-                    let ids = doc["IDs"] as? [[String : String]]
-                    for id in ids ?? []{
-                        guard let code = id["Code"] else{continue}
-                        guard let displayName = id["Display"] else{continue}
-                        
-                        self.tees.append(Template(templateID: code, templateDisplayName: displayName))
+            checkAuthStatus {
+                Firestore.firestore().document("Templates/Tees").getDocument(completion: { snap, error in
+                    if error != nil{
+                        print(error?.localizedDescription ?? "")
                     }
-                    UserDefaults.standard.set(ids, forKey: "TemplateTeeIDs")
-                    completed()
-                }
-            })
+                    else{
+                        //for doc in snaps?.documents ?? []{}
+                        guard let doc = snap else{return}
+                        let ids = doc["IDs"] as? [[String : String]]
+                        for id in ids ?? []{
+                            guard let code = id["Code"] else{continue}
+                            guard let displayName = id["Display"] else{continue}
+                            
+                            self.tees.append(Template(templateID: code, templateDisplayName: displayName))
+                        }
+                        UserDefaults.standard.set(ids, forKey: "TemplateTeeIDs")
+                        completed()
+                    }
+                })
+            }
         }
     }
 }

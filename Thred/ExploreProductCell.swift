@@ -20,6 +20,11 @@ class ExploreProductCell: UICollectionViewCell {
         
         
     }
+    
+    override func prepareForReuse() {
+        self.imageView.image = nil
+        self.backgroundColor = .clear
+    }
 
     func setUpCircularProgress(){
         

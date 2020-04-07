@@ -58,7 +58,7 @@ class UserVC: UITableViewController {
                     }
                     if username != nil{
                         
-                        self.header?.setUpInfo(username: username, fullname: fullName, bio: bio, notifID: notifID, dpUID: dpID, image: image, actionBtnTitle: "Edit Profile", followerCount: followerCount ?? 0, followingCount: followingCount ?? 0, postCount: postCount ?? 0)
+                        self.header?.setUpInfo(username: username, fullname: fullName, bio: bio, notifID: notifID, dpUID: dpID, image: image, actionBtnTitle: "Edit Profile", followerCount: followerCount, followingCount: followingCount, postCount: postCount)
                         self.setUserInfo(username: username, fullname: fullName, image: image, bio: bio, notifID: notifID, dpUID: dpID, userFollowing: userFollowing, followerCount: followerCount, postCount: postCount, followingCount: followingCount, usersBlocking: usersBlocking)
                         
                         for product in self.loadedProducts{
@@ -124,8 +124,9 @@ class UserVC: UITableViewController {
         header = tableView.loadUserHeaderFromNib()
         header?.actionBtn.addTarget(self, action: #selector(editProfile(_:)), for: .touchUpInside)
         header?.optionBtn.setImage(UIImage(named: "gear"), for: .normal)
+        header?.optionBtn.addTarget(self, action: #selector(toSettings(_:)), for: .touchUpInside)
         if let image = userInfo.dp{
-            header?.setUpInfo(username: userInfo.username, fullname: userInfo.fullName, bio: userInfo.bio, notifID: userInfo.notifID, dpUID: userInfo.dpID, image: image, actionBtnTitle: "Edit Profile", followerCount: userInfo.followerCount ?? 0, followingCount: userInfo.followingCount ?? 0, postCount: userInfo.postCount ?? 0)
+            header?.setUpInfo(username: userInfo.username, fullname: userInfo.fullName, bio: userInfo.bio, notifID: userInfo.notifID, dpUID: userInfo.dpID, image: image, actionBtnTitle: "Edit Profile", followerCount: userInfo.followerCount, followingCount: userInfo.followingCount, postCount: userInfo.postCount)
         }
         tableView.addSubview(refresher)
 
@@ -154,8 +155,10 @@ class UserVC: UITableViewController {
             //From Search
             
         }
-        
-        
+    }
+    
+    @objc func toSettings(_ sender: UIButton){
+        performSegue(withIdentifier: "toSettings", sender: nil)
     }
     
     
@@ -167,7 +170,7 @@ class UserVC: UITableViewController {
     @IBAction func unwindToUser(segue:  UIStoryboardSegue) {
         if let image = userInfo.dp{
             
-            self.header?.setUpInfo(username: userInfo.username, fullname: userInfo.fullName, bio: userInfo.bio, notifID: userInfo.notifID, dpUID: userInfo.dpID, image: image, actionBtnTitle: "Edit Profile", followerCount: userInfo.followerCount ?? 0, followingCount: userInfo.followingCount ?? 0, postCount: userInfo.postCount ?? 0)
+            self.header?.setUpInfo(username: userInfo.username, fullname: userInfo.fullName, bio: userInfo.bio, notifID: userInfo.notifID, dpUID: userInfo.dpID, image: image, actionBtnTitle: "Edit Profile", followerCount: userInfo.followerCount, followingCount: userInfo.followingCount, postCount: userInfo.postCount)
             DispatchQueue.main.async {
                 self.tableView.reloadData()
             }
@@ -280,19 +283,12 @@ class UserVC: UITableViewController {
             
             cache.storeImageData(toDisk: designData, forKey: doc.documentID)
             self.loadedProducts.insert(product, at: 0)
+            self.tableView.reloadData()
             DispatchQueue.main.async{
-                self.tableView.reloadData()
                 self.loadedProducts.saveAllObjects(type: "Products")
                 self.tableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .middle, animated: false)
             }
         }
-        
-        let batch = Firestore.firestore().batch()
-        
-        let userRef = Firestore.firestore().collection("Users").document(uid)
-        
-        
-        
         
         let data = [
             "Name" : post.name!,
@@ -305,18 +301,13 @@ class UserVC: UITableViewController {
             "Template_Color" : post.templateColor ?? "null",
             "Likes" : 0,
             "Comments" : 0,
-            "Has_Picture" : false
+            "Has_Picture" : false,
+            "Product_ID" : doc.documentID
         ] as [String : Any]
         
         
-        let productCountData =  [
-            "Posts_Count" : FieldValue.increment(1.0)
-        ]
         
-        batch.setData(data, forDocument: doc)
-        batch.updateData(productCountData, forDocument: userRef)
-        
-        batch.commit(completion: { error in
+        doc.setData(data, completion: { error in
             if error != nil{
                 print(error?.localizedDescription ?? "")
             }
@@ -329,11 +320,9 @@ class UserVC: UITableViewController {
                     else{
                         uploadingPosts.removeAll(where: {$0 == doc.documentID})
                         UserDefaults.standard.set(uploadingPosts, forKey: "UploadingPosts")
-                        if let index = self.loadedProducts.firstIndex(where: {$0.productID == doc.documentID}){
-                            self.tableView.performBatchUpdates({
-                                self.tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
-                            }, completion: nil)
-                        }
+                        self.tableView.performBatchUpdates({
+                            self.tableView.reloadRows(at: [IndexPath(row: 0, section: 0)], with: .none)
+                        }, completion: nil)
                     }
                 })
             }
@@ -518,9 +507,29 @@ class UserVC: UITableViewController {
     
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return self.loadedProducts.count
+        return loadedProducts.count
+    }
+
+    
+    lazy var headerView: UIView? = {
+        
+        return loadProfilePostHeaderFromNib()
+    }()
+    
+    override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        
+        if loadedProducts.isEmpty{
+            return headerView
+        }
+        return nil
     }
     
+    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        if loadedProducts.isEmpty{
+            return 150
+        }
+        return 0
+    }
     
     var cellHeights: [IndexPath: CGFloat] = [:]
     

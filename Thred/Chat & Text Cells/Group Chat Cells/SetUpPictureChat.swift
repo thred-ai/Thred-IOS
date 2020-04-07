@@ -92,7 +92,7 @@ extension UITableView{
         }
         if product.price != nil{
             var price = "$\(product.price ?? 0.00)"
-            if price.count >= 5{
+            if price.count == 5{
                 price = price + "0"
             }
             cell?.price.text = price
@@ -108,8 +108,6 @@ extension UITableView{
         }
         
         cell?.commentBtn.setTitle("View \(product.comments) comment\(plural)", for: .normal)
-      
-        
         
         checkTimes(user: product, timestampLbl: cell?.timestampLbl)
         switch productLocation{
@@ -134,8 +132,6 @@ extension UITableView{
         }
         return cell!
     }
-    
-    
     
     
     func syncPostLikes(loadedProducts: [Product], vc: UIViewController){

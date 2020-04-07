@@ -184,6 +184,8 @@ class CameraView: UIView, AVCapturePhotoCaptureDelegate{
         } else {
             //
             // Fallback on earlier versions
+            rotateBtn.setImage(UIImage.init(named: "camera.rotate.fill"), for: .normal)
+            flashBtn.setImage(UIImage.init(named: "bolt.slash.fill"), for: .normal)
         }
         
         return view
@@ -252,6 +254,8 @@ class CameraView: UIView, AVCapturePhotoCaptureDelegate{
 
         } else {
             // Fallback on earlier versions
+            saveToCameraRollBtn.setImage(UIImage.init(named: "square.and.arrow.down.fill"), for: .normal)
+            retakeBtn.setImage(UIImage.init(named: "xmark"), for: .normal)
         }
 
         return imageView
@@ -347,7 +351,7 @@ class CameraView: UIView, AVCapturePhotoCaptureDelegate{
                         if #available(iOS 13.0, *) {
                             sender.setImage(UIImage.init(systemName: "bolt.slash.fill"), for: .normal)
                         } else {
-                            // Fallback on earlier versions
+                            sender.setImage(UIImage.init(named: "bolt.slash.fill"), for: .normal)
                         }
                    }
                    else if self.flashMode == .off{
@@ -355,7 +359,7 @@ class CameraView: UIView, AVCapturePhotoCaptureDelegate{
                         if #available(iOS 13.0, *) {
                             sender.setImage(UIImage.init(systemName: "bolt.fill"), for: .normal)
                         } else {
-                            // Fallback on earlier versions
+                            sender.setImage(UIImage.init(named: "bolt.fill"), for: .normal)
                         }
                    }
                default:
@@ -367,7 +371,7 @@ class CameraView: UIView, AVCapturePhotoCaptureDelegate{
                     if #available(iOS 13.0, *) {
                         sender.setImage(UIImage.init(systemName: "bolt.slash.fill"), for: .normal)
                     } else {
-                        // Fallback on earlier versions
+                        sender.setImage(UIImage.init(named: "bolt.slash.fill"), for: .normal)
                     }
                }
                else if self.flashMode == .off{
@@ -375,7 +379,7 @@ class CameraView: UIView, AVCapturePhotoCaptureDelegate{
                     if #available(iOS 13.0, *) {
                         sender.setImage(UIImage.init(systemName: "bolt.fill"), for: .normal)
                     } else {
-                        // Fallback on earlier versions
+                        sender.setImage(UIImage.init(named: "bolt.fill"), for: .normal)
                     }
                }
            }

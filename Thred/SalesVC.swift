@@ -10,12 +10,16 @@ import UIKit
 import Firebase
 
 
+
 class SalesVC: UIViewController {
 
     @IBOutlet weak var payoutBtn: UIButton!
     
     
     @IBAction func payoutBalance(_ sender: UIButton) {
+    }
+    @IBAction func popToViewController(_ sender: UIBarButtonItem) {
+        navigationController?.popViewController(animated: true)
     }
     
     @IBOutlet weak var salesLbl: UILabel!
@@ -24,7 +28,7 @@ class SalesVC: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        hideCenterBtn()
         payoutBtn.layer.cornerRadius = payoutBtn.frame.height / 8
         payoutBtn.clipsToBounds = true
         

@@ -7,11 +7,30 @@
 //
 
 import UIKit
+import Firebase
 
 enum ReportLevel{
     case profile
     case post
     case comment
+}
+
+enum ReportType{
+    case ipv
+    case bullying
+    case me
+    case someone
+    case nudity
+    case hate
+    case violence
+    case suicide
+    case drugs
+    case age
+}
+
+enum ReportCategory{
+    case inappropriate
+    case impersonation
 }
 
 
@@ -22,10 +41,12 @@ class ReportVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     @IBOutlet weak var reportTitle: UILabel!
     @IBOutlet weak var thredImageView: UIImageView!
     @IBOutlet weak var thredImageViewBack: UIView!
-    
-    
+    var reportCategory: ReportCategory!
+    var reportType: ReportType!
     
     var reportLevel: ReportLevel!
+    var reportUID: String!
+    var reportPostID: String!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -114,15 +135,78 @@ class ReportVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         }
     }
     
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        
+        guard let uid = userInfo.uid else{return}
+        if indexPath.row == 0{
+            reportCategory = .inappropriate
+            self.performSegue(withIdentifier: "ToSecondReport", sender: nil)
+        }
+        else{
+            switch reportLevel{
+            case .profile:
+                if indexPath.row == 1{
+                    reportCategory = .impersonation
+                    self.performSegue(withIdentifier: "ToSecondReport", sender: nil)
+                }
+                else{
+                    uploadReport(uid: uid, reportUID: reportUID, reportType: .age, reportLevel: .profile, postID: nil){
+                        self.performSegue(withIdentifier: "ReportSuccessful", sender: nil)
+                    }
+                }
+            case .post:
+                if indexPath.row == 1{
+                    reportType = .ipv
+                    uploadReport(uid: uid, reportUID: reportUID, reportType: .ipv, reportLevel: .post, postID: reportPostID){
+                        self.performSegue(withIdentifier: "ReportSuccessful", sender: nil)
+                    }
+                }
+                else{
+                    fallthrough
+                }
+            default:
+                return
+            }
+        }
+    }
 
-    /*
+    
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destination.
         // Pass the selected object to the new view controller.
+        
+        if let sub = segue.destination as? ReportSubCategoryVC{
+            sub.reportCategory = reportCategory
+            sub.reportPostID = reportPostID
+            sub.reportUID = reportUID
+        }
     }
-    */
+}
 
+extension UIViewController{
+    
+    func uploadReport(uid: String, reportUID: String, reportType: ReportType, reportLevel: ReportLevel, postID: String?, completed: @escaping () -> ()){
+        var reportData = [
+            "Type" : "\(reportType)",
+            "Reporter_UID" : uid,
+            "Reportee_UID" : reportUID,
+            "Evaluated" : false,
+            "Timestamp" : Date()
+            ] as [String : Any]
+        if reportLevel == .post{
+            reportData["Post_ID"] = postID
+        }
+        
+        Firestore.firestore().collection("Reports").addDocument(data: reportData, completion: { error in
+            if let err = error{
+                print(err.localizedDescription)
+            }
+            else{
+                completed()
+            }
+        })
+    }
 }

@@ -17,13 +17,13 @@
         <!--SalesVC-->
         <scene sceneID="rOd-jU-2uh">
             <objects>
-                <viewController storyboardIdentifier="UIViewController-5Nb-1k-bMs" id="5Nb-1k-bMs" customClass="SalesVC" customModule="Thred" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="SalesVC" autoresizesArchivedViewToFullSize="NO" hidesBottomBarWhenPushed="YES" id="5Nb-1k-bMs" customClass="SalesVC" customModule="Thred" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="mIL-nv-7Vl">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="808"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" translatesAutoresizingMaskIntoConstraints="NO" id="n4x-J8-Hlr">
-                                <rect key="frame" x="0.0" y="44" width="414" height="818"/>
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="774"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="hZf-fZ-xIK">
                                         <rect key="frame" x="20" y="20" width="374" height="277.5"/>
@@ -138,7 +138,15 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="k9u-K5-InD"/>
                     </view>
-                    <navigationItem key="navigationItem" id="Sm9-Ov-uZY"/>
+                    <navigationItem key="navigationItem" id="Sm9-Ov-uZY">
+                        <barButtonItem key="leftBarButtonItem" image="chevron.left" id="6DD-Ms-0tV">
+                            <color key="tintColor" name="LoadingColor"/>
+                            <connections>
+                                <action selector="popToViewController:" destination="5Nb-1k-bMs" id="ht5-AZ-Lqu"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO"/>
                     <connections>
                         <outlet property="availableLbl" destination="Wc8-Jq-jQi" id="reB-Gj-7K7"/>
                         <outlet property="payoutBtn" destination="wFS-e0-3fJ" id="pah-AO-HWy"/>
@@ -152,8 +160,9 @@
         </scene>
     </scenes>
     <resources>
+        <image name="chevron.left" width="33.5" height="33.5"/>
         <namedColor name="LoadingColor">
-            <color red="0.089999999999999997" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

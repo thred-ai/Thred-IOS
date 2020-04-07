@@ -13,7 +13,7 @@ import BRYXBanner
 import FirebaseFirestore
 import SwiftKeychainWrapper
 import FirebaseMessaging
-
+//
 var isMerchant = false
 var hasCard = false
 
@@ -24,17 +24,94 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         FirebaseApp.configure()
-
-        if Auth.auth().currentUser?.uid != nil{
-            registerNotifs(application: application)
-            let mainStoryboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
-            if let signedInVC: UINavigationController = mainStoryboard.instantiateViewController(withIdentifier: "SignedInVC") as? UINavigationController{
-                signedInVC.loadUserInfo()
-                self.window?.rootViewController = signedInVC
-                self.window?.makeKeyAndVisible()
+        if !UserDefaults.standard.bool(forKey: "Already_Opened"){
+            UserDefaults.standard.set(true, forKey: "Already_Opened")
+            if Auth.auth().currentUser != nil{
+                do{
+                    try Auth.auth().signOut()
+                }catch{}
             }
         }
+        
+        if let uid = UserDefaults.standard.string(forKey: "UID"), UserDefaults.standard.string(forKey: "USERNAME") != nil{
+            print(uid)
+            userInfo.uid = uid
+            beginSignIn()
+        }
         return true
+    }
+    
+    func beginSignIn(){
+        self.registerNotifs(application: UIApplication.shared)
+        let mainStoryboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
+        if let signedInVC: UINavigationController = mainStoryboard.instantiateViewController(withIdentifier: "SignedInVC") as? UINavigationController{
+            signedInVC.loadUserInfo()
+            self.window?.rootViewController = signedInVC
+            self.window?.makeKeyAndVisible()
+        }
+    }
+    
+    func handlePasswordlessSignIn(_ URL: URL) -> Bool{
+        let url = URL.absoluteString
+        guard let email = UserDefaults.standard.string(forKey: "EMAIL") else{return false}
+
+        if Auth.auth().isSignIn(withEmailLink: url){
+            if let user = Auth.auth().currentUser{
+                let credential = EmailAuthProvider.credential(withEmail: email, link: url)
+                if user.email != nil{
+                    user.updateEmail(to: email, completion: {error in
+                        if let err = error{
+                            print(err.localizedDescription)
+                            if err.localizedDescription == "This operation is sensitive and requires recent authentication. Log in again before retrying this request."{
+                                self.window?.rootViewController?.logout(withMessage: err.localizedDescription)
+                            }
+                        }
+                        else{
+                            
+                        }
+                    })
+                }
+                else{
+                    user.link(with: credential, completion: { result, error in
+                        if let err = error{
+                            print(err.localizedDescription)
+                        }
+                    })
+                }
+            }
+            else{
+                Auth.auth().signIn(withEmail: email, link: url, completion: { result, error in
+                    if let err = error{
+                        print(err.localizedDescription)
+                    }
+                    else{
+                        guard let uid = result?.user.uid else{return}
+                        guard let phoneNumber = result?.user.phoneNumber else{return}
+                        guard let email = result?.user.email else{return}
+
+                        let mainStoryboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
+                        
+                        UserDefaults.standard.set(phoneNumber, forKey: "PHONE_NUM")
+                        UserDefaults.standard.set(email, forKey: "EMAIL")
+                        UserDefaults.standard.set(uid, forKey: "UID")
+
+                        if let signedInVC: UINavigationController = mainStoryboard.instantiateViewController(withIdentifier: "SignedInVC") as? UINavigationController{
+                            signedInVC.loadUser(userUID: uid, completed: { success in
+                                if success{
+                                    self.beginSignIn()
+                                }
+                            })
+                        }
+                    }
+                })
+            }
+        }
+        return false
+    }
+    
+    func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
+        
+        return userActivity.webpageURL.map(handlePasswordlessSignIn)!
     }
     
     func registerNotifs(application: UIApplication){
@@ -81,7 +158,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         if let payload = notification.request.content.userInfo["aps"] as? [String : Any]{
             if let alert = payload["alert"] as? [String:Any]{
                 if let message = alert["body"] as? String{
-                    if let rootViewController = self.window!.rootViewController as? MainTabBarViewController{
+                    if let rootViewController = self.window!.rootViewController?.children.first as? MainTabBarViewController{
                         if rootViewController.selectedIndex != 3{
                             if let navVC = rootViewController.viewControllers?[3]{
                                 navVC.tabBarItem.badgeColor = UIColor(named: "LoadingColor")
@@ -129,23 +206,41 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             } else if let result = result {
                 print("Remote instance ID token: \(result.token)")
                 let oldToken = KeychainWrapper.standard.string(forKey: "NOTIF_ID") ?? ""
-                if oldToken != result.token || oldToken.isEmpty{
-                    guard let uid = userInfo.uid else{return}
-                    let ref = Firestore.firestore().collection("Users").document(uid)
-                    ref.updateData(["notification_tokens" : FieldValue.arrayUnion([result.token])], completion: { error in
-                        if error != nil{
-                            print(error?.localizedDescription ?? "")
-                        }
-                        else{
-                            KeychainWrapper.standard.set(result.token, forKey: "NOTIF_ID")
-                            ref.updateData(["notification_tokens" : FieldValue.arrayRemove([oldToken])])
-                        }
+                let newToken = result.token
+                guard let uid = userInfo.uid else{return}
+                let ref = Firestore.firestore().collection("Users").document(uid)
+                
+                if oldToken.isEmpty{
+                    self.addCurrentToken(newToken: newToken, ref: ref, completed: {
+                        
+                    })
+                }
+                else{
+                    self.removeOldToken(oldToken: oldToken, ref: ref, completed: {
+                        self.addCurrentToken(newToken: newToken, ref: ref, completed: {
+                            
+                        })
                     })
                 }
             }
         }
     }
     
+    func removeOldToken(oldToken: String, ref: DocumentReference, completed: @escaping () -> ()){
+        ref.updateData(["notification_tokens" : FieldValue.arrayRemove([oldToken])], completion: { error in
+            if error != nil{
+                print(error?.localizedDescription ?? "")
+            }
+            else{
+                completed()
+            }
+        })
+    }
+    
+    func addCurrentToken(newToken: String, ref: DocumentReference, completed: @escaping () -> ()){
+        KeychainWrapper.standard.set(newToken, forKey: "NOTIF_ID")
+        ref.updateData(["notification_tokens" : FieldValue.arrayUnion([newToken])])
+    }
     
     
     func applicationDidEnterBackground(_ application: UIApplication) {
@@ -157,6 +252,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     
     
     
+    
+    
     func applicationWillEnterForeground(_ application: UIApplication) {
         // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
         
@@ -164,7 +261,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     
     func applicationDidBecomeActive(_ application: UIApplication) {
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
-        
+        application.applicationIconBadgeNumber = 0
+        UNUserNotificationCenter.current().removeAllDeliveredNotifications()
     }
     
     func applicationWillTerminate(_ application: UIApplication) {
@@ -199,3 +297,64 @@ extension UIApplication {
         return base
     }
 }
+
+
+extension UIViewController{
+    func checkAuthStatus(completed: @escaping () -> ()){
+        Auth.auth().currentUser?.getIDTokenForcingRefresh(true) { (idToken, error) in
+            if error != nil, error?.localizedDescription == "There is no user record corresponding to this identifier. The user may have been deleted."{
+                self.logout(withMessage: "Your account has been deactivated")
+            }
+            completed()
+        }
+    }
+    
+    func logout(withMessage: String?){
+        if let uid = userInfo.uid ?? UserDefaults.standard.string(forKey: "UID"){
+            cache.clearDisk(onCompletion: {
+                let ref = Firestore.firestore().collection("Users").document(uid)
+                let oldToken = KeychainWrapper.standard.string(forKey: "NOTIF_ID") ?? ""
+                let domain = Bundle.main.bundleIdentifier!
+                UserDefaults.standard.removePersistentDomain(forName: domain)
+                UserDefaults.standard.set(true, forKey: "Already_Opened")
+                self.deleteAllCachedProducts()
+                let mainStoryboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
+                if let navVC: UINavigationController = mainStoryboard.instantiateViewController(withIdentifier: "LoginVC") as? UINavigationController{
+                    if let loginVC = navVC.viewControllers.first as? FirstViewController{
+                        loginVC.textToSet = withMessage
+                    }
+                    window?.rootViewController = navVC
+                    window?.makeKeyAndVisible()
+                }
+                do{
+                    try Auth.auth().signOut()
+                }catch{}
+                
+                ref.updateData(["notification_tokens" : FieldValue.arrayRemove([oldToken])], completion: { error in
+                    if let err = error{
+                        print(err.localizedDescription)
+                        return
+                    }
+                    else{
+                    }
+                })
+            })
+        }
+    }
+    
+    func deleteAllCachedProducts(){
+        let types = ["FeedProducts", "Products"]
+        for type in types{
+            if let folderName = type.determineFolder(){
+                try? FileManager.default.removeItem(at: folderName.appendingPathComponent("Products"))
+            }
+        }
+    }
+    func dismissPopAllViewViewControllers() {
+        if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+            appDelegate.window?.rootViewController!.dismiss(animated: true, completion: nil)
+            (appDelegate.window?.rootViewController as? UINavigationController)!.popToRootViewController(animated: true)
+        }
+    }
+}
+

@@ -23,6 +23,8 @@ public enum LabelStyle {
     case fancy
     case fill
     case hype
+    case thriller
+    case subway
 }
 
 class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDelegate, UIGestureRecognizerDelegate, UITextFieldDelegate, SwiftyDrawViewDelegate, UICollectionViewDelegate, UICollectionViewDataSource {
@@ -251,6 +253,9 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     
     func configureCanvasLabel(){
         if let textView = canvas.subviews.first(where: {$0.isFirstResponder && $0.isKind(of: UITextView.self)}) as? CanvasTextView{
+            if !cameraRollCollectionView.isHidden{
+                configurePhotos(self.photosBtn)
+            }
             activeLbl = textView
             editingTransform = textView.transform
             editingCenter = textView.center
@@ -660,6 +665,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
 
         doneBtn = UIButton.init(frame: CGRect(x: 0, y: 0, width: view.frame.height, height: view.frame.height))
         doneBtn.setTitle("Done", for: .normal)
+        doneBtn.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
         doneBtn.setTitleColor(UIColor(named: "LoadingColor")?.withAlphaComponent(0.5), for: .disabled)
         doneBtn.setTitleColor(UIColor(named: "LoadingColor"), for: .normal)
         doneBtn.addTarget(self, action: #selector(minimizeDrawingArea(_:)), for: .touchUpInside)
@@ -726,44 +732,59 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     }
    
     func textFieldDidBeginEditing(_ textField: UITextField) {
-        if textField.text == minimumPrice{
+        
+        if textField == priceView && textField.text == minimumPrice{
             textField.text?.removeAll()
         }
     }
     
     var minimumPrice: String! = "20.00"
     
-    func textFieldDidEndEditing(_ textField: UITextField) {
-        guard let text = textField.text else{return}
-        guard let price = Float(text) else{
-            textField.text = minimumPrice
-            return}
-        guard let minPrice = Float(minimumPrice) else{return}
-        if price >= minPrice{
-            if let index = text.firstIndex(of: ".")?.utf16Offset(in: text){
-                switch index{
-                case text.count - 1:
-                    textField.text?.append(contentsOf: "00")
-                case text.count - 2:
-                    textField.text?.append(contentsOf: "0")
-                default:
-                    break
+    func textFieldDidEndEditing(_ textField: UITextField, reason: UITextField.DidEndEditingReason) {
+        
+        if textField == priceView{
+            guard var text = textField.text else{
+                return}
+            
+            if text.count > 5{
+                text.removeLast(text.count - 5)
+                textField.text = text
+            }
+            
+            guard let price = Float(text) else{
+                
+                textField.text = minimumPrice
+                return}
+            
+            print(price)
+            
+            guard let minPrice = Float(minimumPrice) else{return}
+            if price >= minPrice{
+                if let index = text.firstIndex(of: ".")?.utf16Offset(in: text){
+                    switch index{
+                    case text.count - 1:
+                        textField.text?.append(contentsOf: "00")
+                    case text.count - 2:
+                        textField.text?.append(contentsOf: "0")
+                    default:
+                        break
+                    }
+                }
+                else{
+                    if text.isEmpty{
+                        textField.text = minimumPrice
+                    }
+                    else{
+                        textField.text?.append(contentsOf: ".00")
+                    }
                 }
             }
             else{
-                if text.isEmpty{
-                    textField.text = minimumPrice
-                }
-                else{
-                    textField.text?.append(contentsOf: ".00")
-                }
+                textField.text = minimumPrice
             }
         }
-        else{
-            textField.text = minimumPrice
-            //throw minimum price error
-        }
     }
+
     
     lazy var drawTopToolBar: UIView = {
         let view = UIView.init(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: 45))
@@ -818,11 +839,15 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         descriptionView.inputAccessoryView = toolBar
         titleView.inputAccessoryView = toolBar
         priceView.delegate = self
+        titleView.delegate = self
+
         priceView.text = minimumPrice
         priceView.inputAccessoryView = toolBar
         displayView.addSubview(carousel)
         displayView.bringSubviewToFront(thredWatermark)
         setCarouselConstraints()
+        textFieldDidChange(titleView)
+        titleView.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
         setLeftNavigationItem(image: UIImage(nameOrSystemName: "xmark", systemPointSize: 18, iconSize: 9), style: .plain, target: self, action: #selector(cancelDesigning(_:)))
         setPlaceholder(textView: descriptionView, textColor: ColorCompatibility.tertiaryLabel)
         textViewDidChange(descriptionView)
@@ -838,7 +863,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
             priceView.isEnabled = false
             guard let price = product.price else{return}
             priceView.text = "\(price)"
-            textFieldDidEndEditing(priceView)
+            textFieldDidEndEditing(priceView, reason: .committed)
             descriptionView.text = product.caption
             titleView.text = product.name
             nextBtn.title = "Update"
@@ -846,8 +871,15 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         }
         else{
             deletePostBtn.isHidden = true
+            let spinner = MapSpinnerView.init(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
+            displayView.addSubview(spinner)
+            spinner.center.x = view.center.x
+            spinner.center.y = displayView.center.y
+            spinner.animate()
+            
             loadDesigns(){
                 DispatchQueue.main.async {
+                    spinner.removeFromSuperview()
                     self.colorCollectionView.reloadData()
                     self.colorCollectionView.selectItem(at: IndexPath(item: 0, section: 0), animated: false, scrollPosition: .centeredHorizontally)
                     self.carousel.setCarouselTemplates(templates: self.tees)
@@ -867,6 +899,16 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
                     self.nextBtn.isEnabled = false
                 }
             }
+            
+        }
+    }
+    
+    @objc func textFieldDidChange(_ textField: UITextField){
+        if textField.text?.isEmpty ?? false{
+            nextBtn.isEnabled = false
+        }
+        else{
+            nextBtn.isEnabled = true
         }
     }
     
@@ -1038,7 +1080,7 @@ class CanvasTextView: UITextView {
                 self.backgroundColor = .clear
                 self.textAlignment = .center
             case .fancy:
-                self.font = UIFont(name: "akaDora", size: currentFontSize ?? CGFloat(defaultFontSize))
+                self.font = UIFont(name: "AguafinaScript-Regular", size: currentFontSize ?? CGFloat(defaultFontSize))
                 self.textColor = color
                 self.backgroundColor = .clear
                 self.textAlignment = .center
@@ -1049,6 +1091,16 @@ class CanvasTextView: UITextView {
                 self.textAlignment = .center
             case .hype:
                 self.font = UIFont(name: "HOPE-HYPE", size: currentFontSize ?? CGFloat(defaultFontSize))
+                self.textColor = color
+                self.backgroundColor = .clear
+                self.textAlignment = .center
+            case .thriller:
+                self.font = UIFont(name: "Hey November", size: currentFontSize ?? CGFloat(defaultFontSize))
+                self.textColor = color
+                self.backgroundColor = .clear
+                self.textAlignment = .center
+            case .subway:
+                self.font = UIFont(name: "Whoa! 2", size: currentFontSize ?? CGFloat(defaultFontSize))
                 self.textColor = color
                 self.backgroundColor = .clear
                 self.textAlignment = .center

@@ -9,28 +9,85 @@
 import UIKit
 import SDWebImage
 import FirebaseFirestore
+import ColorCompatibility
 
 
 class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableViewDelegate, UITableViewDataSource, UIGestureRecognizerDelegate {
 
     @IBOutlet weak var addToCartBtn: UIButton!
+    var selectedSize: String!
     
     
     @IBAction func addToCart(_ sender: UIButton) {
+        
+        sender.isEnabled = false
+        UIView.animate(withDuration: 0.2, animations: {
+            sender.setTitle("Added item to cart", for: .normal)
+        })
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3){
+            UIView.animate(withDuration: 0.2, animations: {
+                sender.setTitle("Add to cart", for: .normal)
+            }, completion: { finished in
+                if finished{
+                    sender.isEnabled = true
+                }
+            })
+        }
+        
+        let size = selectedSize ?? "M"
+        guard let uid = userInfo.uid else{
+            
+            return}
+        
+        let mappedData = [
+            "UID" : fullProduct.uid,
+            "Size" : size,
+            "Qty" : 1,
+            "Timestamp" : Date(),
+            "Post_ID" : fullProduct.productID
+            ] as [String : Any]
+        
+        let data = [
+            "Cart_List" : FieldValue.arrayUnion([mappedData])
+        ]
+        
+        Firestore.firestore().collection("Users/\(uid)/Cart_Info").document("Cart_List").setData(data, merge: true, completion: { error in
+            if let err = error{
+                print(err.localizedDescription)
+            }
+            else{
+            }
+        })
     }
+    
+    
     
     
     var fullProduct = Product()
     var downloader: SDWebImageDownloader? = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
     var selectedComment: Comment!
     var friendInfo: UserInfo! = UserInfo()
+    
+    @IBAction func toCart(_ sender: UIBarButtonItem) {
+           navigationController?.segueToCart()
+       }
+       
+       @IBAction func toSales(_ sender: UIBarButtonItem) {
+           navigationController?.segueToSales()
+           
+           
+    
+       }
 
     @IBOutlet weak var tableView: UITableView!
 
-    override func viewDidDisappear(_ animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
+        NotificationCenter.default.removeObserver(self)
         downloader?.invalidateSessionAndCancel(true)
         downloader = nil
     }
+    
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -41,27 +98,20 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
         // self.navigationItem.rightBarButtonItem = self.editButtonItem
         tableView.delegate = self
         tableView.dataSource = self
+        tableView.allowsSelection = false
         navigationController?.interactivePopGestureRecognizer?.delegate = self
 
         tableView.register(UINib(nibName: "ProductCell", bundle: nil), forCellReuseIdentifier: "PictureProduct")
         
-        if let vcs = navigationController?.viewControllers{
-            if vcs.indices.contains(vcs.count - 2){
-                let secondLastVC = vcs[vcs.count - 2]
-                if !(secondLastVC.isKind(of: UserVC.self) || secondLastVC.isKind(of: FeedVC.self)){
-                    cache.removeImageFromMemory(forKey: fullProduct.picID)
-                }
-            }
-        }
+       
     }
-    
-    
-
     
     override func viewDidLayoutSubviews() {
         addToCartBtn.layer.cornerRadius = addToCartBtn.frame.height / 8
         addToCartBtn.clipsToBounds = true
+        
     }
+    
     
     func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
         return 1000
@@ -79,7 +129,7 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(true)
-        
+        setKeyBoardNotifs()
         if downloader == nil{
             downloader = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
         }
@@ -102,9 +152,12 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
     
     
     func navigationController(_ navigationController: UINavigationController, didShow viewController: UIViewController, animated: Bool) {
-        if !(viewController.hidesBottomBarWhenPushed){
-        }
-        else{
+        if let viewController = viewController as? UITableViewController{
+            if let index = ((viewController as? FeedVC)?.loadedProducts ?? (viewController as? FriendVC)?.loadedProducts ?? (viewController as? UserVC)?.loadedProducts)?.firstIndex(where: {$0.productID == fullProduct.productID}){
+                viewController.tableView.performBatchUpdates({
+                    viewController.tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
+                }, completion: nil)
+            }
         }
     }
 
@@ -196,7 +249,7 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
     
     func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
-        return 1
+        return 2
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -206,7 +259,50 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
 
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        return tableView.setPictureCell(indexPath: indexPath, product: fullProduct, productLocation: self)
+        
+        if indexPath.section == 0{
+            return tableView.setPictureCell(indexPath: indexPath, product: fullProduct, productLocation: self)
+        }
+        else{
+            let cell = tableView.dequeueReusableCell(withIdentifier: "sizeCell", for: indexPath) as? SizeCell
+            return cell!
+        }
+    }
+    
+    func setKeyBoardNotifs(){
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    
+    
+    @objc func keyboardWillShow(_ notification: Notification) {
+
+        let bottomPadding = view.safeAreaInsets.bottom
+        if let keyboardFrame: NSValue = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue {
+            if (notification.userInfo?[UIResponder.keyboardIsLocalUserInfoKey] as? Bool ?? true){
+                let keyboardFrame = keyboardFrame.cgRectValue
+                let keyboardHeight = keyboardFrame.height
+                UIView.animate(withDuration: 0.2, animations: {
+                    if self.tableView.contentInset.bottom == 0{
+                        self.tableView.contentOffset.y -= keyboardHeight - bottomPadding
+                    }
+                    self.tableView.contentInset.bottom = keyboardHeight - bottomPadding
+                    self.tableView.verticalScrollIndicatorInsets.bottom = keyboardHeight - bottomPadding
+                }, completion: { finished in
+                    if finished{}
+                })
+            }
+        }
+    }
+    
+    @objc func keyboardWillHide(_ notification: Notification) {
+        if (notification.userInfo?[UIResponder.keyboardIsLocalUserInfoKey] as? Bool ?? true){
+            UIView.animate(withDuration: 0.2, animations: {
+                self.tableView.contentInset.bottom = 0
+                self.tableView.verticalScrollIndicatorInsets.bottom = 0
+            })
+        }
     }
     
 
@@ -267,6 +363,8 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
         }
         else if let reportVC = (segue.destination as? UINavigationController)?.viewControllers.first as? ReportVC{
             reportVC.reportLevel = .post
+            reportVC.reportPostID = fullProduct.productID
+            reportVC.reportUID = fullProduct.uid
         }
     }
 

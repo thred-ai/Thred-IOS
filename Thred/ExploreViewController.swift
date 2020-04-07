@@ -169,15 +169,16 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
             if sender.isRefreshing{
                 sender.animateRefresh()
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                self.getTemplates{ error in
-                    
-                    if error == nil{
-                        self.colorSections.removeAll()
-                        cache.clearMemory()
+            DispatchQueue(label: "background").async {
+                cache.clearMemory()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                    self.getTemplates{ error in
+                        if error == nil{
+                            self.colorSections.removeAll()
+                        }
+                        self.isLoading = false
+                        sender.endRefreshing()
                     }
-                    self.isLoading = false
-                    sender.endRefreshing()
                 }
             }
         }
@@ -215,27 +216,29 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
     func getTemplates(completed: @escaping (Error?) -> ()){
         
         guard let uid = userInfo.uid else{return}
-        refreshLists(userUID: uid){
-            Firestore.firestore().document("Templates/Tees").getDocument(completion: { snap, error in
-                if error != nil{
-                    completed(error)
-                    print(error?.localizedDescription ?? "")
-                }
-                else{
-                    guard let doc = snap else{return}
-                    completed(nil)
-                    let ids = doc["IDs"] as? [[String : String]]
-                    for id in ids ?? []{
-                        guard let code = id["Code"] else{continue}
-                        guard let displayName = id["Display"] else{continue}
+        checkAuthStatus {
+            self.refreshLists(userUID: uid){
+                Firestore.firestore().document("Templates/Tees").getDocument(completion: { snap, error in
+                    if error != nil{
+                        completed(error)
+                        print(error?.localizedDescription ?? "")
+                    }
+                    else{
+                        guard let doc = snap else{return}
+                        completed(nil)
+                        let ids = doc["IDs"] as? [[String : String]]
+                        for id in ids ?? []{
+                            guard let code = id["Code"] else{continue}
+                            guard let displayName = id["Display"] else{continue}
 
-                        self.colorSections.append(["Array": nil, "ID": code, "Display" : displayName, "Offset": 0, "Downloading" : []])
+                            self.colorSections.append(["Array": nil, "ID": code, "Display" : displayName, "Offset": 0, "Downloading" : []])
+                        }
+                        DispatchQueue.main.async {
+                            self.tableView.reloadData()
+                        }
                     }
-                    DispatchQueue.main.async {
-                        self.tableView.reloadData()
-                    }
-                }
-            })
+                })
+            }
         }
     }
     
@@ -297,15 +300,18 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
             let cell = tableView.dequeueReusableCell(withIdentifier: "SearchProductCell", for: indexPath) as? SearchProductTableViewCell
             let product = self.searchedProducts[indexPath.row]
             cell?.productImageView.image = nil
-            cell?.fullnameLbl.text = nil
+            cell?.priceLbl.text = nil
             cell?.usernameLbl.text = nil
             cell?.likesLbl.text = nil
             cell?.productNameLbl.text = nil
             cell?.productImageView.backgroundColor = ColorCompatibility.secondarySystemBackground
+            cell?.quantityView.isHidden = true
+            cell?.sizingLbl.isHidden = true
+            cell?.likesView.isHidden = false
 
             
             DispatchQueue(label: "explore").async {
-                if let dp = cache.imageFromMemoryCache(forKey: product.productID){
+                if let dp = cache.imageFromMemoryCache(forKey: "thumbnail_\(product.productID)"){
                     DispatchQueue.main.async {
                         cell?.productImageView.image = dp
                     }
@@ -313,11 +319,18 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
             }
             cell?.productImageView.backgroundColor = UIColor(named: product.templateColor)
             cell?.productNameLbl.text = product.name
+            
+            if product.price != nil{
+                var price = "$\(product.price ?? 20.00)"
+                if price.count == 5{
+                    price = price + "0"
+                }
+                cell?.priceLbl.text = "\(price)"
+            }
             cell?.likesLbl.text = "\(product.likes)"
             
-            if let username = product.username, let fullname = product.fullName{
+            if let username = product.username{
                 cell?.usernameLbl.text = "@\(username)"
-                cell?.fullnameLbl.text = fullname
             }
             else{
                 downloadUserInfo(uid: product.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: true, downloader: downloader, userInfoToUse: nil, queryOnUsername: false, completed: { uid, fullName, username, dpID, notifID, bio, image, userFollowing, usersBlocking, postCount, followersCount, followingCount in
@@ -325,7 +338,6 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                     product.username = username
                     product.fullName = fullName
                     cell?.usernameLbl.text = "@\(username)"
-                    cell?.fullnameLbl.text = fullName
                 })
             }
             
@@ -466,7 +478,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                                     continue
                                 }
                                 
-                                let user = UserInfo(uid: uid, dp: nil, dpID: dpLink, username: username, fullName: fullname, bio: bio, notifID: nil, userFollowing: userFollowing ?? [], userLiked: [], followerCount: followerCount, postCount: postCount, followingCount: followingCount, usersBlocking: usersBlocking ?? [])
+                                let user = UserInfo(uid: uid, dp: nil, dpID: dpLink, username: username, fullName: fullname, bio: bio, notifID: nil, userFollowing: userFollowing ?? [], userLiked: [], followerCount: followerCount ?? 0, postCount: postCount ?? 0, followingCount: followingCount ?? 0, usersBlocking: usersBlocking ?? [])
 
                                 if uid == userInfo.uid{
                                     user.dp = userInfo.dp
@@ -576,7 +588,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                                             }
                                             else{
                                                 if let image = image{
-                                                    cache.storeImage(toMemory: image, forKey: productID)
+                                                    cache.storeImage(toMemory: image, forKey: "thumbnail_\(productID)")
                                                     if let index = self.searchedProducts.firstIndex(where: {$0.productID == document.documentID}){
                                                         self.searchProductsTable.performBatchUpdates({
                                                             self.searchProductsTable.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
@@ -604,7 +616,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         
         let lowerCaseSearchText = searchText.lowercased()
-
+        searchBar.text = lowerCaseSearchText
         if topTab.selectedSegmentIndex == 0{
             searchUsers(searchText: lowerCaseSearchText)
         }
@@ -677,7 +689,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
             return 55
         }
         else if tableView == searchProductsTable{
-            return 110
+            return 120
         }
         else{
             return UITableView.automaticDimension

@@ -21,8 +21,10 @@ class ProductCell: UITableViewCell {
     
     @IBOutlet var dpMaskingViews: [UIView]!
     
+    @IBOutlet weak var spinner: MapSpinnerView!
     @IBOutlet var nameMaskingViews: [UIView]!
     
+    @IBOutlet weak var uploadView: UIView!
     @IBOutlet weak var commentBtn: UIButton!
     
     @IBOutlet weak var timestampLbl: UILabel!
@@ -48,6 +50,9 @@ class ProductCell: UITableViewCell {
     @IBOutlet weak var price: UILabel!
     @IBOutlet weak var title: UITextField!
     weak var vc: UIViewController?
+    @IBOutlet weak var optionMenuActionBtn1: UIButton!
+    @IBOutlet weak var optionMenuCancelBtn: UIButton!
+    @IBOutlet weak var optionMenu: UIView!
     
     @IBOutlet weak var userInfoView: UIView!
     
@@ -100,7 +105,7 @@ class ProductCell: UITableViewCell {
                 }
             }
             
-            let info = UserInfo(uid: product.uid, dp: self.userImage.image, dpID: product.userImageID ?? "null", username: product.username ?? "", fullName: product.fullName ?? "", bio: "", notifID: "", userFollowing: [], userLiked: [], followerCount: nil, postCount: nil, followingCount: nil, usersBlocking: [])
+            let info = UserInfo(uid: product.uid, dp: self.userImage.image, dpID: product.userImageID ?? "null", username: product.username ?? "", fullName: product.fullName ?? "", bio: "", notifID: "", userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [])
             (vc as? FullProductVC)?.friendInfo = info
             (vc as? FeedVC)?.selectedUser = info
             vc?.performSegue(withIdentifier: "toFriend", sender: nil)
@@ -186,18 +191,7 @@ class ProductCell: UITableViewCell {
         }
     }
     
-    lazy var uploadView: UIView = {
-      
-        let view = UIView(frame: bounds)
-        view.backgroundColor = ColorCompatibility.systemBackground.withAlphaComponent(0.5)
-        var cp: MapSpinnerView! = MapSpinnerView(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
-        cp.accessibilityIdentifier = "uploadSpinner"
-        view.addSubview(cp)
-        cp.center = view.center
-        let retryBtn = view
-        
-        return view
-    }()
+    
     
     func setProductInArray(){
         let products = (vc as? FeedVC)?.loadedProducts ?? (vc as? FriendVC)?.loadedProducts ?? (vc as? UserVC)?.loadedProducts
@@ -245,22 +239,25 @@ class ProductCell: UITableViewCell {
             "uid" : uid,
             "is_liking" : isLiked
             ] as [String : Any]
-        Functions.functions().httpsCallable("updateLiking").call(data, completion: { result, error in
-            if error != nil{
-                print(error?.localizedDescription ?? "")
-            }
-            else{
-                if self.isLiked{
-                    userInfo.userLiked.append(self.product.productID)
+        
+        vc?.checkAuthStatus {
+            Functions.functions().httpsCallable("updateLiking").call(data, completion: { result, error in
+                if error != nil{
+                    print(error?.localizedDescription ?? "")
                 }
                 else{
-                    userInfo.userLiked.removeAll(where: {$0 == self.product.productID})
+                    if self.isLiked{
+                        userInfo.userLiked.append(self.product.productID)
+                    }
+                    else{
+                        userInfo.userLiked.removeAll(where: {$0 == self.product.productID})
+                    }
+                    UserDefaults.standard.set(userInfo.userLiked, forKey: "LikedPosts")
+                    guard let type = saveType else{return}
+                    loadedProducts?.saveAllObjects(type: type)
                 }
-                UserDefaults.standard.set(userInfo.userLiked, forKey: "LikedPosts")
-                guard let type = saveType else{return}
-                loadedProducts?.saveAllObjects(type: type)
-            }
-        })
+            })
+        }
     }
     
     lazy var canvasDisplayView: UIImageView = {
@@ -290,6 +287,8 @@ class ProductCell: UITableViewCell {
         likeBtn.imageView?.animationDuration = 0.5
         likeBtn.imageView?.animationRepeatCount = 1
         likeBtn.setRadiusWithShadow()
+        uploadView.backgroundColor = ColorCompatibility.systemBackground.withAlphaComponent(0.5)
+
         
         likeBtn.setImage(unlikedImage, for: .normal)
         likeBtn.tintColor = UIColor.darkGray
@@ -304,13 +303,19 @@ class ProductCell: UITableViewCell {
         userInfoView.addGestureRecognizer(tap)
         
         productPicture.addSubview(canvasDisplayView)
-        addSubview(uploadView)
 
         NSLayoutConstraint(item: canvasDisplayView, attribute: .centerX, relatedBy: .equal, toItem: productPicture, attribute: .centerX, multiplier: 1.0, constant: 0).isActive = true
         NSLayoutConstraint(item: canvasDisplayView, attribute: .centerY, relatedBy: .equal, toItem: productPicture, attribute: .centerY, multiplier: 1.0, constant: -20).isActive = true
         NSLayoutConstraint(item: canvasDisplayView, attribute: .width, relatedBy: .equal, toItem: productPicture, attribute: .width, multiplier: 0.25, constant: 0).isActive = true
         NSLayoutConstraint(item: canvasDisplayView, attribute: .height, relatedBy: .equal, toItem: canvasDisplayView, attribute: .width, multiplier: canvasInfo.aspectRatio, constant: 0).isActive = true
+        
+        optionMenu.backgroundColor = ColorCompatibility.systemBackground.withAlphaComponent(0.9)
+        let gesture = UITapGestureRecognizer.init(target: self, action: #selector(openOptionMenu(_:)))
+        optionMenu.addGestureRecognizer(gesture)
+
+
     }
+    
     
     func setGestureRecognizers(){
         if vc is FullProductVC{
@@ -376,7 +381,7 @@ class ProductCell: UITableViewCell {
     
     @IBOutlet weak var openOptionMenuBtn: UIButton!
     
-    @objc func optionMenuAction1(_ sender: UIButton){
+    @IBAction func optionMenuAction1(_ sender: UIButton){
         if sender.titleLabel?.text == "Edit"{
             editProduct()
         }
@@ -397,20 +402,23 @@ class ProductCell: UITableViewCell {
     func reportProduct(){
         openOptionMenu(nil)
         (vc as? FriendVC)?.reportType = .post
+        (vc as? FriendVC)?.selectedReportID = product.productID
+        (vc as? FeedVC)?.selectedReportID = product.productID
+        (vc as? FeedVC)?.selectedReportUID = product.uid
+
         vc?.performSegue(withIdentifier: "toReport", sender: nil)
     }
     
-    @IBAction @objc func openOptionMenu(_ sender: UIButton?) {
+    @IBAction func openOptionMenu(_ sender: UIButton?) {
         
-        if !productPicture.subviews.contains(optionMenu){
-            productPicture.addSubview(optionMenu)
+        if optionMenu.isHidden{
+            optionMenu.isHidden = false
             let tableView = (vc as? FeedVC)?.tableView ?? (vc as? UserVC)?.tableView ?? (vc as? FriendVC)?.tableView
             if let indexPath = tableView?.indexPath(for: self){
                 tableView?.scrollToRow(at: indexPath, at: .top, animated: true)
             }
             tableView?.isScrollEnabled = false
             tableView?.allowsSelection = false
-            optionMenu.isHidden = false
             if product?.uid == userInfo.uid{
                 optionMenuActionBtn1.setTitle("Edit", for: .normal)
             }
@@ -428,80 +436,35 @@ class ProductCell: UITableViewCell {
             let tableView = (vc as? FeedVC)?.tableView ?? (vc as? UserVC)?.tableView ?? (vc as? FriendVC)?.tableView
             tableView?.isScrollEnabled = true
             tableView?.allowsSelection = true
-            optionMenu.removeFromSuperview()
+            optionMenu.isHidden = true
         }
     }
     
     
     override func layoutSubviews() {
         super.layoutSubviews()
+        spinner.animate()
 
         self.userImage.layer.cornerRadius = self.userImage.frame.height / 2
         self.userImage.clipsToBounds = true
         self.userImage.layer.borderColor = UIColor(named: "ProfileMask")?.cgColor
         self.userImage.layer.borderWidth = self.userImage.frame.height / 17.75
         
+        if let superView1 = optionMenuActionBtn1.superview, let superView2 = optionMenuCancelBtn.superview{
+            superView1.layer.cornerRadius = superView1.frame.height / 2
+            superView1.clipsToBounds = true
+            superView1.backgroundColor = ColorCompatibility.tertiarySystemFill
+            
+            superView2.layer.cornerRadius = superView2.frame.height / 2
+            superView2.clipsToBounds = true
+            superView2.backgroundColor = ColorCompatibility.tertiarySystemFill
+        }
     }
-    
-    var optionMenuActionBtn1: UIButton!
-    var optionMenuCancelBtn: UIButton!
-
-    lazy var optionMenu: UIView = {
-        
-        let view = UIView(frame: productPicture.bounds)
-        
-        //view.translatesAutoresizingMaskIntoConstraints = false
-       
-        view.backgroundColor = ColorCompatibility.systemBackground.withAlphaComponent(0.9)
-
-        let stackView = UIStackView.init(frame: view.bounds)
-        stackView.axis = .horizontal
-        stackView.alignment = .fill
-        stackView.spacing = 0
-        stackView.distribution = .fillEqually
-        //stackView.translatesAutoresizingMaskIntoConstraints = false
-        
-        let buttonSize = 75
-        
-        let optionMenuView1 = UIView.init(frame: CGRect(x: 0, y:0, width: stackView.frame.width / 2, height: stackView.frame.height))
-        
-        optionMenuActionBtn1 = UIButton.init(frame: CGRect(x: 0, y:0, width: buttonSize, height: buttonSize))
-        optionMenuActionBtn1.setTitle("Report", for: .normal)
-        optionMenuActionBtn1.backgroundColor = ColorCompatibility.tertiarySystemFill
-        optionMenuActionBtn1.setTitleColor(UIColor(named: "LoadingColor"), for: .normal)
-        optionMenuActionBtn1.layer.cornerRadius = optionMenuActionBtn1.frame.height / 2
-        optionMenuActionBtn1.clipsToBounds = true
-        optionMenuActionBtn1.center = optionMenuView1.center
-        optionMenuActionBtn1.addTarget(self, action: #selector(optionMenuAction1(_:)), for: .touchUpInside)
-        optionMenuView1.addSubview(optionMenuActionBtn1)
-        
-        let optionMenuView2 = UIView.init(frame: CGRect(x: 0, y:0, width: stackView.frame.width / 2, height: stackView.frame.height))
-        optionMenuCancelBtn = UIButton.init(frame: CGRect(x: 0, y:0, width: buttonSize, height: buttonSize))
-        optionMenuCancelBtn.setTitle("Cancel", for: .normal)
-        optionMenuCancelBtn.backgroundColor = ColorCompatibility.tertiarySystemFill
-        optionMenuCancelBtn.setTitleColor(ColorCompatibility.label, for: .normal)
-        optionMenuCancelBtn.layer.cornerRadius = optionMenuCancelBtn.frame.height / 2
-        optionMenuCancelBtn.clipsToBounds = true
-        optionMenuCancelBtn.center = optionMenuView2.center
-        optionMenuCancelBtn.addTarget(self, action: #selector(openOptionMenu(_:)), for: .touchUpInside)
-        optionMenuView2.addSubview(optionMenuCancelBtn)
-        
-        let gesture = UITapGestureRecognizer.init(target: self, action: #selector(openOptionMenu(_:)))
-        view.addGestureRecognizer(gesture)
-        stackView.addArrangedSubview(optionMenuView1)
-        stackView.addArrangedSubview(optionMenuView2)
-        view.addSubview(stackView)
-        
-    
-        
-        
-        return view
-    }()
     
     override func prepareForReuse() {
         super.prepareForReuse()
         productPicture?.image = nil
-        optionMenu.removeFromSuperview()
+        optionMenu.isHidden = true
         //Stop or reset anything else that is needed here
     }
     

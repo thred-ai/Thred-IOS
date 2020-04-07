@@ -119,17 +119,20 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
         if indexPath.section == 0{
             let cell = tableView.dequeueReusableCell(withIdentifier: "FullNameField", for: indexPath) as! FullNameCell
             cell.fullNameField.text = editUserInfo.fullName
+            cell.selectionStyle = .none
             return cell
 
         }
         else if indexPath.section == 1{
             let cell = tableView.dequeueReusableCell(withIdentifier: "UsernameField", for: indexPath) as! UsernameCell
             cell.usernameField.text = editUserInfo.username
+            cell.selectionStyle = .none
             return cell
         }
         else{
             let cell = tableView.dequeueReusableCell(withIdentifier: "BioField", for: indexPath) as! BioCell
             cell.bioView.text = editUserInfo.bio
+            cell.selectionStyle = .none
             return cell
         }
     }
@@ -142,6 +145,7 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
         let label = UILabel()
         label.font = UIFont(name: "NexaW01-Heavy", size: 16)
         label.textColor = ColorCompatibility.tertiaryLabel
+        label.textAlignment = .center
         var title = String()
         if section == 0{
             title = "Full Name:"
@@ -236,7 +240,7 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
             return}
 
         let data = [
-            "Bio" : editUserInfo.bio,
+            "Bio" : editUserInfo.bio ?? "",
             "Username" : editUserInfo.username,
             "Fullname" : editUserInfo.fullName,
             "UID" : userInfo.uid
@@ -279,8 +283,11 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
     @IBAction func saveInfo(_ sender: UIBarButtonItem) {
         
         sender.isEnabled = false
-        
+        let spinner = MapSpinnerView(frame: profilePhotoView.bounds)
+        profilePhotoView.addSubview(spinner)
+        spinner.animate()
         save {
+            spinner.removeFromSuperview()
             self.setUserInfo(username: self.editUserInfo.username, fullname: self.editUserInfo.fullName, image: self.editUserInfo.dp, bio: self.editUserInfo.bio, notifID: self.editUserInfo.notifID, dpUID: self.editUserInfo.dpID, userFollowing: userInfo.userFollowing, followerCount: userInfo.followerCount, postCount: userInfo.postCount, followingCount: userInfo.followingCount, usersBlocking: userInfo.usersBlocking)
             self.performSegue(withIdentifier: "backToProfile", sender: nil)
         }
@@ -308,6 +315,7 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
         self.optionMenu.transform = CGAffineTransform(translationX: 0, y: self.optionMenu.frame.height)
         
         UIView.animate(withDuration: 0.2, animations: {
+            self.tableView.alpha = 0.5
             self.optionMenu.transform = .identity
         })
     }
@@ -316,6 +324,7 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
         
         UIView.animate(withDuration: 0.2, animations: {
             self.optionMenu.transform = CGAffineTransform(translationX: 0, y: self.optionMenu.frame.height)
+            self.tableView.alpha = 1.0
         }, completion: { finished in
             if finished{
                 self.optionMenu.isHidden = true
@@ -484,8 +493,9 @@ class OptionMenu: UIView{
     
     override init(frame: CGRect){
         super.init(frame: frame)
-        self.backgroundColor = ColorCompatibility.systemBackground
+        self.backgroundColor = ColorCompatibility.secondarySystemBackground
         self.addSubview(stackView)
+        roundCorners([.topLeft, .topRight], radius: frame.height / 8)
     }
     
     override func didAddSubview(_ subview: UIView) {
@@ -499,35 +509,35 @@ class OptionMenu: UIView{
     }
     
     lazy var stackView: UIStackView = {
-        let stackView = UIStackView.init(frame: frame)
+        let stackView = UIStackView.init(frame: CGRect(x: 10, y: 0, width: frame.width - 20, height: frame.height))
         stackView.axis = .vertical
         stackView.alignment = .fill
         stackView.spacing = 10
         stackView.distribution = .fillEqually
         stackView.translatesAutoresizingMaskIntoConstraints = false
         
-        cameraBtn = UIButton.init(frame: CGRect(x: 0, y:0, width: frame.width, height: 45))
+        cameraBtn = UIButton.init(frame: CGRect(x: 0, y:0, width: stackView.frame.width, height: 45))
         cameraBtn.setTitle("Camera", for: .normal)
         cameraBtn.backgroundColor = ColorCompatibility.tertiarySystemFill
         cameraBtn.setTitleColor(UIColor(named: "LoadingColor"), for: .normal)
         cameraBtn.layer.cornerRadius = cameraBtn.frame.height / 4
         cameraBtn.clipsToBounds = true
         
-        photosBtn = UIButton.init(frame: CGRect(x: 0, y:0, width: frame.width, height: 45))
+        photosBtn = UIButton.init(frame: CGRect(x: 0, y:0, width: stackView.frame.width, height: 45))
         photosBtn.setTitle("Photos", for: .normal)
         photosBtn.backgroundColor = ColorCompatibility.tertiarySystemFill
         photosBtn.setTitleColor(UIColor(named: "LoadingColor"), for: .normal)
         photosBtn.layer.cornerRadius = photosBtn.frame.height / 4
         photosBtn.clipsToBounds = true
         
-        removeBtn = UIButton.init(frame: CGRect(x: 0, y:0, width: frame.width, height: 45))
+        removeBtn = UIButton.init(frame: CGRect(x: 0, y:0, width: stackView.frame.width, height: 45))
         removeBtn.setTitle("Remove Photo", for: .normal)
         removeBtn.backgroundColor = ColorCompatibility.tertiarySystemFill
         removeBtn.setTitleColor(.red, for: .normal)
         removeBtn.layer.cornerRadius = removeBtn.frame.height / 4
         removeBtn.clipsToBounds = true
         
-        cancelBtn = UIButton.init(frame: CGRect(x: 0, y:0, width: frame.width, height: 45))
+        cancelBtn = UIButton.init(frame: CGRect(x: 0, y:0, width: stackView.frame.width, height: 45))
         cancelBtn.setTitle("Cancel", for: .normal)
         cancelBtn.backgroundColor = ColorCompatibility.tertiarySystemFill
         cancelBtn.setTitleColor(ColorCompatibility.label, for: .normal)
@@ -537,9 +547,6 @@ class OptionMenu: UIView{
         if #available(iOS 13.0, *) {
             let configuration = UIImage.SymbolConfiguration.init(pointSize: 22, weight: UIImage.SymbolWeight.black, scale: UIImage.SymbolScale.large)
             photosBtn.setPreferredSymbolConfiguration(configuration, forImageIn: .normal)
-
-        } else {
-            // Fallback on earlier versions
         }
 
 

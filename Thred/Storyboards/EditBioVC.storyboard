@@ -8,8 +8,8 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
-        <array key="Nexa W01 Heavy.ttf">
-            <string>NexaW01-Heavy</string>
+        <array key="Nexa W01 Regular.ttf">
+            <string>NexaW01-Regular</string>
         </array>
     </customFonts>
     <scenes>
@@ -27,22 +27,22 @@
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="35D-2Z-ug6">
                                         <rect key="frame" x="0.0" y="0.0" width="414" height="818"/>
                                         <subviews>
-                                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" text="&quot;Bio&quot;" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="yBp-vi-81z">
-                                                <rect key="frame" x="10" y="10" width="394" height="38"/>
+                                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" text="&quot;Bio&quot;" textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="yBp-vi-81z">
+                                                <rect key="frame" x="20" y="10" width="374" height="38"/>
                                                 <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="35" id="gkb-Mh-8lB"/>
                                                 </constraints>
                                                 <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
-                                                <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
+                                                <fontDescription key="fontDescription" name="NexaW01-Regular" family="NexaW01-Regular" pointSize="17"/>
                                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                             </textView>
                                         </subviews>
                                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                         <constraints>
                                             <constraint firstItem="yBp-vi-81z" firstAttribute="top" secondItem="35D-2Z-ug6" secondAttribute="top" constant="10" id="1aV-ni-xsE"/>
-                                            <constraint firstItem="yBp-vi-81z" firstAttribute="leading" secondItem="35D-2Z-ug6" secondAttribute="leading" constant="10" id="8Ji-mQ-O1X"/>
-                                            <constraint firstAttribute="trailing" secondItem="yBp-vi-81z" secondAttribute="trailing" constant="10" id="y7h-hC-Cqc"/>
+                                            <constraint firstItem="yBp-vi-81z" firstAttribute="leading" secondItem="35D-2Z-ug6" secondAttribute="leading" constant="20" id="8Ji-mQ-O1X"/>
+                                            <constraint firstAttribute="trailing" secondItem="yBp-vi-81z" secondAttribute="trailing" constant="20" id="y7h-hC-Cqc"/>
                                         </constraints>
                                     </view>
                                 </subviews>

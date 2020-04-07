@@ -49,74 +49,86 @@ extension UITableView{
     
     func checkAndDownloadUserInfoInFeed(feed: FeedVC?, user: Product, dp: UIImageView, userLbl: UILabel, fullLbl: UILabel, picCell: ProductCell?){
         
-        switch (user.fullName, user.username){
-            
-        case (.some, .some):
-            
-            if let imageFromCache = cache.imageFromCache(forKey: user.userImageID){
-                dp.image = imageFromCache
-                fullLbl.text = user.fullName
-                userLbl.text = "@" + (user.username ?? "null")
-                picCell?.removeLabelLoad()
-                picCell?.removeDpLoad()
-            }
-            else{
-                if user.uid == userInfo.uid, userInfo.dp != nil{
-                    dp.image = userInfo.dp
-                    fullLbl.text = userInfo.fullName
-                    userLbl.text = "@" + (userInfo.username ?? "null")
+        if user.uid == userInfo.uid, let username = userInfo.username, let fullname = userInfo.fullName{
+            user.username = username
+            user.fullName = fullname
+            user.userImageID = userInfo.dpID
+            fullLbl.text = fullname
+            userLbl.text = "@\(username)"
+            dp.image = userInfo.dp
+            picCell?.removeLabelLoad()
+            picCell?.removeDpLoad()
+        }
+        else{
+            switch (user.fullName, user.username){
+                
+            case (.some, .some):
+                
+                if let imageFromCache = cache.imageFromCache(forKey: user.userImageID){
+                    dp.image = imageFromCache
+                    fullLbl.text = user.fullName
+                    userLbl.text = "@" + (user.username ?? "null")
                     picCell?.removeLabelLoad()
                     picCell?.removeDpLoad()
                 }
                 else{
-                    fallthrough
-                }
-            }
-        default:
-            switch feed?.loadedProducts.contains(where: {$0.uid == user.uid}){
-            case true:
-                let cachedUserInfo = feed?.loadedProducts.first(where: {$0.uid == user.uid && $0.username != nil})
-                user.username = cachedUserInfo?.username
-                user.fullName = cachedUserInfo?.fullName
-                user.userImageID = cachedUserInfo?.userImageID
-                if let fullName = cachedUserInfo?.fullName{
-                    fullLbl.text = fullName
-                    picCell?.removeLabelLoad()
-                }
-                else{
-                    fallthrough
-                }
-                if let username = cachedUserInfo?.username{
-                    userLbl.text = "@" + (username)
-                    picCell?.removeLabelLoad()
-                }
-                else{
-                    fallthrough
-                }
-                if let img = cache.imageFromCache(forKey: cachedUserInfo?.userImageID){
-                    dp.image = img
-                    picCell?.removeDpLoad()
-                }
-                else{
-                    fallthrough
+                    if user.uid == userInfo.uid, userInfo.dp != nil{
+                        dp.image = userInfo.dp
+                        fullLbl.text = userInfo.fullName
+                        userLbl.text = "@" + (userInfo.username ?? "null")
+                        picCell?.removeLabelLoad()
+                        picCell?.removeDpLoad()
+                    }
+                    else{
+                        fallthrough
+                    }
                 }
             default:
-                
-                if userLbl.text?.isEmpty ?? true && fullLbl.text?.isEmpty ?? true{
-                    picCell?.nameSkeletonView.startAnimating()
-                }
-                
-                picCell?.dpSkeletonView.startAnimating()
-                
-                if !(feed?.downloadingProfiles.contains(user.uid) ?? false){
-                    feed?.downloadCount += 1
-
-                    feed?.downloadingProfiles.append(user.uid)
-
-                    guard let downloader = feed?.downloader
-                        else{return}
+                switch feed?.loadedProducts.contains(where: {$0.uid == user.uid}){
+                case true:
+                    let cachedUserInfo = feed?.loadedProducts.first(where: {$0.uid == user.uid && $0.username != nil})
+                    user.username = cachedUserInfo?.username
+                    user.fullName = cachedUserInfo?.fullName
+                    user.userImageID = cachedUserInfo?.userImageID
+                    if let fullName = cachedUserInfo?.fullName{
+                        fullLbl.text = fullName
+                        picCell?.removeLabelLoad()
+                    }
+                    else{
+                        fallthrough
+                    }
+                    if let username = cachedUserInfo?.username{
+                        userLbl.text = "@" + (username)
+                        picCell?.removeLabelLoad()
+                    }
+                    else{
+                        fallthrough
+                    }
+                    if let img = cache.imageFromCache(forKey: cachedUserInfo?.userImageID){
+                        dp.image = img
+                        picCell?.removeDpLoad()
+                    }
+                    else{
+                        fallthrough
+                    }
+                default:
                     
-                    beginDownloadingUserInfo(uid: user.uid, downloader: downloader, userVC: nil, feedVC: feed, friendVC: nil, fullVC: nil, section: 0)
+                    if userLbl.text?.isEmpty ?? true && fullLbl.text?.isEmpty ?? true{
+                        picCell?.nameSkeletonView.startAnimating()
+                    }
+                    
+                    picCell?.dpSkeletonView.startAnimating()
+                    
+                    if !(feed?.downloadingProfiles.contains(user.uid) ?? false){
+                        feed?.downloadCount += 1
+
+                        feed?.downloadingProfiles.append(user.uid)
+
+                        guard let downloader = feed?.downloader
+                            else{return}
+                        
+                        beginDownloadingUserInfo(uid: user.uid, downloader: downloader, userVC: nil, feedVC: feed, friendVC: nil, fullVC: nil, section: 0)
+                    }
                 }
             }
         }

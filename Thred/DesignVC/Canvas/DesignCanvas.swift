@@ -13,7 +13,7 @@ import Photos
 
 extension DesignViewController{
     @objc func maximiseDrawingArea(displayView: UIImageView){
-        
+        self.navigationItem.leftBarButtonItem?.isEnabled = false
         if let selectedIndex = carousel.collectionView.indexPathsForVisibleItems.first?.item{
             aspectRatio = displayView.frame.height / displayView.frame.width
             let viewY = displayView.frame.origin.y
@@ -75,6 +75,7 @@ extension DesignViewController{
     }
     
     @objc func minimizeDrawingArea(_ sender: UIButton){
+        self.navigationItem.leftBarButtonItem?.isEnabled = true
         canvasDisplayView.image = nil
         garbageBtn.isHidden = true
         textCoverView.isHidden = true
@@ -88,7 +89,9 @@ extension DesignViewController{
         viewCenteredY = false
         if canvas.subviews.contains(where: {$0.isKind(of: UIImageView.self) || ($0.isKind(of: UITextView.self))}) || drawCanvas.lines.contains(where: {$0.brush.blendMode != .clear}){
             canvasDisplayView.image = canvas.makeSnapshot(clear: true, subviewsToIgnore: [])
-            nextBtn.isEnabled = true
+            if !(titleView.text?.isEmpty ?? true){
+                nextBtn.isEnabled = true
+            }
         }
         if !cameraRollCollectionView.isHidden{
             configurePhotos(photosBtn)

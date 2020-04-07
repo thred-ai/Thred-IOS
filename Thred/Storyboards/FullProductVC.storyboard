@@ -4,6 +4,7 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -16,7 +17,7 @@
         <!--Full ProductVC-->
         <scene sceneID="85x-FN-M5r">
             <objects>
-                <viewController storyboardIdentifier="UIViewController-TTd-by-I1I" extendedLayoutIncludesOpaqueBars="YES" modalPresentationStyle="fullScreen" hidesBottomBarWhenPushed="YES" id="TTd-by-I1I" customClass="FullProductVC" customModule="Thred" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="FullVC" extendedLayoutIncludesOpaqueBars="YES" modalPresentationStyle="fullScreen" hidesBottomBarWhenPushed="YES" id="TTd-by-I1I" customClass="FullProductVC" customModule="Thred" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Mdn-7j-wMd">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -24,11 +25,53 @@
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="m3i-nE-n4Z">
                                 <rect key="frame" x="0.0" y="88" width="414" height="699"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                <prototypes>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="sizeCell" rowHeight="88" id="JJT-nW-NOb" customClass="SizeCell" customModule="Thred" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="28" width="414" height="88"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="JJT-nW-NOb" id="6fz-TA-EK4">
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="88"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="EEf-9X-AlT">
+                                                    <rect key="frame" x="10" y="20" width="98" height="68"/>
+                                                    <subviews>
+                                                        <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="Size: M" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="QZh-en-GlJ">
+                                                            <rect key="frame" x="0.0" y="0.0" width="98" height="32"/>
+                                                            <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+                                                            <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="20"/>
+                                                            <textInputTraits key="textInputTraits"/>
+                                                        </textField>
+                                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="60S-7y-bXJ">
+                                                            <rect key="frame" x="0.0" y="32" width="98" height="36"/>
+                                                            <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="13"/>
+                                                            <state key="normal" title="View sizing chart">
+                                                                <color key="titleColor" systemColor="tertiaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.29999999999999999" colorSpace="custom" customColorSpace="sRGB"/>
+                                                            </state>
+                                                            <connections>
+                                                                <action selector="viewSizingChart:" destination="JJT-nW-NOb" eventType="touchUpInside" id="nmH-cL-wJM"/>
+                                                            </connections>
+                                                        </button>
+                                                    </subviews>
+                                                </stackView>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="EEf-9X-AlT" firstAttribute="top" secondItem="6fz-TA-EK4" secondAttribute="top" constant="20" id="27X-xW-coG"/>
+                                                <constraint firstAttribute="bottom" secondItem="EEf-9X-AlT" secondAttribute="bottom" id="4qS-Lf-v6o"/>
+                                                <constraint firstItem="EEf-9X-AlT" firstAttribute="leading" secondItem="6fz-TA-EK4" secondAttribute="leading" constant="10" id="yfh-R7-0EF"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                        <connections>
+                                            <outlet property="sizeChartBtn" destination="60S-7y-bXJ" id="0Wp-sl-yda"/>
+                                            <outlet property="sizingView" destination="QZh-en-GlJ" id="yfp-Et-tcA"/>
+                                        </connections>
+                                    </tableViewCell>
+                                </prototypes>
                             </tableView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wLK-Kf-DT2">
                                 <rect key="frame" x="0.0" y="787" width="414" height="75"/>
                                 <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="nUg-TC-cmh">
+                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="nUg-TC-cmh">
                                         <rect key="frame" x="10" y="10" width="394" height="55"/>
                                         <subviews>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="0Tz-3R-uDx">
@@ -67,8 +110,25 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="xpv-8I-VK6"/>
                     </view>
-                    <navigationItem key="navigationItem" id="ImL-Gh-i3O"/>
+                    <toolbarItems/>
+                    <navigationItem key="navigationItem" id="ImL-Gh-i3O">
+                        <rightBarButtonItems>
+                            <barButtonItem image="cart" id="O5f-Gv-QiG">
+                                <color key="tintColor" name="LoadingColor"/>
+                                <connections>
+                                    <action selector="toCart:" destination="TTd-by-I1I" id="5hh-4n-F35"/>
+                                </connections>
+                            </barButtonItem>
+                            <barButtonItem image="creditcard.fill" id="YFD-Pg-SKD">
+                                <color key="tintColor" name="LoadingColor"/>
+                                <connections>
+                                    <action selector="toSales:" destination="TTd-by-I1I" id="TwE-gI-cah"/>
+                                </connections>
+                            </barButtonItem>
+                        </rightBarButtonItems>
+                    </navigationItem>
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO"/>
+                    <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="addToCartBtn" destination="0Tz-3R-uDx" id="5Lr-pP-8R5"/>
                         <outlet property="tableView" destination="m3i-nE-n4Z" id="Xye-RL-T1K"/>
@@ -80,7 +140,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="1Es-Dy-TkR" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3566" y="1343"/>
+            <point key="canvasLocation" x="3565.217391304348" y="1342.6339285714284"/>
         </scene>
         <!--FriendVC-->
         <scene sceneID="Y9O-MM-MaI">
@@ -121,4 +181,11 @@
             <point key="canvasLocation" x="3330" y="1831"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="cart" width="33.5" height="33.5"/>
+        <image name="creditcard.fill" width="33.5" height="33.5"/>
+        <namedColor name="LoadingColor">
+            <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
 </document>

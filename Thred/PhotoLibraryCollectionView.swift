@@ -351,13 +351,12 @@ class CameraRollView: UICollectionView, UICollectionViewDelegate, UICollectionVi
         
         let options = PHImageRequestOptions()
         options.deliveryMode = .highQualityFormat
-        options.isSynchronous = true
         options.resizeMode = .exact
         options.version = .current
+        options.isNetworkAccessAllowed = true
 
         
-        DispatchQueue.global(qos: .background).sync {
-            self.downloadImage(options: options, targetSize: CGSize(width: asset.pixelWidth, height: asset.pixelHeight), asset: asset, completed: {[weak self] image in
+            self.downloadImage(options: options, targetSize: CGSize(width: asset.pixelWidth, height: asset.pixelHeight), asset: asset, completed: { image in
                 
                 DispatchQueue.main.async {
                     if let selectedIndexes = collectionView.indexPathsForSelectedItems?.filter({$0 != indexPath}){
@@ -366,7 +365,7 @@ class CameraRollView: UICollectionView, UICollectionViewDelegate, UICollectionVi
                         }
                     }
                     if let img = image{
-                        let photosView = self?.superview as? PhotosView
+                        let photosView = self.superview as? PhotosView
                         photosView?.selectedImage = img
                         photosView?.sendPicBtn.isHidden = false
                     }
@@ -375,7 +374,7 @@ class CameraRollView: UICollectionView, UICollectionViewDelegate, UICollectionVi
                     }
                 }
             })
-        }
+        
     }
     
     
@@ -462,6 +461,9 @@ class ThredListView: UICollectionView, UICollectionViewDelegate, UICollectionVie
 
         
         if fromInterval == nil{
+            if let view = self.backgroundView{
+                view.addViewSpinner(centerX: view.center.x, centerY: (visibleSize.height / 2), width: 40, height: 40)
+            }
             query = Firestore.firestore().collection("Users").document(uid).collection("Products").whereField("Timestamp", isLessThanOrEqualTo: Timestamp(date: Date())).limit(to: 15).order(by: "Timestamp", descending: true)
         }
         else if let last = fromInterval{
@@ -475,6 +477,8 @@ class ThredListView: UICollectionView, UICollectionViewDelegate, UICollectionVie
             }
             else{
                 if snapDocuments?.isEmpty ?? true{
+                    (self.backgroundView?.subviews.first as? MapSpinnerView)?.isHidden = true
+                    completed()
                     return
                 }
                 else{

@@ -42,7 +42,7 @@ class CodeViewController: UIViewController {
         PhoneAuthProvider.provider().verifyPhoneNumber(phoneNumber, uiDelegate: nil) { (verificationID, error) in
             if let err = error {
                 print(err.localizedDescription)
-                self.errorView.text = err.localizedDescription
+                self.errorView.text = "Incorrect Code"
                 self.errorView.textColor = .systemRed
                 sender.isEnabled = true
                 return
@@ -136,73 +136,99 @@ class CodeViewController: UIViewController {
         let credential = PhoneAuthProvider.provider().credential(
             withVerificationID: verificationID!,
             verificationCode: verificationField!)
-        KeychainWrapper.standard.removeObject(forKey: "PHONE_NUM")
-        if KeychainWrapper.standard.string(forKey: "PHONE_NUM") == nil{
-            
+        
+        if Auth.auth().currentUser == nil{
             Auth.auth().signIn(with: credential, completion: { (authResult, error) in
                 if let err = error {
-                    print("error")
-                    self.errorView.text = err.localizedDescription
+                    print(err.localizedDescription)
+                    
+                    self.errorView.text = error?.localizedDescription
                     self.errorView.textColor = .systemRed
                     sender.isEnabled = true
                     return
                 }
                 else{
                     print("Saved UID")
-                    guard let uid = Auth.auth().currentUser?.uid else{return}
-                    UserDefaults.standard.set(uid, forKey: "UID")
+                    guard let userUID = Auth.auth().currentUser?.uid else{
+                        
+                        return}
+                    UserDefaults.standard.set(userUID, forKey: "UID")
                     self.errorView.text = nil
-                   
-                    self.downloadUserInfo(uid: uid, userVC: nil, feedVC: nil, downloadingPersonalDP: true, doNotDownloadDP: false, downloader: SDWebImageDownloader.shared, userInfoToUse: nil, queryOnUsername: false, completed: { uid, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followersCount, followingCount in
-                        
-                        userInfo.uid = uid
-                        
-                        UserDefaults.standard.set(self.phoneNumber, forKey: "PHONE_NUM")
-                        if username == nil{
-                            self.performSegue(withIdentifier: "toSetup", sender: nil)
+                    let spinner = MapSpinnerView.init(frame: CGRect(x: 5, y: 5, width: self.errorView.frame.height, height: self.errorView.frame.height))
+                    spinner.center = self.errorView.center
+                    self.errorView.addSubview(spinner)
+                    spinner.animate()
+                    userInfo.uid = userUID
+                    UserDefaults.standard.set(self.phoneNumber, forKey: "PHONE_NUM")
+                    self.loadUser(userUID: userUID){ success in
+                        if success{
+                            self.performSegue(withIdentifier: "toProfile", sender: nil)
                         }
                         else{
-                            self.setUserInfo(username: username, fullname: fullName, image: imgData, bio: bio, notifID: notifID, dpUID: dpUID, userFollowing: userFollowing, followerCount: followersCount, postCount: postCount, followingCount: followingCount, usersBlocking: usersBlocking)
-                            self.performSegue(withIdentifier: "toProfile", sender: nil)
+                            self.performSegue(withIdentifier: "toSetup", sender: nil)
+                        }
+                    }
+                }
+            })
+        }
+        else{
+            guard let uid = Auth.auth().currentUser?.uid else{return}
+            Auth.auth().currentUser?.updatePhoneNumber(credential, completion: {(error) in
+                if error != nil{
+                    sender.isEnabled = true
+                    self.errorView.text = error?.localizedDescription
+                    self.errorView.textColor = .systemRed
+                    print(error?.localizedDescription ?? "")
+                    return
+                }
+                else{
+                    Firestore.firestore().collection("Users").document(uid).updateData(["Phone" : self.phoneNumber], completion: { error in
+                        
+                        if let err = error{
+                            print(err.localizedDescription)
+                            self.errorView.text = err.localizedDescription
+                            self.errorView.textColor = .systemRed
+                        }
+                        else{
+                            self.errorView.text = nil
+                            UserDefaults.standard.set(self.phoneNumber, forKey: "PHONE_NUM")
+                            self.performSegue(withIdentifier: "UpdatedPhone", sender: nil)
                         }
                     })
                 }
             })
         }
-        else{
-            Auth.auth().currentUser?.updatePhoneNumber(credential, completion: {(error) in
-                
-                if error != nil{
-                    sender.isEnabled = true
-                    print(error?.localizedDescription ?? "")
-                    return
-                }
-                
-                else{
-                    
-                    //KeychainWrapper.standard.set(self.phoneNumber, forKey: "PHONE_NUM")
-                    self.performSegue(withIdentifier: "Updated Phone Number", sender: nil)
-                }
-            })
-            
-            
-        }
     }
     
     func addGuidelinesLink(){
         let linkWords = "Community Guidelines"
-        let guideLineText = "By signing up for Thred, you agree to our \(linkWords)"
+        let privWords = "Privacy Policy"
+
+        let guideLineText = "By signing up for Thred, you agree to our \(linkWords) and \(privWords)"
+        
         termsOfServiceView.text = guideLineText
         let attrString = NSMutableAttributedString()
         attrString.setAttributedString(termsOfServiceView.attributedText)
         let nsText = NSString(string: guideLineText)
         let matchRange:NSRange = nsText.range(of: linkWords)
+        let matchRange2:NSRange = nsText.range(of: privWords)
+        
         guard let font = UIFont(name: "NexaW01-Heavy", size: termsOfServiceView.font?.pointSize ?? 16) else{return}
+        
         let attributes = [
             NSAttributedString.Key.link : "https://thredapps.com/community-guidelines",
             NSAttributedString.Key.font : font
         ] as [NSAttributedString.Key : Any]
+        let attributes2 = [
+            NSAttributedString.Key.link :
+            "https://thredapps.com/privacy-policy",
+            NSAttributedString.Key.font : font
+        ] as [NSAttributedString.Key : Any]
+        
         attrString.addAttributes(attributes, range: matchRange)
+        attrString.addAttributes(attributes2, range: matchRange2)
+
+        
         termsOfServiceView.attributedText = attrString
         termsOfServiceView.linkTextAttributes = [
             NSAttributedString.Key.foregroundColor : UIColor(named: "LoadingColor")!
@@ -225,4 +251,25 @@ class CodeViewController: UIViewController {
      }
      */
     
+}
+
+
+extension UIViewController{
+    func loadUser(userUID: String, completed: @escaping (Bool) -> ()){
+        self.downloadUserInfo(uid: userUID, userVC: nil, feedVC: nil, downloadingPersonalDP: true, doNotDownloadDP: false, downloader: SDWebImageDownloader.shared, userInfoToUse: nil, queryOnUsername: false, completed: { uid, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followersCount, followingCount in
+            
+            if username == nil{
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.5){
+                    completed(false)
+                }
+            }
+            else{
+                if let appdelegate: AppDelegate = UIApplication.shared.delegate as? AppDelegate{
+                    appdelegate.registerNotifs(application: UIApplication.shared)
+                }
+                self.setUserInfo(username: username, fullname: fullName, image: imgData, bio: bio, notifID: notifID, dpUID: dpUID, userFollowing: userFollowing, followerCount: followersCount, postCount: postCount, followingCount: followingCount, usersBlocking: usersBlocking)
+                completed(true)
+            }
+        })
+    }
 }

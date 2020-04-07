@@ -147,12 +147,9 @@ class PhoneAuthViewController: UIViewController, UIPickerViewDataSource, UIPicke
         navigationController?.setNavigationBarHidden(false, animated: true)
         setKeyBoardNotifs()
 
-        if let num = KeychainWrapper.standard.string(forKey: "PHONE_NUM"){
+        if let num = UserDefaults.standard.string(forKey: "PHONE_NUM"){
             let newString = num.replacingOccurrences(of: code, with: "", options: .literal, range: nil)
             phoneNumber.text = newString
-        }
-        else{
-           
         }
     }
     
@@ -188,7 +185,7 @@ class PhoneAuthViewController: UIViewController, UIPickerViewDataSource, UIPicke
         PhoneAuthProvider.provider().verifyPhoneNumber(phoneNum, uiDelegate: nil) { (verificationID, error) in
             if let err = error {
                 print(err.localizedDescription)
-                self.errorView.text = err.localizedDescription
+                self.errorView.text = err.localizedDescription.replacingOccurrences(of: "_", with: " ")
                 self.errorView.textColor = .systemRed
                 sender.isEnabled = true
                 return

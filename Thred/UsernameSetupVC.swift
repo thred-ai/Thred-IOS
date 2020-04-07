@@ -41,7 +41,7 @@ class UsernameSetupVC: UIViewController {
         
         guard var text = textField.text else {return}
         
-        text = text.replacingOccurrences(of: " ", with: "_")
+        text = text.replacingOccurrences(of: " ", with: "_").lowercased()
         textField.text = text
         
         if text.count < 4{
@@ -90,23 +90,28 @@ class UsernameSetupVC: UIViewController {
                         "Username": fieldText,
                         "Full_Name" : fullname
                     ]
-                Firestore.firestore().collection("Users").document(uid).updateData(data, completion: { error in
-                        if let err = error{
-                            sender.isEnabled = true
-                            self.updateErrorView(text: err.localizedDescription)
-                        }
-                        else{
-                            UserDefaults.standard.set(fieldText, forKey: "USERNAME")
-                            UserDefaults.standard.set(fullname, forKey: "FULLNAME")
-                            self.setDefaultDP(uid: uid){ success in
+                    self.checkAuthStatus {
+                        Firestore.firestore().collection("Users").document(uid).updateData(data, completion: { error in
+                            if let err = error{
                                 sender.isEnabled = true
-                                if success{
-                                    self.loadUserInfo()
-                                    self.performSegue(withIdentifier: "toProfile", sender: nil)
+                                self.updateErrorView(text: err.localizedDescription)
+                            }
+                            else{
+                                UserDefaults.standard.set(fieldText, forKey: "USERNAME")
+                                UserDefaults.standard.set(fullname, forKey: "FULLNAME")
+                                self.setDefaultDP(uid: uid){ success in
+                                    sender.isEnabled = true
+                                    if success{
+                                        self.loadUserInfo()
+                                        if let appdelegate: AppDelegate = UIApplication.shared.delegate as? AppDelegate{
+                                            appdelegate.registerNotifs(application: UIApplication.shared)
+                                        }
+                                        self.performSegue(withIdentifier: "toProfile", sender: nil)
+                                    }
                                 }
                             }
-                        }
-                    })
+                        })
+                    }
                 }
                 else{
                     sender.isEnabled = true

@@ -13,7 +13,8 @@ class EditUsernameVC: UIViewController, UITextFieldDelegate, UINavigationControl
 
     var username: String?
     var doneBtnPressed = false
-
+    @IBOutlet weak var errorView: UITextView!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -29,11 +30,16 @@ class EditUsernameVC: UIViewController, UITextFieldDelegate, UINavigationControl
     
     var oldText: String!
     
+    func updateErrorView(text: String){
+        errorView.textColor = .systemRed
+        errorView.text = text
+    }
+    
     @objc func textFieldDidChange(_ textField: UITextField){
         
         guard var text = textField.text else {return}
         
-        text = text.replacingOccurrences(of: " ", with: "_")
+        text = text.replacingOccurrences(of: " ", with: "_").lowercased()
         textField.text = text
         
         if text.count < 4{
@@ -63,6 +69,7 @@ class EditUsernameVC: UIViewController, UITextFieldDelegate, UINavigationControl
         sender.isEnabled = false
         guard let fieldText = usernameField.text else{return}
         guard let uid = userInfo.uid else{return}
+        errorView.text = nil
         Firestore.firestore().collection("Users").whereField("Username", isEqualTo: fieldText).getDocuments(completion: { snaps, error in
             
             if error != nil{
@@ -76,19 +83,23 @@ class EditUsernameVC: UIViewController, UITextFieldDelegate, UINavigationControl
                     let data = [
                         "Username": fieldText,
                     ]
-                Firestore.firestore().collection("Users").document(uid).updateData(data, completion: {[weak self] error in
-                        if error != nil{
-                            print(error?.localizedDescription ?? "")
-                            sender.isEnabled = true
-                        }
-                        else{
-                            self?.doneBtnPressed = true
-                            self?.navigationController?.popViewController(animated: true)
-                        }
-                    })
+                    self.checkAuthStatus {
+                        Firestore.firestore().collection("Users").document(uid).updateData(data, completion: { error in
+                            if let err = error{
+                                self.updateErrorView(text: err.localizedDescription)
+                                sender.isEnabled = true
+                            }
+                            else{
+                                self.doneBtnPressed = true
+                                sender.isEnabled = true
+                                self.navigationController?.popViewController(animated: true)
+                            }
+                        })
+                    }
                 }
                 else{
-                    //Not available
+                    sender.isEnabled = true
+                    self.updateErrorView(text: "This username is not available")
                 }
             }
         })

@@ -12,7 +12,7 @@
         <scene sceneID="Z5y-Eb-2Bc">
             <objects>
                 <navigationController storyboardIdentifier="UINavigationController-myt-A0-mhg" extendedLayoutIncludesOpaqueBars="YES" automaticallyAdjustsScrollViewInsets="NO" id="myt-A0-mhg" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="Me" image="person" catalog="system" id="1em-xL-7aa"/>
+                    <tabBarItem key="tabBarItem" title="Me" image="person" id="1em-xL-7aa"/>
                     <toolbarItems/>
                     <navigationItem key="navigationItem" id="2ND-0L-meP"/>
                     <simulatedTabBarMetrics key="simulatedBottomBarMetrics" translucent="NO"/>
@@ -56,12 +56,66 @@
                         <segue destination="hxm-5g-nJo" kind="show" identifier="toFull" id="wH1-P4-f7O"/>
                         <segue destination="HuG-d4-ma7" kind="show" identifier="toComments" id="Z1Y-ar-773"/>
                         <segue destination="uEf-Oe-AUL" kind="show" identifier="toEdit" id="aj1-W6-Mae"/>
+                        <segue destination="mWr-dz-FBQ" kind="show" identifier="toSettings" id="U7j-RQ-zrp"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="XDY-13-Hf2" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
                 <exit id="DqI-nG-dRU" userLabel="Exit" sceneMemberID="exit"/>
             </objects>
-            <point key="canvasLocation" x="3565" y="346"/>
+            <point key="canvasLocation" x="3563.7681159420295" y="345.53571428571428"/>
+        </scene>
+        <!--SettingsVC-->
+        <scene sceneID="mDv-qH-d4L">
+            <objects>
+                <tableViewController id="mWr-dz-FBQ" customClass="SettingsVC" customModule="Thred" customModuleProvider="target" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="yus-Om-uZt">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="725"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <prototypes>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="SettingsCell" rowHeight="82" id="OXX-fS-rBH">
+                                <rect key="frame" x="0.0" y="28" width="414" height="82"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="OXX-fS-rBH" id="JW8-pI-miM">
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="82"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                </tableViewCellContentView>
+                            </tableViewCell>
+                        </prototypes>
+                        <connections>
+                            <outlet property="dataSource" destination="mWr-dz-FBQ" id="1f6-AC-TFS"/>
+                            <outlet property="delegate" destination="mWr-dz-FBQ" id="obi-JW-ivz"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" id="49R-SD-xvZ"/>
+                    <connections>
+                        <segue destination="Pw2-dd-njp" kind="show" identifier="toEmail" id="uMa-Vd-Ha4"/>
+                        <segue destination="hPt-HE-bdD" kind="show" identifier="toPhoneNumAuth" id="LFo-SC-nw5"/>
+                    </connections>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="OVc-so-5PE" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="4623.188405797102" y="345.53571428571428"/>
+        </scene>
+        <!--PhoneAuthVC-->
+        <scene sceneID="s4z-bO-cbt">
+            <objects>
+                <viewControllerPlaceholder storyboardName="Main" referencedIdentifier="PhoneAuthVC" id="hPt-HE-bdD" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="Tjr-O5-4DE"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="lxZ-KJ-KHM" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="5926" y="187"/>
+        </scene>
+        <!--EmailVC-->
+        <scene sceneID="7tK-r4-OEM">
+            <objects>
+                <viewControllerPlaceholder storyboardName="Main" referencedIdentifier="EmailVC" id="Pw2-dd-njp" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="xdo-Eu-7jK"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="7o5-YZ-hHv" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="5915" y="461"/>
         </scene>
         <!--EditProfileVC-->
         <scene sceneID="9np-68-THM">
@@ -101,7 +155,7 @@
         </scene>
     </scenes>
     <resources>
-        <image name="person" catalog="system" width="64" height="58"/>
+        <image name="person" width="33.5" height="33.5"/>
         <namedColor name="LoadingColor">
             <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

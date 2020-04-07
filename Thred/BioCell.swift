@@ -18,11 +18,12 @@ class BioCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
+        bioView.superview?.backgroundColor = ColorCompatibility.secondarySystemBackground.withAlphaComponent(0.5)
     }
+    
     
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
-        self.backgroundColor = ColorCompatibility.systemBackground
         // Configure the view for the selected state
     }
 

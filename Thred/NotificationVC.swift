@@ -61,10 +61,9 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        
         return notifications.count
-        
     }
+    
     
     override func viewDidAppear(_ animated: Bool) {
         self.navigationController?.tabBarItem.badgeValue = nil
@@ -122,7 +121,7 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         isMentionBreak:
         if notif.username == nil{
             
-            downloadUserInfo(uid: notif.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: !notif.shouldShowDP, downloader: downloader, userInfoToUse: nil, queryOnUsername: false, completed: {userUID, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followerCount, followingCount in
+            downloadUserInfo(uid: notif.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: !notif.shouldShowDP, downloader: downloader, userInfoToUse: nil, queryOnUsername: false, completed: { userUID, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followerCount, followingCount in
                 
                 if username == nil{
                     for sameNotif in self.notifications.filter({$0.uid == notif.uid}){
@@ -204,7 +203,8 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                             cell?.notifPic.image = img
                         }
                         else{
-                            tableView.downloadProductImage(pictureProduct: nil, followingUID: uid, picID: notif.picID, index: 0, downloader: self.downloader, feedVC: nil, friendVC: nil, userVC: nil, fullVC: nil, type: nil, product: nil, completed: { img, imgID in
+                            guard let productUID = product?.uid else{return}
+                            tableView.downloadProductImage(pictureProduct: nil, followingUID: productUID, picID: notif.picID, index: 0, downloader: self.downloader, feedVC: nil, friendVC: nil, userVC: nil, fullVC: nil, type: nil, product: nil, completed: { img, imgID in
                                 cache.storeImageData(toDisk: img?.pngData(), forKey: imgID)
                                 notif.picID = imgID
                                 cell?.notifPic.image = img
@@ -236,6 +236,18 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     var selectedObject: Any!
     var selectedComment: Comment!
     
+    
+    @IBAction func toCart(_ sender: UIBarButtonItem) {
+        navigationController?.segueToCart()
+    }
+    
+    @IBAction func toSales(_ sender: UIBarButtonItem) {
+        navigationController?.segueToSales()
+        
+        
+ 
+    }
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         let notif = notifications[indexPath.row]
@@ -247,9 +259,40 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
             selectedObject = notif.product
             
             if notif.notifType == "Mention" || notif.notifType == "Comment"{
-                selectedComment = Comment(timestamp: notif.timestamp, message: notif.commentMessage, commentID: notif.commentID, userInfo: UserInfo(uid: notif.uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: nil, postCount: nil, followingCount: nil, usersBlocking: []))
+                selectedComment = Comment(timestamp: notif.timestamp, message: notif.commentMessage, commentID: notif.commentID, userInfo: UserInfo(uid: notif.uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: []))
             }
             self.performSegue(withIdentifier: "toFull", sender: nil)
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if (editingStyle == .delete) {
+            deleteNotif(indexPath: indexPath)
+        }
+    }
+    
+    func deleteNotif(indexPath: IndexPath){
+        
+        guard let uid = userInfo.uid else{return}
+        guard let notifID = notifications[indexPath.row].notifID else{return}
+        notifications.removeAll(where: {$0.notifID == notifID})
+        
+        DispatchQueue.main.async {
+            self.tableView.performBatchUpdates({
+                self.tableView.deleteRows(at: [indexPath], with: .fade)
+            }, completion: { finished in
+                if finished{
+                    Firestore.firestore().collection("Users/\(uid)/Notifications").document(notifID).delete(completion: { error in
+                        if let err = error{
+                            print(err.localizedDescription)
+                        }
+                    })
+                }
+            })
         }
     }
     
@@ -282,10 +325,12 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         cell.notifLbl.addLinks(isNotification: true)
         tableView.checkNotifTimes(notif: notif, timestampLbl: cell.timestampLbl)
         
+        DispatchQueue.main.async{
             UIView.setAnimationsEnabled(false)
+            self.tableView.beginUpdates()
             self.tableView.endUpdates()
             UIView.setAnimationsEnabled(true)
-        
+        }
     }
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
@@ -326,7 +371,6 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         })
     }
     
-
     @IBOutlet weak var tableView: UITableView!
     
     
@@ -341,8 +385,8 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         let refresher = BouncingTitleRefreshControl(title: "thred")
         refresher.addTarget(self, action: #selector(refresh(_:)), for: UIControl.Event.valueChanged)
         tableView.addSubview(refresher)
-        
         tableView.adjustForCenterBtn(footerColor: ColorCompatibility.systemBackground, offset: nil, vc: self)
+     
         
         if !isLoading{
             isLoading = true
@@ -382,46 +426,48 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     func getNotifications(completed: @escaping () -> ()){
         
         guard let uid = userInfo.uid else{return}
-        refreshLists(userUID: uid){
-            let query = Firestore.firestore().collection("Users/\(uid)/Notifications").order(by: "Timestamp", descending: true).limit(to: 20)
-            query.getDocuments(completion: { snaps, error in
-                if error != nil{
-                    print(error?.localizedDescription ?? "")
-                    completed()
-                }else{
-                    if let docs = snaps?.documents, !docs.isEmpty{
+        checkAuthStatus {
+            self.refreshLists(userUID: uid){
+                let query = Firestore.firestore().collection("Users/\(uid)/Notifications").order(by: "Timestamp", descending: true).limit(to: 20)
+                query.getDocuments(completion: { snaps, error in
+                    if error != nil{
+                        print(error?.localizedDescription ?? "")
                         completed()
-                        for doc in docs{
-                            guard let uid = doc["UID"] as? String else{
-                                
-                                continue}
-                            if userInfo.usersBlocking.contains(uid){
-                                continue
-                            }
-                            let timestamp = (doc["Timestamp"] as? Timestamp)?.dateValue()
-                            
-                            let type = doc["Type"] as? String
-                            let picID = doc["Product_ID"] as? String
-                            let commentMessage = doc["Comment_Message"] as? String
-                            let commentID = doc["Comment_ID"] as? String
-
-                            self.notifications.append(UserNotification(notifID: doc.documentID, uid: uid, notifType: type, timestamp: timestamp, username: nil, picID: picID, shouldShowDP: type == "Follow", templateColor: nil, timestampDiff: nil, commentMessage: commentMessage, commentID: commentID, deleted: false))
-                            self.tableView.performBatchUpdates({
-                                self.tableView.insertRows(at: [IndexPath(item: self.notifications.count - 1, section: 0)], with: .none)
-                            }, completion: { finished in
-                                if finished{
-                                    if doc == docs.last{
-                                        self.isInitialPull = false
-                                    }
+                    }else{
+                        if let docs = snaps?.documents, !docs.isEmpty{
+                            completed()
+                            for doc in docs{
+                                guard let uid = doc["UID"] as? String else{
+                                    
+                                    continue}
+                                if userInfo.usersBlocking.contains(uid){
+                                    continue
                                 }
-                            })
+                                let timestamp = (doc["Timestamp"] as? Timestamp)?.dateValue()
+                                
+                                let type = doc["Type"] as? String
+                                let picID = doc["Product_ID"] as? String
+                                let commentMessage = doc["Comment_Message"] as? String
+                                let commentID = doc["Comment_ID"] as? String
+
+                                self.notifications.append(UserNotification(notifID: doc.documentID, uid: uid, notifType: type, timestamp: timestamp, username: nil, picID: picID, shouldShowDP: type == "Follow", templateColor: nil, timestampDiff: nil, commentMessage: commentMessage, commentID: commentID, deleted: false))
+                                self.tableView.performBatchUpdates({
+                                    self.tableView.insertRows(at: [IndexPath(item: self.notifications.count - 1, section: 0)], with: .none)
+                                }, completion: { finished in
+                                    if finished{
+                                        if doc == docs.last{
+                                            self.isInitialPull = false
+                                        }
+                                    }
+                                })
+                            }
+                        }
+                        else{
+                            completed()
                         }
                     }
-                    else{
-                        completed()
-                    }
-                }
-            })
+                })
+            }
         }
     }
     
@@ -436,6 +482,25 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     
     
+    lazy var headerView: UIView? = {
+        
+        return loadNotifHeaderFromNib()
+    }()
+    
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        
+        if notifications.isEmpty{
+            return headerView
+        }
+        return nil
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        if notifications.isEmpty{
+            return 100
+        }
+        return 0
+    }
 
     
     // MARK: - Navigation
@@ -456,4 +521,27 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     
 
+}
+
+extension UINavigationController{
+    
+    func pushViewControllerFromLeft(viewController: UIViewController){
+        let transition = CATransition()
+        transition.duration = 0.25
+        transition.type = CATransitionType.push
+        transition.subtype = CATransitionSubtype.fromLeft
+        transition.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.easeInEaseOut)
+        view.window?.layer.add(transition, forKey: kCATransition)
+        pushViewController(viewController, animated: false)
+    }
+    
+    func popViewControllerFromRight(viewController: UIViewController){
+        let transition = CATransition()
+        transition.duration = 0.25
+        transition.type = CATransitionType.push
+        transition.subtype = CATransitionSubtype.fromRight
+        transition.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.easeInEaseOut)
+        view.window?.layer.add(transition, forKey: kCATransition)
+        popViewController(animated: false)
+    }
 }

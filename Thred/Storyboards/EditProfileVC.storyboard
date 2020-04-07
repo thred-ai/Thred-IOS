@@ -12,6 +12,9 @@
         <array key="Nexa W01 Heavy.ttf">
             <string>NexaW01-Heavy</string>
         </array>
+        <array key="Nexa W01 Regular.ttf">
+            <string>NexaW01-Regular</string>
+        </array>
     </customFonts>
     <scenes>
         <!--Navigation Controller-->
@@ -45,21 +48,21 @@
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="1" sectionFooterHeight="1" translatesAutoresizingMaskIntoConstraints="NO" id="BZM-Ke-w4t">
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="BZM-Ke-w4t">
                                 <rect key="frame" x="0.0" y="88" width="414" height="774"/>
-                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                 <view key="tableHeaderView" contentMode="scaleToFill" id="628-NX-4tE">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="221"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     <subviews>
-                                        <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="mHp-iq-29b">
-                                            <rect key="frame" x="45" y="10" width="324" height="201"/>
+                                        <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="mHp-iq-29b">
+                                            <rect key="frame" x="45" y="10" width="324" height="186"/>
                                             <subviews>
                                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="7sf-9A-wIy">
-                                                    <rect key="frame" x="0.0" y="0.0" width="324" height="167"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="324" height="139"/>
                                                     <subviews>
                                                         <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="RNj-SR-Mnx">
-                                                            <rect key="frame" x="98" y="19.5" width="128" height="128"/>
+                                                            <rect key="frame" x="98" y="11" width="128" height="128"/>
+                                                            <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <constraints>
                                                                 <constraint firstAttribute="width" constant="128" id="0iR-Fp-TQ1"/>
                                                                 <constraint firstAttribute="width" secondItem="RNj-SR-Mnx" secondAttribute="height" multiplier="1:1" id="YGO-gP-ep5"/>
@@ -68,14 +71,14 @@
                                                     </subviews>
                                                     <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                                     <constraints>
-                                                        <constraint firstItem="RNj-SR-Mnx" firstAttribute="centerY" secondItem="7sf-9A-wIy" secondAttribute="centerY" id="3vP-eR-Mof"/>
                                                         <constraint firstItem="RNj-SR-Mnx" firstAttribute="centerX" secondItem="7sf-9A-wIy" secondAttribute="centerX" id="clC-8t-8ME"/>
+                                                        <constraint firstAttribute="bottom" secondItem="RNj-SR-Mnx" secondAttribute="bottom" id="kWU-cf-AgG"/>
                                                     </constraints>
                                                 </view>
                                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Mbv-HC-QYX">
-                                                    <rect key="frame" x="0.0" y="167" width="324" height="34"/>
-                                                    <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
-                                                    <state key="normal" title="Change Profile Photo">
+                                                    <rect key="frame" x="0.0" y="149" width="324" height="37"/>
+                                                    <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="19"/>
+                                                    <state key="normal" title="Change profile photo">
                                                         <color key="titleColor" name="LoadingColor"/>
                                                     </state>
                                                     <connections>
@@ -88,30 +91,33 @@
                                     <constraints>
                                         <constraint firstItem="mHp-iq-29b" firstAttribute="leading" secondItem="628-NX-4tE" secondAttribute="leading" constant="45" id="DWJ-Xc-0RO"/>
                                         <constraint firstAttribute="trailing" secondItem="mHp-iq-29b" secondAttribute="trailing" constant="45" id="ZCh-Pv-DnH"/>
-                                        <constraint firstAttribute="bottom" secondItem="mHp-iq-29b" secondAttribute="bottom" constant="10" id="hsu-kJ-XvW"/>
+                                        <constraint firstAttribute="bottom" secondItem="mHp-iq-29b" secondAttribute="bottom" constant="25" id="hsu-kJ-XvW"/>
                                         <constraint firstItem="mHp-iq-29b" firstAttribute="top" secondItem="628-NX-4tE" secondAttribute="top" constant="10" id="teq-yg-ljz"/>
                                     </constraints>
                                 </view>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationLevel="10" indentationWidth="10" reuseIdentifier="FullNameField" id="aEd-25-BYC" customClass="FullNameCell" customModule="Thred" customModuleProvider="target">
-                                        <rect key="frame" x="20" y="276.5" width="374" height="44"/>
+                                        <rect key="frame" x="0.0" y="249" width="414" height="60"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="aEd-25-BYC" id="pIA-9a-xoZ">
-                                            <rect key="frame" x="0.0" y="0.0" width="374" height="44"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="60"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Full Name" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="TKx-QT-ZBM">
-                                                    <rect key="frame" x="0.0" y="5" width="374" height="34"/>
+                                                <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Full Name" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="TKx-QT-ZBM">
+                                                    <rect key="frame" x="20" y="5" width="374" height="50"/>
                                                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="height" constant="50" id="I1O-Up-RvF"/>
+                                                    </constraints>
                                                     <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
                                                     <textInputTraits key="textInputTraits"/>
                                                 </textField>
                                             </subviews>
                                             <constraints>
-                                                <constraint firstItem="TKx-QT-ZBM" firstAttribute="leading" secondItem="pIA-9a-xoZ" secondAttribute="leading" id="83L-P9-rbD"/>
+                                                <constraint firstItem="TKx-QT-ZBM" firstAttribute="leading" secondItem="pIA-9a-xoZ" secondAttribute="leading" constant="20" id="83L-P9-rbD"/>
                                                 <constraint firstItem="TKx-QT-ZBM" firstAttribute="top" secondItem="pIA-9a-xoZ" secondAttribute="top" constant="5" id="9xt-sB-KGT"/>
-                                                <constraint firstAttribute="trailing" secondItem="TKx-QT-ZBM" secondAttribute="trailing" id="G3B-NI-Cr0"/>
+                                                <constraint firstAttribute="trailing" secondItem="TKx-QT-ZBM" secondAttribute="trailing" constant="20" id="G3B-NI-Cr0"/>
                                                 <constraint firstAttribute="bottom" secondItem="TKx-QT-ZBM" secondAttribute="bottom" constant="5" id="qky-Nc-4Qs"/>
                                             </constraints>
                                         </tableViewCellContentView>
@@ -121,23 +127,26 @@
                                         </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="UsernameField" id="N5G-6Q-wve" customClass="UsernameCell" customModule="Thred" customModuleProvider="target">
-                                        <rect key="frame" x="20" y="320.5" width="374" height="44"/>
+                                        <rect key="frame" x="0.0" y="309" width="414" height="60"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="N5G-6Q-wve" id="jrs-HX-BPN">
-                                            <rect key="frame" x="0.0" y="0.0" width="374" height="44"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="60"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Username" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Ptn-WV-Vqi">
-                                                    <rect key="frame" x="0.0" y="5" width="374" height="34"/>
+                                                <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Username" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Ptn-WV-Vqi">
+                                                    <rect key="frame" x="20" y="5" width="374" height="50"/>
                                                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="height" constant="50" id="AaQ-5f-ExH"/>
+                                                    </constraints>
                                                     <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
                                                     <textInputTraits key="textInputTraits"/>
                                                 </textField>
                                             </subviews>
                                             <constraints>
-                                                <constraint firstItem="Ptn-WV-Vqi" firstAttribute="leading" secondItem="jrs-HX-BPN" secondAttribute="leading" id="SAP-Ae-cyE"/>
-                                                <constraint firstAttribute="trailing" secondItem="Ptn-WV-Vqi" secondAttribute="trailing" id="jsE-uE-bTH"/>
+                                                <constraint firstItem="Ptn-WV-Vqi" firstAttribute="leading" secondItem="jrs-HX-BPN" secondAttribute="leading" constant="20" id="SAP-Ae-cyE"/>
+                                                <constraint firstAttribute="trailing" secondItem="Ptn-WV-Vqi" secondAttribute="trailing" constant="20" id="jsE-uE-bTH"/>
                                                 <constraint firstAttribute="bottom" secondItem="Ptn-WV-Vqi" secondAttribute="bottom" constant="5" id="tNH-FK-Nn3"/>
                                                 <constraint firstItem="Ptn-WV-Vqi" firstAttribute="top" secondItem="jrs-HX-BPN" secondAttribute="top" constant="5" id="uHp-2U-tvf"/>
                                             </constraints>
@@ -148,24 +157,36 @@
                                         </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="BioField" rowHeight="167" id="gfp-Y1-jXW" customClass="BioCell" customModule="Thred" customModuleProvider="target">
-                                        <rect key="frame" x="20" y="364.5" width="374" height="167"/>
+                                        <rect key="frame" x="0.0" y="369" width="414" height="167"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="gfp-Y1-jXW" id="W0z-ZC-Ofb">
-                                            <rect key="frame" x="0.0" y="0.0" width="374" height="167"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="167"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" userInteractionEnabled="NO" contentMode="scaleToFill" scrollEnabled="NO" editable="NO" text="&quot;Bio&quot;" textAlignment="natural" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="IvA-fN-rrN">
-                                                    <rect key="frame" x="0.0" y="0.0" width="374" height="167"/>
-                                                    <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
-                                                    <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
-                                                    <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
-                                                </textView>
+                                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="gIt-AI-avK">
+                                                    <rect key="frame" x="0.0" y="10" width="414" height="147"/>
+                                                    <subviews>
+                                                        <textView clipsSubviews="YES" multipleTouchEnabled="YES" userInteractionEnabled="NO" contentMode="scaleToFill" scrollEnabled="NO" editable="NO" text="&quot;Bio&quot;" textAlignment="center" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="IvA-fN-rrN">
+                                                            <rect key="frame" x="10" y="10" width="394" height="127"/>
+                                                            <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+                                                            <fontDescription key="fontDescription" name="NexaW01-Regular" family="NexaW01-Regular" pointSize="17"/>
+                                                            <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                                        </textView>
+                                                    </subviews>
+                                                    <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                                    <constraints>
+                                                        <constraint firstItem="IvA-fN-rrN" firstAttribute="leading" secondItem="gIt-AI-avK" secondAttribute="leading" constant="10" id="JP0-p5-kfO"/>
+                                                        <constraint firstItem="IvA-fN-rrN" firstAttribute="top" secondItem="gIt-AI-avK" secondAttribute="top" constant="10" id="Oss-e2-i3Z"/>
+                                                        <constraint firstAttribute="trailing" secondItem="IvA-fN-rrN" secondAttribute="trailing" constant="10" id="VTe-qU-9Ug"/>
+                                                        <constraint firstAttribute="bottom" secondItem="IvA-fN-rrN" secondAttribute="bottom" constant="10" id="jDT-O1-mNQ"/>
+                                                    </constraints>
+                                                </view>
                                             </subviews>
                                             <constraints>
-                                                <constraint firstItem="IvA-fN-rrN" firstAttribute="top" secondItem="W0z-ZC-Ofb" secondAttribute="top" id="GrC-Hr-mij"/>
-                                                <constraint firstAttribute="trailing" secondItem="IvA-fN-rrN" secondAttribute="trailing" id="aKf-MP-yTo"/>
-                                                <constraint firstAttribute="bottom" secondItem="IvA-fN-rrN" secondAttribute="bottom" id="fY5-le-FrW"/>
-                                                <constraint firstItem="IvA-fN-rrN" firstAttribute="leading" secondItem="W0z-ZC-Ofb" secondAttribute="leading" id="wlD-a5-cqF"/>
+                                                <constraint firstAttribute="bottom" secondItem="gIt-AI-avK" secondAttribute="bottom" constant="10" id="Dhv-US-oRt"/>
+                                                <constraint firstItem="gIt-AI-avK" firstAttribute="leading" secondItem="W0z-ZC-Ofb" secondAttribute="leading" id="FM4-S4-OPd"/>
+                                                <constraint firstAttribute="trailing" secondItem="gIt-AI-avK" secondAttribute="trailing" id="MOz-n6-0lM"/>
+                                                <constraint firstItem="gIt-AI-avK" firstAttribute="top" secondItem="W0z-ZC-Ofb" secondAttribute="top" constant="10" id="VWZ-Nt-LVF"/>
                                             </constraints>
                                         </tableViewCellContentView>
                                         <connections>
@@ -210,7 +231,7 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="aVV-hw-qdh" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
                 <exit id="bII-k5-nOi" userLabel="Exit" sceneMemberID="exit"/>
             </objects>
-            <point key="canvasLocation" x="8518" y="1343"/>
+            <point key="canvasLocation" x="8517.391304347826" y="1342.6339285714284"/>
         </scene>
         <!--EditUsernameVC-->
         <scene sceneID="8m4-ze-tyh">
@@ -239,10 +260,10 @@
     </scenes>
     <resources>
         <namedColor name="LoadingColor">
-            <color red="0.089999999999999997" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="LoadingColor">
-            <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+            <color red="0.089999999999999997" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

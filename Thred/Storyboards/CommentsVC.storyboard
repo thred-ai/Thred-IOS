@@ -48,7 +48,7 @@
                                                                         <stackView opaque="NO" contentMode="scaleToFill" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="nb9-jC-UJw">
                                                                             <rect key="frame" x="10" y="10" width="345" height="40"/>
                                                                             <subviews>
-                                                                                <imageView contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="default_DP.png" translatesAutoresizingMaskIntoConstraints="NO" id="hGg-rz-SmR">
+                                                                                <imageView contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="default_DP" translatesAutoresizingMaskIntoConstraints="NO" id="hGg-rz-SmR">
                                                                                     <rect key="frame" x="0.0" y="0.0" width="40" height="40"/>
                                                                                     <color key="backgroundColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                                     <gestureRecognizers/>
@@ -285,7 +285,7 @@
     </scenes>
     <resources>
         <image name="SendIcon" width="30" height="30"/>
-        <image name="default_DP.png" width="564" height="564"/>
+        <image name="default_DP" width="33.333332061767578" height="33.333332061767578"/>
         <namedColor name="LoadingColor">
             <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

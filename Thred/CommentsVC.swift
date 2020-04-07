@@ -84,33 +84,37 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
                 self.tableView.scrollToRow(at: indexPath, at: .top, animated: true)
             }
         })
+        if let attr = textView.attributedText.mutableCopy() as? NSMutableAttributedString{
+            attr.removeAttribute(NSAttributedString.Key.link, range: NSMakeRange(0, attr.length))
+            attr.setAttributes([NSAttributedString.Key.font : UIFont(name: "NexaW01-Regular", size: textView.font?.pointSize ?? 15)!, NSAttributedString.Key.foregroundColor : ColorCompatibility.secondaryLabel], range: NSMakeRange(0, attr.length))
+            textView.attributedText = attr
+        }
         
         textView.text.removeAll()
         textViewDidChange(textView)
+        
         sender.isEnabled = true
         
-        Functions.functions().httpsCallable("updateComment").call(data, completion: { result, error in
-            if let err = error{
-                print(err.localizedDescription)
-            }
-            else{
-                self.post.comments += 1
-                print(result ?? "")
-            }
-        })
-    }
-    
-    
-    override func viewDidDisappear(_ animated: Bool) {
-        NotificationCenter.default.removeObserver(self)
-        downloader?.invalidateSessionAndCancel(true)
+        checkAuthStatus {
+            Functions.functions().httpsCallable("updateComment").call(data, completion: { result, error in
+                if let err = error{
+                    print(err.localizedDescription)
+                }
+                else{
+                    self.post.comments += 1
+                    print(result ?? "")
+                }
+            })
+        }
     }
     
     
     override func viewWillDisappear(_ animated: Bool) {
+        NotificationCenter.default.removeObserver(self)
         textView.resignFirstResponder()
+        downloader?.invalidateSessionAndCancel(true)
     }
-    
+
     
     
     override func viewDidLoad() {
@@ -141,9 +145,11 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
         
         isLoading = true
         guard let userUID = userInfo.uid else{return}
-        refreshLists(userUID: userUID){
-            self.getComments(isRefreshing: true){
-                self.isLoading = false
+        checkAuthStatus {
+            self.refreshLists(userUID: userUID){
+                self.getComments(isRefreshing: true){
+                    self.isLoading = false
+                }
             }
         }
     }
@@ -216,7 +222,7 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
                         }
                         let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
                         let message = snap["Message"] as? String
-                        let userInfo = UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: nil, postCount: nil, followingCount: nil, usersBlocking: [])
+                        let userInfo = UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [])
                         
                         self.comments.append(Comment(timestamp: timestamp, message: message, commentID: snap.documentID, userInfo: userInfo))
                         
@@ -316,6 +322,10 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
                             comment.userInfo.bio = bio
                             comment.userInfo.dp = img
                             comment.userInfo.usersBlocking = usersBlocking
+                            comment.userInfo.postCount = postCount
+                            comment.userInfo.followerCount = followersCount
+                            comment.userInfo.followingCount = followingCount
+
                             cell?.fullNameLbl.text = fullName ?? "null"
                             cell?.usernameLbl.text = "@\(username ?? "null")"
                             cell?.profilePicture.image = img
@@ -366,6 +376,9 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
         super.viewWillAppear(true)
         self.hideCenterBtn()
         setKeyBoardNotifs()
+        if downloader == nil{
+            downloader = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
+        }
     }
     
     
@@ -433,11 +446,7 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
     
     func textViewDidChange(_ textView: UITextView) {
         placeholderLabel.isHidden = !textView.text.isEmpty
-        if let attr = textView.attributedText.mutableCopy() as? NSMutableAttributedString{
-            attr.removeAttribute(NSAttributedString.Key.link, range: NSMakeRange(0, attr.length))
-            attr.setAttributes([NSAttributedString.Key.font : UIFont(name: "NexaW01-Regular", size: textView.font?.pointSize ?? 15)!, NSAttributedString.Key.foregroundColor : ColorCompatibility.secondaryLabel], range: NSMakeRange(0, attr.length))
-            textView.attributedText = attr
-        }
+        
         textView.addLinks(isNotification: false)
         let check = (self.view.frame.height - self.view.frame.height / 2) - (textView.sizeThatFits(CGSize(width: initialWidth, height: CGFloat.greatestFiniteMagnitude)).height)
         print(check)
@@ -475,6 +484,11 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
 
         if let lastText = textView.text.components(separatedBy: " ").last{
             if lastText.starts(with: "@"){
+                if let attr = textView.attributedText.mutableCopy() as? NSMutableAttributedString{
+                    attr.removeAttribute(NSAttributedString.Key.link, range: NSMakeRange(0, attr.length))
+                    attr.setAttributes([NSAttributedString.Key.font : UIFont(name: "NexaW01-Regular", size: textView.font?.pointSize ?? 15)!, NSAttributedString.Key.foregroundColor : ColorCompatibility.secondaryLabel], range: NSMakeRange(0, attr.length))
+                    textView.attributedText = attr
+                }
                 let username = String(lastText.dropFirst())
                 searchTaggingView(searchText: username)
             }
@@ -547,7 +561,7 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
                                     continue
                                 }
                                 
-                                let user = UserInfo(uid: uid, dp: nil, dpID: dpLink, username: username, fullName: fullname, bio: bio, notifID: nil, userFollowing: userFollowing ?? [], userLiked: [], followerCount: followerCount, postCount: postCount, followingCount: followingCount, usersBlocking: usersBlocking ?? [])
+                                let user = UserInfo(uid: uid, dp: nil, dpID: dpLink, username: username, fullName: fullname, bio: bio, notifID: nil, userFollowing: userFollowing ?? [], userLiked: [], followerCount: followerCount ?? 0, postCount: postCount ?? 0, followingCount: followingCount ?? 0, usersBlocking: usersBlocking ?? [])
 
                                 self.loadedUsers.append(user)
                                 self.taggingTableView.reloadData()
@@ -672,6 +686,58 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
             placeholderLabel.isHidden = !textView.text.isEmpty
         }
         
+    }
+    
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        
+        if tableView == self.tableView{
+            if self.comments[indexPath.row].userInfo.uid == userInfo.uid || self.post.uid == userInfo.uid{
+                return true
+            }
+        }
+        return false
+    }
+
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if (editingStyle == .delete) {
+            
+            guard let commentID = self.comments[indexPath.row].commentID else{return}
+            guard let message = self.comments[indexPath.row].message else{return}
+            self.comments.remove(at: indexPath.row)
+            DispatchQueue.main.async {
+                self.tableView.performBatchUpdates({
+                    self.tableView.deleteRows(at: [indexPath], with: .fade)
+                }, completion: nil)
+            }
+            deleteComment(commentID: commentID, message: message)
+        }
+    }
+    
+    func deleteComment(commentID: String, message: String){
+        
+        guard let uid = userInfo.uid else{return}
+        let data = [
+            
+            "product_id" : post.productID,
+            "creator_uid" : post.uid,
+            "uid" : uid,
+            "message" : message,
+            "is_adding" : false,
+            "tagged" : [],
+            "comment_id" : commentID
+            
+        ] as [String : Any]
+        checkAuthStatus {
+            Functions.functions().httpsCallable("updateComment").call(data, completion: { result, error in
+                if let err = error{
+                    print(err.localizedDescription)
+                }
+                else{
+                    self.post.comments -= 1
+                    print(result ?? "")
+                }
+            })
+        }
     }
     
 

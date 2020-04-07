@@ -17,7 +17,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="414" height="725"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="veH-Cx-jQZ">
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="veH-Cx-jQZ">
                                 <rect key="frame" x="0.0" y="0.0" width="414" height="725"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                             </tableView>
@@ -35,20 +35,26 @@
                     <extendedEdge key="edgesForExtendedLayout" bottom="YES"/>
                     <navigationItem key="navigationItem" id="sMD-LP-3Ri">
                         <nil key="title"/>
-                        <barButtonItem key="leftBarButtonItem" image="cart" catalog="system" id="FIa-rd-HO2">
-                            <color key="tintColor" name="LoadingColor"/>
-                        </barButtonItem>
-                        <barButtonItem key="rightBarButtonItem" image="creditcard.fill" catalog="system" id="agr-0f-dMy">
-                            <color key="tintColor" name="LoadingColor"/>
-                        </barButtonItem>
+                        <rightBarButtonItems>
+                            <barButtonItem image="cart" id="FIa-rd-HO2">
+                                <color key="tintColor" name="LoadingColor"/>
+                                <connections>
+                                    <action selector="toCart:" destination="b26-ny-SLm" id="B3L-ni-3of"/>
+                                </connections>
+                            </barButtonItem>
+                            <barButtonItem image="creditcard.fill" id="agr-0f-dMy">
+                                <color key="tintColor" name="LoadingColor"/>
+                                <connections>
+                                    <action selector="toSales:" destination="b26-ny-SLm" id="XRg-o5-DJy"/>
+                                </connections>
+                            </barButtonItem>
+                        </rightBarButtonItems>
                     </navigationItem>
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO"/>
                     <connections>
                         <outlet property="tableView" destination="veH-Cx-jQZ" id="GbD-Mc-Elt"/>
-                        <segue destination="eBo-n3-iA3" kind="show" identifier="toCart" id="XyQ-gD-haw"/>
-                        <segue destination="bD1-q8-4ej" kind="show" identifier="toSalesDash" id="UMj-td-qSy"/>
-                        <segue destination="qfS-Bu-k16" kind="show" identifier="toFull" id="Zy4-om-ZG2"/>
                         <segue destination="e2E-In-S10" kind="show" identifier="toFriend" id="KPO-MO-eLU"/>
+                        <segue destination="qfS-Bu-k16" kind="show" identifier="toFull" id="4BI-Xg-php"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="M8y-kh-zqS" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -59,7 +65,7 @@
         <scene sceneID="OPt-qg-wgf">
             <objects>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="7QI-eE-7ei" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="Notifications" image="tag" catalog="system" id="ICw-1t-TqU"/>
+                    <tabBarItem key="tabBarItem" title="Notifications" image="tag" id="ICw-1t-TqU"/>
                     <toolbarItems/>
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO"/>
                     <simulatedTabBarMetrics key="simulatedBottomBarMetrics" translucent="NO"/>
@@ -80,10 +86,12 @@
         <!--ShoppingCartVC-->
         <scene sceneID="1c3-LD-rqh">
             <objects>
-                <viewControllerPlaceholder storyboardName="ShoppingCartVC" id="eBo-n3-iA3" sceneMemberID="viewController"/>
+                <viewControllerPlaceholder storyboardName="ShoppingCartVC" id="eBo-n3-iA3" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="SZq-vi-X9N"/>
+                </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="50s-vD-Z28" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1493" y="873"/>
+            <point key="canvasLocation" x="1804" y="798"/>
         </scene>
         <!--SalesVC-->
         <scene sceneID="uFQ-mv-A87">
@@ -91,15 +99,17 @@
                 <viewControllerPlaceholder storyboardName="SalesVC" id="bD1-q8-4ej" sceneMemberID="viewController"/>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="bpN-Pp-Lpz" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2164" y="873"/>
+            <point key="canvasLocation" x="3258" y="798"/>
         </scene>
         <!--FullProductVC-->
         <scene sceneID="3Qw-bp-Tk9">
             <objects>
-                <viewControllerPlaceholder storyboardIdentifier="UIViewController-TTd-by-I1I" storyboardName="FullProductVC" id="qfS-Bu-k16" sceneMemberID="viewController"/>
+                <viewControllerPlaceholder storyboardIdentifier="UIViewController-TTd-by-I1I" storyboardName="FullProductVC" id="qfS-Bu-k16" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="prs-Rr-VqK"/>
+                </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="TBR-EG-aRq" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3507" y="873"/>
+            <point key="canvasLocation" x="2866" y="798"/>
         </scene>
         <!--FriendVC-->
         <scene sceneID="URh-cz-f3v">
@@ -107,13 +117,13 @@
                 <viewControllerPlaceholder storyboardIdentifier="UITableViewController-Esw-Ig-1v3" storyboardName="FriendVC" id="e2E-In-S10" sceneMemberID="viewController"/>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Ysn-la-mHU" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2810" y="873"/>
+            <point key="canvasLocation" x="2168" y="798"/>
         </scene>
     </scenes>
     <resources>
-        <image name="cart" catalog="system" width="64" height="50"/>
-        <image name="creditcard.fill" catalog="system" width="64" height="44"/>
-        <image name="tag" catalog="system" width="64" height="58"/>
+        <image name="cart" width="33.333332061767578" height="33.333332061767578"/>
+        <image name="creditcard.fill" width="33.333332061767578" height="33.333332061767578"/>
+        <image name="tag" width="33.333332061767578" height="33.333332061767578"/>
         <namedColor name="LoadingColor">
             <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

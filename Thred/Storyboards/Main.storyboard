@@ -101,6 +101,7 @@
                     <nil key="simulatedTopBarMetrics"/>
                     <connections>
                         <outlet property="signInBtn" destination="BVT-DQ-hcZ" id="Kpt-Pn-UUE"/>
+                        <outlet property="textView" destination="JC1-pt-v2E" id="FGF-eb-1UX"/>
                         <outlet property="thredBackgroundView" destination="sgc-7T-sEn" id="70L-uv-ZbE"/>
                         <outlet property="thredLogoView" destination="GBZ-jc-zIC" id="FgL-Wn-elP"/>
                     </connections>
@@ -112,7 +113,7 @@
         <!--EmailVC-->
         <scene sceneID="yJq-Em-XxY">
             <objects>
-                <viewController id="2rC-A6-6xO" customClass="EmailVC" customModule="Thred" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="EmailVC" id="2rC-A6-6xO" customClass="EmailVC" customModule="Thred" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="xmr-N4-koQ">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="524"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -129,8 +130,8 @@
                                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="O7I-Na-RVs">
                                                         <rect key="frame" x="0.0" y="0.0" width="230" height="202"/>
                                                         <subviews>
-                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="envelope.badge.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="Fb6-T2-qWP">
-                                                                <rect key="frame" x="0.0" y="-0.5" width="230" height="73.5"/>
+                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="envelope.badge.fill" translatesAutoresizingMaskIntoConstraints="NO" id="Fb6-T2-qWP">
+                                                                <rect key="frame" x="0.0" y="0.0" width="230" height="75"/>
                                                                 <color key="tintColor" name="LoadingColor"/>
                                                                 <constraints>
                                                                     <constraint firstAttribute="height" constant="75" id="n4X-SW-zvS"/>
@@ -218,9 +219,11 @@
                         <outlet property="errorView" destination="kul-Wj-kTg" id="ksm-fx-UpD"/>
                         <outlet property="scrollView" destination="pZo-mM-4HN" id="se1-JG-wpM"/>
                         <segue destination="JBj-b1-IIh" kind="show" identifier="toAccountSetup" id="6VG-5B-o2U"/>
+                        <segue destination="hu0-2V-ial" kind="unwind" identifier="UnwindToSettings" unwindAction="unwindToSettingsWithSegue:" id="eMV-Da-4Pd"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="JPQ-DC-76e" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+                <exit id="hu0-2V-ial" userLabel="Exit" sceneMemberID="exit"/>
             </objects>
             <point key="canvasLocation" x="1815" y="-2739"/>
         </scene>
@@ -244,8 +247,8 @@
                                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="45" translatesAutoresizingMaskIntoConstraints="NO" id="BKn-bY-ea5">
                                                         <rect key="frame" x="0.0" y="0.0" width="230" height="215"/>
                                                         <subviews>
-                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="person.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="G0d-XS-ffJ">
-                                                                <rect key="frame" x="0.0" y="1.5" width="230" height="72"/>
+                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="person.fill" translatesAutoresizingMaskIntoConstraints="NO" id="G0d-XS-ffJ">
+                                                                <rect key="frame" x="0.0" y="0.0" width="230" height="75"/>
                                                                 <color key="tintColor" name="LoadingColor"/>
                                                                 <constraints>
                                                                     <constraint firstAttribute="height" constant="75" id="rDe-79-jOa"/>
@@ -270,7 +273,7 @@
                                                                             <constraint firstAttribute="height" constant="65" id="H8E-mL-zTJ"/>
                                                                         </constraints>
                                                                         <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
-                                                                        <textInputTraits key="textInputTraits" keyboardType="emailAddress" returnKeyType="continue" enablesReturnKeyAutomatically="YES" textContentType="email"/>
+                                                                        <textInputTraits key="textInputTraits" keyboardType="emailAddress" returnKeyType="continue" enablesReturnKeyAutomatically="YES" textContentType="name"/>
                                                                     </textField>
                                                                 </subviews>
                                                             </stackView>
@@ -298,11 +301,10 @@
                                                                             <constraint firstAttribute="height" constant="65" id="4mK-VO-bb0"/>
                                                                         </constraints>
                                                                         <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
-                                                                        <textInputTraits key="textInputTraits" keyboardType="emailAddress" returnKeyType="continue" enablesReturnKeyAutomatically="YES" textContentType="email"/>
+                                                                        <textInputTraits key="textInputTraits" keyboardType="emailAddress" returnKeyType="continue" enablesReturnKeyAutomatically="YES" textContentType="username"/>
                                                                     </textField>
                                                                     <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="P4I-w6-9ze">
                                                                         <rect key="frame" x="0.0" y="75" width="230" height="69"/>
-                                                                        <string key="text">heyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyheyhey</string>
                                                                         <color key="textColor" systemColor="labelColor" cocoaTouchSystemColor="darkTextColor"/>
                                                                         <fontDescription key="fontDescription" name="NexaW01-Regular" family="NexaW01-Regular" pointSize="13"/>
                                                                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
@@ -390,7 +392,7 @@
             <objects>
                 <navigationController storyboardIdentifier="SignedInVC" modalPresentationStyle="fullScreen" navigationBarHidden="YES" id="2fs-H7-jhU" sceneMemberID="viewController">
                     <navigationItem key="navigationItem" id="QjZ-83-JS6"/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="zgI-OS-AzM">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translucent="NO" id="zgI-OS-AzM">
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <connections>
@@ -399,7 +401,7 @@
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="pfx-v7-2Pk" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1278" y="-1935"/>
+            <point key="canvasLocation" x="2406" y="-1921"/>
         </scene>
         <!--DesignVC-->
         <scene sceneID="BuY-c0-9Uf">
@@ -464,7 +466,7 @@
         <!--Navigation Controller-->
         <scene sceneID="FFw-dg-FJz">
             <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="icp-Vx-IR7" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="LoginVC" automaticallyAdjustsScrollViewInsets="NO" id="icp-Vx-IR7" sceneMemberID="viewController">
                     <toolbarItems/>
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translucent="NO" id="UKe-ek-fBS">
@@ -488,7 +490,7 @@
         <!--Sign Up-->
         <scene sceneID="YTq-uR-hea">
             <objects>
-                <viewController storyboardIdentifier="UIViewController-b3g-Jl-1N3" title="Sign Up" extendedLayoutIncludesOpaqueBars="YES" id="FfZ-MC-Je7" customClass="PhoneAuthViewController" customModule="Thred" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="PhoneAuthVC" title="Sign Up" extendedLayoutIncludesOpaqueBars="YES" id="FfZ-MC-Je7" customClass="PhoneAuthViewController" customModule="Thred" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="X3s-KN-fck">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -502,14 +504,14 @@
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="hWO-sL-ceM">
                                                 <rect key="frame" x="0.0" y="0.0" width="230" height="135"/>
                                                 <subviews>
-                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="phone.fill.arrow.right" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="x6S-4x-cy1">
-                                                        <rect key="frame" x="0.0" y="-0.5" width="230" height="75.5"/>
+                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="phone.fill.arrow.right" translatesAutoresizingMaskIntoConstraints="NO" id="x6S-4x-cy1">
+                                                        <rect key="frame" x="0.0" y="0.0" width="230" height="75"/>
                                                         <color key="tintColor" name="LoadingColor"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" constant="75" id="Pjo-I4-Uho"/>
                                                         </constraints>
                                                     </imageView>
-                                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" editable="NO" text="Enter your phone number to sign in or sign up" textAlignment="center" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yDF-We-gJG">
+                                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" editable="NO" text="Enter your phone number to continue" textAlignment="center" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yDF-We-gJG">
                                                         <rect key="frame" x="0.0" y="75" width="230" height="60"/>
                                                         <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
                                                         <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
@@ -524,13 +526,13 @@
                                                 <rect key="frame" x="0.0" y="155" width="230" height="209"/>
                                                 <subviews>
                                                     <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="uza-p6-tb1">
-                                                        <rect key="frame" x="0.0" y="0.0" width="230" height="59"/>
+                                                        <rect key="frame" x="0.0" y="0.0" width="230" height="33"/>
                                                         <color key="textColor" systemColor="labelColor" cocoaTouchSystemColor="darkTextColor"/>
                                                         <fontDescription key="fontDescription" name="NexaW01-Regular" family="NexaW01-Regular" pointSize="13"/>
                                                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                     </textView>
                                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="BmA-xB-Huw">
-                                                        <rect key="frame" x="0.0" y="59" width="230" height="120"/>
+                                                        <rect key="frame" x="0.0" y="33" width="230" height="120"/>
                                                         <subviews>
                                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="qLA-tf-X5C">
                                                                 <rect key="frame" x="0.0" y="0.0" width="230" height="120"/>
@@ -568,7 +570,7 @@
                                                         </subviews>
                                                     </stackView>
                                                     <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" editable="NO" text="Standard SMS rates may apply" textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="DdX-eC-dVE">
-                                                        <rect key="frame" x="0.0" y="179" width="230" height="30"/>
+                                                        <rect key="frame" x="0.0" y="153" width="230" height="30"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" constant="30" id="q59-8g-LSQ"/>
                                                         </constraints>
@@ -577,6 +579,16 @@
                                                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                         <dataDetectorType key="dataDetectorTypes" link="YES" lookupSuggestion="YES"/>
                                                     </textView>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XBH-ww-d4U">
+                                                        <rect key="frame" x="0.0" y="183" width="230" height="26"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="11"/>
+                                                        <state key="normal" title="Don't have access to your phone number?">
+                                                            <color key="titleColor" name="LoadingColor"/>
+                                                        </state>
+                                                        <connections>
+                                                            <segue destination="gW7-v8-xtu" kind="show" identifier="toPhoneUpdate" id="3TG-Zl-dXX"/>
+                                                        </connections>
+                                                    </button>
                                                 </subviews>
                                             </stackView>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="lPg-To-rW8">
@@ -607,7 +619,7 @@
                         <viewLayoutGuide key="safeArea" id="yjw-nV-eLP"/>
                     </view>
                     <navigationItem key="navigationItem" title="thred" largeTitleDisplayMode="always" id="Wzv-1t-PfR">
-                        <barButtonItem key="backBarButtonItem" title="Back to SMS" id="oaz-IY-71m"/>
+                        <barButtonItem key="backBarButtonItem" title="SMS" id="oaz-IY-71m"/>
                         <barButtonItem key="rightBarButtonItem" image="arrowBtn" id="Cus-AI-zro">
                             <color key="tintColor" name="LoadingColor"/>
                             <connections>
@@ -648,17 +660,17 @@
                                                 <rect key="frame" x="0.0" y="0.0" width="230" height="308.5"/>
                                                 <subviews>
                                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="IIZ-EG-oKc">
-                                                        <rect key="frame" x="0.0" y="0.0" width="230" height="181.5"/>
+                                                        <rect key="frame" x="0.0" y="0.0" width="230" height="181"/>
                                                         <subviews>
-                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="text.bubble.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="k0P-Uo-Qfx">
-                                                                <rect key="frame" x="0.0" y="0.5" width="230" height="74.5"/>
+                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="text.bubble.fill" translatesAutoresizingMaskIntoConstraints="NO" id="k0P-Uo-Qfx">
+                                                                <rect key="frame" x="0.0" y="0.0" width="230" height="75"/>
                                                                 <color key="tintColor" name="LoadingColor"/>
                                                                 <constraints>
                                                                     <constraint firstAttribute="height" constant="75" id="2cw-Hg-4xF"/>
                                                                 </constraints>
                                                             </imageView>
                                                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" editable="NO" text="Enter the 6-digit verification code sent to your number" textAlignment="center" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UCq-G3-HH6">
-                                                                <rect key="frame" x="0.0" y="75" width="230" height="106.5"/>
+                                                                <rect key="frame" x="0.0" y="75" width="230" height="106"/>
                                                                 <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
                                                                 <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
                                                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
@@ -666,16 +678,19 @@
                                                         </subviews>
                                                     </stackView>
                                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="sVc-Vk-gMr">
-                                                        <rect key="frame" x="0.0" y="181.5" width="230" height="127"/>
+                                                        <rect key="frame" x="0.0" y="181" width="230" height="127.5"/>
                                                         <subviews>
                                                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="Gec-yb-pxZ">
-                                                                <rect key="frame" x="0.0" y="0.0" width="230" height="32"/>
+                                                                <rect key="frame" x="0.0" y="0.0" width="230" height="32.5"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="32.5" id="gjg-Jq-gnZ"/>
+                                                                </constraints>
                                                                 <color key="textColor" systemColor="labelColor" cocoaTouchSystemColor="darkTextColor"/>
                                                                 <fontDescription key="fontDescription" name="NexaW01-Regular" family="NexaW01-Regular" pointSize="13"/>
                                                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                             </textView>
                                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="PRe-tB-WhN">
-                                                                <rect key="frame" x="0.0" y="32" width="230" height="30"/>
+                                                                <rect key="frame" x="0.0" y="32.5" width="230" height="30"/>
                                                                 <constraints>
                                                                     <constraint firstAttribute="height" constant="30" id="oa3-WW-VHV"/>
                                                                 </constraints>
@@ -688,13 +703,13 @@
                                                                 </connections>
                                                             </button>
                                                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Code" textAlignment="center" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="Jff-GW-0cC">
-                                                                <rect key="frame" x="0.0" y="62" width="230" height="65"/>
+                                                                <rect key="frame" x="0.0" y="62.5" width="230" height="65"/>
                                                                 <color key="backgroundColor" systemColor="secondarySystemBackgroundColor" red="0.94901960780000005" green="0.94901960780000005" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                                 <constraints>
                                                                     <constraint firstAttribute="height" constant="65" id="Uj8-rv-YYt"/>
                                                                 </constraints>
                                                                 <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
-                                                                <textInputTraits key="textInputTraits" keyboardType="numberPad" returnKeyType="continue" enablesReturnKeyAutomatically="YES" textContentType="tel"/>
+                                                                <textInputTraits key="textInputTraits" keyboardType="numberPad" returnKeyType="continue" enablesReturnKeyAutomatically="YES" textContentType="one-time-code"/>
                                                             </textField>
                                                         </subviews>
                                                     </stackView>
@@ -746,6 +761,7 @@
                             </connections>
                         </barButtonItem>
                     </navigationItem>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO"/>
                     <connections>
                         <outlet property="enter" destination="tai-kM-mZ8" id="MRc-g5-dKr"/>
                         <outlet property="errorView" destination="Gec-yb-pxZ" id="bzs-T2-TaZ"/>
@@ -757,6 +773,7 @@
                         <segue destination="E8x-nm-HUT" kind="unwind" identifier="Updated Phone Number" unwindAction="unwindToEditControllerWithSegue:" id="cgg-0l-Gvo"/>
                         <segue destination="2rC-A6-6xO" kind="show" identifier="toSetup" id="4Ok-1J-bvT"/>
                         <segue destination="2fs-H7-jhU" kind="show" identifier="toProfile" id="ABE-gM-5wL"/>
+                        <segue destination="E8x-nm-HUT" kind="unwind" identifier="UpdatedPhone" unwindAction="unwindToSettingsWithSegue:" id="R3D-7y-PVE"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Wh8-Gb-cnt" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -764,14 +781,118 @@
             </objects>
             <point key="canvasLocation" x="776.25" y="-2739.0845070422533"/>
         </scene>
+        <!--Email LinkVC-->
+        <scene sceneID="y7V-4J-ogG">
+            <objects>
+                <viewController storyboardIdentifier="EmailLinkVC" id="gW7-v8-xtu" customClass="EmailLinkVC" customModule="Thred" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="qgW-Yc-wcP">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="524"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ZT6-QM-lFx">
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="524"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="45" translatesAutoresizingMaskIntoConstraints="NO" id="BcF-c8-WqM">
+                                        <rect key="frame" x="45" y="45" width="230" height="434"/>
+                                        <subviews>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="iUD-xf-8CV">
+                                                <rect key="frame" x="0.0" y="0.0" width="230" height="339"/>
+                                                <subviews>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="PaI-2y-rOH">
+                                                        <rect key="frame" x="0.0" y="0.0" width="230" height="242"/>
+                                                        <subviews>
+                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="envelope.badge.fill" translatesAutoresizingMaskIntoConstraints="NO" id="MoG-8i-bbB">
+                                                                <rect key="frame" x="0.0" y="0.0" width="230" height="75"/>
+                                                                <color key="tintColor" name="LoadingColor"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="height" constant="75" id="Sxo-ep-dTB"/>
+                                                                </constraints>
+                                                            </imageView>
+                                                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" editable="NO" text="Enter the email address associated with your phone number" textAlignment="center" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WKE-th-fsV">
+                                                                <rect key="frame" x="0.0" y="75" width="230" height="167"/>
+                                                                <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
+                                                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                                            </textView>
+                                                        </subviews>
+                                                    </stackView>
+                                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="aIl-QG-Vtg">
+                                                        <rect key="frame" x="0.0" y="242" width="230" height="32"/>
+                                                        <color key="textColor" systemColor="labelColor" cocoaTouchSystemColor="darkTextColor"/>
+                                                        <fontDescription key="fontDescription" name="NexaW01-Regular" family="NexaW01-Regular" pointSize="13"/>
+                                                        <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                                    </textView>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="802-lJ-NQR">
+                                                        <rect key="frame" x="0.0" y="274" width="230" height="65"/>
+                                                        <subviews>
+                                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Email address" textAlignment="center" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="Aec-Gv-HcW">
+                                                                <rect key="frame" x="0.0" y="0.0" width="230" height="65"/>
+                                                                <color key="backgroundColor" systemColor="secondarySystemBackgroundColor" red="0.94901960780000005" green="0.94901960780000005" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="height" constant="65" id="SdG-V4-hFA"/>
+                                                                </constraints>
+                                                                <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
+                                                                <textInputTraits key="textInputTraits" keyboardType="emailAddress" returnKeyType="continue" enablesReturnKeyAutomatically="YES" textContentType="email"/>
+                                                            </textField>
+                                                        </subviews>
+                                                    </stackView>
+                                                </subviews>
+                                            </stackView>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="lhW-Iy-utB">
+                                                <rect key="frame" x="0.0" y="384" width="230" height="50"/>
+                                            </view>
+                                        </subviews>
+                                    </stackView>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="BcF-c8-WqM" firstAttribute="leading" secondItem="ZT6-QM-lFx" secondAttribute="leading" constant="45" id="77Q-6G-VGv"/>
+                                    <constraint firstItem="BcF-c8-WqM" firstAttribute="top" secondItem="ZT6-QM-lFx" secondAttribute="top" constant="45" id="B5A-3R-nGi"/>
+                                    <constraint firstAttribute="bottom" secondItem="BcF-c8-WqM" secondAttribute="bottom" id="HsA-nL-nBh"/>
+                                    <constraint firstItem="BcF-c8-WqM" firstAttribute="centerY" secondItem="ZT6-QM-lFx" secondAttribute="centerY" id="LiA-f0-suu"/>
+                                    <constraint firstAttribute="trailing" secondItem="BcF-c8-WqM" secondAttribute="trailing" constant="45" id="R2G-Pd-pvF"/>
+                                    <constraint firstItem="BcF-c8-WqM" firstAttribute="centerX" secondItem="ZT6-QM-lFx" secondAttribute="centerX" id="lcY-Q6-uWu"/>
+                                </constraints>
+                                <viewLayoutGuide key="contentLayoutGuide" id="QX2-tT-4hb"/>
+                                <viewLayoutGuide key="frameLayoutGuide" id="PJZ-vU-W3b"/>
+                            </scrollView>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <constraints>
+                            <constraint firstItem="ZT6-QM-lFx" firstAttribute="top" secondItem="qgW-Yc-wcP" secondAttribute="top" id="0qx-lU-99w"/>
+                            <constraint firstItem="ZT6-QM-lFx" firstAttribute="leading" secondItem="hOz-6k-7zL" secondAttribute="leading" id="gYR-NN-L90"/>
+                            <constraint firstAttribute="trailing" secondItem="ZT6-QM-lFx" secondAttribute="trailing" id="lhk-na-D1o"/>
+                            <constraint firstItem="hOz-6k-7zL" firstAttribute="bottom" secondItem="ZT6-QM-lFx" secondAttribute="bottom" id="mIH-2j-4HY"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="hOz-6k-7zL"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="c9A-xh-4Ch">
+                        <barButtonItem key="rightBarButtonItem" image="arrowBtn" id="80X-Wr-c6y">
+                            <color key="tintColor" name="LoadingColor"/>
+                            <connections>
+                                <action selector="addEmail:" destination="gW7-v8-xtu" id="fmf-J2-wTg"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="emailView" destination="Aec-Gv-HcW" id="qHa-f2-9fz"/>
+                        <outlet property="errorView" destination="aIl-QG-Vtg" id="eOf-HD-hE7"/>
+                        <outlet property="scrollView" destination="ZT6-QM-lFx" id="feG-LP-f9L"/>
+                        <segue destination="JrP-n8-OzB" kind="unwind" identifier="UnwindToSettings" unwindAction="unwindToSettingsWithSegue:" id="eOm-xd-5Vt"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dFw-qq-Tf6" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+                <exit id="JrP-n8-OzB" userLabel="Exit" sceneMemberID="exit"/>
+            </objects>
+            <point key="canvasLocation" x="-325" y="-1202"/>
+        </scene>
     </scenes>
     <resources>
         <image name="arrowBtn" width="30" height="30"/>
-        <image name="envelope.badge.fill" catalog="system" width="64" height="48"/>
+        <image name="envelope.badge.fill" width="33.5" height="33.5"/>
         <image name="launch_image" width="550" height="550"/>
-        <image name="person.fill" catalog="system" width="64" height="60"/>
-        <image name="phone.fill.arrow.right" catalog="system" width="56" height="64"/>
-        <image name="text.bubble.fill" catalog="system" width="64" height="54"/>
+        <image name="person.fill" width="33.5" height="33.5"/>
+        <image name="phone.fill.arrow.right" width="33.5" height="33.5"/>
+        <image name="text.bubble.fill" width="33.5" height="33.5"/>
         <namedColor name="LoadingColor">
             <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
@@ -782,4 +903,5 @@
     <inferredMetricsTieBreakers>
         <segue reference="ABE-gM-5wL"/>
     </inferredMetricsTieBreakers>
+    <color key="tintColor" name="LoadingColor"/>
 </document>

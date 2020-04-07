@@ -43,6 +43,9 @@ class ColorSectionVC: UICollectionViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         self.showCenterBtn()
+        if downloader == nil{
+            downloader = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
+        }
     }
     
     var last: DocumentSnapshot!
@@ -57,49 +60,51 @@ class ColorSectionVC: UICollectionViewController {
         }
         
         guard let userUID = userInfo.uid else{return}
-        refreshLists(userUID: userUID){
-            self.query.getDocuments(completion: { snaps, err in
-                if err != nil{
-                    completed()
-                    print(err?.localizedDescription ?? "")
-                }
-                else{
-                    if let docs = snaps?.documents, !docs.isEmpty{
-                        for (index, snap) in docs.enumerated(){ // LOADED DOCUMENTS FROM \(snapDocuments)
-                            let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
-                            let uid = snap["UID"] as! String
-                            
-                            if userInfo.usersBlocking.contains(uid){
-                                continue
-                            }
-                            
-                            let description = snap["Description"] as? String
-                            let name = snap["Name"] as? String
-                            let blurred = snap["Blurred"] as? Bool
-                            let templateColor = snap["Template_Color"] as? String
-                            guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
-                            let likes = snap["Likes"] as? Int
-                            let comments = ((snap["Comments"]) as? Int) ?? 0
-
-                            self.loadedProducts.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments))
-                            
-                            self.collectionView.performBatchUpdates({
-                                self.collectionView.insertItems(at: [IndexPath(item: self.loadedProducts.count - 1, section: 0)])
-                            }, completion: { finished in
-                                if finished{
-                                    if snap == docs.last{
-                                        self.last = docs.last
-                                        completed()
-                                    }
-                                }
-                            })
-                        }
+        checkAuthStatus {
+            self.refreshLists(userUID: userUID){
+                self.query.getDocuments(completion: { snaps, err in
+                    if err != nil{
+                        completed()
+                        print(err?.localizedDescription ?? "")
                     }
                     else{
-                        completed()
+                        if let docs = snaps?.documents, !docs.isEmpty{
+                            for (index, snap) in docs.enumerated(){ // LOADED DOCUMENTS FROM \(snapDocuments)
+                                let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
+                                let uid = snap["UID"] as! String
+                                
+                                if userInfo.usersBlocking.contains(uid){
+                                    continue
+                                }
+                                
+                                let description = snap["Description"] as? String
+                                let name = snap["Name"] as? String
+                                let blurred = snap["Blurred"] as? Bool
+                                let templateColor = snap["Template_Color"] as? String
+                                guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
+                                let likes = snap["Likes"] as? Int
+                                let comments = ((snap["Comments"]) as? Int) ?? 0
+
+                                self.loadedProducts.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments))
+                                
+                                self.collectionView.performBatchUpdates({
+                                    self.collectionView.insertItems(at: [IndexPath(item: self.loadedProducts.count - 1, section: 0)])
+                                }, completion: { finished in
+                                    if finished{
+                                        if snap == docs.last{
+                                            self.last = docs.last
+                                            completed()
+                                        }
+                                    }
+                                })
+                            }
+                        }
+                        else{
+                            completed()
+                        }
                     }
-                }
-            })
+                })
+            }
         }
     }
     
@@ -153,6 +158,10 @@ class ColorSectionVC: UICollectionViewController {
         return 1
     }
     
+    override func viewDidDisappear(_ animated: Bool) {
+        downloader?.invalidateSessionAndCancel(true)
+        downloader = nil
+    }
     
     override func viewWillDisappear(_ animated: Bool) {
         
@@ -176,9 +185,10 @@ class ColorSectionVC: UICollectionViewController {
         
         cell?.imageView.image = nil
         cell?.circularProgress.isHidden = false
+        cell?.contentView.backgroundColor = .clear
         cell?.contentView.backgroundColor = UIColor(named: self.loadedProducts[indexPath.item].templateColor)
 
-        if let image = cache.imageFromCache(forKey: self.loadedProducts[indexPath.item].picID){
+        if let image = cache.imageFromCache(forKey: "thumbnail_\(self.loadedProducts[indexPath.item].picID ?? "")"){
             cell?.imageView.image = image
             cell?.circularProgress.isHidden = true
             print(image.size.height / image.size.width)

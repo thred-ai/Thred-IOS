@@ -84,7 +84,7 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
     
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let product = postArray[indexPath.row]
+        let product = postArray[indexPath.item]
         DispatchQueue.main.async {
             self.exploreVC?.productToOpen = product
             self.exploreVC?.performSegue(withIdentifier: "toFull", sender: nil)
@@ -101,15 +101,18 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
         
         cell?.imageView.image = nil
         cell?.circularProgress.isHidden = false
-        cell?.contentView.backgroundColor = UIColor(named: self.postArray[indexPath.item].templateColor)
+        
+        let product = postArray[indexPath.item]
+        
+        cell?.contentView.backgroundColor = UIColor(named: product.templateColor)
 
-        if let image = cache.imageFromCache(forKey: self.postArray[indexPath.item].picID){
+        if let image = cache.imageFromCache(forKey: "thumbnail_\(product.picID ?? "")"){
             cell?.imageView.image = image
             cell?.circularProgress.isHidden = true
             print(image.size.height / image.size.width)
         }
         else{
-            self.downloadProductCellImage(indexPath: indexPath, cell: cell)
+            self.downloadProductCellImage(indexPath: indexPath, cell: cell, product: product)
         }
         return cell!
     }
@@ -117,39 +120,36 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
     
     
     
-    func downloadProductCellImage(indexPath: IndexPath, cell: ExploreProductCell?){
-        if let colorIndex = self.exploreVC?.colorSections.firstIndex(where: {$0["ID"] as? String == self.templateColor}){
+    func downloadProductCellImage(indexPath: IndexPath, cell: ExploreProductCell?, product: Product){
+        if let colorIndex = self.exploreVC?.colorSections.firstIndex(where: {$0["ID"] as? String == product.templateColor}){
             
             var downloading = self.exploreVC?.colorSections[colorIndex]["Downloading"] as? [String]
-            if !(downloading?.contains(self.postArray[indexPath.item].picID ?? "null") ?? true){
+            if !(downloading?.contains(product.picID ?? "null") ?? true){
                 cell?.circularProgress.isHidden = false
-                downloading?.append(self.postArray[indexPath.item].picID ?? "null")
-                self.collectionView.downloadExploreProductImage(pictureProduct: cell, followingUID: self.postArray[indexPath.item].uid, picID: self.postArray[indexPath.item].picID ?? "", index: indexPath.item, product: self.postArray[indexPath.item], downloader: downloader){
+                downloading?.append(product.picID ?? "null")
+                self.collectionView.downloadExploreProductImage(pictureProduct: cell, followingUID: product.uid, picID: product.picID ?? "", index: indexPath.item, product: product, downloader: downloader){
                     
                     guard let products = self.exploreVC?.colorSections else{
                         return}
-                    if self.postArray.indices.contains(indexPath.item){
-                        if let index = products.firstIndex(where: {$0["ID"] as? String == self.postArray[indexPath.item].templateColor}){
+                        if let index = products.firstIndex(where: {$0["ID"] as? String == product.templateColor}){
                             if products.indices.contains(index){
                                 
                                 if var downloading = self.exploreVC?.colorSections[index]["Downloading"] as? [String]{
-                                    if let postIndex = downloading.firstIndex(of: self.postArray[indexPath.item].productID){
+                                    if let postIndex = downloading.firstIndex(of: product.productID){
                                         downloading.remove(at: postIndex)
                                         
                                     }
                                 }
                                 
                                 if let array = products[index]["Array"] as? [Product]{
-                                    if let arrayIndex = array.firstIndex(where: {$0.picID == self.postArray[indexPath.item].picID}){
+                                    if let arrayIndex = array.firstIndex(where: {$0.picID == product.picID}){
                                         if array.indices.contains(arrayIndex){
                                             if self.postArray.indices.contains(indexPath.item){
                                                 if self.templateColor == (products[index]["ID"] as? String){
-                                                    if cell != nil{
-                                                        if self.collectionView.numberOfItems(inSection: 0) > 0{
-                                                            self.collectionView.performBatchUpdates({
-                                                                self.collectionView.reloadItems(at: [indexPath])
-                                                            }, completion: nil)
-                                                        }
+                                                    if self.collectionView.numberOfItems(inSection: 0) > 0{
+                                                        self.collectionView.performBatchUpdates({
+                                                            self.collectionView.reloadItems(at: [indexPath])
+                                                        }, completion: nil)
                                                     }
                                                 }
                                             }
@@ -158,7 +158,7 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
                                 }
                             }
                         }
-                    }
+                    
                 }
             }
         }
@@ -196,14 +196,12 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
 
 extension UICollectionView{
     func downloadExploreProductImage(pictureProduct: ExploreProductCell?, followingUID: String, picID: String, index: Int, product: Product?, downloader: SDWebImageDownloader?, completed: @escaping () -> ()){
-        if pictureProduct != nil{
             pictureProduct?.circularProgress.isHidden = false
             let cp = pictureProduct?.circularProgress
-            var pic_id = picID
-            if product?.blurred ?? false{
-                pic_id = "blur_\(pic_id)"
-            }
-            
+            let pic_id = picID
+            //if product?.blurred ?? false{
+            //    pic_id = "blur_\(pic_id)"
+            //}
             let ref = Storage.storage().reference().child("Users/" + followingUID + "/" + "Products/" + picID + "/" + "thumbnail_" + pic_id + ".png")
             ref.downloadURL(completion: { url, error in
                 if error != nil{
@@ -228,22 +226,18 @@ extension UICollectionView{
                             completed()
                         }
                         else{
-                            cache.storeImage(toMemory: image, forKey: picID)
+                            cache.storeImage(toMemory: image, forKey: "thumbnail_\(picID)")
                             completed()
                         }
                     })
                 }
             })
-        }
-        else{
-            completed()
-        }
+
     }
     
     
     func downloadThredListImage(isThumbnail: Bool, cell: PhotosCell?, followingUID: String, picID: String, downloader: SDWebImageDownloader?, completed: @escaping (UIImage?) -> ()){
         
-        if cell != nil{
             //cell?.circularProgress.isHidden = false
             //let cp = pictureProduct?.circularProgress
             var pic_id = picID
@@ -282,9 +276,5 @@ extension UICollectionView{
                     })
                 }
             })
-        }
-        else{
-            completed(nil)
-        }
     }
 }

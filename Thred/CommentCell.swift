@@ -65,7 +65,7 @@ class CommentCell: UITableViewCell, UITextViewDelegate {
             if scheme.starts(with: "mention"){
                 let username = URL.absoluteString.replacingOccurrences(of: "mention:", with: "")
                 if username != userInfo.username{
-                    vc.selectedUser = UserInfo(uid: nil, dp: nil, dpID: nil, username: username, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: nil, postCount: nil, followingCount: nil, usersBlocking: [])
+                    vc.selectedUser = UserInfo(uid: nil, dp: nil, dpID: nil, username: username, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [])
                     vc.performSegue(withIdentifier: "toFriend", sender: nil)
                 }
             }

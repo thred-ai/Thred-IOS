@@ -24,7 +24,6 @@ class MainTabBarViewController: UITabBarController, UITabBarControllerDelegate {
         super.viewDidLoad()
         delegate = self
         tabBar.isTranslucent = false
-        tabBar.items?[2].isEnabled = false
         
        // if let userVC = viewControllers?.last as? UserVC{
             //userVC.setPageInfo()
@@ -33,6 +32,7 @@ class MainTabBarViewController: UITabBarController, UITabBarControllerDelegate {
         // Do any additional setup after loading the view.
     }
     
+    
     func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
         
         
@@ -40,6 +40,11 @@ class MainTabBarViewController: UITabBarController, UITabBarControllerDelegate {
     }
     
     func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
+        
+        if viewControllers?.firstIndex(of: viewController) == 2{
+            return false
+        }
+
         if let vc = (viewController as? UINavigationController)?.viewControllers.first{
             if selectedViewController == viewController{
                 if let tableView =
@@ -66,13 +71,15 @@ class MainTabBarViewController: UITabBarController, UITabBarControllerDelegate {
         }
         else{
             if product != nil{
-                if let vc = (selectedViewController as? UINavigationController)?.viewControllers.first{
-                    if let tableView = (vc as? UITableViewController)?.tableView ?? (vc as? FullProductVC)?.tableView{
-                        if deletingPost{
-                            tableView.deletingPost(post: product, vc: vc)
-                        }
-                        else{
-                            tableView.updatePost(post: product, vc: vc)
+                if let vc = (selectedViewController as? UINavigationController)?.viewControllers.last{
+                    vc.checkAuthStatus {
+                        if let tableView = (vc as? UITableViewController)?.tableView ?? (vc as? FullProductVC)?.tableView{
+                            if self.deletingPost{
+                                tableView.deletingPost(post: self.product, vc: vc)
+                            }
+                            else{
+                                tableView.updatePost(post: self.product, vc: vc)
+                            }
                         }
                     }
                 }
@@ -192,8 +199,9 @@ extension UITableView{
         ] as [String : Any]
         
         doc.updateData(data, completion: { error in
-            if error != nil{
-                print(error?.localizedDescription ?? "")
+            if let err = error{
+                uploadingPosts.removeAll(where: {$0 == productID})
+                print(err.localizedDescription)
             }
             else{
                 uploadingPosts.removeAll(where: {$0 == productID})
@@ -212,31 +220,57 @@ extension UITableView{
         
         
         guard let productID = post.productID else{return}
-        let products = ((vc as? FeedVC)?.loadedProducts ?? (vc as? UserVC)?.loadedProducts)
+        let topVC = vc?.navigationController?.viewControllers.first
+        let products = ((vc as? FeedVC)?.loadedProducts ?? (vc as? UserVC)?.loadedProducts) ?? ((topVC as? FeedVC)?.loadedProducts ?? (topVC as? UserVC)?.loadedProducts)
+        
         let index = products?.firstIndex(where: {$0.productID == productID}) ?? 0
+        
         (vc as? FeedVC)?.loadedProducts.removeAll(where: {$0.productID == productID})
         (vc as? UserVC)?.loadedProducts.removeAll(where: {$0.productID == productID})
+        (vc as? FeedVC)?.loadedProducts.saveAllObjects(type: "FeedProducts")
+        (vc as? UserVC)?.loadedProducts.saveAllObjects(type: "Products")
+        
+        (topVC as? FeedVC)?.loadedProducts.removeAll(where: {$0.productID == productID})
+        (topVC as? UserVC)?.loadedProducts.removeAll(where: {$0.productID == productID})
+        (topVC as? FeedVC)?.loadedProducts.saveAllObjects(type: "FeedProducts")
+        (topVC as? UserVC)?.loadedProducts.saveAllObjects(type: "Products")
+        
 
         if vc is FeedVC || vc is UserVC{
+            
             let indexPath = IndexPath(row: index, section: 0)
             if let cell = cellForRow(at: indexPath) as? ProductCell{
                 cell.optionMenu.isHidden = true
-                performBatchUpdates({
-                    deleteRows(at: [indexPath], with: .none)
-                }, completion: { finished in
-                    if finished{
-                    }
-                })
+                
+                DispatchQueue.main.async {
+                    self.performBatchUpdates({
+                        self.deleteRows(at: [indexPath], with: .fade)
+                    }, completion: { finished in
+                        if finished{
+                        }
+                    })
+                }
             }
         }
         else{
+            if let tableView = (topVC as? UserVC)?.tableView ?? (topVC as? UserVC)?.tableView{
+                let indexPath = IndexPath(row: index, section: 0)
+                
+                DispatchQueue.main.async {
+                    tableView.performBatchUpdates({
+                        tableView.deleteRows(at: [indexPath], with: .fade)
+                    }, completion: { finished in
+                        if finished{
+                        }
+                    })
+                }
+            }
             vc?.navigationController?.popViewController(animated: true)
         }
-        let data = [
-            "uid" : post.uid,
-            "product_id" : post.productID
-        ]
-        Functions.functions().httpsCallable("deletePost").call(data, completion: { result, error in
+        
+        let doc = Firestore.firestore().collection("Users").document(post.uid).collection("Products").document(productID)
+
+        doc.delete(completion: { error in
             if let err = error{
                 print(err.localizedDescription)
             }
@@ -244,5 +278,32 @@ extension UITableView{
                 
             }
         })
+    }
+}
+
+extension UINavigationController{
+    
+    func segueToCart(){
+        
+        
+        let cartStoryboard: UIStoryboard = UIStoryboard(name: "ShoppingCartVC", bundle: nil)
+        if let cart: ShoppingCartVC = cartStoryboard.instantiateViewController(withIdentifier: "CartVC") as? ShoppingCartVC{
+            pushViewController(cart, animated: true)
+        }
+    }
+    
+    func segueToSales(){
+        showErrorMessage {
+            
+        }
+        
+        ///Later On
+        /*
+         let salesVC: UIStoryboard = UIStoryboard(name: "SalesVC", bundle: nil)
+
+        if let sales: SalesVC = salesVC.instantiateViewController(withIdentifier: "SalesVC") as? SalesVC{
+            navigationController?.pushViewController(sales)
+        }
+ */
     }
 }

@@ -42,14 +42,14 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         
         tableView.register(UINib(nibName: "ProductCell", bundle: nil), forCellReuseIdentifier: "PictureProduct")
 
-        self.header = self.tableView.loadUserHeaderFromNib()
-        self.tableView.addSubview(refresher)
-        self.navigationController?.navigationBar.setBackgroundImage(UIImage.init(), for: UIBarMetrics.default)
-        self.navigationController?.navigationBar.shadowImage = UIImage.init()
+        header = tableView.loadUserHeaderFromNib()
+        tableView.addSubview(refresher)
+        navigationController?.navigationBar.setBackgroundImage(UIImage.init(), for: UIBarMetrics.default)
+        navigationController?.navigationBar.shadowImage = UIImage.init()
 
-        self.header?.clearAll(actionBtnTitle: header?.headerActionBtnTitle ?? "null")
+        header?.clearAll(actionBtnTitle: header?.headerActionBtnTitle ?? "null")
         header?.actionBtn.addTarget(self, action: #selector(followBtnPressed(_:)), for: .touchUpInside)
-        self.header?.actionBtn.isUserInteractionEnabled = true
+        header?.actionBtn.isUserInteractionEnabled = true
         header?.optionBtn.setImage(UIImage(nameOrSystemName: "ellipsis.circle", systemPointSize: 20, iconSize: 7), for: .normal)
         header?.optionBtn.addTarget(self, action: #selector(openOptionMenu(_:)), for: .touchUpInside)
 
@@ -62,7 +62,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         }
         if let image = friendInfo.dp{
             
-            self.header?.setUpInfo(username: friendInfo.username, fullname: friendInfo.fullName, bio: friendInfo.bio, notifID: friendInfo.notifID, dpUID: nil, image: image, actionBtnTitle: header?.headerActionBtnTitle ?? "null", followerCount: friendInfo.followerCount ?? 0, followingCount: friendInfo.followingCount ?? 0, postCount: friendInfo.postCount ?? 0)
+            self.header?.setUpInfo(username: friendInfo.username, fullname: friendInfo.fullName, bio: friendInfo.bio, notifID: friendInfo.notifID, dpUID: nil, image: image, actionBtnTitle: header?.headerActionBtnTitle ?? "null", followerCount: friendInfo.followerCount, followingCount: friendInfo.followingCount, postCount: friendInfo.postCount)
             switch onlyDownloadProducts{
             case false:
                 if let vcIndex = navigationController?.viewControllers.firstIndex(of: self){
@@ -103,42 +103,43 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
     func updateFollowInDatabase(didFollow: Bool){
         guard let uid = userInfo.uid else{return}
         guard let friendUID = friendInfo.uid else{return}
+        
         if didFollow{
-            friendInfo.followerCount! += 1
+            friendInfo.followerCount += 1
+            userInfo.userFollowing.append(friendUID)
+            UserDefaults.standard.set(userInfo.userFollowing, forKey: "FOLLOWING")
             let data = [
                  "UID" : friendUID
              ]
-            Firestore.firestore().document("Users/\(uid)/Following/\(friendUID)").setData(data, completion: { error in
-                 if error != nil{
-                     print(error?.localizedDescription ?? "")
-                 }
-                 else{
-                    
-                    guard var followingCount = userInfo.followingCount else{return}
-                    followingCount += 1
-                    UserDefaults.standard.set(followingCount, forKey: "FOLLOWING_COUNT")
-                    userInfo.userFollowing.append(friendUID)
-                    UserDefaults.standard.set(userInfo.userFollowing, forKey: "FOLLOWING")
-                 }
-             })
+            checkAuthStatus {
+                Firestore.firestore().document("Users/\(uid)/Following/\(friendUID)").setData(data, completion: { error in
+                    if error != nil{
+                        print(error?.localizedDescription ?? "")
+                    }
+                    else{
+                       
+                       userInfo.followingCount += 1
+                       UserDefaults.standard.set(userInfo.followingCount, forKey: "FOLLOWING_COUNT")
+                    }
+                })
+            }
         }
         else{
-            friendInfo.followerCount! -= 1
+            friendInfo.followerCount -= 1
+            userInfo.userFollowing.removeAll(where: {$0 == friendUID})
+            UserDefaults.standard.set(userInfo.userFollowing, forKey: "FOLLOWING")
             Firestore.firestore().collection("Users/\(uid)/Following").document(friendUID).delete(
                 completion: { error in
                 if error != nil{
                     print(error?.localizedDescription ?? "")
                 }
                 else{
-                    guard var followingCount = userInfo.followingCount else{return}
-                    followingCount -= 1
-                    UserDefaults.standard.set(followingCount, forKey: "FOLLOWING_COUNT")
-                    userInfo.userFollowing.removeAll(where: {$0 == friendUID})
-                    UserDefaults.standard.set(userInfo.userFollowing, forKey: "FOLLOWING")
+                    userInfo.followingCount -= 1
+                    UserDefaults.standard.set(userInfo.followingCount, forKey: "FOLLOWING_COUNT")
                 }
             })
         }
-        header?.followerNum.text = "\(friendInfo.followerCount!)"
+        header?.followerNum.text = "\(friendInfo.followerCount)"
     }
     
     func updateForBlocking() -> Bool?{
@@ -176,47 +177,49 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
                 }
                 self.downloader?.cancelAllDownloads()
                 guard let userUID = userInfo.uid else{return}
-                self.refreshLists(userUID: userUID){
-                    self.downloadUserInfo(uid: self.friendInfo.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: true, doNotDownloadDP: false, downloader: self.downloader, userInfoToUse: self.friendInfo, queryOnUsername: self.friendInfo.uid == nil, completed: {
-                        uid, fullName, username, dpID, notifID, bio, image, userFollowing, usersBlocking, postCount, followersCount, followingCount  in
-                        if username != nil{
-                            self.setInfo(username: username, fullname: fullName, dpID: dpID, image: image, notifID: notifID, bio: bio, userFollowing: userFollowing, uid: uid, followerCount: followersCount, postCount: postCount, followingCount: followingCount, usersBlocking: usersBlocking)
-                            if self.updateForBlocking() ?? false{
-                                return
-                            }
-                            guard let uid = self.friendInfo.uid else{return}
-                            let isFollowing = (userInfo.userFollowing.contains(uid))
-                            self.header?.updateFollowBtn(didFollow: isFollowing, animated: false)
-                            self.header?.actionBtn.isUserInteractionEnabled = true
-                            self.header?.setUpInfo(username: username, fullname: fullName, bio: bio, notifID: notifID, dpUID: dpID, image: image, actionBtnTitle: self.header?.headerActionBtnTitle ?? "null", followerCount: followersCount ?? 0, followingCount: followingCount ?? 0, postCount: postCount ?? 0)
+                self.checkAuthStatus {
+                    self.refreshLists(userUID: userUID){
+                        self.downloadUserInfo(uid: self.friendInfo.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: true, doNotDownloadDP: false, downloader: self.downloader, userInfoToUse: self.friendInfo, queryOnUsername: self.friendInfo.uid == nil, completed: {
+                            uid, fullName, username, dpID, notifID, bio, image, userFollowing, usersBlocking, postCount, followersCount, followingCount  in
+                            if username != nil{
+                                self.setInfo(username: username, fullname: fullName, dpID: dpID, image: image, notifID: notifID, bio: bio, userFollowing: userFollowing, uid: uid, followerCount: followersCount, postCount: postCount, followingCount: followingCount, usersBlocking: usersBlocking)
+                                if self.updateForBlocking() ?? false{
+                                    return
+                                }
+                                guard let uid = self.friendInfo.uid else{return}
+                                let isFollowing = (userInfo.userFollowing.contains(uid))
+                                self.header?.updateFollowBtn(didFollow: isFollowing, animated: false)
+                                self.header?.actionBtn.isUserInteractionEnabled = true
+                                self.header?.setUpInfo(username: username, fullname: fullName, bio: bio, notifID: notifID, dpUID: dpID, image: image, actionBtnTitle: self.header?.headerActionBtnTitle ?? "null", followerCount: followersCount, followingCount: followingCount, postCount: postCount)
 
-                            self.downloadProducts(){[weak self] in
-                                self?.isLoading = false
-                                if sender.isRefreshing{
-                                    sender.endRefreshing()
+                                self.downloadProducts(){[weak self] in
+                                    self?.isLoading = false
+                                    if sender.isRefreshing{
+                                        sender.endRefreshing()
+                                    }
                                 }
+                                self.tableView.performBatchUpdates({
+                                    self.tableView.reloadRows(at: self.tableView?.indexPathsForVisibleRows ?? [], with: .none)
+                                }, completion: { complete in
+                                    if complete{
+                                    }
+                                })
                             }
-                            self.tableView.performBatchUpdates({
-                                self.tableView.reloadRows(at: self.tableView?.indexPathsForVisibleRows ?? [], with: .none)
-                            }, completion: { complete in
-                                if complete{
-                                }
-                            })
-                        }
-                        else{
-                            self.header?.clearAll(actionBtnTitle: "User not found")
-                            self.tableView.refreshControl = nil
-                            sender.removeFromSuperview()
-                            self.tableView.alwaysBounceVertical = false
-                            self.header?.isUserInteractionEnabled = false
-                        }
-                    })
+                            else{
+                                self.header?.clearAll(actionBtnTitle: "User not found")
+                                self.tableView.refreshControl = nil
+                                sender.removeFromSuperview()
+                                self.tableView.alwaysBounceVertical = false
+                                self.header?.isUserInteractionEnabled = false
+                            }
+                        })
+                    }
                 }
             }
         }
     }
     
-    func setInfo(username: String?, fullname: String?, dpID: String?, image: UIImage?, notifID: String?, bio: String?, userFollowing: [String], uid: String?, followerCount: Int?, postCount: Int?, followingCount: Int?, usersBlocking: [String]){
+    func setInfo(username: String?, fullname: String?, dpID: String?, image: UIImage?, notifID: String?, bio: String?, userFollowing: [String], uid: String?, followerCount: Int, postCount: Int, followingCount: Int, usersBlocking: [String]){
         
         guard let username = username else{return}
         guard let fullname = fullname else{return}
@@ -373,12 +376,31 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         })
     }
     
-
+    
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return self.loadedProducts.count
     }
-       
+    
+    lazy var headerView: UIView? = {
+        
+        return loadProfilePostHeaderFromNib()
+    }()
+    
+    override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        
+        if loadedProducts.isEmpty{
+            return headerView
+        }
+        return nil
+    }
+    
+    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        if loadedProducts.isEmpty{
+            return 150
+        }
+        return 0
+    }
        
     var cellHeights: [IndexPath: CGFloat] = [:]
        
@@ -395,7 +417,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        if !optionMenu.isHidden{
+        if header?.subviews.contains(optionMenu) ?? false{
             openOptionMenu(nil)
             return
         }
@@ -604,18 +626,16 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
             self.friendInfo.usersBlocking.append(uid)
             let _ = self.updateForBlocking()
             if isFollowing{
-                self.header?.followerNum.text = "\(self.friendInfo.followerCount! - 1)"
-                guard var followingCount = userInfo.followingCount else{return}
-                followingCount -= 1
-                UserDefaults.standard.set(followingCount, forKey: "FOLLOWING_COUNT")
+                self.header?.followerNum.text = "\(self.friendInfo.followerCount - 1)"
+                userInfo.followingCount -= 1
+                UserDefaults.standard.set(userInfo.followingCount, forKey: "FOLLOWING_COUNT")
                 userInfo.userFollowing.removeAll(where: {$0 == friendUID})
                 UserDefaults.standard.set(userInfo.userFollowing, forKey: "FOLLOWING")
             }
             if isFollower{
-                self.header?.followingNum.text = "\(self.friendInfo.followingCount! - 1)"
-                guard var followerCount = userInfo.followerCount else{return}
-                followerCount -= 1
-                UserDefaults.standard.set(followerCount, forKey: "FOLLOWER_COUNT")
+                self.header?.followingNum.text = "\(self.friendInfo.followingCount - 1)"
+                userInfo.followingCount -= 1
+                UserDefaults.standard.set(userInfo.followingCount, forKey: "FOLLOWER_COUNT")
             }
         }
         else{
@@ -634,14 +654,16 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
             "isFollower" : isFollower
         ] as [String : Any]
         
-        Functions.functions().httpsCallable("blockOrUnblock").call(data, completion: { result, error in
-            if let err = error{
-                print(err.localizedDescription)
-            }
-            else{
-               
-            }
-        })
+        checkAuthStatus {
+            Functions.functions().httpsCallable("blockOrUnblock").call(data, completion: { result, error in
+                if let err = error{
+                    print(err.localizedDescription)
+                }
+                else{
+                   
+                }
+            })
+        }
     }
     
     override func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
@@ -694,6 +716,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         }
     }
     
+    var selectedReportID: String!
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
@@ -706,6 +729,10 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         }
         else if let reportVC = (segue.destination as? UINavigationController)?.viewControllers.first as? ReportVC{
             reportVC.reportLevel = reportType
+            if reportType == .post{
+                reportVC.reportPostID = selectedReportID
+            }
+            reportVC.reportUID = friendInfo.uid
         }
     }
 

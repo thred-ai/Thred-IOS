@@ -23,7 +23,6 @@ extension UITableView{
         let circularProgress = cell?.circularProgress
 
         if let fullVC = vc as? FullProductVC{
-            
             switch user.designImage {
             case .some:
                 if let img = UIImage(data: user.designImage){
@@ -77,8 +76,11 @@ extension UITableView{
         }
     }
     
+    
+    
     func downloadProductImage(pictureProduct: ProductCell?, followingUID: String, picID: String, index: Int, downloader: SDWebImageDownloader?, feedVC: FeedVC?, friendVC: FriendVC?, userVC: UserVC?, fullVC: FullProductVC?, type: String?, product: Product?, completed: @escaping (UIImage?, String?) -> ()){
                
+        
         let cp = pictureProduct?.circularProgress
         cp?.isHidden = false
 
@@ -117,7 +119,7 @@ extension UITableView{
                         if let imgData = data{
                             completed(image, picID)
                             if fullVC != nil{
-                                cache.storeImageData(toDisk: imgData, forKey: picID)
+                                cache.storeImageData(toDisk: imgData, forKey: pic_id)
                                 if let cell = self?.cellForRow(at: IndexPath(row: 0, section: 0)) as? ProductCell{
                                     fullVC?.rasterizeProductCellDisplay(cell: cell, image: image, product: product)
                                 }

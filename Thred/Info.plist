@@ -30,25 +30,26 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSApplicationCategoryType</key>
 	<string></string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Need Camera Plz</string>
+	<string>This lets you take photos on your Camera through the app and share them.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Need Photos Plz</string>
+	<string>This lets you share photos from your Photo Library and also save them to your Camera Roll.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>HOPE-HYPE.ttf</string>
+		<string>HeyNovember-eZZ2l.ttf</string>
 		<string>Nexa W01 Heavy.ttf</string>
-		<string>akaDora.ttf</string>
+		<string>AguafinaScript-Regular.ttf</string>
+		<string>Whoa2-1GP7j.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
-		<string>processing</string>
 		<string>remote-notification</string>
 	</array>
 	<key>UILaunchStoryboardName</key>

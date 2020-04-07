@@ -16,8 +16,9 @@ class FirstViewController: UIViewController {
     @IBOutlet weak var thredLogoView: UIImageView!
     @IBOutlet weak var thredBackgroundView: UIView!
     
+    @IBOutlet weak var textView: UITextView!
     
-    
+    var textToSet: String?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -30,8 +31,14 @@ class FirstViewController: UIViewController {
         signInBtn.layer.borderColor = UIColor(named: "signInBorder")?.cgColor
         signInBtn.layer.borderWidth = 2
         
-        
-        
+        if textToSet == nil{
+            textView.text = "Sign in to buy and design threds."
+            textView.textColor = ColorCompatibility.secondaryLabel
+        }
+        else{
+            textView.text = textToSet
+            textView.textColor = .systemRed
+        }
     }
     
     override func viewDidLayoutSubviews() {

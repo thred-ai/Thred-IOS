@@ -140,7 +140,7 @@ extension UITableViewCell{
 
 
 extension UIViewController{
-    func downloadUserInfo(uid: String?, userVC: UserVC?, feedVC: FeedVC?, downloadingPersonalDP: Bool, doNotDownloadDP: Bool, downloader: SDWebImageDownloader?, userInfoToUse: UserInfo?, queryOnUsername: Bool, completed: @escaping (String?, String?, String?, String?, String?, String?, UIImage?, [String], [String], Int?, Int?, Int?) -> ()){
+    func downloadUserInfo(uid: String?, userVC: UserVC?, feedVC: FeedVC?, downloadingPersonalDP: Bool, doNotDownloadDP: Bool, downloader: SDWebImageDownloader?, userInfoToUse: UserInfo?, queryOnUsername: Bool, completed: @escaping (String?, String?, String?, String?, String?, String?, UIImage?, [String], [String], Int, Int, Int) -> ()){
         
         let ref = Firestore.firestore().collection("Users")
 
@@ -163,13 +163,13 @@ extension UIViewController{
         query.getDocuments(){(querySnaps, err) in
             if err != nil{
                 print("Error getting documents: \(err?.localizedDescription ?? "")") // LOCALIZED DESCRIPTION OF ERROR
-                completed(nil, nil, nil, nil, nil, nil, userInfoToUse?.dp ?? defaultDP, [], [], nil, nil, nil)
+                completed(nil, nil, nil, nil, nil, nil, userInfoToUse?.dp ?? defaultDP, [], [], 0, 0, 0)
                 return
             }
             else{
                 
                 guard let snapDocs = querySnaps?.documents, !snapDocs.isEmpty else{
-                    completed(nil, nil, nil, nil, nil, nil, userInfoToUse?.dp ?? defaultDP, [], [], nil, nil, nil)
+                    completed(nil, nil, nil, nil, nil, nil, userInfoToUse?.dp ?? defaultDP, [], [], 0, 0, 0)
                     return
                 }
                 
@@ -181,9 +181,9 @@ extension UIViewController{
                     let notifID = document["Notification ID"] as? String
                     let userFollowing = (document["Following_List"] as? [String]) ?? []
                     let usersBlocking = (document["Users_Blocking"] as? [String]) ?? []
-                    let followerCount = document["Followers_Count"] as? Int
-                    let followingCount = document["Following_Count"] as? Int
-                    let postCount = document["Posts_Count"] as? Int
+                    let followerCount = (document["Followers_Count"] as? Int) ?? 0
+                    let followingCount = (document["Following_Count"] as? Int) ?? 0
+                    let postCount = (document["Posts_Count"] as? Int) ?? 0
                     if userInfo.usersBlocking.contains(document.documentID){
                         completed(document.documentID, fullName, username, nil, notifID, bio, nil, userFollowing, usersBlocking, postCount, followerCount, followingCount)
                         return
