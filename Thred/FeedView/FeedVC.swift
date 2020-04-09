@@ -143,13 +143,12 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
             isLoading = true
             sender.animateRefresh()
             
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                self.downloadProducts(){
-                    self.isLoading = false
-                    sender.endRefreshing()
-                    self.loadedProducts.saveAllObjects(type: "FeedProducts")
-                }
+            self.downloadProducts(){
+                self.isLoading = false
+                sender.endRefreshing()
+                self.loadedProducts.saveAllObjects(type: "FeedProducts")
             }
+            
         }
     }
     
@@ -186,7 +185,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         guard let uid = userInfo.uid else{completed(); return}
         checkAuthStatus {
             self.refreshLists(userUID: uid){
-                self.getProducts(refresh: true, fromInterval: nil) { hasDiffproducts, snapDocs in
+                self.getProducts(refresh: true, fromInterval: nil) { hasDiffproducts in
                     completed()
                     if hasDiffproducts ?? false{
                         self.clearTableView()
@@ -342,7 +341,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                 if let interval = last.timestamp{
                     if !isLoading{
                         isLoading = true
-                        getProducts(refresh: false, fromInterval: interval){_,_ in
+                        getProducts(refresh: false, fromInterval: interval){_ in
                             self.isLoading = false
                             if self.refreshControl?.isRefreshing ?? true{
                                 self.refreshControl?.endRefreshing()
@@ -361,94 +360,118 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         
     }
 
-    func getProducts(refresh: Bool, fromInterval: Date?, completed: @escaping (Bool?, [DocumentSnapshot]?) -> ()){
+    func getProducts(refresh: Bool, fromInterval: Date?, completed: @escaping (Bool?) -> ()){
 
         guard let userUID = userInfo.uid else{
-            completed(false, nil)
+            completed(false)
         return}
 
         //REMOVE LATER
         
-        var clone = userInfo.userFollowing.sorted()
+        var clone = userInfo.userFollowing
         if !clone.contains(userUID){
             clone.append(userUID)
         }
-        query = nil
-        if fromInterval == nil{
-            query = Firestore.firestore().collectionGroup("Products").whereField("UID", in: clone).whereField("Timestamp", isLessThanOrEqualTo: Timestamp(date: Date())).whereField("Has_Picture", isEqualTo: true).limit(to: 8).order(by: "Timestamp", descending: true)
-        }
-        if let last = fromInterval{
-            query = Firestore.firestore().collectionGroup("Products").whereField("UID", in: clone).whereField("Timestamp", isLessThan: Timestamp(date: last)).whereField("Has_Picture", isEqualTo: true).limit(to: 8).order(by: "Timestamp", descending: true)
-        }
         
-        self.query.getDocuments(completion: { (snapDocuments, err) in
-            if let err = err {
-                print("Error getting documents: \(err)")
-                completed(false, nil)
-                return
+        query = nil
+        
+        let arrays = clone.chunked(into: 10)
+        var localLoaded: [Product]! = [Product]()
+        var totalDocs = [DocumentSnapshot]()
+        let docLimit = 5
+        
+        for array in arrays.reversed(){
+           
+            if fromInterval == nil{
+                query = Firestore.firestore().collectionGroup("Products").whereField("UID", in: array).whereField("Timestamp", isLessThanOrEqualTo: Timestamp(date: Date())).whereField("Has_Picture", isEqualTo: true).limit(to: docLimit).order(by: "Timestamp", descending: true)
             }
-            else{
-                if snapDocuments?.isEmpty ?? true{
-                    if refresh{
-                        completed(true, nil)
-                        self.loadedProducts.removeOldFeedPosts(newPosts: nil)
-                        self.loadedProducts.removeAllObjects(type: "FeedProducts")
-                    }
-                    else{
-                        completed(false, nil)
-                    }
+            if let last = fromInterval{
+                query = Firestore.firestore().collectionGroup("Products").whereField("UID", in: array).whereField("Timestamp", isLessThan: Timestamp(date: last)).whereField("Has_Picture", isEqualTo: true).limit(to: docLimit).order(by: "Timestamp", descending: true)
+            }
+            
+            self.query.getDocuments(completion: { (snapDocuments, err) in
+                if let err = err {
+                    print("Error getting documents: \(err)")
                 }
                 else{
-                    guard let snaps = snapDocuments?.documents else {
-                        completed(false, nil)
-                        return}
-                    if snapDocuments?.metadata.isFromCache ?? false{
-                        completed(false, snaps)
+
+                    if snapDocuments?.isEmpty ?? true{
+                        
                     }
                     else{
-                        var localLoaded: [Product]! = [Product]()
-                        for (index, snap) in snaps.enumerated(){
-                            let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
-                            let uid = snap["UID"] as! String
-                            if userInfo.usersBlocking.contains(uid){
-                                continue
-                            }
-                            let description = snap["Description"] as? String
-                            let name = snap["Name"] as? String
-                            let blurred = snap["Blurred"] as? Bool
-                            let templateColor = snap["Template_Color"] as? String
-                            let likes = snap["Likes"] as? Int
-                            guard let priceCents = (snap["Price_Cents"] as? Double) else{continue}
-                            let comments = ((snap["Comments"]) as? Int) ?? 0
-                            localLoaded.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments))
-                        
+                        guard let snaps = snapDocuments?.documents else {
+                            return}
+                        if snapDocuments?.metadata.isFromCache ?? false{
                         }
-                        switch fromInterval{
-                        case .none:
-                            let isSame = localLoaded == self.loadedProducts
-                            if !isSame{
-                                self.loadedProducts.removeOldFeedPosts(newPosts: localLoaded)
-                                completed(true, snaps)
-                                self.sortDownloadedProducts(products: localLoaded){
-                                    localLoaded = nil
-                                    self.loadedProducts.saveAllObjects(type: "FeedProducts")
+                        else{
+                            for (index, snap) in snaps.enumerated(){
+                                totalDocs.append(snap)
+                                let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
+                                let uid = snap["UID"] as! String
+                                if userInfo.usersBlocking.contains(uid){
+                                    continue
                                 }
-                            }
-                            else{
-                                localLoaded = nil
-                                completed(false, snaps)
-                            }
-                        default:
-                            self.sortDownloadedProducts(products: localLoaded){
-                                localLoaded = nil
-                                completed(true, snaps)
+                                let description = snap["Description"] as? String
+                                let name = snap["Name"] as? String
+                                let blurred = snap["Blurred"] as? Bool
+                                let templateColor = snap["Template_Color"] as? String
+                                let likes = snap["Likes"] as? Int
+                                guard let priceCents = (snap["Price_Cents"] as? Double) else{continue}
+                                let comments = ((snap["Comments"]) as? Int) ?? 0
+                                let product = Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments)
+                                localLoaded.append(product)
                             }
                         }
                     }
                 }
-            }
-        })
+                if array == arrays.last{
+                    print(localLoaded.count)
+                    self.checkSameProducts(fromInterval: fromInterval, localLoaded: localLoaded, completed: { isNew in
+                        if isNew{
+                            completed(true)
+                        }
+                        else{
+                            completed(false)
+                        }
+                    })
+                }
+            })
+        }
     }
+    
+    func checkLoaded(localLoaded: [Product]?){
+        
+    }
+    
+    func checkSameProducts(fromInterval: Date?, localLoaded: [Product], completed: @escaping (Bool) -> ()){
+        switch fromInterval{
+        case .none:
+            let isSame = localLoaded == self.loadedProducts
+            if !isSame{
+                self.loadedProducts.removeOldFeedPosts(newPosts: localLoaded)
+                completed(true)
+                self.sortDownloadedProducts(products: localLoaded){
+                    //localLoaded = nil
+                    self.loadedProducts.saveAllObjects(type: "FeedProducts")
+                }
+            }
+            else{
+                //localLoaded = nil
+                completed(false)
+            }
+        default:
+            self.sortDownloadedProducts(products: localLoaded){
+                //localLoaded = nil
+                completed(true)
+            }
+        }
+    }
+    
+    /*
+     
+     
+     
+     */
     
     func sortDownloadedProducts(products: [Product], completed: @escaping () -> ()){
         
@@ -594,7 +617,15 @@ extension UITableView{
         tableHeaderView = profileHeaderView
         return profileHeaderView
     }
-
+    
+    func loadFeaturedHeaderFromNib() -> FeaturedPostView?{
+        let featuredPostView = UINib(
+            nibName: "FeaturedPostView",
+            bundle: nil
+        ).instantiate(withOwner: nil, options: nil)[0] as? FeaturedPostView
+        tableHeaderView = featuredPostView
+        return featuredPostView
+    }
 }
 
 
@@ -647,5 +678,13 @@ extension UIViewController{
             bundle: nil
         ).instantiate(withOwner: nil, options: nil)[0] as? EmptyCartView
         return cartHeaderView
+    }
+}
+
+extension Array {
+    func chunked(into size: Int) -> [[Element]] {
+        return stride(from: 0, to: count, by: size).map {
+            Array(self[$0 ..< Swift.min($0 + size, count)])
+        }
     }
 }

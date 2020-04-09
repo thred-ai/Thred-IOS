@@ -45,7 +45,7 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
         if postArray == nil{
             postArray = [Product]()
             let color = templateColor
-            Firestore.firestore().collectionGroup("Products").whereField("Template_Color", isEqualTo: templateColor ?? "").whereField("Has_Picture", isEqualTo: true).order(by: "Likes", descending: true).limit(to: 8).getDocuments(completion: { snaps, err in
+            Firestore.firestore().collectionGroup("Products").whereField("Template_Color", isEqualTo: templateColor ?? "").whereField("Has_Picture", isEqualTo: true).whereField("Blurred", isEqualTo: false).order(by: "Likes", descending: true).limit(to: 8).getDocuments(completion: { snaps, err in
                 if err != nil{
                     completed()
                     print(err?.localizedDescription ?? "")
@@ -127,7 +127,7 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
             if !(downloading?.contains(product.picID ?? "null") ?? true){
                 cell?.circularProgress.isHidden = false
                 downloading?.append(product.picID ?? "null")
-                self.collectionView.downloadExploreProductImage(pictureProduct: cell, followingUID: product.uid, picID: product.picID ?? "", index: indexPath.item, product: product, downloader: downloader){
+                self.collectionView.downloadExploreProductImage(circularProgress: cell?.circularProgress, followingUID: product.uid, picID: product.picID ?? "", index: indexPath.item, product: product, downloader: downloader, isThumbnail: true){
                     
                     guard let products = self.exploreVC?.colorSections else{
                         return}
@@ -195,9 +195,8 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
 }
 
 extension UICollectionView{
-    func downloadExploreProductImage(pictureProduct: ExploreProductCell?, followingUID: String, picID: String, index: Int, product: Product?, downloader: SDWebImageDownloader?, completed: @escaping () -> ()){
-            pictureProduct?.circularProgress.isHidden = false
-            let cp = pictureProduct?.circularProgress
+    func downloadExploreProductImage(circularProgress: CircularProgress?, followingUID: String, picID: String, index: Int, product: Product?, downloader: SDWebImageDownloader?, isThumbnail: Bool, completed: @escaping () -> ()){
+            circularProgress?.isHidden = false
             let pic_id = picID
             //if product?.blurred ?? false{
             //    pic_id = "blur_\(pic_id)"
@@ -216,7 +215,7 @@ extension UICollectionView{
                         print("Progress \(dub)")
                         print("Old Progress \(oldDub)")
                         DispatchQueue.main.async {
-                            cp?.setProgressWithAnimation(duration: 0.0, value: dub, from: oldDub, finished: true){
+                            circularProgress?.setProgressWithAnimation(duration: 0.0, value: dub, from: oldDub, finished: true){
                                 oldDub = dub
                             }
                         }
@@ -226,7 +225,12 @@ extension UICollectionView{
                             completed()
                         }
                         else{
-                            cache.storeImage(toMemory: image, forKey: "thumbnail_\(picID)")
+                            if isThumbnail{
+                                cache.storeImage(toMemory: image, forKey: "thumbnail_\(picID)")
+                            }
+                            else{
+                                cache.storeImage(toMemory: image, forKey: "\(picID)")
+                            }
                             completed()
                         }
                     })

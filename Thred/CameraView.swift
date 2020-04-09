@@ -426,9 +426,11 @@ class CameraView: UIView, AVCapturePhotoCaptureDelegate{
                 if camera.position == .back {
                     self.rearCamera = camera
                     
-                    try camera.lockForConfiguration()
-                    camera.focusMode = .continuousAutoFocus
-                    camera.unlockForConfiguration()
+                    if camera.isFocusModeSupported(.continuousAutoFocus){
+                        try camera.lockForConfiguration()
+                        camera.focusMode = .autoFocus
+                        camera.unlockForConfiguration()
+                    }
                 }
             }
         }

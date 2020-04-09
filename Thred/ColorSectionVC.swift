@@ -53,10 +53,10 @@ class ColorSectionVC: UICollectionViewController {
     func getProducts(fromInterval: Int?, completed: @escaping ()->()){
         
         if fromInterval == nil{
-            query = Firestore.firestore().collectionGroup("Products").whereField("Template_Color", isEqualTo: templateColor).whereField("Has_Picture", isEqualTo: true).order(by: "Likes", descending: true).limit(to: 12)
+            query = Firestore.firestore().collectionGroup("Products").whereField("Template_Color", isEqualTo: templateColor).whereField("Blurred", isEqualTo: false).whereField("Has_Picture", isEqualTo: true).order(by: "Likes", descending: true).limit(to: 12)
         }
         else if last != nil{
-            query = Firestore.firestore().collectionGroup("Products").whereField("Template_Color", isEqualTo: templateColor).whereField("Has_Picture", isEqualTo: true).order(by: "Likes", descending: true).start(afterDocument: last).limit(to: 12)
+            query = Firestore.firestore().collectionGroup("Products").whereField("Template_Color", isEqualTo: templateColor).whereField("Blurred", isEqualTo: false).whereField("Has_Picture", isEqualTo: true).order(by: "Likes", descending: true).start(afterDocument: last).limit(to: 12)
         }
         
         guard let userUID = userInfo.uid else{return}
@@ -109,9 +109,6 @@ class ColorSectionVC: UICollectionViewController {
     }
     
     override func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        
-        
-        
         
         if scrollView.contentOffset.y >= (scrollView.contentSize.height - scrollView.frame.size.height){
             print("fromScroll")
@@ -198,7 +195,7 @@ class ColorSectionVC: UICollectionViewController {
             if !(tokens.contains(loadedProducts[indexPath.item].picID ?? "null")){
                     cell?.circularProgress.isHidden = false
                     tokens.append(loadedProducts[indexPath.item].picID ?? "null")
-                    self.collectionView.downloadExploreProductImage(pictureProduct: cell, followingUID: self.loadedProducts[indexPath.item].uid, picID: self.loadedProducts[indexPath.item].picID ?? "", index: indexPath.item, product: self.loadedProducts[indexPath.item], downloader: downloader){
+                self.collectionView.downloadExploreProductImage(circularProgress: cell?.circularProgress, followingUID: self.loadedProducts[indexPath.item].uid, picID: self.loadedProducts[indexPath.item].picID ?? "", index: indexPath.item, product: self.loadedProducts[indexPath.item], downloader: downloader, isThumbnail: true){
                         
                         self.tokens.removeAll(where: {$0 == self.loadedProducts[indexPath.item].picID})
                         

@@ -25,19 +25,20 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
     @IBOutlet var tableView: UITableView!
     
     
-    
     var downloader = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
     var productToOpen: Product!
+    var featuredHeader: FeaturedPostView!
+    var featuredProduct: Product!
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.tableView.delegate = self
-        self.tableView.dataSource = self
+        tableView.delegate = self
+        tableView.dataSource = self
 
-        self.tableView.register(UINib(nibName: "ExploreColorCell", bundle: nil), forCellReuseIdentifier: "ExploreColorCell")
-        
+        tableView.register(UINib(nibName: "ExploreColorCell", bundle: nil), forCellReuseIdentifier: "ExploreColorCell")
+        featuredHeader = tableView.loadFeaturedHeaderFromNib()
+        featuredHeader.exploreVC = self
         searchBar.delegate = self
-        
         
         navigationItem.titleView = searchBar
         let refresher = BouncingTitleRefreshControl(title: "thred")
@@ -46,12 +47,75 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
         tableView.addSubview(refresher)
         
         tableView.adjustForCenterBtn(footerColor: nil, offset: 5, vc: self)
-        
         getTemplates{_ in
             self.isLoading = false
         }
     }
     
+    
+    
+    func getFeaturedPost(){
+        
+        guard let userUID = userInfo.uid else{return}
+        Firestore.firestore().collectionGroup("Products").whereField("Timestamp", isGreaterThanOrEqualTo: Date().adding(hours: -24)).whereField("Blurred", isEqualTo: false).whereField("Has_Picture", isEqualTo: true).limit(to: 5).getDocuments(completion: { docs, error in
+            
+            if let err = error{
+                print(err.localizedDescription)
+            }
+            else{
+                guard let snaps = docs?.documents, !snaps.isEmpty else{return}
+                
+                for snap in snaps{
+                    let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
+                    let uid = snap["UID"] as! String
+                    let description = snap["Description"] as? String
+                    let name = snap["Name"] as? String
+                    let blurred = snap["Blurred"] as? Bool
+                    let templateColor = snap["Template_Color"] as? String
+                    let likes = snap["Likes"] as? Int
+                    guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
+                    let comments = ((snap["Comments"]) as? Int) ?? 0
+
+                    Firestore.firestore().collection("Users").document(uid).collection("Products").document(snap.documentID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userUID).getDocuments(completion: { snapLikes, error in
+                    
+                        var liked: Bool!
+                        
+                        if error != nil{
+                            print(error?.localizedDescription ?? "")
+                        }
+                        else{
+                            userInfo.userLiked.removeAll(where: {$0 == snap.documentID})
+                            if let likeDocs = snapLikes?.documents{
+                                if likeDocs.isEmpty{
+                                    liked = false
+                                }
+                                else{
+                                    liked = true
+                                    if !(userInfo.userLiked.contains(snap.documentID)){
+                                        userInfo.userLiked.append(snap.documentID)
+                                    }
+                                }
+                            }
+                            else{
+                                liked = false
+                            }
+                        }
+                        
+                        let product = Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: nil, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments)
+                        
+                        self.featuredHeader.featuredProducts.append(product)
+                        
+                        if self.featuredHeader.featuredProducts.count == 5{
+                            self.featuredHeader.featuredProducts.sort(by: {$0.likes > $1.likes})
+                            DispatchQueue.main.async {
+                                self.featuredHeader.collectionView.reloadData()
+                            }
+                        }
+                    })
+                }
+            }
+        })
+    }
     
     
     lazy var searchBar: UISearchBar = {
@@ -116,6 +180,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
             view.bringSubviewToFront(searchView)
             searchView.isHidden = true
         }
+        featuredHeader.frame.size.height = view.frame.width
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -172,6 +237,8 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
             DispatchQueue(label: "background").async {
                 cache.clearMemory()
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                    self.featuredHeader.featuredProducts.removeAll()
+                    self.featuredHeader.collectionView.reloadData()
                     self.getTemplates{ error in
                         if error == nil{
                             self.colorSections.removeAll()
@@ -216,6 +283,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
     func getTemplates(completed: @escaping (Error?) -> ()){
         
         guard let uid = userInfo.uid else{return}
+        getFeaturedPost()
         checkAuthStatus {
             self.refreshLists(userUID: uid){
                 Firestore.firestore().document("Templates/Tees").getDocument(completion: { snap, error in

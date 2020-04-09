@@ -44,7 +44,7 @@ class UsernameSetupVC: UIViewController {
         text = text.replacingOccurrences(of: " ", with: "_").lowercased()
         textField.text = text
         
-        if text.count < 4{
+        if text.count < 2{
             nextBtn.isEnabled = false
         }
         else{

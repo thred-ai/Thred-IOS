@@ -19,11 +19,11 @@
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="ProfileHeaderView" customModule="Thred" customModuleProvider="target"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
         <view contentMode="scaleToFill" interfaceStyle="light" id="0N2-d2-UYm" customClass="ProfileHeaderView" customModule="Thred" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="375" height="376"/>
+            <rect key="frame" x="0.0" y="0.0" width="375" height="433"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <subviews>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="p6k-MY-udt">
-                    <rect key="frame" x="10" y="54.333333333333343" width="355" height="311.66666666666663"/>
+                    <rect key="frame" x="10" y="54.333333333333343" width="355" height="368.66666666666663"/>
                     <subviews>
                         <button opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="2UV-it-LmA">
                             <rect key="frame" x="315" y="5" width="35" height="35"/>
@@ -49,7 +49,7 @@
                     </constraints>
                 </imageView>
                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="jzB-Bu-MVL">
-                    <rect key="frame" x="50" y="108.66666666666667" width="275" height="237.33333333333331"/>
+                    <rect key="frame" x="50" y="108.66666666666666" width="275" height="294.33333333333337"/>
                     <subviews>
                         <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="0qx-Ji-Vsg">
                             <rect key="frame" x="0.0" y="0.0" width="275" height="35"/>
@@ -73,17 +73,17 @@
                             </constraints>
                         </stackView>
                         <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" editable="NO" text="&quot;Bio&quot;" textAlignment="center" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mgd-gl-KIz">
-                            <rect key="frame" x="0.0" y="44.999999999999979" width="275" height="74.666666666666686"/>
+                            <rect key="frame" x="0.0" y="44.999999999999986" width="275" height="131.66666666666663"/>
                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
                             <fontDescription key="fontDescription" name="NexaW01-Regular" family="NexaW01-Regular" pointSize="14"/>
                             <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                         </textView>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="4ka-kY-j36">
-                            <rect key="frame" x="0.0" y="129.66666666666669" width="275" height="60"/>
+                            <rect key="frame" x="0.0" y="186.66666666666663" width="275" height="60"/>
                             <subviews>
                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hrF-NM-2Mo">
-                                    <rect key="frame" x="0.0" y="7.6666666666666572" width="275" height="45"/>
+                                    <rect key="frame" x="0.0" y="7.6666666666666856" width="275" height="45"/>
                                     <color key="backgroundColor" systemColor="quaternarySystemFillColor" red="0.4549019608" green="0.4549019608" blue="0.50196078430000002" alpha="0.080000000000000002" colorSpace="custom" customColorSpace="sRGB"/>
                                     <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
                                     <state key="normal" title="Button">
@@ -100,7 +100,7 @@
                             </constraints>
                         </view>
                         <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="NbL-71-bLc">
-                            <rect key="frame" x="0.0" y="199.66666666666663" width="275" height="37.666666666666657"/>
+                            <rect key="frame" x="0.0" y="256.66666666666663" width="275" height="37.666666666666686"/>
                             <subviews>
                                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="rUE-lC-Agz">
                                     <rect key="frame" x="0.0" y="0.0" width="85" height="37.666666666666664"/>
@@ -190,7 +190,7 @@
                 <outlet property="userContentView" destination="p6k-MY-udt" id="iPU-7e-qGR"/>
                 <outlet property="usernameLbl" destination="Dak-Hv-czS" id="iIs-S9-t3M"/>
             </connections>
-            <point key="canvasLocation" x="-316" y="-266.74876847290642"/>
+            <point key="canvasLocation" x="-316" y="-245.68965517241381"/>
         </view>
     </objects>
     <resources>

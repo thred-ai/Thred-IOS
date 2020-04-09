@@ -9,6 +9,7 @@
 import UIKit
 import Firebase
 import ColorCompatibility
+import FirebaseFirestore
 
 class EmailLinkVC: UIViewController {
 
@@ -116,37 +117,46 @@ class EmailLinkVC: UIViewController {
         guard let text = emailView.text, !text.isEmpty, text.filter({$0 == "@"}).count == 1 else{
             updateErrorView(text: "Not a valid email")
             sender.isEnabled = true
-            
             return}
         
-        
-        errorView.text = nil
-        
-        
-        let link = URL(string: "https://thred.page.link/eNh4")
-        
-        let actionCodeSettings = ActionCodeSettings()
-        actionCodeSettings.url = link
-        // The sign-in operation has to always be completed in the app.
-        actionCodeSettings.handleCodeInApp = true
-        actionCodeSettings.setIOSBundleID(Bundle.main.bundleIdentifier!)
-        actionCodeSettings.setAndroidPackageName("com.example.android",
-                                                 installIfNotAvailable: false, minimumVersion: "12")
-        
-        Auth.auth().sendSignInLink(toEmail: text,
-                                   actionCodeSettings: actionCodeSettings) { error in
-            if let err = error {
-                self.updateErrorView(text: err.localizedDescription)
-                sender.isEnabled = true
-              return
+        Firestore.firestore().collection("Users").whereField("Email", isEqualTo: text).getDocuments(completion: { docs, error in
+            if let err = error{
+                print(err.localizedDescription)
             }
-            // The link was successfully sent. Inform the user.
-            // Save the email locally so you don't need to ask the user for it again
-            // if they open the link on the same device.
-            UserDefaults.standard.set(text, forKey: "EMAIL")
-            self.errorView.text = "Check your email for the link we sent"
-            self.errorView.textColor = UIColor(named: "LoadingColor")
-        }
+            else{
+                guard let docs = docs?.documents else{return}
+                if docs.isEmpty{
+                    self.updateErrorView(text: "Account with this email doesn't exist")
+                    return
+                }
+                else{
+                    self.errorView.text = nil
+                    let link = URL(string: "https://thred.page.link/eNh4")
+                    let actionCodeSettings = ActionCodeSettings()
+                    actionCodeSettings.url = link
+                    // The sign-in operation has to always be completed in the app.
+                    actionCodeSettings.handleCodeInApp = true
+                    actionCodeSettings.setIOSBundleID(Bundle.main.bundleIdentifier!)
+                    actionCodeSettings.setAndroidPackageName("com.example.android",
+                                                             installIfNotAvailable: false, minimumVersion: "12")
+                    
+                    Auth.auth().sendSignInLink(toEmail: text,
+                                               actionCodeSettings: actionCodeSettings) { error in
+                        if let err = error {
+                            self.updateErrorView(text: err.localizedDescription)
+                            sender.isEnabled = true
+                          return
+                        }
+                        // The link was successfully sent. Inform the user.
+                        // Save the email locally so you don't need to ask the user for it again
+                        // if they open the link on the same device.
+                        UserDefaults.standard.set(text, forKey: "EMAIL")
+                        self.errorView.text = "Check your email for the link we sent"
+                        self.errorView.textColor = UIColor(named: "LoadingColor")
+                    }
+                }
+            }
+        })
     }
     
     @IBAction func skipEmail(_ sender: UIButton) {

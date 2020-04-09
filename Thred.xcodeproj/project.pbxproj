@@ -13,6 +13,8 @@
 		AA02AA32242AE7D30003CFCE /* Nexa W01 Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA02AA31242AE7D30003CFCE /* Nexa W01 Regular.ttf */; };
 		AA02AA34242D3B530003CFCE /* UITextField+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA02AA33242D3B530003CFCE /* UITextField+Extension.swift */; };
 		AA02AA36242E9DC50003CFCE /* sale.caf in Resources */ = {isa = PBXBuildFile; fileRef = AA02AA35242E9DC50003CFCE /* sale.caf */; };
+		AA0B60B4243EDEAB00C7F3D9 /* FeaturedPostView.xib in Resources */ = {isa = PBXBuildFile; fileRef = AA0B60B3243EDEAB00C7F3D9 /* FeaturedPostView.xib */; };
+		AA0B60B6243EF32800C7F3D9 /* FeaturedPostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0B60B5243EF32800C7F3D9 /* FeaturedPostView.swift */; };
 		AA0E2AD5240CCBCA004050B0 /* FullProductVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0E2AD4240CCBCA004050B0 /* FullProductVC.swift */; };
 		AA192838243449D000C16F28 /* FirstViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA192837243449D000C16F28 /* FirstViewController.swift */; };
 		AA19283A24344F8600C16F28 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA19283924344F8600C16F28 /* Assets.xcassets */; };
@@ -141,6 +143,8 @@
 		AAABC16123C9481500E48987 /* Nexa W01 Heavy.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AAABBFFD23C9431400E48987 /* Nexa W01 Heavy.ttf */; };
 		AAABC16323CD189400E48987 /* MainTabBarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAABC16223CD189400E48987 /* MainTabBarViewController.swift */; };
 		AAABC16723D12A8D00E48987 /* ExploreViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAABC16623D12A8D00E48987 /* ExploreViewController.swift */; };
+		AAACD015243F0A2E00D97D41 /* FeaturedCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAACD013243F0A2E00D97D41 /* FeaturedCell.swift */; };
+		AAACD016243F0A2E00D97D41 /* FeaturedCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = AAACD014243F0A2E00D97D41 /* FeaturedCell.xib */; };
 		AAD3F3C32418ABE300F8FF8F /* red1.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3AA2418ABE200F8FF8F /* red1.png */; };
 		AAD3F3C42418ABE300F8FF8F /* red3.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3AB2418ABE200F8FF8F /* red3.png */; };
 		AAD3F3C52418ABE300F8FF8F /* red2.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3AC2418ABE200F8FF8F /* red2.png */; };
@@ -219,6 +223,8 @@
 		AA02AA31242AE7D30003CFCE /* Nexa W01 Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Nexa W01 Regular.ttf"; sourceTree = "<group>"; };
 		AA02AA33242D3B530003CFCE /* UITextField+Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UITextField+Extension.swift"; sourceTree = "<group>"; };
 		AA02AA35242E9DC50003CFCE /* sale.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = sale.caf; sourceTree = "<group>"; };
+		AA0B60B3243EDEAB00C7F3D9 /* FeaturedPostView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = FeaturedPostView.xib; sourceTree = "<group>"; };
+		AA0B60B5243EF32800C7F3D9 /* FeaturedPostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeaturedPostView.swift; sourceTree = "<group>"; };
 		AA0E2AD4240CCBCA004050B0 /* FullProductVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullProductVC.swift; sourceTree = "<group>"; };
 		AA192837243449D000C16F28 /* FirstViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstViewController.swift; sourceTree = "<group>"; };
 		AA19283924344F8600C16F28 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -351,6 +357,8 @@
 		AAABC15E23C947AF00E48987 /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		AAABC16223CD189400E48987 /* MainTabBarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabBarViewController.swift; sourceTree = "<group>"; };
 		AAABC16623D12A8D00E48987 /* ExploreViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreViewController.swift; sourceTree = "<group>"; };
+		AAACD013243F0A2E00D97D41 /* FeaturedCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeaturedCell.swift; sourceTree = "<group>"; };
+		AAACD014243F0A2E00D97D41 /* FeaturedCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = FeaturedCell.xib; sourceTree = "<group>"; };
 		AAD3F3AA2418ABE200F8FF8F /* red1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = red1.png; sourceTree = "<group>"; };
 		AAD3F3AB2418ABE200F8FF8F /* red3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = red3.png; sourceTree = "<group>"; };
 		AAD3F3AC2418ABE200F8FF8F /* red2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = red2.png; sourceTree = "<group>"; };
@@ -574,6 +582,10 @@
 				AA8E68E92407C43900C651A1 /* ExplorePageFlowLayout.swift */,
 				AA4CE2742406F69B009BAC92 /* ExploreColorCell.swift */,
 				AA4CE2752406F69B009BAC92 /* ExploreColorCell.xib */,
+				AA0B60B3243EDEAB00C7F3D9 /* FeaturedPostView.xib */,
+				AA0B60B5243EF32800C7F3D9 /* FeaturedPostView.swift */,
+				AAACD013243F0A2E00D97D41 /* FeaturedCell.swift */,
+				AAACD014243F0A2E00D97D41 /* FeaturedCell.xib */,
 				AA4CE27824076701009BAC92 /* ExploreProductCell.swift */,
 				AA4CE27924076701009BAC92 /* ExploreProductCell.xib */,
 				AAABC16223CD189400E48987 /* MainTabBarViewController.swift */,
@@ -677,7 +689,6 @@
 			children = (
 				AAABC00823C9431600E48987 /* SearchUserTableViewCell.swift */,
 				AAABC00923C9431600E48987 /* SearchUserTableViewCell.xib */,
-				AAABC06223C9432700E48987 /* ProductCell.swift */,
 				AA2067BF243185D300459478 /* SearchProductTableViewCell.swift */,
 				AA2067C0243185D300459478 /* SearchProductTableViewCell.xib */,
 				AAABC00A23C9431600E48987 /* FeedSearchTable.swift */,
@@ -820,6 +831,7 @@
 			isa = PBXGroup;
 			children = (
 				AAABC06323C9432700E48987 /* ProductCell.xib */,
+				AAABC06223C9432700E48987 /* ProductCell.swift */,
 				AA453A752435C8CB00BA2B12 /* EmptyProductsView.swift */,
 				AA453A762435C8CB00BA2B12 /* EmptyProductsView.xib */,
 				AA453A7D24365ECA00BA2B12 /* EmptyProfileProductsView.xib */,
@@ -1034,6 +1046,7 @@
 				AA02AA302429F00D0003CFCE /* PlaceholderVC.storyboard in Resources */,
 				AAA4B03D24269A22007BC407 /* FriendVC.storyboard in Resources */,
 				AAD3F3D32418ABE300F8FF8F /* gray2.png in Resources */,
+				AA0B60B4243EDEAB00C7F3D9 /* FeaturedPostView.xib in Resources */,
 				AAABC06D23C9432700E48987 /* ProfileHeaderView.xib in Resources */,
 				AAABC06A23C9432700E48987 /* Nexa W01 Heavy.ttf in Resources */,
 				AAD3F4022418B63700F8FF8F /* day.png in Resources */,
@@ -1065,6 +1078,7 @@
 				AAABC07023C9432700E48987 /* SearchUserTableViewCell.xib in Resources */,
 				AA4858B82439354F0043BE6F /* AguafinaScript-Regular.ttf in Resources */,
 				AAD3F3D52418ABE300F8FF8F /* navy3.png in Resources */,
+				AAACD016243F0A2E00D97D41 /* FeaturedCell.xib in Resources */,
 				AA19283A24344F8600C16F28 /* Assets.xcassets in Resources */,
 				AAD3F3CC2418ABE300F8FF8F /* green3.png in Resources */,
 				AAA4B039242699D6007BC407 /* EditUsernameVC.storyboard in Resources */,
@@ -1260,6 +1274,7 @@
 				AA0E2AD5240CCBCA004050B0 /* FullProductVC.swift in Sources */,
 				AAABC16323CD189400E48987 /* MainTabBarViewController.swift in Sources */,
 				AAABC0A523C9432700E48987 /* GetChatFromDisk.swift in Sources */,
+				AA0B60B6243EF32800C7F3D9 /* FeaturedPostView.swift in Sources */,
 				AA44091023F3E00D009F5774 /* Template.swift in Sources */,
 				AAABC08E23C9432700E48987 /* StringExtensions.swift in Sources */,
 				AAABC09923C9432700E48987 /* SkeletonView.swift in Sources */,
@@ -1344,6 +1359,7 @@
 				AA02AA34242D3B530003CFCE /* UITextField+Extension.swift in Sources */,
 				AAABC08C23C9432700E48987 /* EditProfileVC.swift in Sources */,
 				AA4CE27A24076701009BAC92 /* ExploreProductCell.swift in Sources */,
+				AAACD015243F0A2E00D97D41 /* FeaturedCell.swift in Sources */,
 				AAABC0A223C9432700E48987 /* SavePIcturesToDisk.swift in Sources */,
 				AA8CD7FD23DE0F1300DCA929 /* FlappingButterflyRefreshControl.swift in Sources */,
 			);
@@ -1514,7 +1530,7 @@
 				CODE_SIGN_ENTITLEMENTS = Thred/ThredDebug.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = WA263Q86P5;
 				INFOPLIST_FILE = Thred/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
@@ -1522,6 +1538,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.0.3;
 				PRODUCT_BUNDLE_IDENTIFIER = thred.Thred;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1538,7 +1555,7 @@
 				CODE_SIGN_ENTITLEMENTS = Thred/ThredRelease.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = WA263Q86P5;
 				INFOPLIST_FILE = Thred/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
@@ -1546,6 +1563,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.0.3;
 				PRODUCT_BUNDLE_IDENTIFIER = thred.Thred;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
