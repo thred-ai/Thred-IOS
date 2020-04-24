@@ -31,7 +31,6 @@ class CodeViewController: UIViewController {
         super.viewDidLoad()
         
         verification.inputAccessoryView = toolBar
-        addGuidelinesLink()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -200,40 +199,7 @@ class CodeViewController: UIViewController {
         }
     }
     
-    func addGuidelinesLink(){
-        let linkWords = "Community Guidelines"
-        let privWords = "Privacy Policy"
-
-        let guideLineText = "By signing up for Thred, you agree to our \(linkWords) and \(privWords)"
-        
-        termsOfServiceView.text = guideLineText
-        let attrString = NSMutableAttributedString()
-        attrString.setAttributedString(termsOfServiceView.attributedText)
-        let nsText = NSString(string: guideLineText)
-        let matchRange:NSRange = nsText.range(of: linkWords)
-        let matchRange2:NSRange = nsText.range(of: privWords)
-        
-        guard let font = UIFont(name: "NexaW01-Heavy", size: termsOfServiceView.font?.pointSize ?? 16) else{return}
-        
-        let attributes = [
-            NSAttributedString.Key.link : "https://thredapps.com/community-guidelines",
-            NSAttributedString.Key.font : font
-        ] as [NSAttributedString.Key : Any]
-        let attributes2 = [
-            NSAttributedString.Key.link :
-            "https://thredapps.com/privacy-policy",
-            NSAttributedString.Key.font : font
-        ] as [NSAttributedString.Key : Any]
-        
-        attrString.addAttributes(attributes, range: matchRange)
-        attrString.addAttributes(attributes2, range: matchRange2)
-
-        
-        termsOfServiceView.attributedText = attrString
-        termsOfServiceView.linkTextAttributes = [
-            NSAttributedString.Key.foregroundColor : UIColor(named: "LoadingColor")!
-        ]
-    }
+    
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -256,7 +222,7 @@ class CodeViewController: UIViewController {
 
 extension UIViewController{
     func loadUser(userUID: String, completed: @escaping (Bool) -> ()){
-        self.downloadUserInfo(uid: userUID, userVC: nil, feedVC: nil, downloadingPersonalDP: true, doNotDownloadDP: false, downloader: SDWebImageDownloader.shared, userInfoToUse: nil, queryOnUsername: false, completed: { uid, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followersCount, followingCount in
+        self.downloadUserInfo(uid: userUID, userVC: nil, feedVC: nil, downloadingPersonalDP: true, doNotDownloadDP: false, userInfoToUse: nil, queryOnUsername: false, completed: { uid, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followersCount, followingCount in
             
             if username == nil{
                 DispatchQueue.main.asyncAfter(deadline: .now() + 3.5){

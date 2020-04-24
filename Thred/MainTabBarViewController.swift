@@ -241,28 +241,15 @@ extension UITableView{
             let indexPath = IndexPath(row: index, section: 0)
             if let cell = cellForRow(at: indexPath) as? ProductCell{
                 cell.optionMenu.isHidden = true
-                
                 DispatchQueue.main.async {
-                    self.performBatchUpdates({
-                        self.deleteRows(at: [indexPath], with: .fade)
-                    }, completion: { finished in
-                        if finished{
-                        }
-                    })
+                    self.reloadData()
                 }
             }
         }
         else{
             if let tableView = (topVC as? UserVC)?.tableView ?? (topVC as? UserVC)?.tableView{
-                let indexPath = IndexPath(row: index, section: 0)
-                
                 DispatchQueue.main.async {
-                    tableView.performBatchUpdates({
-                        tableView.deleteRows(at: [indexPath], with: .fade)
-                    }, completion: { finished in
-                        if finished{
-                        }
-                    })
+                    tableView.reloadData()
                 }
             }
             vc?.navigationController?.popViewController(animated: true)

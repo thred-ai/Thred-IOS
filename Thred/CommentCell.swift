@@ -53,8 +53,6 @@ class CommentCell: UITableViewCell, UITextViewDelegate {
         guard commentUserInfo.uid != userInfo.uid else{return}
         vc.selectedUser = UserInfo(uid: commentUserInfo.uid, dp: commentUserInfo.dp, dpID: commentUserInfo.dpID, username: commentUserInfo.username, fullName: commentUserInfo.fullName, bio: commentUserInfo.bio, notifID: commentUserInfo.notifID, userFollowing: commentUserInfo.userFollowing, userLiked: commentUserInfo.userLiked, followerCount: commentUserInfo.followerCount, postCount: commentUserInfo.postCount, followingCount: commentUserInfo.followingCount, usersBlocking: commentUserInfo.usersBlocking)
         vc.performSegue(withIdentifier: "toFriend", sender: nil)
-        
-        
     }
     
     func textView(_ textView: UITextView, shouldInteractWith URL: URL, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {

@@ -503,6 +503,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         
         
         
+        
         if #available(iOS 13.0, *) {
             lineTypeView.addBackgroundBlur(blurEffect: UIBlurEffect(style: UIBlurEffect.Style.systemUltraThinMaterial))
         } else {
@@ -904,7 +905,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     }
     
     @objc func textFieldDidChange(_ textField: UITextField){
-        if textField.text?.isEmpty ?? false{
+        if textField.text?.replacingOccurrences(of: " ", with: "").isEmpty ?? false{
             nextBtn.isEnabled = false
         }
         else{

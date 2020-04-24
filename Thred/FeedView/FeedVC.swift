@@ -9,6 +9,7 @@
 import UIKit
 import FirebaseFirestore
 import FirebaseStorage
+import Firebase
 import FirebaseUI
 import AudioToolbox
 import AVFoundation
@@ -92,9 +93,8 @@ class Product: Codable, Equatable{
 class FeedVC: UITableViewController, UISearchBarDelegate {
     
     var loadedProducts = [Product]()
-    var isLoading = Bool()
+    var isLoading = true
     let uid = UserDefaults.standard.string(forKey: "UID")
-    var downloader = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
     var tokens = [String]()
     var downloadCount = 0
     var downloadingProfiles = [String]()
@@ -140,15 +140,14 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
     @objc func refresh(_ sender: BouncingTitleRefreshControl){
                 
         if !isLoading{
+            lastIndex = 0
             isLoading = true
             sender.animateRefresh()
-            
             self.downloadProducts(){
                 self.isLoading = false
                 sender.endRefreshing()
                 self.loadedProducts.saveAllObjects(type: "FeedProducts")
             }
-            
         }
     }
     
@@ -166,10 +165,21 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         return loadFeedPostHeaderFromNib()
     }()
     
+    lazy var loadingView: LoadingView? = {
+        
+        return loadLoadingHeaderFromNib()
+    }()
+    
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         
         if loadedProducts.isEmpty{
-            return headerView
+            if isLoading{
+                loadingView?.spinner.animate()
+                return loadingView
+            }
+            else{
+                return headerView
+            }
         }
         return nil
     }
@@ -185,12 +195,17 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         guard let uid = userInfo.uid else{completed(); return}
         checkAuthStatus {
             self.refreshLists(userUID: uid){
-                self.getProducts(refresh: true, fromInterval: nil) { hasDiffproducts in
-                    completed()
+                self.getProducts(refresh: true) { hasDiffproducts in
                     if hasDiffproducts ?? false{
-                        self.clearTableView()
+                        if !self.loadedProducts.isEmpty{
+                            self.clearTableView()
+                        }
+                        DispatchQueue.main.async {
+                            completed()
+                        }
                     }
                     else{
+                        
                         for i in 0..<(self.loadedProducts.count){
                             if self.loadedProducts[i].uid == userInfo.uid{
                                 continue
@@ -199,6 +214,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                         }
                         DispatchQueue.main.async {
                             self.tableView.reloadData()
+                            completed()
                         }
                     }
                 }
@@ -216,43 +232,6 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
     
     var selectedReportID: String!
     var selectedReportUID: String!
-
-    /*
-    func addTemplates(){
-        let idData = [
-            ["Code": "black", "Display": "Black"],
-            ["Code": "blue1", "Display": "Light Blue"],
-            ["Code": "blue2", "Display": "Royal Blue (Heather)"],
-            ["Code": "blue3", "Display": "Royal Blue"],
-            ["Code": "cyan", "Display": "Sapphire Blue"],
-            ["Code": "gray1", "Display": "Silver"],
-            ["Code": "gray2", "Display": "Athletic Gray (Heather)"],
-            ["Code": "gray3", "Display": "Medium Gray"],
-            ["Code": "gray4", "Display": "Charcoal Gray"],
-            ["Code": "gray5", "Display": "Dark Gray (Heather)"],
-            ["Code": "green1", "Display": "Lime Green"],
-            ["Code": "green2", "Display": "Kelly Green"],
-            ["Code": "green3", "Display": "Dark Green"],
-            ["Code": "navy1", "Display": "Navy Blue (Heather)"],
-            ["Code": "navy2", "Display": "Navy Blue"],
-            ["Code": "navy3", "Display": "Dark Navy Blue"],
-            ["Code": "orange", "Display": "Orange"],
-            ["Code": "pink", "Display": "Sangria Pink"],
-            ["Code": "purple", "Display": "Purple"],
-            ["Code": "red1", "Display": "Red (Heather)"],
-            ["Code": "red2", "Display": "Red"],
-            ["Code": "red3", "Display": "Maroon"],
-            ["Code": "white", "Display": "White"],
-            ["Code": "yellow1", "Display": "Yellow"],
-            ["Code": "yellow2", "Display": "Gold"],
-        ]
-        let data = [
-            "IDs" : idData,
-        ]
-        Firestore.firestore().collection("Templates").document("Tees").setData(data)
-    }
-*/
-    
  
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -261,50 +240,16 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         
         tableView.register(UINib(nibName: "ProductCell", bundle: nil), forCellReuseIdentifier: "PictureProduct")
         tableView.register(UINib(nibName: "ProductWithTextCell", bundle: nil), forCellReuseIdentifier: "TextProduct")
-        //FeedVC.searchTable.register(EmptyFeedVC.searchTableViewCell.self, forCellReuseIdentifier: "emptySearch")
         navigationController?.navigationBar.layer.shadowColor = nil
         
         let refresher = BouncingTitleRefreshControl(title: "thred")
         refresher.addTarget(self, action: #selector(refresh(_:)), for: UIControl.Event.valueChanged)
         
-        //userInfo.dp = userInfo.defaultDP
-        //userInfo.username = "artathecanadiann"
-        //userInfo.fullName = "arta"
-        
-        //let l = customView.constraints.first(where: {$0.})
-              
-              //refresher.attributedTitle = NSAttributedString(string: "Pull to Refresh 👽")
-              
-        //self.tableView.refreshControl = refresher
         tableView.addSubview(refresher)
-
-        //let image = userInfo.dp
-        
-        //setupUI(image: image!)
-        //navigationItem.titleView = FeedVC.searchBar
-        
-        
-        //UserDefaults.standard.set("vK39Da3RIGVGsgBgpdkj0CWdtdW2", forKey: "UID") //Arta
-        //UserDefaults.standard.set("tl1oOs1NXdeHsium7ZygweBc7YO2", forKey: "UID") //Arvin
-        //UserDefaults.standard.set("te7lsnwiPUMyj85O4Q5Tkvuu3VH3", forKey: "UID") //Dad
-        
-        
-        
-        
-        
-        //contentInset.left = 0
-        //self.tableView.contentInset.right = 0
-
-        //backgroundView.startAnimating()
-        
 
         navigationController?.navigationBar.setBackgroundImage(UIImage.init(), for: UIBarMetrics.default)
         navigationController?.navigationBar.shadowImage = UIImage.init()
-        //
-        //userInfo.dp = UIImage.init(named: "night")
-        
-        
-        //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
         tableView.setContentOffset(CGPoint(x: 0, y: tableView.contentOffset.y - (refresher.frame.size.height)), animated: true)
         
         refresher.beginRefreshing()
@@ -312,6 +257,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         
         loadedProducts.checkAndLoadProducts(vc: self, type: "FeedProducts") { count in
             DispatchQueue.main.async{
+                self.isLoading = false
                 switch count{
                 case 0:
                     self.refresh(refresher)
@@ -324,6 +270,11 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                 }
             }
             
+            if !UserDefaults.standard.bool(forKey: "showedAuthMsg"){
+                UserDefaults.standard.set(true, forKey: "showedAuthMsg")
+
+            }
+
             if !UserDefaults.standard.bool(forKey: "showedCovidMsg"){
                 UserDefaults.standard.set(true, forKey: "showedCovidMsg")
                 self.showErrorMessage {
@@ -337,16 +288,12 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         
         if tableView.contentOffset.y >= (tableView.contentSize.height - tableView.frame.size.height){
             print("fromScroll")
-            if let last = loadedProducts.last{
-                if let interval = last.timestamp{
-                    if !isLoading{
-                        isLoading = true
-                        getProducts(refresh: false, fromInterval: interval){_ in
-                            self.isLoading = false
-                            if self.refreshControl?.isRefreshing ?? true{
-                                self.refreshControl?.endRefreshing()
-                            }
-                        }
+            if !isLoading{
+                isLoading = true
+                getProducts(refresh: false){_ in
+                    self.isLoading = false
+                    if self.refreshControl?.isRefreshing ?? true{
+                        self.refreshControl?.endRefreshing()
                     }
                 }
             }
@@ -354,13 +301,9 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
     }
     
     var query: Query! = nil
-    
-    func loadProducts(){
-        
-        
-    }
+    var lastIndex = 0
 
-    func getProducts(refresh: Bool, fromInterval: Date?, completed: @escaping (Bool?) -> ()){
+    func getProducts(refresh: Bool, time completed: @escaping (Bool?) -> ()){
 
         guard let userUID = userInfo.uid else{
             completed(false)
@@ -378,30 +321,28 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         let arrays = clone.chunked(into: 10)
         var localLoaded: [Product]! = [Product]()
         var totalDocs = [DocumentSnapshot]()
-        let docLimit = 5
+        let docLimit = 8
         
-        for array in arrays.reversed(){
-           
-            if fromInterval == nil{
-                query = Firestore.firestore().collectionGroup("Products").whereField("UID", in: array).whereField("Timestamp", isLessThanOrEqualTo: Timestamp(date: Date())).whereField("Has_Picture", isEqualTo: true).limit(to: docLimit).order(by: "Timestamp", descending: true)
-            }
-            if let last = fromInterval{
-                query = Firestore.firestore().collectionGroup("Products").whereField("UID", in: array).whereField("Timestamp", isLessThan: Timestamp(date: last)).whereField("Has_Picture", isEqualTo: true).limit(to: docLimit).order(by: "Timestamp", descending: true)
-            }
-            
-            self.query.getDocuments(completion: { (snapDocuments, err) in
+        if arrays.indices.contains(lastIndex){
+            let array = arrays[lastIndex]
+            lastIndex = (arrays.firstIndex(of: array) ?? 0) + 1
+            query = Firestore.firestore().collectionGroup("Products").whereField("UID", in: array).whereField("Has_Picture", isEqualTo: true).limit(to: docLimit).order(by: "Timestamp", descending: true)
+            query.getDocuments(completion: { (snapDocuments, err) in
                 if let err = err {
                     print("Error getting documents: \(err)")
                 }
                 else{
-
                     if snapDocuments?.isEmpty ?? true{
-                        
+                        self.isLoading = false
+                        self.refresh(self.tableView.refreshControl as! BouncingTitleRefreshControl)
                     }
                     else{
                         guard let snaps = snapDocuments?.documents else {
+                            self.isLoading = false
+                            self.refresh(self.tableView.refreshControl as! BouncingTitleRefreshControl)
                             return}
                         if snapDocuments?.metadata.isFromCache ?? false{
+                            
                         }
                         else{
                             for (index, snap) in snaps.enumerated(){
@@ -424,18 +365,18 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                         }
                     }
                 }
-                if array == arrays.last{
-                    print(localLoaded.count)
-                    self.checkSameProducts(fromInterval: fromInterval, localLoaded: localLoaded, completed: { isNew in
-                        if isNew{
-                            completed(true)
-                        }
-                        else{
-                            completed(false)
-                        }
-                    })
-                }
+                self.checkSameProducts(localLoaded: localLoaded, completed: { isNew in
+                    if isNew{
+                        completed(true)
+                    }
+                    else{
+                        completed(false)
+                    }
+                })
             })
+        }
+        else{
+            completed(false)
         }
     }
     
@@ -443,27 +384,19 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         
     }
     
-    func checkSameProducts(fromInterval: Date?, localLoaded: [Product], completed: @escaping (Bool) -> ()){
-        switch fromInterval{
-        case .none:
-            let isSame = localLoaded == self.loadedProducts
-            if !isSame{
-                self.loadedProducts.removeOldFeedPosts(newPosts: localLoaded)
-                completed(true)
-                self.sortDownloadedProducts(products: localLoaded){
-                    //localLoaded = nil
-                    self.loadedProducts.saveAllObjects(type: "FeedProducts")
-                }
-            }
-            else{
-                //localLoaded = nil
-                completed(false)
-            }
-        default:
+    func checkSameProducts(localLoaded: [Product], completed: @escaping (Bool) -> ()){
+        let isSame = localLoaded == self.loadedProducts
+        if !isSame{
+            self.loadedProducts.removeOldFeedPosts(newPosts: localLoaded)
+            completed(true)
             self.sortDownloadedProducts(products: localLoaded){
                 //localLoaded = nil
-                completed(true)
+                self.loadedProducts.saveAllObjects(type: "FeedProducts")
             }
+        }
+        else{
+            //localLoaded = nil
+            completed(false)
         }
     }
     
@@ -554,7 +487,6 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(true)
-        
         self.showCenterBtn()
         
         tableView.syncPostLikes(loadedProducts: loadedProducts, vc: self)
@@ -657,11 +589,15 @@ extension UIViewController{
             bundle: nil
         ).instantiate(withOwner: nil, options: nil)[0] as? EmptyProfileProductsView
         
-        if productsHeaderView == nil{
-            
-        }
-        
         return productsHeaderView!
+    }
+    
+    func loadLoadingHeaderFromNib() -> LoadingView?{
+        let loadingView = UINib(
+            nibName: "LoadingView",
+            bundle: nil
+        ).instantiate(withOwner: nil, options: nil)[0] as? LoadingView
+        return loadingView!
     }
     
     func loadNotifHeaderFromNib() -> EmptyNotifView?{

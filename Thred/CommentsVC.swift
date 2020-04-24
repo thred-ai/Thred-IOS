@@ -50,7 +50,6 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
     @IBOutlet weak var bottomBarInnerView: UIView!
     var post: Product!
     var comments = [Comment]()
-    var downloader: SDWebImageDownloader? = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
     var selectedUser: UserInfo!
     var loadedUsers = [UserInfo]()
     var selectedComment: Comment!
@@ -112,7 +111,6 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
     override func viewWillDisappear(_ animated: Bool) {
         NotificationCenter.default.removeObserver(self)
         textView.resignFirstResponder()
-        downloader?.invalidateSessionAndCancel(true)
     }
 
     
@@ -310,7 +308,7 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
                 default:
                     if !downloadingProfiles.contains(uid){
                         downloadingProfiles.append(uid)
-                        self.downloadUserInfo(uid: uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: false, downloader: downloader, userInfoToUse: comment.userInfo, queryOnUsername: false, completed: { uid, fullName, username, dpUID, notifID, bio, img, userFollowing, usersBlocking, postCount, followersCount, followingCount in
+                        self.downloadUserInfo(uid: uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: false, userInfoToUse: comment.userInfo, queryOnUsername: false, completed: { uid, fullName, username, dpUID, notifID, bio, img, userFollowing, usersBlocking, postCount, followersCount, followingCount in
                             self.downloadingProfiles.removeAll(where: {$0 == uid})
                             
                             if usersBlocking.contains(userUID){
@@ -376,9 +374,6 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
         super.viewWillAppear(true)
         self.hideCenterBtn()
         setKeyBoardNotifs()
-        if downloader == nil{
-            downloader = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
-        }
     }
     
     
@@ -585,7 +580,7 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
                                         print(error?.localizedDescription ?? "")
                                     }
                                     else{
-                                        self.downloader?.requestImage(with: url, options: [.scaleDownLargeImages, .refreshCached], context: nil, progress: nil, completed: { (image, data, error, finished) in
+                                        downloader.requestImage(with: url, options: [.scaleDownLargeImages, .refreshCached], context: nil, progress: nil, completed: { (image, data, error, finished) in
                                             if error != nil{
                                                 print(error?.localizedDescription ?? "")
                                                 return

@@ -11,14 +11,15 @@ import UIKit
 import SDWebImage
 import Firebase
 import FirebaseFirestore
+var downloader = SDWebImageDownloader.shared
 
 extension UITableView{
 
-    func beginDownloadingUserInfo(uid: String, downloader: SDWebImageDownloader?, userVC: UserVC?, feedVC: FeedVC?, friendVC: FriendVC?, fullVC: FullProductVC?, section: Int){
+    func beginDownloadingUserInfo(uid: String, userVC: UserVC?, feedVC: FeedVC?, friendVC: FriendVC?, fullVC: FullProductVC?, section: Int){
         print(uid)
         
         guard let vc = feedVC ?? fullVC ?? friendVC ?? userVC else{return}
-        vc.downloadUserInfo(uid: uid, userVC: userVC, feedVC: feedVC, downloadingPersonalDP: false, doNotDownloadDP: false, downloader: downloader, userInfoToUse: nil, queryOnUsername: false, completed: {[weak self] uid, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followersCount, followingCount in
+        vc.downloadUserInfo(uid: uid, userVC: userVC, feedVC: feedVC, downloadingPersonalDP: false, doNotDownloadDP: false, userInfoToUse: nil, queryOnUsername: false, completed: {[weak self] uid, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followersCount, followingCount in
             
             if username != nil{
                 if userVC != nil{
@@ -140,7 +141,7 @@ extension UITableViewCell{
 
 
 extension UIViewController{
-    func downloadUserInfo(uid: String?, userVC: UserVC?, feedVC: FeedVC?, downloadingPersonalDP: Bool, doNotDownloadDP: Bool, downloader: SDWebImageDownloader?, userInfoToUse: UserInfo?, queryOnUsername: Bool, completed: @escaping (String?, String?, String?, String?, String?, String?, UIImage?, [String], [String], Int, Int, Int) -> ()){
+    func downloadUserInfo(uid: String?, userVC: UserVC?, feedVC: FeedVC?, downloadingPersonalDP: Bool, doNotDownloadDP: Bool, userInfoToUse: UserInfo?, queryOnUsername: Bool, completed: @escaping (String?, String?, String?, String?, String?, String?, UIImage?, [String], [String], Int, Int, Int) -> ()){
         
         let ref = Firestore.firestore().collection("Users")
 
@@ -215,7 +216,7 @@ extension UIViewController{
                             return
                         }
                         else{
-                            downloader?.requestImage(with: url, options: options, context: nil, progress: nil, completed: { (image, data, error, finished) in
+                            downloader.requestImage(with: url, options: options, context: nil, progress: nil, completed: { (image, data, error, finished) in
                                   if finished{
                                       if error != nil{
                                           print(error?.localizedDescription ?? "")

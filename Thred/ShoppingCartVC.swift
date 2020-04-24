@@ -50,7 +50,6 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     
     
-    var downloader: SDWebImageDownloader? = SDWebImageDownloader.init(config: .default)
     var savedProducts = [ProductInCart]()
     var allSavedProducts = [ProductInCart]()
     var refresher: BouncingTitleRefreshControl!
@@ -217,7 +216,7 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                             }
                             else{
                                 var dub: CGFloat = 0
-                                self.downloader?.requestImage(with: url, options: [.highPriority, .continueInBackground, .scaleDownLargeImages], context: nil, progress: { (receivedSize: Int, expectedSize: Int, link) -> Void in
+                                downloader.requestImage(with: url, options: [.highPriority, .continueInBackground, .scaleDownLargeImages], context: nil, progress: { (receivedSize: Int, expectedSize: Int, link) -> Void in
                                     dub = CGFloat(receivedSize) / CGFloat(expectedSize)
                                     print("Progress \(dub)")
                                 }, completed: { (image, data, error, finished) in
@@ -293,8 +292,6 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        downloader?.invalidateSessionAndCancel(true)
-        downloader = nil
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -332,13 +329,7 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         cell?.savedProduct = savedProduct
         cell?.cartVC = self
         
-        if product.price != nil{
-            var price = "$\(product.price ?? 20.00)"
-            if price.count == 5{
-                price = price + "0"
-            }
-            cell?.priceLbl.text = "\(price)"
-        }
+        cell?.priceLbl.text = product.price?.formatPrice()
         cell?.sizingLbl.text = "Size: \(savedProduct.size ?? "M")"
         cell?.quantityField.text = "\(savedProduct.quantity ?? 0)"
         
@@ -352,7 +343,7 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                 cell?.usernameLbl.text = "@\(username)"
             }
             else{
-                downloadUserInfo(uid: product.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: true, downloader: downloader, userInfoToUse: nil, queryOnUsername: false, completed: { uid, fullName, username, dpID, notifID, bio, image, userFollowing, usersBlocking, postCount, followersCount, followingCount in
+                downloadUserInfo(uid: product.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: true, userInfoToUse: nil, queryOnUsername: false, completed: { uid, fullName, username, dpID, notifID, bio, image, userFollowing, usersBlocking, postCount, followersCount, followingCount in
                     guard let username = username else{
                         
                         return}

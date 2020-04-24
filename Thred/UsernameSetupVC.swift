@@ -70,7 +70,7 @@ class UsernameSetupVC: UIViewController {
         sender.isEnabled = false
         guard let fieldText = usernameView.text else{return}
         let fullname = fullNameView.text ?? fieldText
-        guard let uid = UserDefaults.standard.string(forKey: "UID") else{return}
+        guard let uid = Auth.auth().currentUser?.uid else{return}
         self.errorView.text = nil
         Firestore.firestore().collection("Users").whereField("Username", isEqualTo: fieldText).getDocuments(completion: { snaps, error in
             

@@ -17,9 +17,6 @@ let cache = SDImageCache.shared
 extension UITableView{
     func checkAndDownloadProductImage(user: Product, vc: UIViewController, picID: String, cell: ProductCell?, index: Int, type: String?){
 
-        guard let downloader = (vc as? FeedVC)?.downloader ?? (vc as? UserVC)?.downloader ?? (vc as? FriendVC)?.downloader ?? (vc as? FullProductVC)?.downloader
-            else {return}
-        
         let circularProgress = cell?.circularProgress
 
         if let fullVC = vc as? FullProductVC{
@@ -41,7 +38,7 @@ extension UITableView{
                     fullVC.rasterizeProductCellDisplay(cell: cell, image: image, product: user)
                 }
                 else{
-                    self.downloadProductImage(pictureProduct: cell, followingUID: user.uid, picID: picID, index: index, downloader: downloader, feedVC: nil, friendVC: nil, userVC: nil, fullVC: vc as? FullProductVC, type: type, product: user){_,_ in
+                    self.downloadProductImage(pictureProduct: cell, followingUID: user.uid, picID: picID, index: index, feedVC: nil, friendVC: nil, userVC: nil, fullVC: vc as? FullProductVC, type: type, product: user){_,_ in
                         return
                     }
                 }
@@ -66,7 +63,7 @@ extension UITableView{
                         cell?.setUpCircularProgress()
                         if !tokens.contains(where: {$0 == picID}){
                             tokens.append(picID)
-                            self.downloadProductImage(pictureProduct: cell, followingUID: user.uid, picID: picID, index: index, downloader: downloader, feedVC: vc as? FeedVC, friendVC: vc as? FriendVC, userVC: vc as? UserVC, fullVC: nil, type: type, product: user){_,_ in
+                            self.downloadProductImage(pictureProduct: cell, followingUID: user.uid, picID: picID, index: index, feedVC: vc as? FeedVC, friendVC: vc as? FriendVC, userVC: vc as? UserVC, fullVC: nil, type: type, product: user){_,_ in
                                 tokens.removeAll(where: {$0 == picID})
                             }
                         }
@@ -78,7 +75,7 @@ extension UITableView{
     
     
     
-    func downloadProductImage(pictureProduct: ProductCell?, followingUID: String, picID: String, index: Int, downloader: SDWebImageDownloader?, feedVC: FeedVC?, friendVC: FriendVC?, userVC: UserVC?, fullVC: FullProductVC?, type: String?, product: Product?, completed: @escaping (UIImage?, String?) -> ()){
+    func downloadProductImage(pictureProduct: ProductCell?, followingUID: String, picID: String, index: Int, feedVC: FeedVC?, friendVC: FriendVC?, userVC: UserVC?, fullVC: FullProductVC?, type: String?, product: Product?, completed: @escaping (UIImage?, String?) -> ()){
                
         
         let cp = pictureProduct?.circularProgress
@@ -101,11 +98,11 @@ extension UITableView{
             else{
                 var dub: CGFloat = 0
                 var oldDub: CGFloat = 0
-                downloader?.requestImage(with: url, options: [.highPriority, .continueInBackground, .scaleDownLargeImages], context: nil, progress: { (receivedSize: Int, expectedSize: Int, link) -> Void in
+                downloader.requestImage(with: url, options: [.highPriority, .continueInBackground, .scaleDownLargeImages], context: nil, progress: { (receivedSize: Int, expectedSize: Int, link) -> Void in
                     dub = CGFloat(receivedSize) / CGFloat(expectedSize)
                     print("Progress \(dub)")
                     print("Old Progress \(oldDub)")
-                    DispatchQueue.main.sync {
+                    DispatchQueue.main.async {
                         cp?.setProgressWithAnimation(duration: 0.0, value: dub, from: oldDub, finished: true){
                             oldDub = dub
                         }

@@ -11,9 +11,33 @@ import ColorCompatibility
 
 class ProfileHeaderView: UIView{
 
-    
+    var selectedList: UserListType!
     // Only override draw() if you perform custom drawing.
     // An empty implementation adversely affects performance during animation.
+    @IBAction func showMessage(_ sender: UIButton) {
+        getViewController()?.showAuthMessage {
+            
+        }
+    }
+    
+    @IBAction func toFollowingList(_ sender: UITapGestureRecognizer) {
+        selectedList = .following
+        getViewController()?.performSegue(withIdentifier: "toUserList", sender: nil)
+    }
+    
+    @IBAction func toFollowerList(_ sender: UITapGestureRecognizer) {
+        selectedList = .followers
+        getViewController()?.performSegue(withIdentifier: "toUserList", sender: nil)
+    }
+    
+    @IBAction func showPosts(_ sender: UITapGestureRecognizer) {
+        
+    }
+    
+    
+    
+    
+    
     override func draw(_ rect: CGRect) {
     }
     @IBOutlet weak var optionBtn: UIButton!
@@ -23,6 +47,7 @@ class ProfileHeaderView: UIView{
     @IBOutlet weak var followerNum: UILabel!
     @IBOutlet weak var postNum: UILabel!
     
+    @IBOutlet weak var emailNotSetView: UIButton!
     
     @IBOutlet weak var userContentView: UIView!
     @IBOutlet weak var fullnameLbl: UILabel!
@@ -75,7 +100,7 @@ class ProfileHeaderView: UIView{
             headerActionBtnTitle = "Following"
             actionBtn.setTitleColor(.white, for: .normal)
             UIView.animate(withDuration: animationDuration, animations: {
-                self.actionBtn.backgroundColor = UIColor(named: "LoadingColor")
+                self.actionBtn .backgroundColor = UIColor(named: "LoadingColor")
             })
         }
         else{

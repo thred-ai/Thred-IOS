@@ -16,8 +16,7 @@ import ColorCompatibility
 class FriendVC: UITableViewController, UINavigationControllerDelegate {
 
     var loadedProducts = [Product]()
-    var isLoading = Bool()
-    var downloader: SDWebImageDownloader? = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
+    var isLoading = true
 
     var tokens = [String]()
     var currentproductsJSON: [DocumentSnapshot]? = [DocumentSnapshot]()
@@ -67,6 +66,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
             case false:
                 if let vcIndex = navigationController?.viewControllers.firstIndex(of: self){
                     if navigationController?.viewControllers[vcIndex - 1] is FullProductVC || navigationController?.viewControllers[vcIndex - 1] is FeedVC{
+                        self.isLoading = false
                         self.refresh(refresher)
                     }
                     else{
@@ -79,11 +79,13 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
                 header?.updateFollowBtn(didFollow: isFollowing, animated: false)
                 self.header?.actionBtn.isUserInteractionEnabled = true
                 self.downloadProducts(){
+                    self.isLoading = false
                     return
                 }
             }
         }
         else{
+            self.isLoading = false
             self.refresh(refresher)
         }
     }
@@ -172,14 +174,10 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
             }
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                if self.downloader == nil{
-                    self.downloader = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
-                }
-                self.downloader?.cancelAllDownloads()
                 guard let userUID = userInfo.uid else{return}
                 self.checkAuthStatus {
                     self.refreshLists(userUID: userUID){
-                        self.downloadUserInfo(uid: self.friendInfo.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: true, doNotDownloadDP: false, downloader: self.downloader, userInfoToUse: self.friendInfo, queryOnUsername: self.friendInfo.uid == nil, completed: {
+                        self.downloadUserInfo(uid: self.friendInfo.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: true, doNotDownloadDP: false, userInfoToUse: self.friendInfo, queryOnUsername: self.friendInfo.uid == nil, completed: {
                             uid, fullName, username, dpID, notifID, bio, image, userFollowing, usersBlocking, postCount, followersCount, followingCount  in
                             if username != nil{
                                 self.setInfo(username: username, fullname: fullName, dpID: dpID, image: image, notifID: notifID, bio: bio, userFollowing: userFollowing, uid: uid, followerCount: followersCount, postCount: postCount, followingCount: followingCount, usersBlocking: usersBlocking)
@@ -199,7 +197,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
                                     }
                                 }
                                 self.tableView.performBatchUpdates({
-                                    self.tableView.reloadRows(at: self.tableView?.indexPathsForVisibleRows ?? [], with: .none)
+                                    self.tableView.reloadRows(at: self.tableView?.indexPathsForVisibleRows ?? [], with: .automatic)
                                 }, completion: { complete in
                                     if complete{
                                     }
@@ -256,9 +254,18 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
             completed()
             if hasDiffproducts ?? false{
                 self.currentproductsJSON = snapDocs
-                self.loadedProducts.removeAll()
-                self.cellHeights.removeAll()
-                self.tableView.reloadData()
+                if !self.loadedProducts.isEmpty{
+                    self.loadedProducts.removeAll()
+                    self.cellHeights.removeAll()
+                    self.tableView.reloadData()
+                }
+            }
+            else{
+                if self.loadedProducts.isEmpty{
+                    DispatchQueue.main.async {
+                        self.tableView.reloadData()
+                    }
+                }
             }
         }
     }
@@ -278,7 +285,6 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         //
         guard let friendUID = friendInfo.uid else{return}
         guard let userUID = userInfo.uid else{return}
-        guard downloader != nil else{return}
         if fromInterval == nil{
             query = Firestore.firestore().collection("Users").document(friendUID).collection("Products").whereField("Timestamp", isLessThanOrEqualTo: Timestamp(date: Date())).whereField("Has_Picture", isEqualTo: true).limit(to: 8).order(by: "Timestamp", descending: true)
         }
@@ -387,10 +393,21 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         return loadProfilePostHeaderFromNib()
     }()
     
+    lazy var loadingView: LoadingView? = {
+        
+        return loadLoadingHeaderFromNib()
+    }()
+    
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         
         if loadedProducts.isEmpty{
-            return headerView
+            if isLoading{
+                loadingView?.spinner.animate()
+                return loadingView
+            }
+            else{
+                return headerView
+            }
         }
         return nil
     }
@@ -481,15 +498,10 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
     override func viewWillAppear(_ animated: Bool) {
         
         tableView.syncPostLikes(loadedProducts: loadedProducts, vc: self)
-        if self.downloader == nil{
-            self.downloader = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
-        }
     }
 
 
     override func viewDidDisappear(_ animated: Bool) {
-        downloader?.invalidateSessionAndCancel(true)
-        downloader = nil
     }
     
     override func didReceiveMemoryWarning() {
@@ -724,8 +736,12 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         if let fullVC = segue.destination as? FullProductVC{
             fullVC.fullProduct = productToOpen
         }
-        if let commentsVC = segue.destination as? CommentsVC{
+        else if let commentsVC = segue.destination as? CommentsVC{
             commentsVC.post = productToOpen
+        }
+        else if let listVC = segue.destination as? UserListVC{
+            listVC.listType = header?.selectedList
+            listVC.user = friendInfo
         }
         else if let reportVC = (segue.destination as? UINavigationController)?.viewControllers.first as? ReportVC{
             reportVC.reportLevel = reportType

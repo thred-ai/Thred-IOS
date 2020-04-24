@@ -64,7 +64,6 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
     
     
     var fullProduct = Product()
-    var downloader: SDWebImageDownloader? = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
     var selectedComment: Comment!
     var friendInfo: UserInfo! = UserInfo()
     
@@ -83,8 +82,6 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
 
     override func viewWillDisappear(_ animated: Bool) {
         NotificationCenter.default.removeObserver(self)
-        downloader?.invalidateSessionAndCancel(true)
-        downloader = nil
     }
     
     
@@ -103,7 +100,64 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
 
         tableView.register(UINib(nibName: "ProductCell", bundle: nil), forCellReuseIdentifier: "PictureProduct")
         
-       
+        if fullProduct.name == nil{
+            getProduct()
+        }
+    }
+    
+    func getProduct(){
+        guard let userUID = userInfo.uid else{return}
+        
+        let query = Firestore.firestore().collectionGroup("Products").whereField("Product_ID", isEqualTo: fullProduct.productID).order(by: "Timestamp")
+        
+        query.getDocuments(completion: { snaps, error in
+            if let err = error{
+                print(err.localizedDescription)
+            }
+            else{
+                guard let snap = snaps?.documents.first else{
+                    return}
+                let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
+                let uid = snap["UID"] as! String
+                let description = snap["Description"] as? String
+                let name = snap["Name"] as? String
+                let blurred = snap["Blurred"] as? Bool
+                let templateColor = snap["Template_Color"] as? String
+                let likes = snap["Likes"] as? Int
+                guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
+                let comments = ((snap["Comments"]) as? Int) ?? 0
+
+                Firestore.firestore().collection("Users").document(self.fullProduct.uid).collection("Products").document(snap.documentID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userUID).getDocuments(completion: { snapLikes, error in
+                
+                    var liked: Bool!
+                    
+                    if error != nil{
+                        print(error?.localizedDescription ?? "")
+                    }
+                    else{
+                        userInfo.userLiked.removeAll(where: {$0 == snap.documentID})
+                        if let likeDocs = snapLikes?.documents{
+                            if likeDocs.isEmpty{
+                                liked = false
+                            }
+                            else{
+                                liked = true
+                                if !(userInfo.userLiked.contains(snap.documentID)){
+                                    userInfo.userLiked.append(snap.documentID)
+                                }
+                            }
+                        }
+                        else{
+                            liked = false
+                        }
+                    }
+                    
+                    self.fullProduct = Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: nil, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments)
+                    
+                    self.tableView.reloadData()
+                })
+            }
+        })
     }
     
     override func viewDidLayoutSubviews() {
@@ -130,9 +184,6 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(true)
         setKeyBoardNotifs()
-        if downloader == nil{
-            downloader = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
-        }
         DispatchQueue.main.async {
             self.tableView.reloadData()
         }
@@ -249,11 +300,17 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
     
     func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
+        if fullProduct.name == nil{
+            return 1
+        }
         return 2
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
+        if fullProduct.name == nil{
+            return 0
+        }
         return 1
     }
 

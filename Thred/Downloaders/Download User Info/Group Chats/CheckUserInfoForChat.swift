@@ -40,9 +40,7 @@ extension UITableView{
                 }
                 
                 picCell?.dpSkeletonView.startAnimating()
-                guard let downloader = fullVC.downloader
-                    else{return}
-                beginDownloadingUserInfo(uid: user.uid, downloader: downloader, userVC: nil, feedVC: nil, friendVC: nil, fullVC: fullVC, section: 0)
+                beginDownloadingUserInfo(uid: user.uid, userVC: nil, feedVC: nil, friendVC: nil, fullVC: fullVC, section: 0)
             }
         }
     }
@@ -60,74 +58,82 @@ extension UITableView{
             picCell?.removeDpLoad()
         }
         else{
-            switch (user.fullName, user.username){
-                
-            case (.some, .some):
-                
-                if let imageFromCache = cache.imageFromCache(forKey: user.userImageID){
-                    dp.image = imageFromCache
-                    fullLbl.text = user.fullName
-                    userLbl.text = "@" + (user.username ?? "null")
-                    picCell?.removeLabelLoad()
-                    picCell?.removeDpLoad()
-                }
-                else{
-                    if user.uid == userInfo.uid, userInfo.dp != nil{
-                        dp.image = userInfo.dp
-                        fullLbl.text = userInfo.fullName
-                        userLbl.text = "@" + (userInfo.username ?? "null")
-                        picCell?.removeLabelLoad()
-                        picCell?.removeDpLoad()
+            DispatchQueue(label: "cache").async {
+                switch (user.fullName, user.username){
+                    
+                case (.some, .some):
+                    
+                    if let imageFromCache = cache.imageFromCache(forKey: user.userImageID){
+                        DispatchQueue.main.async {
+                            dp.image = imageFromCache
+                            fullLbl.text = user.fullName
+                            userLbl.text = "@" + (user.username ?? "null")
+                            picCell?.removeLabelLoad()
+                            picCell?.removeDpLoad()
+                        }
                     }
                     else{
-                        fallthrough
-                    }
-                }
-            default:
-                switch feed?.loadedProducts.contains(where: {$0.uid == user.uid}){
-                case true:
-                    let cachedUserInfo = feed?.loadedProducts.first(where: {$0.uid == user.uid && $0.username != nil})
-                    user.username = cachedUserInfo?.username
-                    user.fullName = cachedUserInfo?.fullName
-                    user.userImageID = cachedUserInfo?.userImageID
-                    if let fullName = cachedUserInfo?.fullName{
-                        fullLbl.text = fullName
-                        picCell?.removeLabelLoad()
-                    }
-                    else{
-                        fallthrough
-                    }
-                    if let username = cachedUserInfo?.username{
-                        userLbl.text = "@" + (username)
-                        picCell?.removeLabelLoad()
-                    }
-                    else{
-                        fallthrough
-                    }
-                    if let img = cache.imageFromCache(forKey: cachedUserInfo?.userImageID){
-                        dp.image = img
-                        picCell?.removeDpLoad()
-                    }
-                    else{
-                        fallthrough
+                        if user.uid == userInfo.uid, userInfo.dp != nil{
+                            DispatchQueue.main.async {
+                                dp.image = userInfo.dp
+                                fullLbl.text = userInfo.fullName
+                                userLbl.text = "@" + (userInfo.username ?? "null")
+                                picCell?.removeLabelLoad()
+                                picCell?.removeDpLoad()
+                            }
+                        }
+                        else{
+                            fallthrough
+                        }
                     }
                 default:
-                    
-                    if userLbl.text?.isEmpty ?? true && fullLbl.text?.isEmpty ?? true{
-                        picCell?.nameSkeletonView.startAnimating()
-                    }
-                    
-                    picCell?.dpSkeletonView.startAnimating()
-                    
-                    if !(feed?.downloadingProfiles.contains(user.uid) ?? false){
-                        feed?.downloadCount += 1
-
-                        feed?.downloadingProfiles.append(user.uid)
-
-                        guard let downloader = feed?.downloader
-                            else{return}
+                    switch feed?.loadedProducts.contains(where: {$0.uid == user.uid}){
+                    case true:
+                        let cachedUserInfo = feed?.loadedProducts.first(where: {$0.uid == user.uid && $0.username != nil})
+                        user.username = cachedUserInfo?.username
+                        user.fullName = cachedUserInfo?.fullName
+                        user.userImageID = cachedUserInfo?.userImageID
+                        if let fullName = cachedUserInfo?.fullName{
+                            DispatchQueue.main.async {
+                                fullLbl.text = fullName
+                                picCell?.removeLabelLoad()
+                            }
+                        }
+                        else{
+                            fallthrough
+                        }
+                        if let username = cachedUserInfo?.username{
+                            DispatchQueue.main.async {
+                                userLbl.text = "@" + (username)
+                                picCell?.removeLabelLoad()
+                            }
+                        }
+                        else{
+                            fallthrough
+                        }
                         
-                        beginDownloadingUserInfo(uid: user.uid, downloader: downloader, userVC: nil, feedVC: feed, friendVC: nil, fullVC: nil, section: 0)
+                        if let img = cache.imageFromCache(forKey: cachedUserInfo?.userImageID){
+                            DispatchQueue.main.async {
+                                dp.image = img
+                                picCell?.removeDpLoad()
+                            }
+                        }
+                        else{
+                            fallthrough
+                        }
+                    default:
+                        
+                        DispatchQueue.main.async {
+                            if userLbl.text?.isEmpty ?? true && fullLbl.text?.isEmpty ?? true{
+                                picCell?.nameSkeletonView.startAnimating()
+                            }
+                            picCell?.dpSkeletonView.startAnimating()
+                            if !(feed?.downloadingProfiles.contains(user.uid) ?? false){
+                                feed?.downloadCount += 1
+                                feed?.downloadingProfiles.append(user.uid)
+                                self.beginDownloadingUserInfo(uid: user.uid, userVC: nil, feedVC: feed, friendVC: nil, fullVC: nil, section: 0)
+                            }
+                        }
                     }
                 }
             }
@@ -146,27 +152,33 @@ extension UITableView{
             picCell?.removeDpLoad()
         }
         else{
-            switch cache.imageFromCache(forKey: user.picID){
-            case let img:
-                let username = user.username
-                let fullname = user.fullName
-                if username == nil || fullname == nil{
-                    fallthrough
-                }
-                dp.image = img
-                userLbl.text = "@" + (username ?? "null")
-                fullLbl.text = fullname
-                picCell?.removeLabelLoad()
-                picCell?.removeDpLoad()
-            default:
-                picCell?.nameSkeletonView.startAnimating()
-                picCell?.dpSkeletonView.startAnimating()
-                
-                if !(userVC?.downloadingProfiles.contains(user.uid) ?? friendVC?.downloadingProfiles.contains(user.uid) ?? false){
-                    userVC?.downloadingProfiles.append(user.uid)
-                    friendVC?.downloadingProfiles.append(user.uid)
+            DispatchQueue(label: "cache").async {
+                switch cache.imageFromCache(forKey: user.picID){
+                case let img:
+                    let username = user.username
+                    let fullname = user.fullName
+                    if username == nil || fullname == nil{
+                        fallthrough
+                    }
+                    DispatchQueue.main.async {
+                        dp.image = img
+                        userLbl.text = "@" + (username ?? "null")
+                        fullLbl.text = fullname
+                        picCell?.removeLabelLoad()
+                        picCell?.removeDpLoad()
+                    }
+                default:
+                    DispatchQueue.main.async {
+                        picCell?.nameSkeletonView.startAnimating()
+                        picCell?.dpSkeletonView.startAnimating()
+                        
+                        if !(userVC?.downloadingProfiles.contains(user.uid) ?? friendVC?.downloadingProfiles.contains(user.uid) ?? false){
+                            userVC?.downloadingProfiles.append(user.uid)
+                            friendVC?.downloadingProfiles.append(user.uid)
 
-                    beginDownloadingUserInfo(uid: user.uid, downloader: userVC?.downloader ?? friendVC?.downloader, userVC: userVC, feedVC: nil, friendVC: nil, fullVC: nil, section: 0)
+                            self.beginDownloadingUserInfo(uid: user.uid, userVC: userVC, feedVC: nil, friendVC: nil, fullVC: nil, section: 0)
+                        }
+                    }
                 }
             }
         }

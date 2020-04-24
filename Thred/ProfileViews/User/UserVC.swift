@@ -7,12 +7,14 @@
 //
 
 import UIKit
-import FirebaseFirestore
+import Firebase
 import FirebaseStorage
 import FirebaseUI
 import AudioToolbox
 import AVFoundation
 import SDWebImage
+import ColorCompatibility
+import BRYXBanner
 
 let userInfo = UserInfo()
 var uploadingPosts = [String]()
@@ -20,9 +22,8 @@ var uploadingPosts = [String]()
 class UserVC: UITableViewController {
     
     var loadedProducts = [Product]()
-    var isLoading = Bool()
+    var isLoading = true
     let uid = UserDefaults.standard.string(forKey: "UID")
-    var downloader: SDWebImageDownloader? = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
 
     var tokens = [String]()
         
@@ -41,21 +42,14 @@ class UserVC: UITableViewController {
     @objc func refresh(_ sender: BouncingTitleRefreshControl){
         
         if !isLoading{
-            
             isLoading = true
             if sender.isRefreshing{
                 sender.animateRefresh()
             }
-            if downloader == nil{
-                downloader = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
-            }
             guard let uid = userInfo.uid else{return}
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                self.downloader?.cancelAllDownloads()
-                self.downloadUserInfo(uid: uid, userVC: self, feedVC: nil, downloadingPersonalDP: true, doNotDownloadDP: false, downloader: self.downloader, userInfoToUse: userInfo, queryOnUsername: false, completed: {uid, fullName, username, dpID, notifID, bio, image, userFollowing, usersBlocking, postCount, followerCount, followingCount in
+                self.downloadUserInfo(uid: uid, userVC: self, feedVC: nil, downloadingPersonalDP: true, doNotDownloadDP: false, userInfoToUse: userInfo, queryOnUsername: false, completed: {uid, fullName, username, dpID, notifID, bio, image, userFollowing, usersBlocking, postCount, followerCount, followingCount in
                     
-                    if image != nil{
-                    }
                     if username != nil{
                         
                         self.header?.setUpInfo(username: username, fullname: fullName, bio: bio, notifID: notifID, dpUID: dpID, image: image, actionBtnTitle: "Edit Profile", followerCount: followerCount, followingCount: followingCount, postCount: postCount)
@@ -84,16 +78,18 @@ class UserVC: UITableViewController {
     }
     
     func downloadProducts(completed: @escaping () -> ()){
-        self.getProducts(fromInterval: nil, refresh: true) {[weak self] hasDiffproducts, snapDocs in
+        self.getProducts(fromInterval: nil, refresh: true) { hasDiffproducts, snapDocs in
             completed()
             if hasDiffproducts ?? false{
-                self?.loadedProducts.removeAll()
-                self?.cellHeights.removeAll()
-                self?.tableView.reloadData()
+                if !self.loadedProducts.isEmpty{
+                    self.loadedProducts.removeAll()
+                    self.cellHeights.removeAll()
+                    self.tableView.reloadData()
+                }
             }
             else{
-                DispatchQueue.main.async { [weak self] in
-                    self?.tableView.reloadData()
+                DispatchQueue.main.async {
+                    self.tableView.reloadData()
                 }
             }
         }
@@ -133,6 +129,7 @@ class UserVC: UITableViewController {
         loadedProducts.checkAndLoadProducts(vc: self, type: "Products") { _ in
             DispatchQueue.main.async {
                 self.loadedProducts.saveAllObjects(type: "Products")
+                self.isLoading = false
                 if self.loadedProducts.isEmpty{
                     self.refresh(refresher)
                 }
@@ -222,22 +219,32 @@ class UserVC: UITableViewController {
     }
     
     override func viewDidDisappear(_ animated: Bool) {
-        downloader?.invalidateSessionAndCancel(true)
-        downloader = nil
         
     }
     
-    
+    lazy var didTapBlock: () -> () = {
+        self.showAuthMessage {
+            
+        }
+    }
 
     override func viewWillAppear(_ animated: Bool) {
         
         showCenterBtn()
-        if downloader == nil{
-            downloader = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
-        }
         if !loadedProducts.isEmpty{
             self.tableView.syncPostLikes(loadedProducts: loadedProducts, vc: self)
             self.loadedProducts.saveAllObjects(type: "Products")
+        }
+        checkAuthStatus {
+            if let user = Auth.auth().currentUser{
+                if user.phoneNumber != nil{
+                    let banner = Banner(title: "Login info needs to be updated!", subtitle: "Click here to view the full announcement", image: nil, backgroundColor: .systemRed, didTapBlock: self.didTapBlock)
+                    banner.titleLabel.textAlignment = .center
+                    banner.titleLabel.font = UIFont(name: "NexaW01-Heavy", size: 16)
+                    banner.detailLabel.textAlignment = .center
+                    banner.show()
+                }
+            }
         }
     }
     
@@ -430,6 +437,9 @@ class UserVC: UITableViewController {
     }
     
     
+    
+    
+    
     func sortDownloadedProducts(snaps: [QueryDocumentSnapshot], completed: @escaping () -> ()){
         
         var productsToUse: [Product]! = [Product]()
@@ -516,10 +526,21 @@ class UserVC: UITableViewController {
         return loadProfilePostHeaderFromNib()
     }()
     
+    lazy var loadingView: LoadingView? = {
+        
+        return loadLoadingHeaderFromNib()
+    }()
+    
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         
         if loadedProducts.isEmpty{
-            return headerView
+            if isLoading{
+                loadingView?.spinner.animate()
+                return loadingView
+            }
+            else{
+                return headerView
+            }
         }
         return nil
     }
@@ -574,8 +595,12 @@ class UserVC: UITableViewController {
         if let fullVC = segue.destination as? FullProductVC{
             fullVC.fullProduct = productToOpen
         }
-        if let commentsVC = segue.destination as? CommentsVC{
+        else if let commentsVC = segue.destination as? CommentsVC{
             commentsVC.post = productToOpen
+        }
+        else if let listVC = segue.destination as? UserListVC{
+            listVC.listType = header?.selectedList
+            listVC.user = userInfo
         }
         else if let designVC = (segue.destination as? UINavigationController)?.viewControllers.first as? DesignViewController{
             if let img = cache.imageFromCache(forKey: productToOpen.productID){

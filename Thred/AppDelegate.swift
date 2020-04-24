@@ -24,6 +24,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         FirebaseApp.configure()
+        
         if !UserDefaults.standard.bool(forKey: "Already_Opened"){
             UserDefaults.standard.set(true, forKey: "Already_Opened")
             if Auth.auth().currentUser != nil{
@@ -37,6 +38,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             print(uid)
             userInfo.uid = uid
             beginSignIn()
+            
         }
         return true
     }
@@ -49,69 +51,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             self.window?.rootViewController = signedInVC
             self.window?.makeKeyAndVisible()
         }
-    }
-    
-    func handlePasswordlessSignIn(_ URL: URL) -> Bool{
-        let url = URL.absoluteString
-        guard let email = UserDefaults.standard.string(forKey: "EMAIL") else{return false}
-
-        if Auth.auth().isSignIn(withEmailLink: url){
-            if let user = Auth.auth().currentUser{
-                let credential = EmailAuthProvider.credential(withEmail: email, link: url)
-                if user.email != nil{
-                    user.updateEmail(to: email, completion: {error in
-                        if let err = error{
-                            print(err.localizedDescription)
-                            if err.localizedDescription == "This operation is sensitive and requires recent authentication. Log in again before retrying this request."{
-                                self.window?.rootViewController?.logout(withMessage: err.localizedDescription)
-                            }
-                        }
-                        else{
-                            
-                        }
-                    })
-                }
-                else{
-                    user.link(with: credential, completion: { result, error in
-                        if let err = error{
-                            print(err.localizedDescription)
-                        }
-                    })
-                }
-            }
-            else{
-                Auth.auth().signIn(withEmail: email, link: url, completion: { result, error in
-                    if let err = error{
-                        print(err.localizedDescription)
-                    }
-                    else{
-                        guard let uid = result?.user.uid else{return}
-                        guard let phoneNumber = result?.user.phoneNumber else{return}
-                        guard let email = result?.user.email else{return}
-
-                        let mainStoryboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
-                        
-                        UserDefaults.standard.set(phoneNumber, forKey: "PHONE_NUM")
-                        UserDefaults.standard.set(email, forKey: "EMAIL")
-                        UserDefaults.standard.set(uid, forKey: "UID")
-
-                        if let signedInVC: UINavigationController = mainStoryboard.instantiateViewController(withIdentifier: "SignedInVC") as? UINavigationController{
-                            signedInVC.loadUser(userUID: uid, completed: { success in
-                                if success{
-                                    self.beginSignIn()
-                                }
-                            })
-                        }
-                    }
-                })
-            }
-        }
-        return false
-    }
-    
-    func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
-        
-        return userActivity.webpageURL.map(handlePasswordlessSignIn)!
     }
     
     func registerNotifs(application: UIApplication){
@@ -153,8 +92,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     
    
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        
-        
+                
         if let payload = notification.request.content.userInfo["aps"] as? [String : Any]{
             if let alert = payload["alert"] as? [String:Any]{
                 if let message = alert["body"] as? String{
@@ -175,7 +113,60 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
     }
     
-    
+    func processNotif(type: String?, uid: String?, postID: String?, commentID: String?, commentMsg: String?, timestampString: String?){
+        
+        guard let uid = uid else{return}
+        guard let type = type else{return}
+
+        
+        guard let timestamp = timestampString?.getDateFromString(timezone: TimeZone(abbreviation: "UTC")) else{return}
+
+        switch type {
+        case "Follow":
+            print("")
+            if let rootViewController = self.window!.rootViewController?.children.first as? MainTabBarViewController{
+                let friendSB: UIStoryboard = UIStoryboard(name: "FriendVC", bundle: nil)
+                if let friendVC: FriendVC = friendSB.instantiateViewController(withIdentifier: "FriendVC") as? FriendVC{
+                    friendVC.friendInfo = UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [])
+                    
+                    if let vc = rootViewController.selectedViewController as? UINavigationController{
+                        vc.pushViewController(friendVC, animated: true)
+                    }
+                }
+            }
+        case "Like":
+            if let rootViewController = self.window!.rootViewController?.children.first as? MainTabBarViewController{
+                guard let productID = postID else{return}
+                let fullSB: UIStoryboard = UIStoryboard(name: "FullProductVC", bundle: nil)
+                if let fullVC: FullProductVC = fullSB.instantiateViewController(withIdentifier: "FullVC") as? FullProductVC{
+                    fullVC.fullProduct = Product(uid: userInfo.uid ?? "", picID: nil, description: nil, fullName: userInfo.fullName ?? "", username: userInfo.username ?? "", productID: productID, userImageID: userInfo.dpID ?? "", timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil)
+                    if let vc = rootViewController.selectedViewController as? UINavigationController{
+                        vc.pushViewController(fullVC, animated: true)
+                    }
+                }
+            }
+        case "Purchase":
+            print("")
+        case "Comment":
+            fallthrough
+        case "Mention":
+            if let rootViewController = self.window!.rootViewController?.children.first as? MainTabBarViewController{
+                guard let productID = postID else{return}
+                guard let commentID = commentID else{return}
+                guard let commentMsg = commentMsg else{return}
+                let fullSB: UIStoryboard = UIStoryboard(name: "FullProductVC", bundle: nil)
+                if let fullVC: FullProductVC = fullSB.instantiateViewController(withIdentifier: "FullVC") as? FullProductVC{
+                    fullVC.fullProduct = Product(uid: userInfo.uid ?? "", picID: nil, description: nil, fullName: userInfo.fullName ?? "", username: userInfo.username ?? "", productID: productID, userImageID: userInfo.dpID ?? "", timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil)
+                    fullVC.selectedComment = Comment(timestamp: timestamp, message: commentMsg, commentID: commentID, userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: []))
+                    if let vc = rootViewController.selectedViewController as? UINavigationController{
+                        vc.pushViewController(fullVC, animated: true)
+                    }
+                }
+            }
+        default:
+            return
+        }
+    }
 
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
       // If you are receiving a notification message while your app is in the background,
@@ -185,13 +176,27 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
       // With swizzling disabled you must let Messaging know about the message, for Analytics
       // Messaging.messaging().appDidReceiveMessage(userInfo)
       // Print message ID.
-        if Auth.auth().currentUser != nil{
-            if let payload = userInfo["aps"] as? [String : String]{
-                print(payload)
+        
+
+        
+         if let payload = userInfo["aps"] as? [String : Any]{
+            print(payload)
+            
+            if let alert = payload["alert"] as? [String:Any]{
+                if let message = alert["body"] as? String{
+                    print(message)
+                }
             }
-            let rootViewController = self.window!.rootViewController as? MainTabBarViewController
-            rootViewController?.selectedIndex = 3
         }
+        
+        let uid = userInfo["UID"] as? String
+        let type = userInfo["Type"] as? String
+        let commentID = userInfo["CommentID"] as? String
+        let postID = userInfo["PostID"] as? String
+        let commentMsg = userInfo["CommentMessage"] as? String
+        let timestampString = userInfo["Timestamp"] as? String
+        
+        processNotif(type: type, uid: uid, postID: postID, commentID: commentID, commentMsg: commentMsg, timestampString: timestampString)
         
         completionHandler(UIBackgroundFetchResult.newData)
     }
@@ -310,34 +315,32 @@ extension UIViewController{
     }
     
     func logout(withMessage: String?){
-        if let uid = userInfo.uid ?? UserDefaults.standard.string(forKey: "UID"){
-            cache.clearDisk(onCompletion: {
-                let ref = Firestore.firestore().collection("Users").document(uid)
-                let oldToken = KeychainWrapper.standard.string(forKey: "NOTIF_ID") ?? ""
-                let domain = Bundle.main.bundleIdentifier!
-                UserDefaults.standard.removePersistentDomain(forName: domain)
-                UserDefaults.standard.set(true, forKey: "Already_Opened")
-                self.deleteAllCachedProducts()
-                let mainStoryboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
-                if let navVC: UINavigationController = mainStoryboard.instantiateViewController(withIdentifier: "LoginVC") as? UINavigationController{
-                    if let loginVC = navVC.viewControllers.first as? FirstViewController{
-                        loginVC.textToSet = withMessage
-                    }
-                    window?.rootViewController = navVC
-                    window?.makeKeyAndVisible()
+        
+        if let uid = Auth.auth().currentUser?.uid{
+            let ref = Firestore.firestore().collection("Users").document(uid)
+            let oldToken = KeychainWrapper.standard.string(forKey: "NOTIF_ID") ?? ""
+            ref.updateData(["notification_tokens" : FieldValue.arrayRemove([oldToken])], completion: { error in
+                if let err = error{
+                    print(err.localizedDescription)
                 }
                 do{
                     try Auth.auth().signOut()
-                }catch{}
-                
-                ref.updateData(["notification_tokens" : FieldValue.arrayRemove([oldToken])], completion: { error in
-                    if let err = error{
-                        print(err.localizedDescription)
-                        return
-                    }
-                    else{
-                    }
-                })
+                    
+                        cache.clearDisk(onCompletion: {
+                            let domain = Bundle.main.bundleIdentifier!
+                            UserDefaults.standard.removePersistentDomain(forName: domain)
+                            UserDefaults.standard.set(true, forKey: "Already_Opened")
+                            self.deleteAllCachedProducts()
+                            let mainStoryboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
+                            if let navVC: UINavigationController = mainStoryboard.instantiateViewController(withIdentifier: "LoginVC") as? UINavigationController{
+                                if let loginVC = navVC.viewControllers.first as? FirstViewController{
+                                    loginVC.textToSet = withMessage
+                                }
+                                window?.rootViewController = navVC
+                                window?.makeKeyAndVisible()
+                            }
+                        })
+                }catch{ print(error.localizedDescription) }
             })
         }
     }

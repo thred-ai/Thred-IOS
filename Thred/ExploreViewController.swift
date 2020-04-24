@@ -25,7 +25,6 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
     @IBOutlet var tableView: UITableView!
     
     
-    var downloader = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
     var productToOpen: Product!
     var featuredHeader: FeaturedPostView!
     var featuredProduct: Product!
@@ -57,7 +56,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
     func getFeaturedPost(){
         
         guard let userUID = userInfo.uid else{return}
-        Firestore.firestore().collectionGroup("Products").whereField("Timestamp", isGreaterThanOrEqualTo: Date().adding(hours: -24)).whereField("Blurred", isEqualTo: false).whereField("Has_Picture", isEqualTo: true).limit(to: 5).getDocuments(completion: { docs, error in
+        Firestore.firestore().collectionGroup("Products").whereField("Blurred", isEqualTo: false).whereField("Has_Picture", isEqualTo: true).order(by: "Likes", descending: true).limit(to: 5).getDocuments(completion: { docs, error in
             
             if let err = error{
                 print(err.localizedDescription)
@@ -324,14 +323,12 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
             let cell = tableView.dequeueReusableCell(withIdentifier: "ExploreColorCell", for: indexPath) as? ExploreColorCell
             cell?.colorIcon.backgroundColor = nil
             cell?.exploreVC = nil
-            cell?.downloader = nil
             cell?.templateColor = nil
             cell?.colorNameLbl.text = nil
             
             cell?.colorIcon.backgroundColor = UIColor(named: self.colorSections[indexPath.row]["ID"] as? String ?? "null")
             cell?.colorNameLbl.text = self.colorSections[indexPath.row]["Display"] as? String ?? "null"
             cell?.exploreVC = self
-            cell?.downloader = downloader
             cell?.templateColor = self.colorSections[indexPath.row]["ID"] as? String //problem
 
             if let postArray = self.colorSections[indexPath.row]["Array"] as? [Product]{
@@ -388,20 +385,15 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
             cell?.productImageView.backgroundColor = UIColor(named: product.templateColor)
             cell?.productNameLbl.text = product.name
             
-            if product.price != nil{
-                var price = "$\(product.price ?? 20.00)"
-                if price.count == 5{
-                    price = price + "0"
-                }
-                cell?.priceLbl.text = "\(price)"
-            }
+            cell?.priceLbl.text = product.price?.formatPrice()
+
             cell?.likesLbl.text = "\(product.likes)"
             
             if let username = product.username{
                 cell?.usernameLbl.text = "@\(username)"
             }
             else{
-                downloadUserInfo(uid: product.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: true, downloader: downloader, userInfoToUse: nil, queryOnUsername: false, completed: { uid, fullName, username, dpID, notifID, bio, image, userFollowing, usersBlocking, postCount, followersCount, followingCount in
+                downloadUserInfo(uid: product.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: true, userInfoToUse: nil, queryOnUsername: false, completed: { uid, fullName, username, dpID, notifID, bio, image, userFollowing, usersBlocking, postCount, followersCount, followingCount in
                     guard let username = username else{return}
                     product.username = username
                     product.fullName = fullName
@@ -565,7 +557,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                                         print(error?.localizedDescription ?? "")
                                     }
                                     else{
-                                        self.downloader.requestImage(with: url, options: [.scaleDownLargeImages, .refreshCached], context: nil, progress: nil, completed: { (image, data, error, finished) in
+                                        downloader.requestImage(with: url, options: [.scaleDownLargeImages, .refreshCached], context: nil, progress: nil, completed: { (image, data, error, finished) in
                                             if error != nil{
                                                 print(error?.localizedDescription ?? "")
                                                 return
@@ -647,7 +639,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                                     }
                                     else{
                                         var dub: CGFloat = 0
-                                        self.downloader.requestImage(with: url, options: [.highPriority, .continueInBackground, .scaleDownLargeImages], context: nil, progress: { (receivedSize: Int, expectedSize: Int, link) -> Void in
+                                        downloader.requestImage(with: url, options: [.highPriority, .continueInBackground, .scaleDownLargeImages], context: nil, progress: { (receivedSize: Int, expectedSize: Int, link) -> Void in
                                             dub = CGFloat(receivedSize) / CGFloat(expectedSize)
                                             print("Progress \(dub)")
                                         }, completed: { (image, data, error, finished) in

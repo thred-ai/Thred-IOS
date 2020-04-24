@@ -525,7 +525,7 @@ class ThredListView: UICollectionView, UICollectionViewDelegate, UICollectionVie
                 if !(tokens.contains(designID)){
                         //cell?.circularProgress.isHidden = false
                     tokens.append(designID)
-                    self.downloadThredListImage(isThumbnail: true, cell: cell, followingUID: uid, picID: designID, downloader: SDWebImageDownloader.shared){ img in
+                    self.downloadThredListImage(isThumbnail: true, cell: cell, followingUID: uid, picID: designID){ img in
                         self.tokens.removeAll(where: {$0 == designID})
                         if self.images.indices.contains(indexPath.item){
                             self.images[indexPath.item]["Image"] = img
@@ -550,7 +550,7 @@ class ThredListView: UICollectionView, UICollectionViewDelegate, UICollectionVie
         photosView?.selectedImage = designImg
         photosView?.sendPicBtn.isHidden = false
         
-        downloadThredListImage(isThumbnail: false, cell: cell, followingUID: uid, picID: designID, downloader: SDWebImageDownloader.shared){ img in
+        downloadThredListImage(isThumbnail: false, cell: cell, followingUID: uid, picID: designID){ img in
             
             self.tokens.removeAll(where: {$0 == designID})
             

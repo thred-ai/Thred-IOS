@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB" customClass="LoadingView" customModule="Thred" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="151"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="23i-af-z7f" customClass="MapSpinnerView" customModule="Thred" customModuleProvider="target">
+                    <rect key="frame" x="167.5" y="55.5" width="40" height="40"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="40" id="3Y6-su-cZf"/>
+                        <constraint firstAttribute="width" secondItem="23i-af-z7f" secondAttribute="height" multiplier="1:1" id="nzw-KJ-wmc"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <constraints>
+                <constraint firstItem="23i-af-z7f" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="7aM-fZ-dOQ"/>
+                <constraint firstItem="23i-af-z7f" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="fut-7d-5XN"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <connections>
+                <outlet property="spinner" destination="23i-af-z7f" id="Dba-QI-9ay"/>
+            </connections>
+            <point key="canvasLocation" x="109.42028985507247" y="-129.57589285714286"/>
+        </view>
+    </objects>
+</document>

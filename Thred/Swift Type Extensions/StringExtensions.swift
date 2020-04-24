@@ -98,7 +98,7 @@ extension String {
     
     func getDayOfWeek(_ today:String) -> String? {
         let formatter  = DateFormatter()
-        formatter.dateFormat = "YYYY-MM-dd, a hh:mm:ss"
+        formatter.dateFormat = "YYYY-MM-dd, hh:mm:ss a"
         formatter.timeZone = TimeZone(abbreviation: "UTC")
             
         guard let todayDate = formatter.date(from: today) else {
@@ -113,16 +113,19 @@ extension String {
         return l
     }
     
-    func getDateFromString(timezone: TimeZone) -> Date?{
+    func getDateFromString(timezone: TimeZone?) -> Date?{
         
-        let formatter  = DateFormatter()
-        formatter.dateFormat = "YYYY-MM-dd"
-        formatter.timeZone = timezone
-            
-        guard let todayDate = formatter.date(from: self) else {return nil}
-        
-        return todayDate
+        let dateFormatter = DateFormatter.iSO8601DateWithMillisec
+        let date = dateFormatter.date(from: self)
+        return date
     }
 }
 
-
+extension DateFormatter {
+    static var iSO8601DateWithMillisec: DateFormatter {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
+        return dateFormatter
+    }
+}

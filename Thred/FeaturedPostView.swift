@@ -30,31 +30,30 @@ class FeaturedPostView: UIView, UICollectionViewDelegate, UICollectionViewDataSo
         
         let product = featuredProducts[indexPath.item]
         cell?.nameLbl.text = product.name
-        if product.price != nil{
-            var price = "$\(product.price ?? 0.00)"
-            if price.count == 5{
-                price = price + "0"
-            }
-            cell?.priceLbl.text = price
-            
-        }
+        cell?.priceLbl.text = product.price?.formatPrice()
+
         cell?.likesLbl.text = "\(product.likes)"
 
-        if let img = cache.imageFromCache(forKey: product.productID){
-            let bundlePath = Bundle.main.path(forResource: product.templateColor, ofType: "png")
-            let image = UIImage(contentsOfFile: bundlePath!)
-            cell?.circularProgress.isHidden = true
-            cell?.canvasDisplayView.image = img
-            cell?.imageView.image = image
-            cell?.imageView.addShadowToImageNotLayer()
-        }
-        else{
-            
-            collectionView.downloadExploreProductImage(circularProgress: cell?.circularProgress, followingUID: product.uid, picID: product.productID, index: indexPath.item, product: product, downloader: exploreVC.downloader, isThumbnail: false, completed: {
-                collectionView.performBatchUpdates({
-                    collectionView.reloadItems(at: [indexPath])
-                }, completion: nil)
-            })
+        DispatchQueue(label: "cache").async {
+            if let img = cache.imageFromCache(forKey: product.productID){
+                let bundlePath = Bundle.main.path(forResource: product.templateColor, ofType: "png")
+                let image = UIImage(contentsOfFile: bundlePath!)
+                DispatchQueue.main.async {
+                    cell?.circularProgress.isHidden = true
+                    cell?.canvasDisplayView.image = img
+                    cell?.imageView.image = image
+                    cell?.imageView.addShadowToImageNotLayer()
+                }
+            }
+            else{
+                DispatchQueue.main.async {
+                    collectionView.downloadExploreProductImage(circularProgress: cell?.circularProgress, followingUID: product.uid, picID: product.productID, index: indexPath.item, product: product, isThumbnail: false, completed: { image in
+                        collectionView.performBatchUpdates({
+                            collectionView.reloadItems(at: [indexPath])
+                        }, completion: nil)
+                    })
+                }
+            }
         }
         
         return cell!

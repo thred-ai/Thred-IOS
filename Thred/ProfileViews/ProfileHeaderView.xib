@@ -51,17 +51,17 @@
                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="jzB-Bu-MVL">
                     <rect key="frame" x="50" y="108.66666666666666" width="275" height="294.33333333333337"/>
                     <subviews>
-                        <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="0qx-Ji-Vsg">
-                            <rect key="frame" x="0.0" y="0.0" width="275" height="35"/>
+                        <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="-12.5" translatesAutoresizingMaskIntoConstraints="NO" id="0qx-Ji-Vsg">
+                            <rect key="frame" x="0.0" y="0.0" width="275" height="45"/>
                             <subviews>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="&quot;Full Name&quot;" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.75" translatesAutoresizingMaskIntoConstraints="NO" id="fP5-xX-6Mz">
-                                    <rect key="frame" x="0.0" y="0.0" width="275" height="17.666666666666668"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="275" height="29"/>
                                     <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
                                     <nil key="textColor"/>
                                     <nil key="highlightedColor"/>
                                 </label>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="&quot;@username&quot;" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.75" translatesAutoresizingMaskIntoConstraints="NO" id="Dak-Hv-czS">
-                                    <rect key="frame" x="0.0" y="17.666666666666657" width="275" height="17.333333333333329"/>
+                                    <rect key="frame" x="0.0" y="16.333333333333329" width="275" height="28.666666666666671"/>
                                     <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="14"/>
                                     <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
                                     <nil key="highlightedColor"/>
@@ -69,11 +69,11 @@
                             </subviews>
                             <constraints>
                                 <constraint firstItem="Dak-Hv-czS" firstAttribute="height" secondItem="fP5-xX-6Mz" secondAttribute="height" id="BDZ-oU-7do"/>
-                                <constraint firstAttribute="height" constant="35" id="dps-v4-S8R"/>
+                                <constraint firstAttribute="height" constant="45" id="dps-v4-S8R"/>
                             </constraints>
                         </stackView>
                         <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" editable="NO" text="&quot;Bio&quot;" textAlignment="center" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mgd-gl-KIz">
-                            <rect key="frame" x="0.0" y="44.999999999999986" width="275" height="131.66666666666663"/>
+                            <rect key="frame" x="0.0" y="54.999999999999979" width="275" height="121.66666666666669"/>
                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
                             <fontDescription key="fontDescription" name="NexaW01-Regular" family="NexaW01-Regular" pointSize="14"/>
@@ -118,6 +118,10 @@
                                             <nil key="highlightedColor"/>
                                         </label>
                                     </subviews>
+                                    <gestureRecognizers/>
+                                    <connections>
+                                        <outletCollection property="gestureRecognizers" destination="eTt-uh-xZS" appends="YES" id="AWI-pF-1P6"/>
+                                    </connections>
                                 </stackView>
                                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="typ-qS-NSy">
                                     <rect key="frame" x="95" y="0.0" width="85" height="37.666666666666664"/>
@@ -135,6 +139,10 @@
                                             <nil key="highlightedColor"/>
                                         </label>
                                     </subviews>
+                                    <gestureRecognizers/>
+                                    <connections>
+                                        <outletCollection property="gestureRecognizers" destination="kIK-is-49q" appends="YES" id="tfE-V5-t4k"/>
+                                    </connections>
                                 </stackView>
                                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="nNN-nL-4ty">
                                     <rect key="frame" x="190" y="0.0" width="85" height="37.666666666666664"/>
@@ -152,6 +160,10 @@
                                             <nil key="highlightedColor"/>
                                         </label>
                                     </subviews>
+                                    <gestureRecognizers/>
+                                    <connections>
+                                        <outletCollection property="gestureRecognizers" destination="FE1-M4-V2K" appends="YES" id="Tqb-Wi-B30"/>
+                                    </connections>
                                 </stackView>
                             </subviews>
                         </stackView>
@@ -192,6 +204,21 @@
             </connections>
             <point key="canvasLocation" x="-316" y="-245.68965517241381"/>
         </view>
+        <tapGestureRecognizer id="eTt-uh-xZS">
+            <connections>
+                <action selector="toFollowingList:" destination="0N2-d2-UYm" id="ih1-yh-HMw"/>
+            </connections>
+        </tapGestureRecognizer>
+        <tapGestureRecognizer id="kIK-is-49q">
+            <connections>
+                <action selector="toFollowerList:" destination="0N2-d2-UYm" id="wAc-hJ-9I6"/>
+            </connections>
+        </tapGestureRecognizer>
+        <tapGestureRecognizer id="FE1-M4-V2K">
+            <connections>
+                <action selector="showPosts:" destination="0N2-d2-UYm" id="L5v-eB-fZb"/>
+            </connections>
+        </tapGestureRecognizer>
     </objects>
     <resources>
         <image name="default_DP" width="33.333332061767578" height="33.333332061767578"/>

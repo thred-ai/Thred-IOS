@@ -10,7 +10,7 @@
         <!--FriendVC-->
         <scene sceneID="fgm-44-kv3">
             <objects>
-                <tableViewController storyboardIdentifier="UITableViewController-Esw-Ig-1v3" extendedLayoutIncludesOpaqueBars="YES" id="Esw-Ig-1v3" customClass="FriendVC" customModule="Thred" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController storyboardIdentifier="FriendVC" extendedLayoutIncludesOpaqueBars="YES" id="Esw-Ig-1v3" customClass="FriendVC" customModule="Thred" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="28" id="0ZM-af-j53">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -27,6 +27,7 @@
                         <segue destination="mZM-0x-K9d" kind="show" identifier="toFull" id="lA6-4U-3iu"/>
                         <segue destination="zFD-Rz-raB" kind="show" identifier="toComments" id="KRh-BL-hWk"/>
                         <segue destination="I0D-VI-6Hw" kind="show" identifier="toReport" id="xyE-Lh-ERc"/>
+                        <segue destination="VaW-nV-7nB" kind="show" identifier="toUserList" id="r9c-gl-Fsc"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="CaN-0Y-gAQ" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -41,7 +42,7 @@
                 </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="MaF-wy-FI1" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3566" y="2613"/>
+            <point key="canvasLocation" x="3286" y="2613"/>
         </scene>
         <!--FullProductVC-->
         <scene sceneID="0cK-1o-ypM">
@@ -51,7 +52,17 @@
                 </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="7sd-C9-u6c" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3902" y="2613"/>
+            <point key="canvasLocation" x="3827" y="2613"/>
+        </scene>
+        <!--UserListVC-->
+        <scene sceneID="zVf-YL-isT">
+            <objects>
+                <viewControllerPlaceholder storyboardName="UserListVC" id="VaW-nV-7nB" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="d1W-Dc-HxP"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="sTC-DD-zWh" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="4281" y="2613"/>
         </scene>
         <!--CommentsVC-->
         <scene sceneID="WyA-Pc-OSJ">
@@ -61,7 +72,7 @@
                 </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="36H-0R-D0R" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3248" y="2613"/>
+            <point key="canvasLocation" x="2822" y="2613"/>
         </scene>
     </scenes>
 </document>

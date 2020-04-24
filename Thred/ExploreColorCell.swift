@@ -28,7 +28,6 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
     
     var postArray: [Product]!
     var templateColor: String?
-    weak var downloader: SDWebImageDownloader?
     weak var exploreVC: ExploreViewController?
     
     override func awakeFromNib() {
@@ -127,7 +126,7 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
             if !(downloading?.contains(product.picID ?? "null") ?? true){
                 cell?.circularProgress.isHidden = false
                 downloading?.append(product.picID ?? "null")
-                self.collectionView.downloadExploreProductImage(circularProgress: cell?.circularProgress, followingUID: product.uid, picID: product.picID ?? "", index: indexPath.item, product: product, downloader: downloader, isThumbnail: true){
+                self.collectionView.downloadExploreProductImage(circularProgress: cell?.circularProgress, followingUID: product.uid, picID: product.picID ?? "", index: indexPath.item, product: product, isThumbnail: true){ image in
                     
                     guard let products = self.exploreVC?.colorSections else{
                         return}
@@ -146,11 +145,8 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
                                         if array.indices.contains(arrayIndex){
                                             if self.postArray.indices.contains(indexPath.item){
                                                 if self.templateColor == (products[index]["ID"] as? String){
-                                                    if self.collectionView.numberOfItems(inSection: 0) > 0{
-                                                        self.collectionView.performBatchUpdates({
-                                                            self.collectionView.reloadItems(at: [indexPath])
-                                                        }, completion: nil)
-                                                    }
+                                                    cell?.imageView.image = image
+                                                    cell?.circularProgress.isHidden = true
                                                 }
                                             }
                                         }
@@ -195,7 +191,7 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
 }
 
 extension UICollectionView{
-    func downloadExploreProductImage(circularProgress: CircularProgress?, followingUID: String, picID: String, index: Int, product: Product?, downloader: SDWebImageDownloader?, isThumbnail: Bool, completed: @escaping () -> ()){
+    func downloadExploreProductImage(circularProgress: CircularProgress?, followingUID: String, picID: String, index: Int, product: Product?, isThumbnail: Bool, completed: @escaping (UIImage?) -> ()){
             circularProgress?.isHidden = false
             let pic_id = picID
             //if product?.blurred ?? false{
@@ -205,12 +201,12 @@ extension UICollectionView{
             ref.downloadURL(completion: { url, error in
                 if error != nil{
                     print(error?.localizedDescription ?? "")
-                    completed()
+                    completed(nil)
                 }
                 else{
                     var dub: CGFloat = 0
                     var oldDub: CGFloat = 0
-                    downloader?.requestImage(with: url, options: [.highPriority, .continueInBackground, .scaleDownLargeImages, .avoidDecodeImage], context: nil, progress: { (receivedSize: Int, expectedSize: Int, link) -> Void in
+                    downloader.requestImage(with: url, options: [.highPriority, .continueInBackground, .scaleDownLargeImages, .avoidDecodeImage], context: nil, progress: { (receivedSize: Int, expectedSize: Int, link) -> Void in
                         dub = CGFloat(receivedSize) / CGFloat(expectedSize)
                         print("Progress \(dub)")
                         print("Old Progress \(oldDub)")
@@ -222,7 +218,7 @@ extension UICollectionView{
                     }, completed: { (image, data, error, finished) in
                         if error != nil{
                             print(error?.localizedDescription ?? "")
-                            completed()
+                            completed(nil)
                         }
                         else{
                             if isThumbnail{
@@ -231,7 +227,7 @@ extension UICollectionView{
                             else{
                                 cache.storeImage(toMemory: image, forKey: "\(picID)")
                             }
-                            completed()
+                            completed(image)
                         }
                     })
                 }
@@ -240,7 +236,7 @@ extension UICollectionView{
     }
     
     
-    func downloadThredListImage(isThumbnail: Bool, cell: PhotosCell?, followingUID: String, picID: String, downloader: SDWebImageDownloader?, completed: @escaping (UIImage?) -> ()){
+    func downloadThredListImage(isThumbnail: Bool, cell: PhotosCell?, followingUID: String, picID: String, completed: @escaping (UIImage?) -> ()){
         
             //cell?.circularProgress.isHidden = false
             //let cp = pictureProduct?.circularProgress
@@ -262,7 +258,7 @@ extension UICollectionView{
                 else{
                     var dub: CGFloat = 0
                     var oldDub: CGFloat = 0
-                    downloader?.requestImage(with: url, options: [.highPriority, .continueInBackground, .scaleDownLargeImages, .avoidDecodeImage], context: nil, progress: { (receivedSize: Int, expectedSize: Int, link) -> Void in
+                    downloader.requestImage(with: url, options: [.highPriority, .continueInBackground, .scaleDownLargeImages, .avoidDecodeImage], context: nil, progress: { (receivedSize: Int, expectedSize: Int, link) -> Void in
                         dub = CGFloat(receivedSize) / CGFloat(expectedSize)
                         DispatchQueue.main.async {
                             //cp?.setProgressWithAnimation(duration: 0.0, value: dub, from: oldDub, finished: true){

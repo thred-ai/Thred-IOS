@@ -53,7 +53,6 @@ class UserNotification{
 class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var notifications = [UserNotification]()
-    var downloader = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
 
     
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -100,7 +99,9 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         let cell = tableView.dequeueReusableCell(withIdentifier: "NotifCell", for: indexPath) as? NotificationCell
         let notif = notifications[indexPath.row]
         guard let uid = userInfo.uid else{return cell!}
+        cell?.vc = nil
         cell?.vc = self
+        
         if let attr = cell?.notifLbl.attributedText.mutableCopy() as? NSMutableAttributedString{
             attr.removeAttribute(NSAttributedString.Key.link, range: NSMakeRange(0, attr.length))
             attr.setAttributes([NSAttributedString.Key.font : UIFont(name: "NexaW01-Regular", size: cell?.notifLbl.font?.pointSize ?? 15)!], range: NSMakeRange(0, attr.length))
@@ -121,22 +122,26 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         isMentionBreak:
         if notif.username == nil{
             
-            downloadUserInfo(uid: notif.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: !notif.shouldShowDP, downloader: downloader, userInfoToUse: nil, queryOnUsername: false, completed: { userUID, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followerCount, followingCount in
+            downloadUserInfo(uid: notif.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: !notif.shouldShowDP, userInfoToUse: nil, queryOnUsername: false, completed: { userUID, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followerCount, followingCount in
                 
                 if username == nil{
                     for sameNotif in self.notifications.filter({$0.uid == notif.uid}){
                         sameNotif.deleted = true
                         guard let index = self.notifications.firstIndex(where: {$0.notifID == sameNotif.notifID}) else{continue}
-                        tableView.performBatchUpdates({
-                            tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
-                        }, completion: nil)
+                        DispatchQueue.main.async {
+                            tableView.performBatchUpdates({
+                                tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
+                            }, completion: nil)
+                        }
                     }
                     return
                 }
                 
                 notif.username = username
                 if let img = imgData{
-                    cache.storeImageData(toDisk: img.jpegData(compressionQuality: 1.0), forKey: dpUID)
+                    DispatchQueue(label: "cache").async {
+                        cache.storeImageData(toDisk: img.jpegData(compressionQuality: 1.0), forKey: dpUID)
+                    }
                     notif.picID = dpUID
                     cell?.notifPic.image = img
                     notif.userInfo.dp = img
@@ -179,8 +184,12 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
             }
             if let color = notif.templateColor{
                 cell?.notifPic.backgroundColor = UIColor(named: color)
-                if let img = cache.imageFromCache(forKey: notif.picID){
-                    cell?.notifPic.image = img
+                DispatchQueue(label: "cache").async {
+                    if let img = cache.imageFromCache(forKey: notif.picID){
+                        DispatchQueue.main.async {
+                            cell?.notifPic.image = img
+                        }
+                    }
                 }
             }
             else{
@@ -199,16 +208,24 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                         guard let templateColor = product?.templateColor else{return}
                         notif.templateColor = templateColor
                         cell?.notifPic.backgroundColor = UIColor(named: templateColor)
-                        if let img = cache.imageFromCache(forKey: notif.picID){
-                            cell?.notifPic.image = img
-                        }
-                        else{
-                            guard let productUID = product?.uid else{return}
-                            tableView.downloadProductImage(pictureProduct: nil, followingUID: productUID, picID: notif.picID, index: 0, downloader: self.downloader, feedVC: nil, friendVC: nil, userVC: nil, fullVC: nil, type: nil, product: nil, completed: { img, imgID in
-                                cache.storeImageData(toDisk: img?.pngData(), forKey: imgID)
-                                notif.picID = imgID
-                                cell?.notifPic.image = img
-                            })
+                        DispatchQueue(label: "cache").async {
+                            if let img = cache.imageFromCache(forKey: notif.picID){
+                                DispatchQueue.main.async {
+                                    cell?.notifPic.image = img
+                                }
+                            }
+                            else{
+                                guard let productUID = product?.uid else{return}
+                                DispatchQueue.main.async {
+                                    tableView.downloadProductImage(pictureProduct: nil, followingUID: productUID, picID: notif.picID, index: 0, feedVC: nil, friendVC: nil, userVC: nil, fullVC: nil, type: nil, product: nil, completed: { img, imgID in
+                                        DispatchQueue(label: "cache").async {
+                                            cache.storeImageData(toDisk: img?.pngData(), forKey: imgID)
+                                        }
+                                        notif.picID = imgID
+                                        cell?.notifPic.image = img
+                                    })
+                                }
+                            }
                         }
                     }
                 })
@@ -219,9 +236,13 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
             if notif.userInfo == nil{
                 notif.userInfo = UserInfo()
             }
-            if let img = cache.imageFromCache(forKey: notif.picID){
-                cell?.notifPic.image = img
-                notif.userInfo.dp = img
+            DispatchQueue(label: "cache").async {
+                if let img = cache.imageFromCache(forKey: notif.picID){
+                    DispatchQueue.main.async {
+                        cell?.notifPic.image = img
+                        notif.userInfo.dp = img
+                    }
+                }
             }
         }
         return cell!
@@ -323,23 +344,19 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         }
         guard let cell = cell else{return}
         cell.notifLbl.addLinks(isNotification: true)
-        tableView.checkNotifTimes(notif: notif, timestampLbl: cell.timestampLbl)
+        self.tableView.checkNotifTimes(notif: notif, timestampLbl: cell.timestampLbl)
+
         
         DispatchQueue.main.async{
-            UIView.setAnimationsEnabled(false)
-            self.tableView.beginUpdates()
-            self.tableView.endUpdates()
-            UIView.setAnimationsEnabled(true)
-        }
-    }
-    
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        if scrollView.contentSize.height > scrollView.visibleSize.height{
-            if scrollView.contentOffset.y > (scrollView.contentSize.height - scrollView.frame.size.height){
-                scrollView.contentOffset.y = scrollView.contentSize.height - scrollView.frame.size.height
+            if self.tableView.visibleCells.contains(cell){
+                UIView.setAnimationsEnabled(false)
+                self.tableView.beginUpdates()
+                self.tableView.endUpdates()
+                UIView.setAnimationsEnabled(true)
             }
         }
     }
+
   
     
     
@@ -391,10 +408,8 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         if !isLoading{
             isLoading = true
             getNotifications(){
-                if self.notifications.isEmpty{
-                    self.isLoading = false
-                    self.tableView.reloadData()
-                }
+                self.isLoading = false
+                self.tableView.reloadData()
             }
         }
         // Do any additional setup after loading the view.
@@ -413,7 +428,6 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                 self.getNotifications {
                     self.isLoading = false
-                    self.notifications.removeAll()
                     self.tableView.reloadData()
                     sender.endRefreshing()
                 }
@@ -428,17 +442,16 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         guard let uid = userInfo.uid else{return}
         checkAuthStatus {
             self.refreshLists(userUID: uid){
-                let query = Firestore.firestore().collection("Users/\(uid)/Notifications").order(by: "Timestamp", descending: true).limit(to: 20)
+                let query = Firestore.firestore().collection("Users/\(uid)/Notifications").order(by: "Timestamp", descending: true).limit(to: 30)
                 query.getDocuments(completion: { snaps, error in
                     if error != nil{
                         print(error?.localizedDescription ?? "")
                         completed()
                     }else{
                         if let docs = snaps?.documents, !docs.isEmpty{
-                            completed()
+                            self.notifications.removeAll()
                             for doc in docs{
                                 guard let uid = doc["UID"] as? String else{
-                                    
                                     continue}
                                 if userInfo.usersBlocking.contains(uid){
                                     continue
@@ -451,16 +464,8 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                                 let commentID = doc["Comment_ID"] as? String
 
                                 self.notifications.append(UserNotification(notifID: doc.documentID, uid: uid, notifType: type, timestamp: timestamp, username: nil, picID: picID, shouldShowDP: type == "Follow", templateColor: nil, timestampDiff: nil, commentMessage: commentMessage, commentID: commentID, deleted: false))
-                                self.tableView.performBatchUpdates({
-                                    self.tableView.insertRows(at: [IndexPath(item: self.notifications.count - 1, section: 0)], with: .none)
-                                }, completion: { finished in
-                                    if finished{
-                                        if doc == docs.last{
-                                            self.isInitialPull = false
-                                        }
-                                    }
-                                })
                             }
+                            completed()
                         }
                         else{
                             completed()
@@ -487,10 +492,21 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         return loadNotifHeaderFromNib()
     }()
     
+    lazy var loadingView: LoadingView? = {
+        
+        return loadLoadingHeaderFromNib()
+    }()
+    
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         
         if notifications.isEmpty{
-            return headerView
+            if isLoading{
+                loadingView?.spinner.animate()
+                return loadingView
+            }
+            else{
+                return headerView
+            }
         }
         return nil
     }

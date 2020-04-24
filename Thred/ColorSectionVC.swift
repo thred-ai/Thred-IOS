@@ -15,7 +15,6 @@ class ColorSectionVC: UICollectionViewController {
     private let reuseIdentifier = "ColorSectionCell"
     var loadedProducts = [Product]()
     var tokens = [String]()
-    var downloader: SDWebImageDownloader? = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
     var templateColor = String()
 
     override func viewDidLoad() {
@@ -43,9 +42,6 @@ class ColorSectionVC: UICollectionViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         self.showCenterBtn()
-        if downloader == nil{
-            downloader = SDWebImageDownloader.init(config: SDWebImageDownloaderConfig.default)
-        }
     }
     
     var last: DocumentSnapshot!
@@ -156,8 +152,6 @@ class ColorSectionVC: UICollectionViewController {
     }
     
     override func viewDidDisappear(_ animated: Bool) {
-        downloader?.invalidateSessionAndCancel(true)
-        downloader = nil
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -195,19 +189,13 @@ class ColorSectionVC: UICollectionViewController {
             if !(tokens.contains(loadedProducts[indexPath.item].picID ?? "null")){
                     cell?.circularProgress.isHidden = false
                     tokens.append(loadedProducts[indexPath.item].picID ?? "null")
-                self.collectionView.downloadExploreProductImage(circularProgress: cell?.circularProgress, followingUID: self.loadedProducts[indexPath.item].uid, picID: self.loadedProducts[indexPath.item].picID ?? "", index: indexPath.item, product: self.loadedProducts[indexPath.item], downloader: downloader, isThumbnail: true){
+                self.collectionView.downloadExploreProductImage(circularProgress: cell?.circularProgress, followingUID: self.loadedProducts[indexPath.item].uid, picID: self.loadedProducts[indexPath.item].picID ?? "", index: indexPath.item, product: self.loadedProducts[indexPath.item], isThumbnail: true){ image in
                         
                         self.tokens.removeAll(where: {$0 == self.loadedProducts[indexPath.item].picID})
                         
                         if self.loadedProducts.indices.contains(indexPath.item){
-                            
-                            if cell != nil{
-                                if collectionView.numberOfItems(inSection: 0) > 0{
-                                    collectionView.performBatchUpdates({
-                                        collectionView.reloadItems(at: [indexPath])
-                                    }, completion: nil)
-                                }
-                            }
+                            cell?.imageView.image = image
+                            cell?.circularProgress.isHidden = true
                         }
                     }
                 }

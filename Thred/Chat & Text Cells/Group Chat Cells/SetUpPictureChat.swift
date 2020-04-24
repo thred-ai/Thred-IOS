@@ -90,24 +90,13 @@ extension UITableView{
         if product.name != nil{
             cell?.title.text = product.name
         }
-        if product.price != nil{
-            var price = "$\(product.price ?? 0.00)"
-            if price.count == 5{
-                price = price + "0"
-            }
-            cell?.price.text = price
-            
-        }
         
+        cell?.price.text = product.price?.formatPrice()
+
         
         cell?.likesLbl.text = "\(product.likes)"
         
-        var plural = ""
-        if product.comments != 1{
-            plural = "s"
-        }
-        
-        cell?.commentBtn.setTitle("View \(product.comments) comment\(plural)", for: .normal)
+        cell?.commentBtn.setTitle("View comments", for: .normal)
         
         checkTimes(user: product, timestampLbl: cell?.timestampLbl)
         switch productLocation{
@@ -172,5 +161,23 @@ extension UITableView{
                 }
             }
         }
+    }
+}
+
+extension Double{
+    
+    func formatPrice() -> String{
+        var priceAsString = "\(self)"
+        if let index = priceAsString.firstIndex(of: ".")?.utf16Offset(in: priceAsString){
+            switch index{
+            case priceAsString.count - 1:
+                priceAsString.append(contentsOf: "00")
+            case priceAsString.count - 2:
+                priceAsString.append(contentsOf: "0")
+            default:
+                break
+            }
+        }
+        return "$\(priceAsString)"
     }
 }

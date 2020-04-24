@@ -8,9 +8,12 @@
 
 import UIKit
 import ColorCompatibility
+import FirebaseAuth
 
 class SettingsVC: UITableViewController {
 
+    var checkingAuthStatus = true
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -21,6 +24,32 @@ class SettingsVC: UITableViewController {
         // self.navigationItem.rightBarButtonItem = self.editButtonItem
         
         tableView.separatorStyle = .none
+        
+        self.checkingAuthStatus = false
+        if let user = Auth.auth().currentUser{
+            if user.phoneNumber != nil{
+                self.itemsArray.insert([
+                    "Title": "Update Missing Info",
+                    "Function" : self.updateMissing,
+                    "Background Color" : UIColor.red,
+                    "Text Color" : UIColor.white
+                ], at: 0)
+            }
+            else{
+                self.itemsArray.insert([
+                    "Title": "Change email address",
+                    "Function" : self.toEmailChange,
+                    "Background Color" : UIColor.clear,
+                    "Text Color" : ColorCompatibility.label
+                ], at: 0)
+                self.itemsArray.insert([
+                    "Title": "Change password",
+                    "Function" : self.toPasswordChange,
+                    "Background Color" : UIColor.clear,
+                    "Text Color" : ColorCompatibility.label
+                ], at: 1)
+            }
+        }
     }
 
     // MARK: - Table view data source
@@ -32,32 +61,103 @@ class SettingsVC: UITableViewController {
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
-        return 6
+        if checkingAuthStatus{
+            return 0
+        }
+        return itemsArray.count
     }
     
-    var itemsArray = [
-        "Change phone number",
-        "Change backup email",
-        "Community guidelines",
-        "Setup my merchant account",
-        "Add a card",
-        "Sign out"
-    ]
+    
+    lazy var itemsArray = [
+        
+        [
+            "Title": "Community Guidelines",
+            "Function" : toCommunityGuidelines,
+            "Background Color" : UIColor.clear,
+            "Text Color" : ColorCompatibility.label
+        ],
+        
+        [
+            "Title": "Privacy Policy",
+            "Function" : toPrivacyPolicy,
+            "Background Color" : UIColor.clear,
+            "Text Color" : ColorCompatibility.label
+        ],
+        
+        [
+            "Title": "Setup my merchant account",
+            "Function" : configureMerchantAcct,
+            "Background Color" : UIColor.clear,
+            "Text Color" : ColorCompatibility.secondaryLabel
+        ],
+        
+        [
+            "Title": "Add a card",
+            "Function": addCard,
+            "Background Color" : UIColor.clear,
+            "Text Color" : ColorCompatibility.secondaryLabel
+        ],
+        
+        [
+            "Title": "Sign out",
+            "Function" : logOut,
+            "Background Color" : UIColor.clear,
+            "Text Color" : ColorCompatibility.label
+        ]
+        
+    ] as [[String : Any]]
 
+    func toEmailChange(){
+        performSegue(withIdentifier: "toEmailChange", sender: nil)
+    }
+    
+    func toPasswordChange(){
+        performSegue(withIdentifier: "toPasswordChange", sender: nil)
+    }
+    
+    func toCommunityGuidelines(){
+        guard let url = URL(string: "https://thredapps.com/community-guidelines") else { return }
+        UIApplication.shared.open(url)
+    }
+    
+    func toPrivacyPolicy(){
+        guard let url = URL(string: "https://thredapps.com/privacy-policy/") else { return }
+        UIApplication.shared.open(url)
+    }
+    
+    func addCard(){
+        showErrorMessage{
+        }
+    }
+    
+    func configureMerchantAcct(){
+        showErrorMessage{
+        }
+    }
+    
+    func logOut(){
+        logout(withMessage: nil)
+    }
+    
+    func updateMissing(){
+        showAuthMessage {
+            
+        }
+    }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "SettingsCell", for: indexPath)
-
-        cell.textLabel?.text = itemsArray[indexPath.row]
+        cell.backgroundColor = nil
+        cell.textLabel?.textColor = nil
+        cell.textLabel?.text = nil
+        
+        cell.textLabel?.text = itemsArray[indexPath.row]["Title"] as? String
         cell.textLabel?.font = UIFont(name: "NexaW01-Heavy", size: 16)
         cell.selectionStyle = .none
         
-        if indexPath.row == 3 || indexPath.row == 4{
-            cell.textLabel?.textColor = ColorCompatibility.secondaryLabel
-        }
-        else{
-            cell.textLabel?.textColor = ColorCompatibility.label
-        }
+        cell.textLabel?.textColor = itemsArray[indexPath.row]["Text Color"] as? UIColor
+        cell.backgroundColor = itemsArray[indexPath.row]["Background Color"] as? UIColor
+
         return cell
     }
     
@@ -70,25 +170,7 @@ class SettingsVC: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        switch indexPath.row{
-        case 0:
-            self.performSegue(withIdentifier: "toPhoneNumAuth", sender: nil)
-        case 1:
-            self.performSegue(withIdentifier: "toEmail", sender: nil)
-        case 2:
-            guard let url = URL(string: "https://thredapps.com/community-guidelines") else { return }
-            UIApplication.shared.open(url)
-        case 3:
-            showErrorMessage{
-            }
-        case 4:
-            showErrorMessage{
-            }
-        case 5:
-            logout(withMessage: nil)
-        default:
-            return
-        }
+        (itemsArray[indexPath.row]["Function"] as! (() -> Void))()
     }
 
     /*
@@ -154,6 +236,32 @@ extension UIViewController{
             self.present(alertController, animated: true)
         }
     }
+    
+    func showAuthMessage(completed: @escaping () -> ()){
+        let alertController = UIAlertController(
+            title:
+            "Update: Authentication",
+            message:
+            "Thred has updated it's authentication system so that it ONLY requires a username/email & password. Please update your account information or you will not be able to sign in later",
+            preferredStyle: .alert)
+        
+        alertController.addAction(UIAlertAction(title: "Later", style: .default) { _ in
+            completed()
+        })
+        alertController.addAction(UIAlertAction(title: "Update", style: .default) { _ in
+            let mainStoryboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
+            if let vc: SignUpVC = mainStoryboard.instantiateViewController(withIdentifier: "SignUpVC") as? SignUpVC{
+                self.navigationController?.pushViewController(vc, animated: true)
+            }
+            completed()
+        })
+        
+        DispatchQueue.main.async {
+            self.present(alertController, animated: true)
+        }
+    }
+    
+    
     fileprivate func convertToUIApplicationOpenExternalURLOptionsKeyDictionary(_ input: [String: Any]) -> [UIApplication.OpenExternalURLOptionsKey: Any] {
         return Dictionary(uniqueKeysWithValues: input.map { key, value in (UIApplication.OpenExternalURLOptionsKey(rawValue: key), value)})
     }

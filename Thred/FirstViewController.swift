@@ -17,6 +17,7 @@ class FirstViewController: UIViewController {
     @IBOutlet weak var thredBackgroundView: UIView!
     
     @IBOutlet weak var textView: UITextView!
+    @IBOutlet weak var signUpBtn: UIButton!
     
     var textToSet: String?
     
@@ -31,8 +32,14 @@ class FirstViewController: UIViewController {
         signInBtn.layer.borderColor = UIColor(named: "signInBorder")?.cgColor
         signInBtn.layer.borderWidth = 2
         
+        signUpBtn.layer.cornerRadius = signUpBtn.frame.height / 2
+        signUpBtn.clipsToBounds = true
+        
+        signUpBtn.layer.borderColor = UIColor(named: "signInBorder")?.cgColor
+        signUpBtn.layer.borderWidth = 2
+        
         if textToSet == nil{
-            textView.text = "Sign in to buy and design threds."
+            textView.text = "Sign up to buy and design threds."
             textView.textColor = ColorCompatibility.secondaryLabel
         }
         else{
