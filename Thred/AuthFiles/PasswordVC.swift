@@ -92,12 +92,13 @@ class PasswordVC: UIViewController {
                                         
                                     }
                                     else{
-                                        if let userVC = self.navigationController?.viewControllers.first(where: {$0.isKind(of: UserVC.self)}){
-                                            sender.isEnabled = true
-                                            self.navigationController?.popToViewController(userVC, animated: true)
-                                        }
+                                        
                                     }
                                 })
+                                if let userVC = self.navigationController?.viewControllers.first(where: {$0.isKind(of: UserVC.self)}){
+                                    sender.isEnabled = true
+                                    self.navigationController?.popToViewController(userVC, animated: true)
+                                }
                             }
                         })
                     }catch{
@@ -123,10 +124,11 @@ class PasswordVC: UIViewController {
                                 print(err.localizedDescription)
                             }
                             else{
-                                sender.isEnabled = true
-                                self.performSegue(withIdentifier: "toAccountSetup", sender: nil)
+                                
                             }
                         })
+                        sender.isEnabled = true
+                        self.performSegue(withIdentifier: "toAccountSetup", sender: nil)
                     }
                     else{
                         sender.isEnabled = true

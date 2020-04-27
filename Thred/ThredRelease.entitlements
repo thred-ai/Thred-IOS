@@ -6,7 +6,7 @@
 	<string>development</string>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>applinks:thred.page.link</string>
+		<string>applinks:thredapps.com</string>
 	</array>
 </dict>
 </plist>

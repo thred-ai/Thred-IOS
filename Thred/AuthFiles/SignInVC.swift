@@ -91,10 +91,13 @@ class SignInVC: UIViewController {
                 userInfo.uid = userUID
                 self.loadUser(userUID: userUID){ success in
                     if success{
-                        self.performSegue(withIdentifier: "toProfile", sender: nil)
+                        if let appdelegate: AppDelegate = UIApplication.shared.delegate as? AppDelegate{
+                            appdelegate.registerNotifs(application: UIApplication.shared)
+                            self.performSegue(withIdentifier: "toProfile", sender: nil)
+                        }
                     }
                     else{
-                        self.performSegue(withIdentifier: "toSetup", sender: nil)
+                        self.performSegue(withIdentifier: "toAccountSetup", sender: nil)
                     }
                 }
             }

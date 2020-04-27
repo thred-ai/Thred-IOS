@@ -774,6 +774,7 @@
                         <outlet property="usernameField" destination="t7b-72-AgH" id="4sW-Jo-ueK"/>
                         <segue destination="2fs-H7-jhU" kind="show" identifier="toProfile" id="Lww-vz-Z3P"/>
                         <segue destination="OJr-Zq-YTf" kind="show" identifier="toSignUp" id="N3T-jh-p31"/>
+                        <segue destination="JBj-b1-IIh" kind="show" identifier="toAccountSetup" id="3Dh-nY-jAx"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="7PF-Ic-7Ej" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -901,6 +902,7 @@
     <inferredMetricsTieBreakers>
         <segue reference="I07-QZ-O1a"/>
         <segue reference="Lww-vz-Z3P"/>
+        <segue reference="3Dh-nY-jAx"/>
         <segue reference="N3T-jh-p31"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" name="LoadingColor"/>

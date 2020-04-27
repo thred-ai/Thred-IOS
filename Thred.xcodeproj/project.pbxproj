@@ -21,7 +21,6 @@
 		AA0E2AD5240CCBCA004050B0 /* FullProductVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0E2AD4240CCBCA004050B0 /* FullProductVC.swift */; };
 		AA192838243449D000C16F28 /* FirstViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA192837243449D000C16F28 /* FirstViewController.swift */; };
 		AA19283A24344F8600C16F28 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA19283924344F8600C16F28 /* Assets.xcassets */; };
-		AA19283C24345AA100C16F28 /* SignUpViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA19283B24345AA100C16F28 /* SignUpViewController.swift */; };
 		AA2067C1243185D300459478 /* SearchProductTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2067BF243185D300459478 /* SearchProductTableViewCell.swift */; };
 		AA2067C2243185D300459478 /* SearchProductTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = AA2067C0243185D300459478 /* SearchProductTableViewCell.xib */; };
 		AA2067C4243264F900459478 /* ReportScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA2067C3243264F900459478 /* ReportScreen.storyboard */; };
@@ -239,7 +238,6 @@
 		AA0E2AD4240CCBCA004050B0 /* FullProductVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullProductVC.swift; sourceTree = "<group>"; };
 		AA192837243449D000C16F28 /* FirstViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstViewController.swift; sourceTree = "<group>"; };
 		AA19283924344F8600C16F28 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		AA19283B24345AA100C16F28 /* SignUpViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpViewController.swift; sourceTree = "<group>"; };
 		AA2067BF243185D300459478 /* SearchProductTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchProductTableViewCell.swift; sourceTree = "<group>"; };
 		AA2067C0243185D300459478 /* SearchProductTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SearchProductTableViewCell.xib; sourceTree = "<group>"; };
 		AA2067C3243264F900459478 /* ReportScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ReportScreen.storyboard; sourceTree = "<group>"; };
@@ -593,7 +591,6 @@
 				AA477CA72443BE1E00B06619 /* AuthFiles */,
 				AA5FDBA4243776DA0008EE2E /* SettingsVC.swift */,
 				AA192837243449D000C16F28 /* FirstViewController.swift */,
-				AA19283B24345AA100C16F28 /* SignUpViewController.swift */,
 				AA4593172434638700C9D5DC /* PhoneAuthViewController.swift */,
 				AA459319243463F900C9D5DC /* CodeViewController.swift */,
 				AA242AFF243542AC00C4DD24 /* UsernameSetupVC.swift */,
@@ -1414,7 +1411,6 @@
 				AAABC09D23C9432700E48987 /* MapSpinnerView.swift in Sources */,
 				AAABC09323C9432700E48987 /* PhotosCell.swift in Sources */,
 				AA44090E23F3DFC5009F5774 /* ProductInProgress.swift in Sources */,
-				AA19283C24345AA100C16F28 /* SignUpViewController.swift in Sources */,
 				AA02AA34242D3B530003CFCE /* UITextField+Extension.swift in Sources */,
 				AA477CAB2443BE4F00B06619 /* SignUpVC.swift in Sources */,
 				AAABC08C23C9432700E48987 /* EditProfileVC.swift in Sources */,
@@ -1590,7 +1586,7 @@
 				CODE_SIGN_ENTITLEMENTS = Thred/ThredDebug.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = WA263Q86P5;
 				INFOPLIST_FILE = Thred/Info.plist;
@@ -1599,7 +1595,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.6;
+				MARKETING_VERSION = 1.0.8;
 				PRODUCT_BUNDLE_IDENTIFIER = thred.Thred;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1616,7 +1612,7 @@
 				CODE_SIGN_ENTITLEMENTS = Thred/ThredRelease.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = WA263Q86P5;
 				INFOPLIST_FILE = Thred/Info.plist;
@@ -1625,7 +1621,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.6;
+				MARKETING_VERSION = 1.0.8;
 				PRODUCT_BUNDLE_IDENTIFIER = thred.Thred;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

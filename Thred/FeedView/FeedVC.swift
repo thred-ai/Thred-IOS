@@ -232,6 +232,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
     
     var selectedReportID: String!
     var selectedReportUID: String!
+    var bouncingControl: BouncingTitleRefreshControl!
  
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -242,17 +243,17 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         tableView.register(UINib(nibName: "ProductWithTextCell", bundle: nil), forCellReuseIdentifier: "TextProduct")
         navigationController?.navigationBar.layer.shadowColor = nil
         
-        let refresher = BouncingTitleRefreshControl(title: "thred")
-        refresher.addTarget(self, action: #selector(refresh(_:)), for: UIControl.Event.valueChanged)
+        bouncingControl = BouncingTitleRefreshControl(title: "thred")
+        bouncingControl.addTarget(self, action: #selector(refresh(_:)), for: UIControl.Event.valueChanged)
         
-        tableView.addSubview(refresher)
+        tableView.addSubview(bouncingControl)
 
         navigationController?.navigationBar.setBackgroundImage(UIImage.init(), for: UIBarMetrics.default)
         navigationController?.navigationBar.shadowImage = UIImage.init()
 
-        tableView.setContentOffset(CGPoint(x: 0, y: tableView.contentOffset.y - (refresher.frame.size.height)), animated: true)
+        tableView.setContentOffset(CGPoint(x: 0, y: tableView.contentOffset.y - (bouncingControl.frame.size.height)), animated: true)
         
-        refresher.beginRefreshing()
+        bouncingControl.beginRefreshing()
         
         
         loadedProducts.checkAndLoadProducts(vc: self, type: "FeedProducts") { count in
@@ -260,11 +261,11 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                 self.isLoading = false
                 switch count{
                 case 0:
-                    self.refresh(refresher)
+                    self.refresh(self.bouncingControl)
                 default:
                     DispatchQueue.main.async {
                         if count == self.loadedProducts.count{
-                            self.refresh(refresher)
+                            self.refresh(self.bouncingControl)
                         }
                     }
                 }
@@ -333,13 +334,13 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                 }
                 else{
                     if snapDocuments?.isEmpty ?? true{
-                        self.isLoading = false
-                        self.refresh(self.tableView.refreshControl as! BouncingTitleRefreshControl)
+                        completed(false)
+                        self.refresh(self.bouncingControl)
                     }
                     else{
                         guard let snaps = snapDocuments?.documents else {
-                            self.isLoading = false
-                            self.refresh(self.tableView.refreshControl as! BouncingTitleRefreshControl)
+                            completed(false)
+                            self.refresh(self.bouncingControl)
                             return}
                         if snapDocuments?.metadata.isFromCache ?? false{
                             

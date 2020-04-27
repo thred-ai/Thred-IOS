@@ -79,16 +79,23 @@ class UserVC: UITableViewController {
     
     func downloadProducts(completed: @escaping () -> ()){
         self.getProducts(fromInterval: nil, refresh: true) { hasDiffproducts, snapDocs in
-            completed()
             if hasDiffproducts ?? false{
                 if !self.loadedProducts.isEmpty{
+                    completed()
                     self.loadedProducts.removeAll()
                     self.cellHeights.removeAll()
                     self.tableView.reloadData()
                 }
+                else{
+                    DispatchQueue.main.async {
+                        completed()
+                        self.tableView.reloadData()
+                    }
+                }
             }
             else{
                 DispatchQueue.main.async {
+                    completed()
                     self.tableView.reloadData()
                 }
             }

@@ -170,7 +170,7 @@ class SignUpVC: UIViewController {
 
 var actionCodeSettings: ActionCodeSettings = {
     
-    let link = URL(string: "https://thred.page.link/eNh4")
+    let link = URL(string: "https://thredapps.com/thred/29hQ")
     let actionCodeSettings = ActionCodeSettings()
     actionCodeSettings.url = link
     // The sign-in operation has to always be completed in the app.
