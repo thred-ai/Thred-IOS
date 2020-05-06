@@ -9,12 +9,12 @@
 import Foundation
 import UIKit
 
-let defaultDP = UIImage.init(named: "default_DP")
+let defaultDP = UIImage.init(named: "default_DP")?.jpegData(compressionQuality: 1.0)
 
-class UserInfo{
+class UserInfo: Codable{
    
     var uid: String?
-    var dp: UIImage?
+    var dp: Data?
     var dpID: String?
     var username: String?
     var fullName: String?
@@ -28,7 +28,7 @@ class UserInfo{
     var pendingLiked = [String : Bool]()
     var usersBlocking = [String]()
     
-    init(uid: String?, dp: UIImage?, dpID: String?, username: String?, fullName: String?, bio: String?, notifID: String?, userFollowing: [String], userLiked: [String], followerCount: Int, postCount: Int, followingCount: Int, usersBlocking: [String]) {
+    init(uid: String?, dp: Data?, dpID: String?, username: String?, fullName: String?, bio: String?, notifID: String?, userFollowing: [String], userLiked: [String], followerCount: Int, postCount: Int, followingCount: Int, usersBlocking: [String]) {
         
         self.uid = uid
         self.dp = dp

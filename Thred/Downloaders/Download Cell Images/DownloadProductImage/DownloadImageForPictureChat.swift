@@ -34,12 +34,18 @@ extension UITableView{
                 }
             default:
                 
-                if let image = cache.imageFromCache(forKey: picID){
-                    fullVC.rasterizeProductCellDisplay(cell: cell, image: image, product: user)
-                }
-                else{
-                    self.downloadProductImage(pictureProduct: cell, followingUID: user.uid, picID: picID, index: index, feedVC: nil, friendVC: nil, userVC: nil, fullVC: vc as? FullProductVC, type: type, product: user){_,_ in
-                        return
+                DispatchQueue(label: "cache").async {
+                    if let image = cache.imageFromCache(forKey: picID){
+                        DispatchQueue.main.async {
+                            fullVC.rasterizeProductCellDisplay(cell: cell, image: image, product: user)
+                        }
+                    }
+                    else{
+                        DispatchQueue.main.async {
+                            self.downloadProductImage(pictureProduct: cell, followingUID: user.uid, picID: picID, index: index, feedVC: nil, friendVC: nil, userVC: nil, fullVC: vc as? FullProductVC, type: type, product: user){_,_ in
+                                return
+                            }
+                        }
                     }
                 }
             }
@@ -116,7 +122,9 @@ extension UITableView{
                         if let imgData = data{
                             completed(image, picID)
                             if fullVC != nil{
-                                cache.storeImageData(toDisk: imgData, forKey: pic_id)
+                                DispatchQueue(label: "store").async {
+                                    cache.storeImageData(toDisk: imgData, forKey: pic_id)
+                                }
                                 if let cell = self?.cellForRow(at: IndexPath(row: 0, section: 0)) as? ProductCell{
                                     fullVC?.rasterizeProductCellDisplay(cell: cell, image: image, product: product)
                                 }

@@ -47,15 +47,13 @@ class MainTabBarViewController: UITabBarController, UITabBarControllerDelegate {
 
         if let vc = (viewController as? UINavigationController)?.viewControllers.first{
             if selectedViewController == viewController{
-                if let tableView =
-                    (vc as? UITableViewController)?.tableView ??
-                    (vc as? NotificationVC)?.tableView ?? (vc as? ExploreViewController)?.tableView{
-                    var y: CGFloat = 0
-                    if vc is UITableViewController{
-                        y = -(vc.view.safeAreaInsets.top)
-                    }
-                    tableView.setContentOffset(CGPoint(x: 0, y: y), animated: true)
+                let tableView = (vc as? UITableViewController)?.tableView ??
+                (vc as? NotificationVC)?.tableView ?? (vc as? ExploreViewController)?.tableView ?? (vc as? UserVC)?.tableView
+                var y: CGFloat = 0
+                if vc is UITableViewController{
+                    y = -(vc.view.safeAreaInsets.top)
                 }
+                tableView?.setContentOffset(CGPoint(x: 0, y: y), animated: true)
             }
         }
         return true

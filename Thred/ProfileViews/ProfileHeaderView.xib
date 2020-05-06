@@ -72,12 +72,13 @@
                                 <constraint firstAttribute="height" constant="45" id="dps-v4-S8R"/>
                             </constraints>
                         </stackView>
-                        <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" editable="NO" text="&quot;Bio&quot;" textAlignment="center" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mgd-gl-KIz">
+                        <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" editable="NO" text="&quot;Bio&quot;" textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="mgd-gl-KIz">
                             <rect key="frame" x="0.0" y="54.999999999999979" width="275" height="121.66666666666669"/>
                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
                             <fontDescription key="fontDescription" name="NexaW01-Regular" family="NexaW01-Regular" pointSize="14"/>
                             <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                            <dataDetectorType key="dataDetectorTypes" link="YES"/>
                         </textView>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="4ka-kY-j36">
                             <rect key="frame" x="0.0" y="186.66666666666663" width="275" height="60"/>

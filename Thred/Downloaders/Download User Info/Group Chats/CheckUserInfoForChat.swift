@@ -18,7 +18,10 @@ extension UITableView{
         
         switch user.uid{
         case userInfo.uid:
-            dp.image = userInfo.dp
+            guard let imgData = userInfo.dp else{fallthrough}
+            dp.image = UIImage(data: imgData)
+            user.fullName = userInfo.fullName
+            user.username = userInfo.username
             fullLbl.text = userInfo.fullName
             userLbl.text = "@" + (userInfo.username ?? "null")
             picCell?.removeLabelLoad()
@@ -47,14 +50,14 @@ extension UITableView{
     
     func checkAndDownloadUserInfoInFeed(feed: FeedVC?, user: Product, dp: UIImageView, userLbl: UILabel, fullLbl: UILabel, picCell: ProductCell?){
         
-        if user.uid == userInfo.uid, let username = userInfo.username, let fullname = userInfo.fullName{
+        if user.uid == userInfo.uid, let username = userInfo.username, let fullname = userInfo.fullName, let imgData = userInfo.dp{
             user.username = username
             user.fullName = fullname
             user.userImageID = userInfo.dpID
             fullLbl.text = fullname
             userLbl.text = "@\(username)"
-            dp.image = userInfo.dp
             picCell?.removeLabelLoad()
+            dp.image = UIImage(data: imgData)
             picCell?.removeDpLoad()
         }
         else{
@@ -73,9 +76,9 @@ extension UITableView{
                         }
                     }
                     else{
-                        if user.uid == userInfo.uid, userInfo.dp != nil{
+                        if user.uid == userInfo.uid, let imgData = userInfo.dp{
                             DispatchQueue.main.async {
-                                dp.image = userInfo.dp
+                                dp.image = UIImage(data: imgData)
                                 fullLbl.text = userInfo.fullName
                                 userLbl.text = "@" + (userInfo.username ?? "null")
                                 picCell?.removeLabelLoad()
@@ -143,9 +146,11 @@ extension UITableView{
     func checkAndDownloadUserInfoInProfile(userVC: UserVC?, friendVC: FriendVC?, user: Product, dp: UIImageView, userLbl: UILabel, fullLbl: UILabel,picCell: ProductCell?, userInfo: UserInfo){
         
         if user.uid == userInfo.uid{
-            if userInfo.dp != nil{
-                dp.image = userInfo.dp
+            if let imgData = userInfo.dp{
+                dp.image = UIImage(data: imgData)
             }
+            user.fullName = userInfo.fullName
+            user.username = userInfo.username
             userLbl.text = "@" + (userInfo.username ?? "null")
             fullLbl.text = userInfo.fullName
             picCell?.removeLabelLoad()

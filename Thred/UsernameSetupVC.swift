@@ -88,7 +88,8 @@ class UsernameSetupVC: UIViewController {
 
                     let data = [
                         "Username": fieldText,
-                        "Full_Name" : fullname
+                        "Full_Name" : fullname,
+                        "Bio" : ""
                     ]
                     self.checkAuthStatus {
                         Firestore.firestore().collection("Users").document(uid).updateData(data, completion: { error in
@@ -122,14 +123,14 @@ class UsernameSetupVC: UIViewController {
     }
     
     func setDefaultDP(uid: String, completed: @escaping (Bool) -> ()){
-        guard let imageData = defaultDP?.sd_resizedImage(with: CGSize(width: 200, height: 200), scaleMode: .aspectFit)?.jpegData(compressionQuality: 0.6) else {return}
+        guard let defaultDP = defaultDP else{completed(true); return}
+        guard let imageData = UIImage(data: defaultDP)?.sd_resizedImage(with: CGSize(width: 200, height: 200), scaleMode: .aspectFit)?.jpegData(compressionQuality: 0.6) else {return}
         let picID = NSUUID().uuidString.replacingOccurrences(of: "-", with: "")
         let ref = Storage.storage().reference().child("Users/" + uid + "/" + "profile_pic-" + picID + ".jpeg")
         ref.putData(imageData, metadata: nil, completion: { metaData, error in
             if let err = error{
-                completed(false)
-                self.updateErrorView(text: err.localizedDescription)
-                print(error?.localizedDescription ?? "")
+                completed(true)
+                print(err.localizedDescription)
             }
             else{
                 self.errorView.text = nil
@@ -252,7 +253,7 @@ extension UIViewController{
         let dpID = UserDefaults.standard.string(forKey: "DP_ID") ?? "default"
         userInfo.dpID = dpID
         if let profilePic = cache.imageFromDiskCache(forKey: dpID){
-            userInfo.dp = profilePic
+            userInfo.dp = profilePic.jpegData(compressionQuality: 1.0)
         }
 
         if let notifID = UserDefaults.standard.string(forKey: "NOTIF_ID"){

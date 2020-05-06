@@ -495,7 +495,7 @@
         <!--Navigation Controller-->
         <scene sceneID="FFw-dg-FJz">
             <objects>
-                <navigationController storyboardIdentifier="LoginVC" automaticallyAdjustsScrollViewInsets="NO" id="icp-Vx-IR7" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="LoginVC" automaticallyAdjustsScrollViewInsets="NO" useStoryboardIdentifierAsRestorationIdentifier="YES" id="icp-Vx-IR7" sceneMemberID="viewController">
                     <toolbarItems/>
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translucent="NO" id="UKe-ek-fBS">

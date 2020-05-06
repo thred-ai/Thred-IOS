@@ -281,7 +281,9 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
             if comment.userInfo.username != nil{
                 cell?.fullNameLbl.text = comment.userInfo.fullName ?? "null"
                 cell?.usernameLbl.text = "@\(comment.userInfo.username ?? "null")"
-                cell?.profilePicture.image = comment.userInfo.dp
+                if let dp = comment.userInfo.dp{
+                    cell?.profilePicture.image = UIImage(data: dp)
+                }
             }
             else{
                 switch comments.compactMap({$0.userInfo}).first(where: {$0.uid == uid}){
@@ -296,7 +298,9 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
                             comment.userInfo.usersBlocking = same?.usersBlocking ?? []
                             cell?.fullNameLbl.text = comment.userInfo.fullName ?? "null"
                             cell?.usernameLbl.text = "@\(comment.userInfo.username ?? "null")"
-                            cell?.profilePicture.image = comment.userInfo.dp
+                            if let dp = comment.userInfo.dp{
+                                cell?.profilePicture.image = UIImage(data: dp)
+                            }
                         }
                         else{
                             fallthrough
@@ -326,7 +330,10 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
 
                             cell?.fullNameLbl.text = fullName ?? "null"
                             cell?.usernameLbl.text = "@\(username ?? "null")"
-                            cell?.profilePicture.image = img
+                            
+                            if let dp = comment.userInfo.dp{
+                                cell?.profilePicture.image = UIImage(data: dp)
+                            }
                             
                             if let indices = tableView.indexPathsForVisibleRows{
                                 for index in indices{
@@ -336,7 +343,9 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
                                             case let c as CommentCell:
                                                 c.fullNameLbl.text = fullName
                                                 c.usernameLbl.text = "@" + (username ?? "null")
-                                                c.profilePicture.image = img
+                                                if let dp = comment.userInfo.dp{
+                                                    c.profilePicture.image = UIImage(data: dp)
+                                                }
                                             default:
                                                 continue
                                             }
@@ -357,7 +366,7 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
 
             if let dp = user.dp{
                 cell?.spinner.isHidden = true
-                cell?.userImageView.image = dp
+                cell?.userImageView.image = UIImage(data: dp)
             }
             else{
                 cell?.spinner.isHidden = false
@@ -586,7 +595,7 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
                                                 return
                                             }
                                             else{
-                                                user.dp = image
+                                                user.dp = data
                                                 if let index = self.loadedUsers.firstIndex(where: {$0.uid == uid}){
                                                     self.taggingTableView.performBatchUpdates({
                                                         self.taggingTableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
@@ -696,7 +705,7 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if (editingStyle == .delete) {
             
-            guard let commentID = self.comments[indexPath.row].commentID else{return}
+            let comment = self.comments[indexPath.row]
             guard let message = self.comments[indexPath.row].message else{return}
             self.comments.remove(at: indexPath.row)
             DispatchQueue.main.async {
@@ -704,18 +713,20 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
                     self.tableView.deleteRows(at: [indexPath], with: .fade)
                 }, completion: nil)
             }
-            deleteComment(commentID: commentID, message: message)
+            deleteComment(comment: comment, message: message)
         }
     }
     
-    func deleteComment(commentID: String, message: String){
+    func deleteComment(comment: Comment, message: String){
         
-        guard let uid = userInfo.uid else{return}
+        guard let commentUID = comment.userInfo.uid else{return}
+        guard let commentID = comment.commentID else{return}
+
         let data = [
             
             "product_id" : post.productID,
             "creator_uid" : post.uid,
-            "uid" : uid,
+            "uid" : commentUID,
             "message" : message,
             "is_adding" : false,
             "tagged" : [],

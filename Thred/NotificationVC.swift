@@ -13,7 +13,7 @@ import ColorCompatibility
 import FirebaseFirestore
 
 
-class UserNotification{
+class UserNotification: Codable{
     
     var notifID: String!
     var uid: String!
@@ -77,15 +77,11 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         selectedComment = nil
         
         if self.navigationController?.tabBarItem.badgeColor != nil{
-            if !isLoading{
-                isLoading = true
-                getNotifications(){
-                    self.notifications.removeAll()
-                    self.tableView.reloadData()
-                    self.isLoading = false
-                }
+            downloadNotifs {
+                
             }
         }
+        
         guard let selectedIndexPath = tableView.indexPathForSelectedRow else{return}
         tableView.deselectRow(at: selectedIndexPath, animated: true)
     }
@@ -109,20 +105,23 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         }
         cell?.notifLbl.text = nil
         cell?.notifPic.image = nil
-        cell?.notifPic.backgroundColor = UIColor.clear
+        cell?.notifPic.backgroundColor = ColorCompatibility.secondarySystemBackground
         cell?.notifPic.clipsToBounds = true
         cell?.timestampLbl.text = nil
         cell?.removedNotifView.isHidden = true
         cell?.isUserInteractionEnabled = false
+        cell?.notif = notif
+        self.tableView.checkNotifTimes(notif: notif, timestampLbl: cell?.timestampLbl)
 
         guard !notif.deleted else{
             cell?.removedNotifView.isHidden = false
             return cell!
         }
+        
         isMentionBreak:
         if notif.username == nil{
             
-            downloadUserInfo(uid: notif.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: !notif.shouldShowDP, userInfoToUse: nil, queryOnUsername: false, completed: { userUID, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followerCount, followingCount in
+            downloadUserInfo(uid: notif.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: false, userInfoToUse: nil, queryOnUsername: false, completed: { userUID, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followerCount, followingCount in
                 
                 if username == nil{
                     for sameNotif in self.notifications.filter({$0.uid == notif.uid}){
@@ -137,25 +136,28 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                     return
                 }
                 
+                if notif.userInfo == nil{
+                    notif.userInfo = UserInfo()
+                }
                 notif.username = username
-                if let img = imgData{
+                notif.userInfo.username = username
+                notif.userInfo.fullName = fullName
+                notif.userInfo.dpID = dpUID
+                notif.userInfo.uid = notif.uid
+                notif.userInfo.bio = bio
+                notif.userInfo.postCount = postCount
+                notif.userInfo.followerCount = followerCount
+                notif.userInfo.followingCount = followingCount
+                notif.userInfo.userFollowing = userFollowing
+                notif.userInfo.notifID = notifID
+                notif.userInfo.usersBlocking = usersBlocking
+                notif.userInfo.dp = imgData
+
+                if let img = imgData, notif.shouldShowDP{
                     DispatchQueue(label: "cache").async {
-                        cache.storeImageData(toDisk: img.jpegData(compressionQuality: 1.0), forKey: dpUID)
+                        cache.storeImageData(toDisk: img, forKey: dpUID)
                     }
-                    notif.picID = dpUID
-                    cell?.notifPic.image = img
-                    notif.userInfo.dp = img
-                    notif.userInfo.username = username
-                    notif.userInfo.fullName = fullName
-                    notif.userInfo.dpID = dpUID
-                    notif.userInfo.uid = notif.uid
-                    notif.userInfo.bio = bio
-                    notif.userInfo.postCount = postCount
-                    notif.userInfo.followerCount = followerCount
-                    notif.userInfo.followingCount = followingCount
-                    notif.userInfo.userFollowing = userFollowing
-                    notif.userInfo.notifID = notifID
-                    notif.userInfo.usersBlocking = usersBlocking
+                    cell?.notifPic.image = UIImage(data: img)
                 }
                 else{
                     if notif.notifType != "Mention"{
@@ -169,12 +171,12 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                     }
                 }
                 cell?.isUserInteractionEnabled = true
-                self.setUsername(username: username, notif: notif, cell: cell)
+                cell?.notif = notif
             })
         }
         else{
             cell?.isUserInteractionEnabled = true
-            self.setUsername(username: notif.username, notif: notif, cell: cell)
+            cell?.notif = notif
         }
         
         if !notif.shouldShowDP{
@@ -237,10 +239,10 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                 notif.userInfo = UserInfo()
             }
             DispatchQueue(label: "cache").async {
-                if let img = cache.imageFromCache(forKey: notif.picID){
+                if let img = cache.imageFromCache(forKey: notif.userInfo.dpID){
                     DispatchQueue.main.async {
                         cell?.notifPic.image = img
-                        notif.userInfo.dp = img
+                        notif.userInfo.dp = img.jpegData(compressionQuality: 1.0)
                     }
                 }
             }
@@ -317,45 +319,7 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         }
     }
     
-    func setUsername(username: String?, notif: UserNotification, cell: NotificationCell?){
-        
-        guard !notif.deleted else{return}
-        
-        let spacing = "                         "
-        if notif.notifType == "Follow"{
-            cell?.notifLbl.text = "\(notif.username ?? spacing) started following you"
-            cell?.notifLbl.textColor = ColorCompatibility.secondaryLabel
-        }
-        else if notif.notifType == "Like"{
-            cell?.notifLbl.text = "\(notif.username ?? spacing) liked your post"
-            cell?.notifLbl.textColor = ColorCompatibility.secondaryLabel
-        }
-        else if notif.notifType == "Buy"{
-            cell?.notifLbl.text = "\(notif.username ?? spacing) purchased your post"
-            cell?.notifLbl.textColor = UIColor(named: "ActiveColor")
-        }
-        else if notif.notifType == "Comment"{
-            cell?.notifLbl.text = "\(notif.username ?? spacing) commented on your post: \(notif.commentMessage ?? "This comment cannot be displayed")"
-            cell?.notifLbl.textColor = ColorCompatibility.secondaryLabel
-        }
-        else if notif.notifType == "Mention"{
-            cell?.notifLbl.text = "\(notif.username ?? spacing) mentioned you in a comment: \(notif.commentMessage ?? "This comment cannot be displayed")"
-            cell?.notifLbl.textColor = ColorCompatibility.secondaryLabel
-        }
-        guard let cell = cell else{return}
-        cell.notifLbl.addLinks(isNotification: true)
-        self.tableView.checkNotifTimes(notif: notif, timestampLbl: cell.timestampLbl)
-
-        
-        DispatchQueue.main.async{
-            if self.tableView.visibleCells.contains(cell){
-                UIView.setAnimationsEnabled(false)
-                self.tableView.beginUpdates()
-                self.tableView.endUpdates()
-                UIView.setAnimationsEnabled(true)
-            }
-        }
-    }
+    
 
   
     
@@ -382,7 +346,7 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                 guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                 let comments = ((snap["Comments"]) as? Int) ?? 0
 
-                completed(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: 0, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments))
+                completed(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: 0, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil))
                 return
             }
         })
@@ -421,21 +385,33 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     @objc func refresh(_ sender: BouncingTitleRefreshControl){
                 
+        guard checkInternetConnection() else{
+            sender.endRefreshing()
+            return
+        }
+        
         if !isLoading{
             isLoading = true
-            isInitialPull = true
             sender.animateRefresh()
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                self.getNotifications {
-                    self.isLoading = false
-                    self.tableView.reloadData()
+                self.downloadNotifs {
                     sender.endRefreshing()
                 }
             }
         }
     }
     
-    var isInitialPull: Bool = true
+    func downloadNotifs(completed: @escaping () -> ()){
+        if !isLoading{
+            isLoading = true
+        }
+        self.getNotifications {
+            self.isLoading = false
+            self.tableView.reloadData()
+            completed()
+        }
+    }
+    
     
     func getNotifications(completed: @escaping () -> ()){
         
@@ -463,7 +439,7 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                                 let commentMessage = doc["Comment_Message"] as? String
                                 let commentID = doc["Comment_ID"] as? String
 
-                                self.notifications.append(UserNotification(notifID: doc.documentID, uid: uid, notifType: type, timestamp: timestamp, username: nil, picID: picID, shouldShowDP: type == "Follow", templateColor: nil, timestampDiff: nil, commentMessage: commentMessage, commentID: commentID, deleted: false))
+                                self.notifications.append(UserNotification(notifID: doc.documentID, uid: uid, notifType: type, timestamp: timestamp, username: nil, picID: picID, shouldShowDP: type == "Follow" || type == "Bio_Mention", templateColor: nil, timestampDiff: nil, commentMessage: commentMessage, commentID: commentID, deleted: false))
                             }
                             completed()
                         }

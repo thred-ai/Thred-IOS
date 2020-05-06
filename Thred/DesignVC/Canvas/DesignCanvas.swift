@@ -31,18 +31,18 @@ extension DesignViewController{
             canvasDisplayView.frame.size = displayView.frame.size
             canvasDisplayView.frame.origin.y = viewY
             displayView.isHidden = true
-            nextBtn.isEnabled = false
+            nextBtn?.isEnabled = false
             carousel.displayImage = canvasDisplayView.image
             selectedView = displayView
             DispatchQueue.main.async {
-                self.scrollview.setContentOffset(.zero, animated: true)
-                self.scrollview.isScrollEnabled = false
+                self.scrollview?.setContentOffset(.zero, animated: true)
+                self.scrollview?.isScrollEnabled = false
                 self.canvas.backgroundColor = UIColor(named: self.tees[selectedIndex].templateID)
                 self.canvasDisplayView.backgroundColor = UIColor(named: self.tees[selectedIndex].templateID)
-                self.garbageBtn.isHidden = true
-                self.textStyleBtn.superview?.isHidden = true
-                self.fontSlider.isHidden = true
-                self.textCoverView.isHidden = true
+                self.garbageBtn?.isHidden = true
+                self.textStyleBtn?.superview?.isHidden = true
+                self.fontSlider?.isHidden = true
+                self.textCoverView?.isHidden = true
                 self.bottomBar.isHidden = false
                 self.bottomSafeAreaView.isHidden = false
                 self.bottomBar.frame.origin.y = bottomBarY
@@ -50,19 +50,18 @@ extension DesignViewController{
                 self.bottomSafeAreaView.frame.size.height = self.view.frame.maxY - self.bottomSafeAreaView.frame.origin.y
                 
                 UIView.animate(withDuration: 0.2, animations: {
-                    self.descriptionView.alpha = 0.0
+                    self.descriptionView?.alpha = 0.0
                     self.canvasDisplayView.frame = CGRect(x: 0, y: y, width: width, height: height)
                     self.canvasDisplayView.center.x = self.view.center.x
                     self.canvas.frame = CGRect(x: 0, y: y + self.view.safeAreaInsets.top, width: width, height: height)
                     self.canvas.center.x = self.view.center.x
-                    
                 }, completion: { finished in
                     if finished{
                         //self.displayView.image = nil
-                        self.lineTypeView.isHidden = true
-                        self.descriptionView.isHidden = true
+                        self.lineTypeView?.isHidden = true
+                        self.descriptionView?.isHidden = true
                         self.canvas.isHidden = false
-                        self.drawCanvas.isHidden = false
+                        self.drawCanvas?.isHidden = false
                     }
                 })
             }
@@ -217,7 +216,7 @@ extension DesignViewController{
             guard let cellIndex = carousel.collectionView.indexPathsForVisibleItems.first else{return}
             guard let colorLbl = (carousel.collectionView.cellForItem(at: cellIndex) as? CarouselCollectionViewCell)?.colorDisplayLabel else{return}
             hideSaveView(nil)
-            thredLabel.text = "saving"
+            thredLabel.text = "thred"
             saveBtn.isEnabled = false
             UIView.animate(withDuration: 0.15, animations: {
                 sender.transform = CGAffineTransform(rotationAngle: CGFloat.pi)
@@ -225,14 +224,12 @@ extension DesignViewController{
                 thredLabel.alpha = 1.0
             }, completion: { finished in
                 sender.transform = CGAffineTransform.identity
-                thredLabel.text = "thred"
                 guard let image = self.displayView.makeSnapshot(clear: false, subviewsToIgnore: [self.zoomBtn, colorLbl]) else{return}
-                thredLabel.text = "saving"
                 sender.transform = CGAffineTransform(rotationAngle: CGFloat.pi)
                 image.saveToPhotos { (success) in
                     DispatchQueue.main.async {
                         if success{
-                            thredLabel.text = "thred"
+                            thredLabel.text = "save"
                         }
                         else{
                             thredLabel.text = "error!"
@@ -244,8 +241,8 @@ extension DesignViewController{
                             if finished{
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.75){
                                     UIView.animate(withDuration: 0.15, animations: {
-                                        if thredLabel.text != "thred"{
-                                            thredLabel.text = "thred"
+                                        if thredLabel.text != "save"{
+                                            thredLabel.text = "save"
                                         }
                                     }, completion: { finished in
                                         if finished{

@@ -58,6 +58,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         performSegue(withIdentifier: "DoneDesigning", sender: nil)
     }
     
+    
     @IBAction func doneDesigning(_ sender: UIBarButtonItem) {
         
         let canPost = canPostDesign()
@@ -72,6 +73,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
                 if let indexPath = carousel.collectionView.indexPathsForVisibleItems.first{
                     if let cell = carousel.collectionView.cellForItem(at: indexPath) as? CarouselCollectionViewCell{
                         if cell.canvasDisplayView.image != nil{
+                            saveToPhotosLbl.isHidden = true
                             guard let price = priceView.text else{return}
                             guard let decimalPrice = Double(price) else{return}
                             product = ProductInProgress()
@@ -79,9 +81,12 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
                             product.caption = descriptionView.text
                             product.uid = userInfo.uid
                             product.name = titleView.text
+                            product.display = displayView.makeSnapshot(clear: true, subviewsToIgnore: [zoomBtn, cell.colorDisplayLabel, thredWatermark])?.jpegData(compressionQuality: 0.5)
                             product.templateColor = tees[indexPath.item].templateID
                             product.price = decimalPrice * 100
-                            performSegue(withIdentifier: "DoneDesigning", sender: nil)
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                self.performSegue(withIdentifier: "DoneDesigning", sender: nil)
+                            }
                         }
                     }
                 }
@@ -356,7 +361,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         
         
         placeholderLabel.text = "Describe this design..."
-        placeholderLabel.font = UIFont(name: "NexaW01-Heavy", size: 16)
+        placeholderLabel.font = UIFont(name: "NexaW01-Regular", size: 16)
         placeholderLabel.sizeToFit()
         placeholderLabel.backgroundColor = UIColor.clear
         placeholderLabel.textColor = textColor
@@ -382,6 +387,9 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     func textViewDidChange(_ textView: UITextView) {
         if textView == descriptionView{
             placeholderLabel.isHidden = !textView.text.isEmpty
+            if product != nil, textView.text != product.caption{
+                nextBtn.isEnabled = true
+            }
         }
         else{
             let size = textView.sizeThatFits(CGSize(width: canvas.frame.width, height: CGFloat.greatestFiniteMagnitude))
@@ -850,8 +858,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         textFieldDidChange(titleView)
         titleView.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
         setLeftNavigationItem(image: UIImage(nameOrSystemName: "xmark", systemPointSize: 18, iconSize: 9), style: .plain, target: self, action: #selector(cancelDesigning(_:)))
-        setPlaceholder(textView: descriptionView, textColor: ColorCompatibility.tertiaryLabel)
-        textViewDidChange(descriptionView)
+        setPlaceholder(textView: descriptionView, textColor: ColorCompatibility.secondaryLabel)
         setKeyBoardNotifs()
         
         if product != nil{
@@ -869,8 +876,15 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
             titleView.text = product.name
             nextBtn.title = "Update"
             textViewDidChange(descriptionView)
+            
+            if uploadingPosts.contains(product.productID ?? ""){
+                descriptionView.isEditable = false
+                titleView.isEnabled = false
+                nextBtn.isEnabled = false
+            }
         }
         else{
+            textViewDidChange(descriptionView)
             deletePostBtn.isHidden = true
             let spinner = MapSpinnerView.init(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
             displayView.addSubview(spinner)

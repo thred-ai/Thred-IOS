@@ -9,7 +9,7 @@
 import UIKit
 import ColorCompatibility
 
-class ProfileHeaderView: UIView{
+class ProfileHeaderView: UIView, UITextViewDelegate{
 
     var selectedList: UserListType!
     // Only override draw() if you perform custom drawing.
@@ -56,11 +56,15 @@ class ProfileHeaderView: UIView{
     @IBOutlet weak var actionBtn: UIButton!
     @IBOutlet weak var profileImgView: UIImageView!
     var headerActionBtnTitle: String = "Loading"
+    var vc: UIViewController!
 
     override func awakeFromNib() {
         super.awakeFromNib()
         self.backgroundColor = UIColor.clear
+        bioView.delegate = self
     }
+    
+    
     
     func clearAll(actionBtnTitle: String){
         usernameLbl.text = nil
@@ -110,22 +114,55 @@ class ProfileHeaderView: UIView{
                 self.actionBtn.backgroundColor = ColorCompatibility.quaternarySystemFill
             })
         }
-        self.actionBtn.setTitle(headerActionBtnTitle, for: .normal)
+        actionBtn.titleLabel?.text = headerActionBtnTitle
+        actionBtn.setTitle(headerActionBtnTitle, for: .normal)
     }
     
-    func setUpInfo(username: String?, fullname: String?, bio: String?, notifID: String?, dpUID: String?, image: UIImage?, actionBtnTitle: String, followerCount: Int, followingCount : Int, postCount: Int){
+    func setUpInfo(username: String?, fullname: String?, bio: String?, notifID: String?, dpUID: String?, image: Data?, actionBtnTitle: String, followerCount: Int, followingCount : Int, postCount: Int){
+        
+        if let attr = bioView.attributedText.mutableCopy() as? NSMutableAttributedString{
+            attr.removeAttribute(NSAttributedString.Key.link, range: NSMakeRange(0, attr.length))
+            attr.setAttributes([NSAttributedString.Key.font : UIFont(name: "NexaW01-Regular", size: bioView.font?.pointSize ?? 16)!], range: NSMakeRange(0, attr.length))
+            bioView.attributedText = attr
+        }
+        bioView?.text = nil
         usernameLbl.text = "@" + (username ?? "null")
         fullnameLbl.text = fullname ?? "null"
         bioView.text = bio
+        bioView.addLinks(isNotification: false)
+        bioView.textAlignment = .center
         followerNum.text = "\(followerCount)"
         followingNum.text = "\(followingCount)"
         postNum.text = "\(postCount)"
+        actionBtn.titleLabel?.text = actionBtnTitle
         actionBtn.setTitle(actionBtnTitle, for: .normal)
         setNeedsLayout()
         layoutIfNeeded()
         guard let img = image else{
             return}
-        profileImgView.image = img
+        profileImgView.image = UIImage(data: img)
+    }
+    
+    func textView(_ textView: UITextView, shouldInteractWith URL: URL, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {
+        
+        if let scheme = URL.scheme{
+            if interaction == .preview{
+                return false
+            }
+            if scheme.starts(with: "mention"){
+                let username = URL.absoluteString.replacingOccurrences(of: "mention:", with: "")
+                if username != userInfo.username, username != (vc as? FriendVC)?.friendInfo.username{
+                    let user = UserInfo(uid: nil, dp: nil, dpID: nil, username: username, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [])
+                    (vc as? FriendVC)?.selectedUser = user
+                    (vc as? UserVC)?.selectedUser = user
+                    vc?.performSegue(withIdentifier: "toFriend", sender: nil)
+                }
+            }
+            else{
+                return true
+            }
+        }
+        return false
     }
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -145,5 +182,8 @@ class ProfileHeaderView: UIView{
         profileImgView.layer.borderWidth = profileImgView.frame.width / 17.75
         actionBtn.layer.cornerRadius = actionBtn.frame.height / 4
         actionBtn.clipsToBounds = true
+        if vc == nil{
+            vc = getViewController()
+        }
     }
 }

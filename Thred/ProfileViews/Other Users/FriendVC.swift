@@ -17,7 +17,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
 
     var loadedProducts = [Product]()
     var isLoading = true
-
+    var selectedUser: UserInfo!
     var tokens = [String]()
     var currentproductsJSON: [DocumentSnapshot]? = [DocumentSnapshot]()
     var downloadingProfiles = [String]()
@@ -38,7 +38,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         
         refresher = BouncingTitleRefreshControl(title: "thred")
         refresher.addTarget(self, action: #selector(self.refresh(_:)), for: UIControl.Event.valueChanged)
-        
+        tableView.allowsSelection = false
         tableView.register(UINib(nibName: "ProductCell", bundle: nil), forCellReuseIdentifier: "PictureProduct")
 
         header = tableView.loadUserHeaderFromNib()
@@ -59,9 +59,9 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         if updateForBlocking() ?? false{
             return
         }
-        if let image = friendInfo.dp{
-            
-            self.header?.setUpInfo(username: friendInfo.username, fullname: friendInfo.fullName, bio: friendInfo.bio, notifID: friendInfo.notifID, dpUID: nil, image: image, actionBtnTitle: header?.headerActionBtnTitle ?? "null", followerCount: friendInfo.followerCount, followingCount: friendInfo.followingCount, postCount: friendInfo.postCount)
+        self.header?.setUpInfo(username: friendInfo.username, fullname: friendInfo.fullName, bio: friendInfo.bio, notifID: friendInfo.notifID, dpUID: nil, image: friendInfo.dp, actionBtnTitle: header?.headerActionBtnTitle ?? "null", followerCount: friendInfo.followerCount, followingCount: friendInfo.followingCount, postCount: friendInfo.postCount)
+
+        if friendInfo.dp != nil{
             switch onlyDownloadProducts{
             case false:
                 if let vcIndex = navigationController?.viewControllers.firstIndex(of: self){
@@ -74,13 +74,19 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
                     }
                 }
             default:
-                guard let uid = friendInfo.uid else{return}
-                let isFollowing = (userInfo.userFollowing.contains(uid))
+                guard let friendUID = friendInfo.uid else{return}
+                guard let uid = userInfo.uid else{return}
+                let isFollowing = (userInfo.userFollowing.contains(friendUID))
                 header?.updateFollowBtn(didFollow: isFollowing, animated: false)
-                self.header?.actionBtn.isUserInteractionEnabled = true
-                self.downloadProducts(){
-                    self.isLoading = false
-                    return
+                header?.actionBtn.isUserInteractionEnabled = true
+                refreshLists(userUID: uid){
+                    if userInfo.usersBlocking.contains(friendUID){
+                        self.showBlocked()
+                        return
+                    }
+                    self.downloadProducts(){
+                        self.isLoading = false
+                    }
                 }
             }
         }
@@ -95,7 +101,6 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         
         let following = userInfo.userFollowing
         guard let uid = friendInfo.uid else{
-            
             return}
         let didFollow = !following.contains(uid)
         header?.updateFollowBtn(didFollow: didFollow, animated: true)
@@ -167,6 +172,11 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
             return
         }
         
+        guard checkInternetConnection() else{
+            sender.endRefreshing()
+            return
+        }
+        
         if !isLoading{
             isLoading = true
             if sender.isRefreshing{
@@ -204,11 +214,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
                                 })
                             }
                             else{
-                                self.header?.clearAll(actionBtnTitle: "User not found")
-                                self.tableView.refreshControl = nil
-                                sender.removeFromSuperview()
-                                self.tableView.alwaysBounceVertical = false
-                                self.header?.isUserInteractionEnabled = false
+                                self.showBlocked()
                             }
                         })
                     }
@@ -217,7 +223,17 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         }
     }
     
-    func setInfo(username: String?, fullname: String?, dpID: String?, image: UIImage?, notifID: String?, bio: String?, userFollowing: [String], uid: String?, followerCount: Int, postCount: Int, followingCount: Int, usersBlocking: [String]){
+    func showBlocked(){
+        self.header?.clearAll(actionBtnTitle: "User not found")
+        self.tableView.refreshControl = nil
+        refresher.removeFromSuperview()
+        self.tableView.alwaysBounceVertical = false
+        self.header?.isUserInteractionEnabled = false
+        self.isLoading = false
+        self.tableView.reloadData()
+    }
+    
+    func setInfo(username: String?, fullname: String?, dpID: String?, image: Data?, notifID: String?, bio: String?, userFollowing: [String], uid: String?, followerCount: Int, postCount: Int, followingCount: Int, usersBlocking: [String]){
         
         guard let username = username else{return}
         guard let fullname = fullname else{return}
@@ -354,7 +370,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
                                     }
                                 }
                                 
-                                productsToUse.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments))
+                                productsToUse.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil))
                                 
                                 if productsToUse.count == (snaps.count){
                                     UserDefaults.standard.set(userInfo.userLiked, forKey: "LikedPosts")
@@ -432,26 +448,6 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
     }
     
 
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
-        if header?.subviews.contains(optionMenu) ?? false{
-            openOptionMenu(nil)
-            return
-        }
-        
-        let product = loadedProducts[indexPath.row]
-        guard let cell = tableView.cellForRow(at: indexPath) as? ProductCell else{return}
-        guard let imageData = product.designImage ?? cell.productPicture.makeSnapshot(clear: false, subviewsToIgnore: [])?.pngData() else{
-            return
-        }
-        DispatchQueue.main.async {
-            product.designImage = imageData
-            self.productToOpen = product
-            self.performSegue(withIdentifier: "toFull", sender: nil)
-        }
-        
-    }
-    
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(true)
@@ -742,6 +738,9 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         else if let listVC = segue.destination as? UserListVC{
             listVC.listType = header?.selectedList
             listVC.user = friendInfo
+        }
+        else if let friendVC = segue.destination as? FriendVC{
+            friendVC.friendInfo = selectedUser
         }
         else if let reportVC = (segue.destination as? UINavigationController)?.viewControllers.first as? ReportVC{
             reportVC.reportLevel = reportType

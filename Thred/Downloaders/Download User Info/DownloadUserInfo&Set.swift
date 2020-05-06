@@ -38,7 +38,7 @@ extension UITableView{
     }
     
     
-    func setCellUserInfo(image: UIImage?, info: [String?], feedVC: FeedVC?, userVC: UserVC?, friendVC: FriendVC?, fullVC: FullProductVC?, section: Int){
+    func setCellUserInfo(image: Data?, info: [String?], feedVC: FeedVC?, userVC: UserVC?, friendVC: FriendVC?, fullVC: FullProductVC?, section: Int){
         
         guard let uid = info[0] else{return}
         let fullname = info[1]
@@ -82,7 +82,7 @@ extension UITableView{
                         mainProductCell.removeLabelLoad()
                     }
                     if let img = image{
-                        mainProductCell.userImage.image = img
+                        mainProductCell.userImage.image = UIImage(data: img)
                         mainProductCell.removeDpLoad()
                     }
                 }
@@ -91,7 +91,7 @@ extension UITableView{
     
     }
     
-    func setForProduct(uid: String, fullname: String?, username: String?, image: UIImage?, userVC: UserVC?, friendVC: FriendVC?, feedVC: FeedVC?){
+    func setForProduct(uid: String, fullname: String?, username: String?, image: Data?, userVC: UserVC?, friendVC: FriendVC?, feedVC: FeedVC?){
         
         if let products = userVC?.loadedProducts ?? friendVC?.loadedProducts ?? feedVC?.loadedProducts{
             
@@ -105,7 +105,7 @@ extension UITableView{
                                 c.username.text = "@" + (username ?? "null")
                                 c.removeLabelLoad()
                                 if let img = image{
-                                    c.userImage.image = img
+                                    c.userImage.image = UIImage(data: img)
                                     c.removeDpLoad()
                                 }
                             default:
@@ -141,7 +141,7 @@ extension UITableViewCell{
 
 
 extension UIViewController{
-    func downloadUserInfo(uid: String?, userVC: UserVC?, feedVC: FeedVC?, downloadingPersonalDP: Bool, doNotDownloadDP: Bool, userInfoToUse: UserInfo?, queryOnUsername: Bool, completed: @escaping (String?, String?, String?, String?, String?, String?, UIImage?, [String], [String], Int, Int, Int) -> ()){
+    func downloadUserInfo(uid: String?, userVC: UserVC?, feedVC: FeedVC?, downloadingPersonalDP: Bool, doNotDownloadDP: Bool, userInfoToUse: UserInfo?, queryOnUsername: Bool, completed: @escaping (String?, String?, String?, String?, String?, String?, Data?, [String], [String], Int, Int, Int) -> ()){
         
         let ref = Firestore.firestore().collection("Users")
 
@@ -204,7 +204,7 @@ extension UIViewController{
                     }
                     
                     if let image = cache.imageFromCache(forKey: dpUID){
-                        completed(document.documentID, fullName, username, dpUID, notifID, bio, image, userFollowing, usersBlocking, postCount, followerCount, followingCount)
+                        completed(document.documentID, fullName, username, dpUID, notifID, bio, image.jpegData(compressionQuality: 1.0), userFollowing, usersBlocking, postCount, followerCount, followingCount)
                         return
                     }
                     else{
@@ -227,7 +227,7 @@ extension UIViewController{
                                             if userVC != nil || feedVC != nil{
                                                 cache.storeImageData(toDisk: imgData, forKey: dpUID)
                                             }
-                                            completed(document.documentID, fullName, username, dpUID, notifID, bio, UIImage(data: imgData), userFollowing, usersBlocking, postCount, followerCount, followingCount)
+                                            completed(document.documentID, fullName, username, dpUID, notifID, bio, data, userFollowing, usersBlocking, postCount, followerCount, followingCount)
                                         }
                                     }
                                 }

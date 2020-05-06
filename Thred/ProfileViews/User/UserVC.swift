@@ -19,15 +19,16 @@ import BRYXBanner
 let userInfo = UserInfo()
 var uploadingPosts = [String]()
 
-class UserVC: UITableViewController {
+class UserVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var loadedProducts = [Product]()
+    @IBOutlet var tableView: UITableView!
     var isLoading = true
     let uid = UserDefaults.standard.string(forKey: "UID")
-
+    var selectedUser: UserInfo!
     var tokens = [String]()
         
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let user = self.loadedProducts[indexPath.row]
 
         let cell = tableView.setPictureCell(indexPath: indexPath, product: user, productLocation: self)
@@ -41,6 +42,10 @@ class UserVC: UITableViewController {
     
     @objc func refresh(_ sender: BouncingTitleRefreshControl){
         
+        guard checkInternetConnection() else{
+            sender.endRefreshing()
+            return
+        }
         if !isLoading{
             isLoading = true
             if sender.isRefreshing{
@@ -78,7 +83,7 @@ class UserVC: UITableViewController {
     }
     
     func downloadProducts(completed: @escaping () -> ()){
-        self.getProducts(fromInterval: nil, refresh: true) { hasDiffproducts, snapDocs in
+        getProducts(fromInterval: nil, refresh: true) { hasDiffproducts, snapDocs in
             if hasDiffproducts ?? false{
                 if !self.loadedProducts.isEmpty{
                     completed()
@@ -102,13 +107,6 @@ class UserVC: UITableViewController {
         }
     }
     
-    
-    deinit {
-        print("going")
-        //SDImageCache.shared.clear(with: .all, completion: nil)
-    }
-    
-    
     override func viewDidLayoutSubviews() {
         
         
@@ -122,8 +120,10 @@ class UserVC: UITableViewController {
 
         let refresher = BouncingTitleRefreshControl(title: "thred")
         refresher.addTarget(self, action: #selector(refresh(_:)), for: UIControl.Event.valueChanged)
-        
+        tableView.delegate = self
+        tableView.dataSource = self
         tableView.register(UINib(nibName: "ProductCell", bundle: nil), forCellReuseIdentifier: "PictureProduct")
+        tableView.allowsSelection = false
         header = tableView.loadUserHeaderFromNib()
         header?.actionBtn.addTarget(self, action: #selector(editProfile(_:)), for: .touchUpInside)
         header?.optionBtn.setImage(UIImage(named: "gear"), for: .normal)
@@ -143,7 +143,7 @@ class UserVC: UITableViewController {
                 else{
                     for postID in uploadingPosts{
                         guard let post = self.loadedProducts.first(where: {$0.productID == postID}) else{continue}
-                        self.uploadPost(post: ProductInProgress(templateColor: post.templateColor, design: cache.imageFromCache(forKey: postID), uid: post.uid, caption: post.description, name: post.name, price: (post.price ?? 20) * 100, productID: postID), isRetryingWithID: postID)
+                        self.uploadPost(post: ProductInProgress(templateColor: post.templateColor, design: cache.imageFromCache(forKey: postID), uid: post.uid, caption: post.description, name: post.name, price: (post.price ?? 20) * 100, productID: postID, display: post.designImage), isRetryingWithID: postID)
                     }
                 }
             }
@@ -255,7 +255,7 @@ class UserVC: UITableViewController {
         }
     }
     
-    override func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         
         if tableView.contentOffset.y >= (tableView.contentSize.height - tableView.frame.size.height){
             print("fromScroll")
@@ -265,8 +265,8 @@ class UserVC: UITableViewController {
                         self.isLoading = true
                         self.getProducts(fromInterval: interval, refresh: false){_,_ in
                              self.isLoading = false
-                            if self.refreshControl?.isRefreshing ?? true{
-                                self.refreshControl?.endRefreshing()
+                            if self.tableView.refreshControl?.isRefreshing ?? true{
+                                self.tableView.refreshControl?.endRefreshing()
                             }
                         }
                     }
@@ -281,7 +281,9 @@ class UserVC: UITableViewController {
         let date = Date()
         
         guard let designData = post.design.pngData() else{
-        return}
+            return}
+        guard let linkData = post.display else{
+            return}
         
         var doc: DocumentReference!
         guard let uid = userInfo.uid else{return}
@@ -293,7 +295,7 @@ class UserVC: UITableViewController {
             uploadingPosts.append(doc.documentID)
             UserDefaults.standard.set(uploadingPosts, forKey: "UploadingPosts")
 
-            let product = Product(uid: uid, picID: doc.documentID, description: post.caption, fullName: userInfo.fullName, username: userInfo.username, productID: doc.documentID, userImageID: userInfo.dpID, timestamp: date, index: nil, timestampDiff: "1 second", blurred: false, price: (post.price ?? 2000) / 100, name: post.name, templateColor: post.templateColor, likes: 0, liked: false, designImage: nil, comments: 0)
+            let product = Product(uid: uid, picID: doc.documentID, description: post.caption, fullName: userInfo.fullName, username: userInfo.username, productID: doc.documentID, userImageID: userInfo.dpID, timestamp: date, index: nil, timestampDiff: "1 second", blurred: false, price: (post.price ?? 2000) / 100, name: post.name, templateColor: post.templateColor, likes: 0, liked: false, designImage: nil, comments: 0, link: nil)
             
             cache.storeImageData(toDisk: designData, forKey: doc.documentID)
             self.loadedProducts.insert(product, at: 0)
@@ -332,11 +334,19 @@ class UserVC: UITableViewController {
                         print(error?.localizedDescription ?? "")
                     }
                     else{
-                        uploadingPosts.removeAll(where: {$0 == doc.documentID})
-                        UserDefaults.standard.set(uploadingPosts, forKey: "UploadingPosts")
-                        self.tableView.performBatchUpdates({
-                            self.tableView.reloadRows(at: [IndexPath(row: 0, section: 0)], with: .none)
-                        }, completion: nil)
+                        let linkRef = Storage.storage().reference().child("Users/" + uid + "/" + "Products/" + doc.documentID + "/" + "link_" + doc.documentID + ".png")
+                        linkRef.putData(linkData, metadata: nil, completion: { metaData, error in
+                            if error != nil{
+                                print(error?.localizedDescription ?? "")
+                            }
+                            else{
+                                uploadingPosts.removeAll(where: {$0 == doc.documentID})
+                                UserDefaults.standard.set(uploadingPosts, forKey: "UploadingPosts")
+                                self.tableView.performBatchUpdates({
+                                    self.tableView.reloadRows(at: [IndexPath(row: 0, section: 0)], with: .none)
+                                }, completion: nil)
+                            }
+                        })
                     }
                 })
             }
@@ -379,7 +389,6 @@ class UserVC: UITableViewController {
                         completed(true, nil)
                         self.loadedProducts.removeOldFeedPosts(newPosts: nil)
                         self.loadedProducts.removeAllObjects(type: "Products")
-                        
                     }
                     else{
                         completed(false, nil)
@@ -410,7 +419,7 @@ class UserVC: UITableViewController {
                                 guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                                 let comments = ((snap["Comments"]) as? Int) ?? 0
 
-                                localLoaded.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: nil, designImage: nil, comments: comments))
+                                localLoaded.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: nil, designImage: nil, comments: comments, link: nil))
 
                                 if localLoaded.count == snaps.count{
                                     let isSame = localLoaded == self.loadedProducts
@@ -491,7 +500,7 @@ class UserVC: UITableViewController {
                         }
                     }
                     
-                    productsToUse.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments))
+                    productsToUse.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil))
                     
                     print("ProductsToUse: \(productsToUse.count)")
                     print("Snaps: \(snaps.count)")
@@ -523,7 +532,7 @@ class UserVC: UITableViewController {
     
     
     
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return loadedProducts.count
     }
 
@@ -538,7 +547,7 @@ class UserVC: UITableViewController {
         return loadLoadingHeaderFromNib()
     }()
     
-    override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         
         if loadedProducts.isEmpty{
             if isLoading{
@@ -552,7 +561,7 @@ class UserVC: UITableViewController {
         return nil
     }
     
-    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         if loadedProducts.isEmpty{
             return 150
         }
@@ -562,28 +571,22 @@ class UserVC: UITableViewController {
     var cellHeights: [IndexPath: CGFloat] = [:]
     
     ///* Dynamic Cell Sizing *///
-    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         ///For every cell, retrieve the height value and store it in the dictionary
         cellHeights[indexPath] = cell.frame.size.height
     }
     
-    override func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
+    func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
         return cellHeights[indexPath] ?? 1500
     }
     
-
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
+    func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
         let product = loadedProducts[indexPath.row]
-        guard let cell = tableView.cellForRow(at: indexPath) as? ProductCell else{return}
-        guard let imageData = product.designImage ?? cell.productPicture.makeSnapshot(clear: false, subviewsToIgnore: [])?.pngData() else{
-            return
+
+        if uploadingPosts.contains(product.productID){
+            return nil
         }
-        DispatchQueue.main.async {
-            product.designImage = imageData
-            self.productToOpen = product
-            self.performSegue(withIdentifier: "toFull", sender: nil)
-        }
+        return indexPath
     }
     
     override func didReceiveMemoryWarning() {
@@ -609,9 +612,12 @@ class UserVC: UITableViewController {
             listVC.listType = header?.selectedList
             listVC.user = userInfo
         }
+        else if let friendVC = segue.destination as? FriendVC{
+            friendVC.friendInfo = selectedUser
+        }
         else if let designVC = (segue.destination as? UINavigationController)?.viewControllers.first as? DesignViewController{
             if let img = cache.imageFromCache(forKey: productToOpen.productID){
-                designVC.product = ProductInProgress(templateColor: productToOpen.templateColor, design: img, uid: productToOpen.uid, caption: productToOpen.description, name: productToOpen.name, price: productToOpen.price, productID: productToOpen.productID)
+                designVC.product = ProductInProgress(templateColor: productToOpen.templateColor, design: img, uid: productToOpen.uid, caption: productToOpen.description, name: productToOpen.name, price: productToOpen.price, productID: productToOpen.productID, display: productToOpen.designImage)
             }
         }
     }
@@ -621,7 +627,7 @@ class UserVC: UITableViewController {
 
 extension UIViewController{
     
-    func setUserInfo(username: String?, fullname: String?, image: UIImage?, bio: String?, notifID: String?, dpUID: String?, userFollowing: [String]?, followerCount: Int?, postCount: Int?, followingCount: Int?, usersBlocking: [String]?){
+    func setUserInfo(username: String?, fullname: String?, image: Data?, bio: String?, notifID: String?, dpUID: String?, userFollowing: [String]?, followerCount: Int?, postCount: Int?, followingCount: Int?, usersBlocking: [String]?){
         if let usernameToSet = username{
             UserDefaults.standard.set(usernameToSet, forKey: "USERNAME")
             userInfo.username = usernameToSet
@@ -664,7 +670,7 @@ extension UIViewController{
             guard let img = image else{
                 return}
             userInfo.dp = img
-            SDImageCache.shared.storeImageData(toDisk: img.jpegData(compressionQuality: 1.0), forKey: dpIDToSet)
+            SDImageCache.shared.storeImageData(toDisk: img, forKey: dpIDToSet)
         }
     }
 }

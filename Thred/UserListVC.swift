@@ -34,6 +34,7 @@ class UserListVC: UITableViewController {
         tableView.separatorStyle = .none
         tableView.register(UINib(nibName: "SearchUserTableViewCell", bundle: nil), forCellReuseIdentifier: "search")
         isLoading = true
+        
         getUsers(fromInterval: nil){
             self.isLoading = false
         }
@@ -101,10 +102,10 @@ class UserListVC: UITableViewController {
                                 user.fullName = userInfo.fullName
                                 if let index = self.listUsers.firstIndex(where: {$0.uid == uid}){
                                     if let cell = self.tableView.cellForRow(at: IndexPath(row: index, section: 0)) as? SearchUserTableViewCell{
-                                        
                                         cell.usernameLbl.text = "@\(user.username ?? "null")"
                                         cell.fullnameLbl.text = user.fullName
-                                        cell.userImageView.image = user.dp
+                                        guard let imgData = userInfo.dp else{return}
+                                        cell.userImageView.image = UIImage(data: imgData)
                                         cell.spinner.isHidden = true
                                     }
                                 }
@@ -123,13 +124,13 @@ class UserListVC: UITableViewController {
                                             return
                                         }
                                         else{
-                                            user.dp = image
+                                            user.dp = data
                                             if let index = self.listUsers.firstIndex(where: {$0.uid == uid}){
                                                 if let cell = self.tableView.cellForRow(at: IndexPath(row: index, section: 0)) as? SearchUserTableViewCell{
                                                     
                                                     cell.usernameLbl.text = "@\(user.username ?? "null")"
                                                     cell.fullnameLbl.text = user.fullName
-                                                    cell.userImageView.image = user.dp
+                                                    cell.userImageView.image = image
                                                     cell.spinner.isHidden = true
                                                 }
                                             }
@@ -138,9 +139,27 @@ class UserListVC: UITableViewController {
                                 }
                             })
                         }
+                        else{
+                            userInfo.userFollowing.removeAll(where: {$0 == uid})
+                            self.listUsers.removeAll(where: {$0.uid == uid})
+                            self.tableView.reloadData()
+                            self.removeFromLists(uidToRemove: uid)
+                        }
                     }
                 })
             }
+        })
+    }
+    
+    func removeFromLists(uidToRemove: String){
+        
+        guard let uid = user.uid else{return}
+        let data = [
+            "uid" : uid,
+            "uidToRemove" : uidToRemove
+        ]
+        Functions.functions().httpsCallable("deletedUserListCleanUp").call(data, completion: { result, error in
+            
         })
     }
     
@@ -186,7 +205,9 @@ class UserListVC: UITableViewController {
         cell?.spinner.isHidden = false
         cell?.usernameLbl.text = "@\(user.username ?? "null")"
         cell?.fullnameLbl.text = user.fullName
-        cell?.userImageView.image = user.dp
+        if let imgData = user.dp{
+            cell?.userImageView.image = UIImage(data: imgData)
+        }
         if cell?.userImageView.image == nil{
             cell?.spinner.animate()
         }

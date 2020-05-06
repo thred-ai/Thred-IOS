@@ -51,7 +51,9 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
         tapper.cancelsTouchesInView = false
         tapper.delegate = self
         self.setEditUserInfo()
-        self.profilePhotoView.image = editUserInfo.dp
+        if let dp = editUserInfo.dp{
+            self.profilePhotoView.image = UIImage(data: dp)
+        }
         self.view.addGestureRecognizer(tapper)
    
     }
@@ -221,8 +223,8 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
     
     @objc func usePhoto(_ sender: UIButton){
         guard let selectedImage = self.cameraView.selectedImage ?? (self.cameraRollCollectionView.selectedImage.crop()) else{return}
-        self.editUserInfo.dp = selectedImage
-        self.profilePhotoView.image = self.editUserInfo.dp
+        self.editUserInfo.dp = selectedImage.jpegData(compressionQuality: 1.0)
+        self.profilePhotoView.image = selectedImage
         
         self.hideOptionMenuAnimate()
         self.hideProfileCam {}
@@ -253,8 +255,8 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
                 
             }
             else{
-                if self.editUserInfo.dp != userInfo.dp{
-                    guard let imageData = self.editUserInfo.dp?.sd_resizedImage(with: CGSize(width: 200, height: 200), scaleMode: .aspectFit)?.jpegData(compressionQuality: 0.6) else {return}
+                if let dp = self.editUserInfo.dp, dp != userInfo.dp{
+                    guard let imageData = UIImage(data: dp)?.sd_resizedImage(with: CGSize(width: 200, height: 200), scaleMode: .aspectFit)?.jpegData(compressionQuality: 0.6) else {return}
 
                     let picID = NSUUID().uuidString.replacingOccurrences(of: "-", with: "")
                     let ref = Storage.storage().reference().child("Users/" + uid + "/" + "profile_pic-" + picID + ".jpeg")
@@ -334,9 +336,9 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
     
     
     @objc func removePhoto(_ sender: UIButton){
-        
+        guard let defaultDP = defaultDP else{return}
         self.editUserInfo.dp = defaultDP
-        self.profilePhotoView.image = defaultDP
+        self.profilePhotoView.image = UIImage(data: defaultDP)
         self.hideOptionMenuAnimate()
         
     }

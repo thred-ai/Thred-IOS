@@ -81,7 +81,7 @@ class PasswordVC: UIViewController {
                             if let err = error{
                                 sender.isEnabled = true
                                 print(err.localizedDescription)
-                                self.logout(withMessage: "Sign in with your new login credentials")
+                                UIApplication.shared.logout(withMessage: "Sign in with your new login credentials", segueToFirstScreen: true)
                             }
                             else{
                                 sender.isEnabled = true
@@ -92,18 +92,16 @@ class PasswordVC: UIViewController {
                                         
                                     }
                                     else{
-                                        
+                                        if let userVC = self.navigationController?.viewControllers.first(where: {$0.isKind(of: UserVC.self)}){
+                                            sender.isEnabled = true
+                                            self.navigationController?.popToViewController(userVC, animated: true)
+                                        }
                                     }
                                 })
-                                if let userVC = self.navigationController?.viewControllers.first(where: {$0.isKind(of: UserVC.self)}){
-                                    sender.isEnabled = true
-                                    self.navigationController?.popToViewController(userVC, animated: true)
-                                }
                             }
                         })
                     }catch{
                         print(error.localizedDescription)
-                        
                     }
                 }
             })

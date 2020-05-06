@@ -15,8 +15,27 @@ import AudioToolbox
 import AVFoundation
 import SDWebImage
 import ColorCompatibility
+import BRYXBanner
 
 
+func checkInternetConnection() -> Bool{
+    if Reachability.isConnectedToNetwork(){
+        return true
+    }
+    else{
+        
+        guard !(window?.subviews.contains(where: {$0.isKind(of: Banner.self)}) ?? false) else{return false}
+        
+        let banner = Banner(title: "No Internet Connection!", subtitle: "Please connect to a network", image: nil, backgroundColor: .systemRed, didTapBlock: nil)
+        banner.dismissesOnTap = true
+        banner.dismissesOnSwipe = true
+        banner.springiness = .heavy
+        banner.titleLabel.textAlignment = .center
+        banner.detailLabel.textAlignment = .center
+        banner.show()
+        return false
+    }
+}
 
 public let dateUnits = ["year", "month", "week", "day", "hour", "minute", "second"]
 public let userCalendar = Calendar.current
@@ -60,9 +79,10 @@ class Product: Codable, Equatable{
     var liked: Bool!
     var designImage: Data!
     var comments = Int()
+    var link: URL!
 
     
-    init(uid: String, picID: String?, description: String?, fullName: String?, username: String?, productID: String, userImageID: String?, timestamp: Date?, index: Int?, timestampDiff: String?, blurred: Bool?, price: Double?, name: String?, templateColor: String?, likes: Int?, liked: Bool?, designImage: Data?, comments: Int?) {
+    init(uid: String, picID: String?, description: String?, fullName: String?, username: String?, productID: String, userImageID: String?, timestamp: Date?, index: Int?, timestampDiff: String?, blurred: Bool?, price: Double?, name: String?, templateColor: String?, likes: Int?, liked: Bool?, designImage: Data?, comments: Int?, link: URL?) {
         
         self.uid = uid
         self.picID = picID
@@ -82,10 +102,11 @@ class Product: Codable, Equatable{
         self.liked = liked
         self.designImage = designImage
         self.comments = comments ?? 0
+        self.link = link
     }
     
     convenience init() {
-        self.init(uid: "", picID: nil, description: nil, fullName: nil, username: "", productID: "", userImageID: nil, timestamp: nil,  index: nil, timestampDiff: nil, blurred: false, price: nil, name: nil, templateColor: nil, likes: 0, liked: false, designImage: nil, comments: 0)
+        self.init(uid: "", picID: nil, description: nil, fullName: nil, username: "", productID: "", userImageID: nil, timestamp: nil,  index: nil, timestampDiff: nil, blurred: false, price: nil, name: nil, templateColor: nil, likes: 0, liked: false, designImage: nil, comments: 0, link: nil)
     }
     
 }
@@ -138,7 +159,12 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
     }
     
     @objc func refresh(_ sender: BouncingTitleRefreshControl){
-                
+             
+        guard checkInternetConnection() else{
+            sender.endRefreshing()
+            return
+        }
+        
         if !isLoading{
             lastIndex = 0
             isLoading = true
@@ -247,6 +273,8 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         bouncingControl.addTarget(self, action: #selector(refresh(_:)), for: UIControl.Event.valueChanged)
         
         tableView.addSubview(bouncingControl)
+        tableView.allowsSelection = false
+
 
         navigationController?.navigationBar.setBackgroundImage(UIImage.init(), for: UIBarMetrics.default)
         navigationController?.navigationBar.shadowImage = UIImage.init()
@@ -284,7 +312,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
             }
         }
     }
-    
+
     override func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         
         if tableView.contentOffset.y >= (tableView.contentSize.height - tableView.frame.size.height){
@@ -306,6 +334,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
 
     func getProducts(refresh: Bool, time completed: @escaping (Bool?) -> ()){
 
+        
         guard let userUID = userInfo.uid else{
             completed(false)
         return}
@@ -316,7 +345,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         if !clone.contains(userUID){
             clone.append(userUID)
         }
-        
+        clone.reverse()
         query = nil
         
         let arrays = clone.chunked(into: 10)
@@ -360,7 +389,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                                 let likes = snap["Likes"] as? Int
                                 guard let priceCents = (snap["Price_Cents"] as? Double) else{continue}
                                 let comments = ((snap["Comments"]) as? Int) ?? 0
-                                let product = Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments)
+                                let product = Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil)
                                 localLoaded.append(product)
                             }
                         }
@@ -379,10 +408,6 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         else{
             completed(false)
         }
-    }
-    
-    func checkLoaded(localLoaded: [Product]?){
-        
     }
     
     func checkSameProducts(localLoaded: [Product], completed: @escaping (Bool) -> ()){
@@ -497,21 +522,6 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
     }
    
     
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
-            let product = loadedProducts[indexPath.row]
-            guard let cell = tableView.cellForRow(at: indexPath) as? ProductCell else{return}
-            guard let imageData = product.designImage ?? cell.productPicture.makeSnapshot(clear: false, subviewsToIgnore: [])?.pngData() else{
-                return
-            }
-            DispatchQueue.main.async {
-                product.designImage = imageData
-                self.productToOpen = product
-                self.performSegue(withIdentifier: "toFull", sender: nil)
-            }
-        
-    }
-    
     // MARK: - Navigation
     
     // In a storyboard-based application, you will often want to do a little preparation before navigation
@@ -528,7 +538,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         }
         else if let designVC = (segue.destination as? UINavigationController)?.viewControllers.first as? DesignViewController{
             if let img = cache.imageFromCache(forKey: productToOpen.productID){
-                designVC.product = ProductInProgress(templateColor: productToOpen.templateColor, design: img, uid: productToOpen.uid, caption: productToOpen.description, name: productToOpen.name, price: productToOpen.price, productID: productToOpen.productID)
+                designVC.product = ProductInProgress(templateColor: productToOpen.templateColor, design: img, uid: productToOpen.uid, caption: productToOpen.description, name: productToOpen.name, price: productToOpen.price, productID: productToOpen.productID, display: productToOpen.designImage)
             }
         }
         else if let reportVC = (segue.destination as? UINavigationController)?.viewControllers.first as? ReportVC{

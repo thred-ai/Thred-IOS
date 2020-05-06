@@ -47,7 +47,10 @@ extension DesignViewController{
     
     
     func swiftyDraw(shouldBeginDrawingIn drawingView: SwiftyDrawView, using touch: UITouch) -> Bool {
-        if (!drawingView.isHidden && !drawingView.isEnabled) || (drawingView.brush.blendMode == .clear && drawingView.lines.isEmpty){
+        if !drawingView.isHidden && !drawingView.isEnabled{
+            return false
+        }
+        if drawingView.lines.isEmpty && drawingView.brush.blendMode == .clear{
             return false
         }
         drawingView.brush.adjustWidth(for: touch)
@@ -73,10 +76,14 @@ extension DesignViewController{
             brushBtn.setImage(UIImage(nameOrSystemName: "pencil.circle", systemPointSize: 25, iconSize: 9), for: .normal)
             drawCanvas.brush.blendMode = .normal
             drawCanvas.brush.color = Color(slider.color)
+            drawCanvas.isEnabled = true
         }
         else{
-            brushBtn.setImage(UIImage(nameOrSystemName: "wand.and.rays.inverse", systemPointSize: 23, iconSize: 9), for: .normal)
+            brushBtn.setImage(UIImage(named: "eraser"), for: .normal)
             drawCanvas.brush.blendMode = .clear
+            if drawCanvas.lines.isEmpty{
+                drawCanvas.isEnabled = false
+            }
         }
     }
     

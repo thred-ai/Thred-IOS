@@ -56,16 +56,25 @@ class CommentCell: UITableViewCell, UITextViewDelegate {
     }
     
     func textView(_ textView: UITextView, shouldInteractWith URL: URL, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {
-        if interaction == .preview{
-            return false
-        }
+        
         if let scheme = URL.scheme{
+            if interaction == .preview{
+                return false
+            }
             if scheme.starts(with: "mention"){
                 let username = URL.absoluteString.replacingOccurrences(of: "mention:", with: "")
                 if username != userInfo.username{
-                    vc.selectedUser = UserInfo(uid: nil, dp: nil, dpID: nil, username: username, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [])
+                    if let sameUser = vc?.comments.first(where: {$0.userInfo.username == username})?.userInfo{
+                        vc.selectedUser = sameUser
+                    }
+                    else{
+                        vc.selectedUser = UserInfo(uid: nil, dp: nil, dpID: nil, username: username, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [])
+                    }
                     vc.performSegue(withIdentifier: "toFriend", sender: nil)
                 }
+            }
+            else{
+                return true
             }
         }
         return false

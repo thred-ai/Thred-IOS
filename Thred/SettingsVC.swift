@@ -136,7 +136,7 @@ class SettingsVC: UITableViewController {
     }
     
     func logOut(){
-        logout(withMessage: nil)
+        UIApplication.shared.logout(withMessage: nil, segueToFirstScreen: true)
     }
     
     func updateMissing(){

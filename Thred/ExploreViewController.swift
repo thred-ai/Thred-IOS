@@ -56,7 +56,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
     func getFeaturedPost(){
         
         guard let userUID = userInfo.uid else{return}
-        Firestore.firestore().collectionGroup("Products").whereField("Blurred", isEqualTo: false).whereField("Has_Picture", isEqualTo: true).order(by: "Likes", descending: true).limit(to: 5).getDocuments(completion: { docs, error in
+        Firestore.firestore().collectionGroup("Products").whereField("Timestamp", isGreaterThan: Timestamp(date: Date().adding(hours: -72))).order(by: "Timestamp").whereField("Blurred", isEqualTo: false).whereField("Has_Picture", isEqualTo: true).order(by: "Likes", descending: true).limit(to: 5).getDocuments(completion: { docs, error in
             
             if let err = error{
                 print(err.localizedDescription)
@@ -100,7 +100,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                             }
                         }
                         
-                        let product = Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: nil, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments)
+                        let product = Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: nil, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil)
                         
                         self.featuredHeader.featuredProducts.append(product)
                         
@@ -228,6 +228,11 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     @objc func refresh(_ sender: BouncingTitleRefreshControl){
                 
+        guard checkInternetConnection() else{
+            sender.endRefreshing()
+            return
+        }
+        
         if !isLoading{
             isLoading = true
             if sender.isRefreshing{
@@ -282,9 +287,9 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
     func getTemplates(completed: @escaping (Error?) -> ()){
         
         guard let uid = userInfo.uid else{return}
-        getFeaturedPost()
         checkAuthStatus {
             self.refreshLists(userUID: uid){
+                self.getFeaturedPost()
                 Firestore.firestore().document("Templates/Tees").getDocument(completion: { snap, error in
                     if error != nil{
                         completed(error)
@@ -351,7 +356,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
 
             if let dp = user.dp{
                 cell?.spinner.isHidden = true
-                cell?.userImageView.image = dp
+                cell?.userImageView.image = UIImage(data: dp)
             }
             else{
                 cell?.spinner.isHidden = false
@@ -563,7 +568,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                                                 return
                                             }
                                             else{
-                                                user.dp = image
+                                                user.dp = data
                                                 if let index = self.searchedUsers.firstIndex(where: {$0.uid == uid}){
                                                     self.searchUsersTable.performBatchUpdates({
                                                         self.searchUsersTable.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
@@ -626,7 +631,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                                 let comments = ((document["Comments"]) as? Int) ?? 0
                                 let productID = document.documentID
                                 
-                                let product = Product(uid: uid, picID: productID, description: description, fullName: nil, username: nil, productID: productID, userImageID: nil, timestamp: timestamp, index: 0, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(productID), designImage: nil, comments: comments)
+                                let product = Product(uid: uid, picID: productID, description: description, fullName: nil, username: nil, productID: productID, userImageID: nil, timestamp: timestamp, index: 0, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(productID), designImage: nil, comments: comments, link: nil)
 
                                 self.searchedProducts.append(product)
                                 self.searchedProducts.sort(by: {$0.likes > $1.likes})

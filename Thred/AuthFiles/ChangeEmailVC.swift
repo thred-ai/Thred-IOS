@@ -35,7 +35,7 @@ class ChangeEmailVC: UIViewController {
         }
         
         
-        guard let email = emailField.text, !email.isEmpty, email.filter({$0 == "@"}).count == 1 else{
+        guard let email = emailField.text?.lowercased(), !email.isEmpty, email.filter({$0 == "@"}).count == 1 else{
             updateErrorView(text: "Not a valid email")
             sender.isEnabled = true
             return

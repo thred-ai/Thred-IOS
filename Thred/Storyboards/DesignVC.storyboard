@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="u4A-57-s2t">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="u4A-57-s2t">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="collection view cell content view" minToolsVersion="11.0"/>
@@ -12,6 +12,9 @@
     <customFonts key="customFonts">
         <array key="Nexa W01 Heavy.ttf">
             <string>NexaW01-Heavy</string>
+        </array>
+        <array key="Nexa W01 Regular.ttf">
+            <string>NexaW01-Regular</string>
         </array>
     </customFonts>
     <scenes>
@@ -45,7 +48,7 @@
                                                                     <action selector="saveToCameraRoll:" destination="2ds-qa-UJI" eventType="touchUpInside" id="gdf-v2-iTh"/>
                                                                 </connections>
                                                             </button>
-                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="thred" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kV1-5n-7cj">
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="save" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kV1-5n-7cj">
                                                                 <rect key="frame" x="0.0" y="40" width="50" height="17.5"/>
                                                                 <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="15"/>
                                                                 <nil key="textColor"/>
@@ -183,8 +186,8 @@
                                                 <subviews>
                                                     <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NlV-xD-JS9">
                                                         <rect key="frame" x="10" y="0.0" width="394" height="293.5"/>
-                                                        <color key="textColor" systemColor="tertiaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.29999999999999999" colorSpace="custom" customColorSpace="sRGB"/>
-                                                        <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="15"/>
+                                                        <color key="textColor" systemColor="labelColor" cocoaTouchSystemColor="darkTextColor"/>
+                                                        <fontDescription key="fontDescription" name="NexaW01-Regular" family="NexaW01-Regular" pointSize="15"/>
                                                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences" returnKeyType="done"/>
                                                     </textView>
                                                 </subviews>

@@ -69,6 +69,7 @@
 		AA4CE2772406F69B009BAC92 /* ExploreColorCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = AA4CE2752406F69B009BAC92 /* ExploreColorCell.xib */; };
 		AA4CE27A24076701009BAC92 /* ExploreProductCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4CE27824076701009BAC92 /* ExploreProductCell.swift */; };
 		AA4CE27B24076701009BAC92 /* ExploreProductCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = AA4CE27924076701009BAC92 /* ExploreProductCell.xib */; };
+		AA524104245D18E7002DA37A /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AA524103245D18E7002DA37A /* GoogleService-Info.plist */; };
 		AA545B3523C43827005E7979 /* ViewController2.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA545B3423C43827005E7979 /* ViewController2.swift */; };
 		AA5FDBA5243776DA0008EE2E /* SettingsVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5FDBA4243776DA0008EE2E /* SettingsVC.swift */; };
 		AA5FDBA72437864E0008EE2E /* ReportSubCategoryVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5FDBA62437864E0008EE2E /* ReportSubCategoryVC.swift */; };
@@ -174,22 +175,8 @@
 		AAD3F3D92418ABE300F8FF8F /* navy2.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3C02418ABE200F8FF8F /* navy2.png */; };
 		AAD3F3DA2418ABE300F8FF8F /* purple.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3C12418ABE200F8FF8F /* purple.png */; };
 		AAD3F3DB2418ABE300F8FF8F /* navy1.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3C22418ABE200F8FF8F /* navy1.png */; };
-		AAD3F4002418B63700F8FF8F /* profile@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3EF2418B63700F8FF8F /* profile@3x.png */; };
-		AAD3F4012418B63700F8FF8F /* home@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3F02418B63700F8FF8F /* home@2x.png */; };
-		AAD3F4022418B63700F8FF8F /* day.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3F12418B63700F8FF8F /* day.png */; };
-		AAD3F4032418B63700F8FF8F /* home@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3F22418B63700F8FF8F /* home@3x.png */; };
-		AAD3F4042418B63700F8FF8F /* profile@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3F32418B63700F8FF8F /* profile@2x.png */; };
-		AAD3F4052418B63700F8FF8F /* blank.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3F42418B63700F8FF8F /* blank.png */; };
-		AAD3F4092418B63700F8FF8F /* default_DP.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3F82418B63700F8FF8F /* default_DP.png */; };
-		AAD3F40A2418B63700F8FF8F /* profile@1x.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3F92418B63700F8FF8F /* profile@1x.png */; };
-		AAD3F40B2418B63700F8FF8F /* noFollowers.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3FA2418B63700F8FF8F /* noFollowers.png */; };
-		AAD3F40D2418B63700F8FF8F /* night.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3FC2418B63700F8FF8F /* night.png */; };
-		AAD3F40E2418B63700F8FF8F /* home@1x.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3FD2418B63700F8FF8F /* home@1x.png */; };
-		AAD3F40F2418B63700F8FF8F /* mask.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3FE2418B63700F8FF8F /* mask.png */; };
-		AAD3F4102418B63700F8FF8F /* button.png in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F3FF2418B63700F8FF8F /* button.png */; };
 		AAD3F413241AE1C200F8FF8F /* ColorSectionVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD3F412241AE1C200F8FF8F /* ColorSectionVC.swift */; };
 		AAD3F417241AE52D00F8FF8F /* ColorSectionFlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD3F416241AE52D00F8FF8F /* ColorSectionFlowLayout.swift */; };
-		AAD3F41B241D0BAA00F8FF8F /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F41A241D0BA900F8FF8F /* GoogleService-Info.plist */; };
 		AAD3F41D241D8C6600F8FF8F /* NotificationVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD3F41C241D8C6600F8FF8F /* NotificationVC.swift */; };
 		AAD3F420241DEDB900F8FF8F /* NotificationCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD3F41E241DEDB900F8FF8F /* NotificationCell.swift */; };
 		AAD3F421241DEDB900F8FF8F /* NotificationCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = AAD3F41F241DEDB900F8FF8F /* NotificationCell.xib */; };
@@ -292,6 +279,7 @@
 		AA4CE2752406F69B009BAC92 /* ExploreColorCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ExploreColorCell.xib; sourceTree = "<group>"; };
 		AA4CE27824076701009BAC92 /* ExploreProductCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreProductCell.swift; sourceTree = "<group>"; };
 		AA4CE27924076701009BAC92 /* ExploreProductCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ExploreProductCell.xib; sourceTree = "<group>"; };
+		AA524103245D18E7002DA37A /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		AA545B3423C43827005E7979 /* ViewController2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController2.swift; sourceTree = "<group>"; };
 		AA5FDBA4243776DA0008EE2E /* SettingsVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsVC.swift; sourceTree = "<group>"; };
 		AA5FDBA62437864E0008EE2E /* ReportSubCategoryVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportSubCategoryVC.swift; sourceTree = "<group>"; };
@@ -395,24 +383,10 @@
 		AAD3F3C02418ABE200F8FF8F /* navy2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = navy2.png; sourceTree = "<group>"; };
 		AAD3F3C12418ABE200F8FF8F /* purple.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = purple.png; sourceTree = "<group>"; };
 		AAD3F3C22418ABE200F8FF8F /* navy1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = navy1.png; sourceTree = "<group>"; };
-		AAD3F3EF2418B63700F8FF8F /* profile@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "profile@3x.png"; sourceTree = "<group>"; };
-		AAD3F3F02418B63700F8FF8F /* home@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "home@2x.png"; sourceTree = "<group>"; };
-		AAD3F3F12418B63700F8FF8F /* day.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = day.png; sourceTree = "<group>"; };
-		AAD3F3F22418B63700F8FF8F /* home@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "home@3x.png"; sourceTree = "<group>"; };
-		AAD3F3F32418B63700F8FF8F /* profile@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "profile@2x.png"; sourceTree = "<group>"; };
-		AAD3F3F42418B63700F8FF8F /* blank.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = blank.png; sourceTree = "<group>"; };
-		AAD3F3F82418B63700F8FF8F /* default_DP.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = default_DP.png; sourceTree = "<group>"; };
-		AAD3F3F92418B63700F8FF8F /* profile@1x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "profile@1x.png"; sourceTree = "<group>"; };
-		AAD3F3FA2418B63700F8FF8F /* noFollowers.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = noFollowers.png; sourceTree = "<group>"; };
-		AAD3F3FC2418B63700F8FF8F /* night.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = night.png; sourceTree = "<group>"; };
-		AAD3F3FD2418B63700F8FF8F /* home@1x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "home@1x.png"; sourceTree = "<group>"; };
-		AAD3F3FE2418B63700F8FF8F /* mask.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = mask.png; sourceTree = "<group>"; };
-		AAD3F3FF2418B63700F8FF8F /* button.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = button.png; sourceTree = "<group>"; };
 		AAD3F412241AE1C200F8FF8F /* ColorSectionVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorSectionVC.swift; sourceTree = "<group>"; };
 		AAD3F416241AE52D00F8FF8F /* ColorSectionFlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorSectionFlowLayout.swift; sourceTree = "<group>"; };
 		AAD3F418241CF2DB00F8FF8F /* ThredRelease.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ThredRelease.entitlements; sourceTree = "<group>"; };
 		AAD3F419241CF36400F8FF8F /* ThredDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ThredDebug.entitlements; sourceTree = "<group>"; };
-		AAD3F41A241D0BA900F8FF8F /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		AAD3F41C241D8C6600F8FF8F /* NotificationVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationVC.swift; sourceTree = "<group>"; };
 		AAD3F41E241DEDB900F8FF8F /* NotificationCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationCell.swift; sourceTree = "<group>"; };
 		AAD3F41F241DEDB900F8FF8F /* NotificationCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NotificationCell.xib; sourceTree = "<group>"; };
@@ -574,7 +548,6 @@
 				AA3151CD23EBD918003BF268 /* Fonts */,
 				AAABBFFE23C9431500E48987 /* ProfileViews */,
 				AAABC02923C9431C00E48987 /* Swift Type Extensions */,
-				AAD3F3EE2418B63700F8FF8F /* Textures */,
 				AAD3F3A92418ABE200F8FF8F /* Tee Templates */,
 				AAABC00F23C9431800E48987 /* UIKit Extensions */,
 				AAABC03E23C9432100E48987 /* UsernameCell.swift */,
@@ -616,10 +589,10 @@
 				AA4CE27924076701009BAC92 /* ExploreProductCell.xib */,
 				AAD85472245004B9007C205B /* LoadingView.swift */,
 				AAD85474245004C8007C205B /* LoadingView.xib */,
+				AA524103245D18E7002DA37A /* GoogleService-Info.plist */,
 				AAABC16223CD189400E48987 /* MainTabBarViewController.swift */,
 				AA4AF76223B4464800088F11 /* LaunchScreen.storyboard */,
 				AA4AF76523B4464800088F11 /* Info.plist */,
-				AAD3F41A241D0BA900F8FF8F /* GoogleService-Info.plist */,
 			);
 			path = Thred;
 			sourceTree = "<group>";
@@ -905,26 +878,6 @@
 			path = "Tee Templates";
 			sourceTree = "<group>";
 		};
-		AAD3F3EE2418B63700F8FF8F /* Textures */ = {
-			isa = PBXGroup;
-			children = (
-				AAD3F3EF2418B63700F8FF8F /* profile@3x.png */,
-				AAD3F3F02418B63700F8FF8F /* home@2x.png */,
-				AAD3F3F12418B63700F8FF8F /* day.png */,
-				AAD3F3F22418B63700F8FF8F /* home@3x.png */,
-				AAD3F3F32418B63700F8FF8F /* profile@2x.png */,
-				AAD3F3F42418B63700F8FF8F /* blank.png */,
-				AAD3F3F82418B63700F8FF8F /* default_DP.png */,
-				AAD3F3F92418B63700F8FF8F /* profile@1x.png */,
-				AAD3F3FA2418B63700F8FF8F /* noFollowers.png */,
-				AAD3F3FC2418B63700F8FF8F /* night.png */,
-				AAD3F3FD2418B63700F8FF8F /* home@1x.png */,
-				AAD3F3FE2418B63700F8FF8F /* mask.png */,
-				AAD3F3FF2418B63700F8FF8F /* button.png */,
-			);
-			path = Textures;
-			sourceTree = "<group>";
-		};
 		C5ACB4B4A481948C30454797 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -1052,7 +1005,6 @@
 			files = (
 				AAD3F3D42418ABE300F8FF8F /* gray1.png in Resources */,
 				AAA4B03524269765007BC407 /* EditProfileVC.storyboard in Resources */,
-				AAD3F40A2418B63700F8FF8F /* profile@1x.png in Resources */,
 				AAD3F3CF2418ABE300F8FF8F /* yellow1.png in Resources */,
 				AAD3F3D02418ABE300F8FF8F /* orange.png in Resources */,
 				AAD3F421241DEDB900F8FF8F /* NotificationCell.xib in Resources */,
@@ -1062,13 +1014,11 @@
 				AAA4B02B24269635007BC407 /* ExploreVC.storyboard in Resources */,
 				AAD3F3CE2418ABE300F8FF8F /* green2.png in Resources */,
 				AA4AF76423B4464800088F11 /* LaunchScreen.storyboard in Resources */,
+				AA524104245D18E7002DA37A /* GoogleService-Info.plist in Resources */,
 				AAA4B03F24269A3B007BC407 /* ShoppingCartVC.storyboard in Resources */,
 				AA4858BC24393B370043BE6F /* Whoa2-1GP7j.ttf in Resources */,
 				AAD3F3C92418ABE300F8FF8F /* green1.png in Resources */,
 				AAD3F3D62418ABE300F8FF8F /* gray5.png in Resources */,
-				AAD3F4092418B63700F8FF8F /* default_DP.png in Resources */,
-				AAD3F4102418B63700F8FF8F /* button.png in Resources */,
-				AAD3F4052418B63700F8FF8F /* blank.png in Resources */,
 				AAA4B0432426ABC7007BC407 /* CommentsVC.storyboard in Resources */,
 				AAD3F3C62418ABE300F8FF8F /* pink.png in Resources */,
 				AA2067C4243264F900459478 /* ReportScreen.storyboard in Resources */,
@@ -1079,20 +1029,15 @@
 				AA0B60B4243EDEAB00C7F3D9 /* FeaturedPostView.xib in Resources */,
 				AAABC06D23C9432700E48987 /* ProfileHeaderView.xib in Resources */,
 				AAABC06A23C9432700E48987 /* Nexa W01 Heavy.ttf in Resources */,
-				AAD3F4022418B63700F8FF8F /* day.png in Resources */,
-				AAD3F4042418B63700F8FF8F /* profile@2x.png in Resources */,
 				AAD3F3CD2418ABE300F8FF8F /* blue1.png in Resources */,
 				AAABC15F23C947AF00E48987 /* Main.storyboard in Resources */,
 				AAD3F3C42418ABE300F8FF8F /* red3.png in Resources */,
 				AAD3F3DA2418ABE300F8FF8F /* purple.png in Resources */,
 				AA453A7C2435F3E900BA2B12 /* EmptyNotifView.xib in Resources */,
-				AAD3F4032418B63700F8FF8F /* home@3x.png in Resources */,
 				AA2067C2243185D300459478 /* SearchProductTableViewCell.xib in Resources */,
 				AA02AA2E242818CA0003CFCE /* NexaDemo-Light.ttf in Resources */,
 				AA3151D123EC081E003BF268 /* akaDora.ttf in Resources */,
 				AAD3F3D92418ABE300F8FF8F /* navy2.png in Resources */,
-				AAD3F40B2418B63700F8FF8F /* noFollowers.png in Resources */,
-				AAD3F40F2418B63700F8FF8F /* mask.png in Resources */,
 				AA4858BA243937820043BE6F /* HeyNovember-eZZ2l.ttf in Resources */,
 				AA44092423F66DD1009F5774 /* HOPE-HYPE.ttf in Resources */,
 				AAA4B0332426972C007BC407 /* FullProductVC.storyboard in Resources */,
@@ -1101,10 +1046,8 @@
 				AAD3F3C32418ABE300F8FF8F /* red1.png in Resources */,
 				AA453A782435C8CB00BA2B12 /* EmptyProductsView.xib in Resources */,
 				AA02AA36242E9DC50003CFCE /* sale.caf in Resources */,
-				AAD3F4012418B63700F8FF8F /* home@2x.png in Resources */,
 				AA02AA32242AE7D30003CFCE /* Nexa W01 Regular.ttf in Resources */,
 				AAA4B03724269989007BC407 /* EditBioVC.storyboard in Resources */,
-				AAD3F40E2418B63700F8FF8F /* home@1x.png in Resources */,
 				AAABC07023C9432700E48987 /* SearchUserTableViewCell.xib in Resources */,
 				AA05AFE7244A222E0009F5F1 /* UserListVC.storyboard in Resources */,
 				AA4858B82439354F0043BE6F /* AguafinaScript-Regular.ttf in Resources */,
@@ -1124,11 +1067,8 @@
 				AA5FDBAD24386B0F0008EE2E /* black.png in Resources */,
 				AAA4B04124269A51007BC407 /* SalesVC.storyboard in Resources */,
 				AAD3F3CB2418ABE300F8FF8F /* yellow2.png in Resources */,
-				AAD3F4002418B63700F8FF8F /* profile@3x.png in Resources */,
 				AAD3F3DB2418ABE300F8FF8F /* navy1.png in Resources */,
 				AAA4B02D24269676007BC407 /* NotificationVC.storyboard in Resources */,
-				AAD3F41B241D0BAA00F8FF8F /* GoogleService-Info.plist in Resources */,
-				AAD3F40D2418B63700F8FF8F /* night.png in Resources */,
 				AAD85475245004C8007C205B /* LoadingView.xib in Resources */,
 				AA45931C243464BE00C9D5DC /* countries.json in Resources */,
 				AAA4B02F24269694007BC407 /* UserVC.storyboard in Resources */,
@@ -1586,16 +1526,16 @@
 				CODE_SIGN_ENTITLEMENTS = Thred/ThredDebug.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = WA263Q86P5;
+				DEVELOPMENT_TEAM = S8M4283SLD;
 				INFOPLIST_FILE = Thred/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.8;
+				MARKETING_VERSION = 1.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = thred.Thred;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1612,16 +1552,16 @@
 				CODE_SIGN_ENTITLEMENTS = Thred/ThredRelease.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = WA263Q86P5;
+				DEVELOPMENT_TEAM = S8M4283SLD;
 				INFOPLIST_FILE = Thred/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.8;
+				MARKETING_VERSION = 1.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = thred.Thred;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

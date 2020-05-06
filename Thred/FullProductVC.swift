@@ -105,6 +105,19 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
         }
     }
     
+    
+    
+    lazy var backgroundView: UIView = {
+        let view = UIView.init(frame: tableView.bounds)
+        
+        let spinner = MapSpinnerView.init(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
+        spinner.center = view.center
+        view.addSubview(spinner)
+        spinner.animate()
+        return view
+    }()
+    
+    
     func getProduct(){
         guard let userUID = userInfo.uid else{return}
         
@@ -152,7 +165,7 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
                         }
                     }
                     
-                    self.fullProduct = Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: nil, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments)
+                    self.fullProduct = Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: nil, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil)
                     
                     self.tableView.reloadData()
                 })
@@ -163,7 +176,7 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
     override func viewDidLayoutSubviews() {
         addToCartBtn.layer.cornerRadius = addToCartBtn.frame.height / 8
         addToCartBtn.clipsToBounds = true
-        
+        tableView.backgroundView = backgroundView
     }
     
     
@@ -203,12 +216,11 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
     
     
     func navigationController(_ navigationController: UINavigationController, didShow viewController: UIViewController, animated: Bool) {
-        if let viewController = viewController as? UITableViewController{
-            if let index = ((viewController as? FeedVC)?.loadedProducts ?? (viewController as? FriendVC)?.loadedProducts ?? (viewController as? UserVC)?.loadedProducts)?.firstIndex(where: {$0.productID == fullProduct.productID}){
-                viewController.tableView.performBatchUpdates({
-                    viewController.tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
-                }, completion: nil)
-            }
+        if let index = ((viewController as? FeedVC)?.loadedProducts ?? (viewController as? FriendVC)?.loadedProducts ?? (viewController as? UserVC)?.loadedProducts)?.firstIndex(where: {$0.productID == fullProduct.productID}){
+            let tableView = (viewController as? UserVC)?.tableView ?? (viewController as? FriendVC)?.tableView ?? (viewController as? FeedVC)?.tableView
+            tableView?.performBatchUpdates({
+                tableView?.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
+            }, completion: nil)
         }
     }
 
@@ -415,7 +427,7 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
         }
         else if let designVC = (segue.destination as? UINavigationController)?.viewControllers.first as? DesignViewController{
             if let img = cache.imageFromCache(forKey: fullProduct.productID){
-                designVC.product = ProductInProgress(templateColor: fullProduct.templateColor, design: img, uid: fullProduct.uid, caption: fullProduct.description, name: fullProduct.name, price: fullProduct.price, productID: fullProduct.productID)
+                designVC.product = ProductInProgress(templateColor: fullProduct.templateColor, design: img, uid: fullProduct.uid, caption: fullProduct.description, name: fullProduct.name, price: fullProduct.price, productID: fullProduct.productID, display: fullProduct.designImage)
             }
         }
         else if let reportVC = (segue.destination as? UINavigationController)?.viewControllers.first as? ReportVC{

@@ -28,6 +28,7 @@
                         <segue destination="zFD-Rz-raB" kind="show" identifier="toComments" id="KRh-BL-hWk"/>
                         <segue destination="I0D-VI-6Hw" kind="show" identifier="toReport" id="xyE-Lh-ERc"/>
                         <segue destination="VaW-nV-7nB" kind="show" identifier="toUserList" id="r9c-gl-Fsc"/>
+                        <segue destination="TXS-yg-UGv" kind="show" identifier="toFriend" id="glB-kN-ypM"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="CaN-0Y-gAQ" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -42,7 +43,7 @@
                 </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="MaF-wy-FI1" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3286" y="2613"/>
+            <point key="canvasLocation" x="3029" y="2699"/>
         </scene>
         <!--FullProductVC-->
         <scene sceneID="0cK-1o-ypM">
@@ -52,7 +53,17 @@
                 </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="7sd-C9-u6c" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3827" y="2613"/>
+            <point key="canvasLocation" x="4130" y="2699"/>
+        </scene>
+        <!--FriendVC-->
+        <scene sceneID="oVU-m3-X0y">
+            <objects>
+                <viewControllerPlaceholder storyboardName="FriendVC" id="TXS-yg-UGv" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="Gl7-4g-98Z"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Gun-Aw-3cN" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3565" y="2699"/>
         </scene>
         <!--UserListVC-->
         <scene sceneID="zVf-YL-isT">
@@ -62,7 +73,7 @@
                 </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="sTC-DD-zWh" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="4281" y="2613"/>
+            <point key="canvasLocation" x="4658" y="2699"/>
         </scene>
         <!--CommentsVC-->
         <scene sceneID="WyA-Pc-OSJ">
@@ -72,7 +83,7 @@
                 </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="36H-0R-D0R" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2822" y="2613"/>
+            <point key="canvasLocation" x="2506" y="2699"/>
         </scene>
     </scenes>
 </document>

@@ -26,7 +26,7 @@ class SignUpVC: UIViewController {
             return}
         errorView.text = nil
         print(text)
-        emailToUse = text
+        emailToUse = text.lowercased()
         self.performSegue(withIdentifier: "toPassword", sender: nil)
     }
     
@@ -115,7 +115,6 @@ class SignUpVC: UIViewController {
         attrString.addAttributes(attributes, range: matchRange)
         attrString.addAttributes(attributes2, range: matchRange2)
 
-        
         termsOfServiceView.attributedText = attrString
         termsOfServiceView.linkTextAttributes = [
             NSAttributedString.Key.foregroundColor : UIColor(named: "LoadingColor")!
@@ -170,10 +169,9 @@ class SignUpVC: UIViewController {
 
 var actionCodeSettings: ActionCodeSettings = {
     
-    let link = URL(string: "https://thredapps.com/thred/29hQ")
+    let link = URL(string: "https://thred.thredapps.com/open")
     let actionCodeSettings = ActionCodeSettings()
     actionCodeSettings.url = link
-    // The sign-in operation has to always be completed in the app.
     actionCodeSettings.handleCodeInApp = true
     actionCodeSettings.setIOSBundleID(Bundle.main.bundleIdentifier!)
     actionCodeSettings.setAndroidPackageName("com.example.android",

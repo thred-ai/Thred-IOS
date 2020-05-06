@@ -81,7 +81,7 @@ class ColorSectionVC: UICollectionViewController {
                                 let likes = snap["Likes"] as? Int
                                 let comments = ((snap["Comments"]) as? Int) ?? 0
 
-                                self.loadedProducts.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments))
+                                self.loadedProducts.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil))
                                 
                                 self.collectionView.performBatchUpdates({
                                     self.collectionView.insertItems(at: [IndexPath(item: self.loadedProducts.count - 1, section: 0)])

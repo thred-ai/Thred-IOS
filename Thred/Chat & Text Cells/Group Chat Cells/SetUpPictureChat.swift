@@ -10,6 +10,9 @@ import Foundation
 import UIKit
 import SDWebImage
 import FirebaseFirestore
+import FirebaseDynamicLinks
+import FirebaseStorage
+import ColorCompatibility
 
 extension UITableView{
     
@@ -50,29 +53,37 @@ extension UITableView{
         userLbl.text = nil
         dp.image = nil
         fullLbl.text = nil
+        if let attr = cell?.productDescription.attributedText.mutableCopy() as? NSMutableAttributedString{
+            attr.removeAttribute(NSAttributedString.Key.link, range: NSMakeRange(0, attr.length))
+            attr.setAttributes([NSAttributedString.Key.font : UIFont(name: "NexaW01-Regular", size: cell?.productDescription.font?.pointSize ?? 16)!], range: NSMakeRange(0, attr.length))
+            cell?.productDescription.attributedText = attr
+        }
         cell?.productDescription.text = nil
         cell?.productPicture?.image = nil
         cell?.canvasDisplayView.image = nil
         cell?.commentBtn.setTitle("View 0 comments", for: .normal)
         cell?.likesLbl.text = "\(0)"
         cell?.productPicture.removeShadow()
+        cell?.productPicture.gestureRecognizers = nil
         cell?.product = product
         cell?.vc = productLocation
         cell?.setGestureRecognizers()
+        cell?.progressView.progress = 0.0
+        cell?.title.textColor = ColorCompatibility.label
         
+        let tapper = UITapGestureRecognizer(target: cell, action: #selector(cell?.doubleTapped(_:)))
+        tapper.numberOfTapsRequired = 2
+        cell?.productPicture.addGestureRecognizer(tapper)
         
         if let uploadView = cell?.uploadView{
             if uploadingPosts.contains(product.productID){
                 uploadView.isHidden = false
                 cell?.bringSubviewToFront(uploadView)
-                if let cp = cell?.uploadView.subviews.first(where: {$0.accessibilityIdentifier == "uploadSpinner"}) as? MapSpinnerView{
-                    cp.animate()
-                }
-                cell?.isUserInteractionEnabled = false
+                cell?.spinner.isHidden = false
+                cell?.spinner.animate()
             }
             else{
                 cell?.uploadView.isHidden = true
-                cell?.isUserInteractionEnabled = true
             }
         }
         
@@ -86,6 +97,7 @@ extension UITableView{
         
         if product.description != nil{
             cell?.productDescription.text = product.description
+            cell?.productDescription.addLinks(isNotification: false)
         }
         if product.name != nil{
             cell?.title.text = product.name

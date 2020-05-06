@@ -23,14 +23,20 @@
 		<dict>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>Open App</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.628658827719-j522atbbl9ta0lm3ro1hquoshlo1u2h3</string>
+				<string>thred.Thred</string>
 			</array>
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>FirebaseDynamicLinksCustomDomains</key>
+	<array>
+		<string>https://thred.thredapps.com</string>
+	</array>
 	<key>LSApplicationCategoryType</key>
 	<string></string>
 	<key>LSRequiresIPhoneOS</key>

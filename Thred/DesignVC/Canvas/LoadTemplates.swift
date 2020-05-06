@@ -35,7 +35,7 @@ extension DesignViewController{
                             guard let code = id["Code"] else{continue}
                             guard let displayName = id["Display"] else{continue}
                             
-                            self.tees.append(Template(templateID: code, templateDisplayName: displayName))
+                            self.tees?.append(Template(templateID: code, templateDisplayName: displayName))
                         }
                         UserDefaults.standard.set(ids, forKey: "TemplateTeeIDs")
                         completed()

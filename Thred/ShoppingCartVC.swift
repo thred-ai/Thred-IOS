@@ -100,10 +100,21 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         return loadCartHeaderFromNib()
     }()
     
+    lazy var loadingView: LoadingView? = {
+        
+        return loadLoadingHeaderFromNib()
+    }()
+    
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         
         if allSavedProducts.isEmpty{
-            return headerView
+            if isLoading{
+                loadingView?.spinner.animate()
+                return loadingView
+            }
+            else{
+                return headerView
+            }
         }
         return nil
     }
@@ -123,10 +134,15 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         }
     }
     
-    var isLoading = false
+    var isLoading = true
     
     @objc func refresh(_ sender: BouncingTitleRefreshControl){
                 
+        guard checkInternetConnection() else{
+            sender.endRefreshing()
+            return
+        }
+        
         if !isLoading{
             isLoading = true
             sender.animateRefresh()
@@ -148,6 +164,10 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         self.getCartList(completed: { productList in
             self.allSavedProducts = productList
             self.getProducts(isRefreshing: true){
+                self.isLoading = false
+                if self.allSavedProducts.isEmpty{
+                    self.tableView.reloadData()
+                }
                 completed()
             }
         })
@@ -186,14 +206,12 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                 }
                 else{
                     guard let snap = snaps?.documents.first else{
-                        
+                        completed()
                         return}
                     
                     let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
                     guard let uid = snap["UID"] as? String else{
-                        
                         return}
-                    
                     let description = snap["Description"] as? String
                     let name = snap["Name"] as? String
                     let blurred = snap["Blurred"] as? Bool
@@ -202,7 +220,7 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                     guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                     let comments = ((snap["Comments"]) as? Int) ?? 0
                     
-                    let product = Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: 0, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments)
+                    let product = Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: 0, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil)
                     
                     let productInCart = ProductInCart(product: product, size: currentCartProduct.size, quantity: currentCartProduct.quantity, isDeleted: false, timestamp: currentCartProduct.timestamp)
                     self.savedProducts.append(productInCart)
@@ -276,7 +294,7 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                     if userInfo.usersBlocking.contains(uid){
                         continue
                     }
-                    let product = Product(uid: uid, picID: productID, description: nil, fullName: nil, username: nil, productID: productID, userImageID: nil, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil)
+                    let product = Product(uid: uid, picID: productID, description: nil, fullName: nil, username: nil, productID: productID, userImageID: nil, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil)
                     let productInCart = ProductInCart(product: product, size: size, quantity: qty, isDeleted: false, timestamp: timestamp)
                     localLoaded.append(productInCart)
                 }
@@ -301,6 +319,7 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "SearchProductCell", for: indexPath) as? SearchProductTableViewCell
+        guard self.savedProducts.indices.contains(indexPath.row) else{return cell!}
         let savedProduct = self.savedProducts[indexPath.row]
         guard let product = savedProduct.product else{return cell!}
         cell?.productImageView.image = nil
@@ -371,13 +390,18 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         if (editingStyle == .delete) {
             
             self.savedProducts.remove(at: indexPath.row)
-            
+            self.allSavedProducts = savedProducts
             DispatchQueue.main.async {
                 self.tableView.performBatchUpdates({
                     self.tableView.deleteRows(at: [indexPath], with: .fade)
                 }, completion: { finished in
                     if finished{
                         self.uploadToFirestore()
+                        if self.savedProducts.isEmpty{
+                            DispatchQueue.main.async {
+                                self.tableView.reloadData()
+                            }
+                        }
                     }
                 })
             }

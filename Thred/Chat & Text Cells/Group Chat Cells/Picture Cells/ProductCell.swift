@@ -10,16 +10,20 @@ import UIKit
 import FirebaseUI
 import ColorCompatibility
 import FirebaseFunctions
+import FirebaseDynamicLinks
 
 let window = UIApplication.shared.windows.first
 
 var likeQueue = [String: Bool]()
 
-class ProductCell: UITableViewCell {
+class ProductCell: UITableViewCell, UITextViewDelegate {
 
-    @IBOutlet weak var quickLikeproductBtn: UIButton!
+    @IBOutlet weak var progressView: UIProgressView!
+    
+    @IBOutlet weak var shareBtn: UIButton!
     
     @IBOutlet var dpMaskingViews: [UIView]!
+    @IBOutlet weak var infoStack: UIStackView!
     
     @IBOutlet weak var spinner: MapSpinnerView!
     @IBOutlet var nameMaskingViews: [UIView]!
@@ -32,9 +36,6 @@ class ProductCell: UITableViewCell {
     @IBOutlet weak var dpSkeletonView: SkeletonView!
     
     @IBOutlet weak var nameSkeletonView: SkeletonView!
-    
-    @IBOutlet weak var joinProductBtn: UIButton!
-    
     
     @IBOutlet weak var userImage: UIImageView!
     @IBOutlet weak var fullName: UILabel!
@@ -72,6 +73,7 @@ class ProductCell: UITableViewCell {
         }
     }
     
+    
     let circularProgress = CircularProgress(frame: CGRect(x: 0, y: 0, width: 80, height: 80))
 
     var imageCenter: CGPoint!
@@ -105,23 +107,136 @@ class ProductCell: UITableViewCell {
                 }
             }
             
-            let info = UserInfo(uid: product.uid, dp: self.userImage.image, dpID: product.userImageID ?? "null", username: product.username ?? "", fullName: product.fullName ?? "", bio: "", notifID: "", userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [])
+            let info = UserInfo(uid: product.uid, dp: self.userImage?.image?.jpegData(compressionQuality: 1.0), dpID: product.userImageID ?? "null", username: product.username ?? "", fullName: product.fullName ?? "", bio: "", notifID: "", userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [])
             (vc as? FullProductVC)?.friendInfo = info
             (vc as? FeedVC)?.selectedUser = info
             vc?.performSegue(withIdentifier: "toFriend", sender: nil)
         }
-        else if let userVC = vc as? UserVC ?? vc as? FriendVC{
+        if let userVC = vc as? UserVC{
             userVC.tableView.setContentOffset(CGPoint(x: 0, y: -userVC.view.safeAreaInsets.top), animated: true)
         }
+        if let friendVC = vc as? FriendVC{
+            friendVC.tableView.setContentOffset(CGPoint(x: 0, y: -friendVC.view.safeAreaInsets.top), animated: true)
+        }
+    }
+    
+    func animateProgressBar(value: CGFloat){
+        self.progressView.setProgress(Float(value), animated: true)
+    }
+    
+    @objc func doubleTapped(_ sender: UITapGestureRecognizer) {
+        likeDesign(likeBtn)
     }
     
     
     
     
+    @IBAction func sharePost(_ sender: UIButton) {
+        
+        if uploadingPosts.contains(product.productID){
+            return
+        }
+                
+        animateProgressBar(value: 0.2)
+        
+        getLink(completed: { url in
+            guard let url = url else{return}
+            self.animateProgressBar(value: 1.0)
+            var shareMessage = "Check out this t-shirt on Thred!"
+            if self.product.uid == userInfo.uid{
+                shareMessage = "Check out my t-shirt on Thred!"
+            }
+            let activity = UIActivityViewController(
+                  activityItems: [shareMessage, url],
+                  applicationActivities: nil
+                )
+            //activity.popoverPresentationController?.bu
+                // 3
+            self.getViewController()?.present(activity, animated: true, completion: nil)
+            DispatchQueue.main.async {
+                self.progressView.setProgress(0.0, animated: false)
+            }
+        })
+    }
+    
+    func getLink(completed: @escaping (URL?) -> ()){
+        self.animateProgressBar(value: 0.4)
+        if product.link == nil{
+            generateLink(product: product, completed: { link in
+                self.product.link = link
+                self.animateProgressBar(value: 0.8)
+                completed(link)
+            })
+        }
+        else{
+            completed(product.link)
+        }
+    }
+    
+    func getThumbnailURL(completed: @escaping (URL?) -> ()){
+        let ref = Storage.storage().reference().child("Users/" + product.uid + "/" + "Products/" + product.productID + "/" + "link_" + product.productID + ".png")
+        ref.downloadURL(completion: { url, error in
+            if error != nil{
+                print(error?.localizedDescription ?? "")
+                completed(nil)
+            }
+            else{
+                completed(url)
+            }
+        })
+        
+    }
+    
+    func generateLink(product: Product, completed: @escaping (URL?) -> ()){
+        guard let link = URL(string: "https://thredapps.com/users/\(product.uid)/product/\(product.productID)") else {
+            completed(nil)
+            return }
+        let dynamicLinksDomainURIPrefix = "https://thred.thredapps.com"
+        let linkBuilder = DynamicLinkComponents(link: link, domainURIPrefix: dynamicLinksDomainURIPrefix)
+        linkBuilder?.iOSParameters = DynamicLinkIOSParameters(bundleID: "thred.Thred")
+        linkBuilder?.androidParameters = DynamicLinkAndroidParameters(packageName: "com.example.android")
+        linkBuilder?.iOSParameters?.appStoreID = "1506286170"
+        var descriptionToAdd = ""
+        var fullNameToAdd = ""
+        
+        if let description = product.description, !description.isEmpty{
+            descriptionToAdd = " - \(description)"
+        }
+        if let fullName = product.fullName{
+            fullNameToAdd = "\(fullName)'s "
+        }
+        linkBuilder?.socialMetaTagParameters = DynamicLinkSocialMetaTagParameters()
+        linkBuilder?.socialMetaTagParameters?.title = "\(fullNameToAdd)Thred post: \"\(product.name ?? "")\(descriptionToAdd)\""
+        linkBuilder?.options = DynamicLinkComponentsOptions()
+        linkBuilder?.options?.pathLength = .short
+        getThumbnailURL(completed: { url in
+            self.animateProgressBar(value: 0.6)
+            linkBuilder?.socialMetaTagParameters?.imageURL = url
+            guard let longDynamicLink = linkBuilder?.url else {
+                completed(nil)
+                return }
+            print("The long URL is: \(longDynamicLink)")
+            linkBuilder?.shorten() { url, warnings, error in
+                if let err = error{
+                    print(err.localizedDescription)
+                    completed(nil)
+                }
+                else{
+                    completed(url)
+                    guard let url = url else { return }
+                    print("The short URL is: \(url)")
+                }
+            }
+        })
+    }
+    
     @IBAction func commentOnDesign(_ sender: UIButton) {
         
+        if uploadingPosts.contains(product.productID){
+            return
+        }
         
-        let productToOpen = Product(uid: product.uid, picID: product.picID, description: product.description, fullName: product.fullName, username: product.username, productID: product.productID, userImageID: product.userImageID, timestamp: product.timestamp, index: product.index, timestampDiff: product.timestampDiff, blurred: product.blurred, price: product.price, name: product.name, templateColor: product.templateColor, likes: product.likes, liked: product.liked, designImage: product.designImage, comments: product.comments)
+        let productToOpen = Product(uid: product.uid, picID: product.picID, description: product.description, fullName: product.fullName, username: product.username, productID: product.productID, userImageID: product.userImageID, timestamp: product.timestamp, index: product.index, timestampDiff: product.timestampDiff, blurred: product.blurred, price: product.price, name: product.name, templateColor: product.templateColor, likes: product.likes, liked: product.liked, designImage: product.designImage, comments: product.comments, link: nil)
         
         switch vc{
             
@@ -143,6 +258,10 @@ class ProductCell: UITableViewCell {
     let unlikedImage = UIImage(named: "like")
     
     @IBAction func likeDesign(_ sender: UIButton) {
+        
+        if uploadingPosts.contains(product.productID){
+            return
+        }
         
         sender.isEnabled = false
         isUserInteractionEnabled = false
@@ -258,20 +377,26 @@ class ProductCell: UITableViewCell {
                 }
             })
         }
+        
     }
+    
+    
     
     lazy var canvasDisplayView: UIImageView = {
         let view = UIImageView(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
-        view.isUserInteractionEnabled = true
+        view.isUserInteractionEnabled = false
         view.backgroundColor = .clear
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
+    
+    
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
         imageCenter = productPicture.center
+        productDescription.delegate = self
         likeBtn.imageView?.animationImages = [
             (likedImage?.imageWithColor(selectedColor))!,
             (UIImage(named: "flap1")?.imageWithColor(selectedColor))!,
@@ -291,18 +416,23 @@ class ProductCell: UITableViewCell {
 
         
         likeBtn.setImage(unlikedImage, for: .normal)
-        likeBtn.tintColor = UIColor.darkGray
+        likeBtn.tintColor = ColorCompatibility.secondaryLabel
         
         if let dpMask = self.dpMaskingViews.first{
             dpMask.layer.cornerRadius = dpMask.frame.height / 2
             dpMask.clipsToBounds = true
         }
         setUpCircularProgress()
-        productPicture.isUserInteractionEnabled = true
         let tap = UITapGestureRecognizer(target: self, action: #selector(toProfile(_:)))
         userInfoView.addGestureRecognizer(tap)
         
         productPicture.addSubview(canvasDisplayView)
+
+        
+        let tapper2 = UITapGestureRecognizer(target: self, action: #selector(segueToFull(_:)))
+        tapper2.numberOfTapsRequired = 1
+        infoStack.addGestureRecognizer(tapper2)
+        
 
         NSLayoutConstraint(item: canvasDisplayView, attribute: .centerX, relatedBy: .equal, toItem: productPicture, attribute: .centerX, multiplier: 1.0, constant: 0).isActive = true
         NSLayoutConstraint(item: canvasDisplayView, attribute: .centerY, relatedBy: .equal, toItem: productPicture, attribute: .centerY, multiplier: 1.0, constant: -20).isActive = true
@@ -313,9 +443,26 @@ class ProductCell: UITableViewCell {
         let gesture = UITapGestureRecognizer.init(target: self, action: #selector(openOptionMenu(_:)))
         optionMenu.addGestureRecognizer(gesture)
 
+        let tapper = UITapGestureRecognizer(target: self, action: #selector(doubleTapped(_:)))
+        tapper.numberOfTapsRequired = 2
+        productPicture.addGestureRecognizer(tapper)
 
     }
     
+    @objc func segueToFull(_ sender: UITapGestureRecognizer){
+        guard let imageData = product.designImage ?? productPicture.makeSnapshot(clear: false, subviewsToIgnore: [])?.pngData() else{
+            return
+        }
+        DispatchQueue.main.async {
+            self.product.designImage = imageData
+            
+            guard !(self.vc is FullProductVC) else{return}
+            (self.vc as? UserVC)?.productToOpen = self.product
+            (self.vc as? FriendVC)?.productToOpen = self.product
+            (self.vc as? FeedVC)?.productToOpen = self.product
+            self.vc?.performSegue(withIdentifier: "toFull", sender: nil)
+        }
+    }
     
     func setGestureRecognizers(){
         if vc is FullProductVC{
@@ -347,7 +494,29 @@ class ProductCell: UITableViewCell {
         return !fullVC.isRasterizing
     }
     
-    
+    func textView(_ textView: UITextView, shouldInteractWith URL: URL, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {
+        
+        if let scheme = URL.scheme{
+            if interaction == .preview{
+                return false
+            }
+            if scheme.starts(with: "mention"){
+                let username = URL.absoluteString.replacingOccurrences(of: "mention:", with: "")
+                if username != userInfo.username, username != (vc as? FriendVC)?.friendInfo.username{
+                    let user = UserInfo(uid: nil, dp: nil, dpID: nil, username: username, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [])
+                    (vc as? FriendVC)?.selectedUser = user
+                    (vc as? UserVC)?.selectedUser = user
+                    (vc as? FeedVC)?.selectedUser = user
+                    (vc as? FullProductVC)?.friendInfo = user
+                    vc?.performSegue(withIdentifier: "toFriend", sender: nil)
+                }
+            }
+            else{
+                return true
+            }
+        }
+        return false
+    }
     
     
     func setUpCircularProgress(){
@@ -413,6 +582,7 @@ class ProductCell: UITableViewCell {
         
         if optionMenu.isHidden{
             optionMenu.isHidden = false
+            optionMenu.superview?.bringSubviewToFront(optionMenu)
             let tableView = (vc as? FeedVC)?.tableView ?? (vc as? UserVC)?.tableView ?? (vc as? FriendVC)?.tableView
             if let indexPath = tableView?.indexPath(for: self){
                 tableView?.scrollToRow(at: indexPath, at: .top, animated: true)
