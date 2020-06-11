@@ -49,7 +49,7 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
             let address = "\(street), \(city), \(adminArea), \(country)"
             validateAddress(address: address, completed: { country, adminArea, city, street, postalCode, isValid in
                 if isValid{
-                    if country == "Canada"{
+                    if country == "Canada", adminArea != "BC"{
                         self.area = adminArea
                         self.country = country
                         self.calculateCosts(province: adminArea){
@@ -97,7 +97,7 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     func showCountryErrorMessage(completed: @escaping () -> ()){
         let title = "Delivery Not Available"
-        let message = "Thred only supports delivery to Canada at this time"
+        let message = "Thred only supports delivery to all the Canadian provinces/territories except for British Columbia"
         let image = UIImage(named: "canada")
         let okBtn = DefaultButton(title: "OK", dismissOnTap: true) {
             completed()
