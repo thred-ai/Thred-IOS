@@ -18,19 +18,35 @@ class NotificationCell: UITableViewCell{
             if notifLbl.text.isEmpty || notifLbl.text == nil{
                 setNotifMessage()
             }
-            let name = notif.userInfo?.fullName ?? ""
+            let name = notif?.userInfo?.fullName ?? ""
+            setName(name: name)
+        }
+    }
+    var salesProduct: ProductInCart!{
+        didSet{
+            if notifLbl.text.isEmpty || notifLbl.text == nil{
+                guard let quantity = salesProduct.quantity else{return}
+                guard let price = salesProduct.product.price else{return}
+                notifLbl.text = "\(quantity) x \((price / 100.0).formatPrice())"
+            }
+            let name = salesProduct.product?.userInfo.fullName ?? ""
             setName(name: name)
         }
     }
     @IBOutlet weak var notifLbl: UITextView!
     @IBOutlet weak var timestampLbl: UILabel!
-    weak var vc: NotificationVC!
+    weak var vc: UIViewController!
     
     @IBAction func toUser(_ sender: UIButton){
-        if let user = notif.userInfo{
-            vc.selectedObject = user
-            vc.performSegue(withIdentifier: "toFriend", sender: nil)
+        let user = notif?.userInfo ?? salesProduct?.product?.userInfo
+        
+        if user?.uid == userInfo.uid{
+            (vc as? SalesVC)?.tabBarController?.selectedIndex = 4
+            return
         }
+        (vc as? NotificationVC)?.selectedObject = user
+        (vc as? SalesVC)?.selectedObject = user
+        vc.performSegue(withIdentifier: "toFriend", sender: nil)
     }
     
     func setName(name: String?){
@@ -40,7 +56,7 @@ class NotificationCell: UITableViewCell{
     
     func setNotifMessage(){
         
-        guard !notif.deleted else{return}
+        guard let notif = notif, !notif.deleted else{return}
         
         if notif.notifType == "Follow"{
             notifLbl.text = "started following you"
@@ -51,7 +67,7 @@ class NotificationCell: UITableViewCell{
             notifLbl.textColor = ColorCompatibility.secondaryLabel
         }
         else if notif.notifType == "Buy"{
-            notifLbl.text = "purchased your post"
+            notifLbl.text = "purchased your T-shirt"
             notifLbl.textColor = UIColor(named: "ActiveColor")
         }
         else if notif.notifType == "Comment"{
@@ -69,6 +85,15 @@ class NotificationCell: UITableViewCell{
         else if notif.notifType == "Post_Mention"{
             notifLbl.text = "mentioned you in their post"
             notifLbl.textColor = ColorCompatibility.secondaryLabel
+        }
+        else if notif.notifType.contains("Report"){
+            if notif.notifType == "Report:Post"{
+                notifLbl.text = "your post has been reported"
+            }
+            else{
+                notifLbl.text = "your account has been reported"
+            }
+            notifLbl.textColor = .systemRed
         }
     }
     

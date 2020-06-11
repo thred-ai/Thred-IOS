@@ -10,6 +10,7 @@ import UIKit
 import ColorCompatibility
 import SDWebImage
 import Firebase
+import PopupDialog
 
 class ProductInCart{
     
@@ -18,16 +19,20 @@ class ProductInCart{
     var quantity: Int!
     var isDeleted: Bool
     var timestamp: Date!
+    var timestampDiff: String!
+    var saleID: String!
     
-    init(product: Product?, size: String!, quantity: Int!, isDeleted: Bool, timestamp: Date!) {
+    init(product: Product?, size: String!, quantity: Int!, isDeleted: Bool, timestamp: Date!, timestampDiff: String?, saleID: String?) {
         self.product = product
         self.size = size
         self.quantity = quantity
         self.isDeleted = isDeleted
         self.timestamp = timestamp
+        self.timestampDiff = timestampDiff
+        self.saleID = saleID
     }
     convenience init() {
-        self.init(product: nil, size: nil, quantity: nil, isDeleted: false, timestamp: nil)
+        self.init(product: nil, size: nil, quantity: nil, isDeleted: false, timestamp: nil, timestampDiff: nil, saleID: nil)
     }
 }
 
@@ -40,18 +45,54 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     override func viewWillAppear(_ animated: Bool) {
         navigationController?.setNavigationBarHidden(false, animated: true)
         navigationController?.delegate = self
-
+        setKeyBoardNotifs()
         guard let selectedIndexPath = tableView.indexPathForSelectedRow else{return}
         tableView.deselectRow(at: selectedIndexPath, animated: true)
     }
     
     
+    override func viewWillDisappear(_ animated: Bool) {
+        NotificationCenter.default.removeObserver(self)
+    }
     
+    
+    func setKeyBoardNotifs(){
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    @objc func keyboardWillShow(_ notification: Notification) {
+
+        let bottomPadding = view.safeAreaInsets.bottom
+        if let keyboardFrame: NSValue = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue {
+            if (notification.userInfo?[UIResponder.keyboardIsLocalUserInfoKey] as? Bool ?? true){
+                let keyboardFrame = keyboardFrame.cgRectValue
+                let keyboardHeight = keyboardFrame.height
+                UIView.animate(withDuration: 0.2, animations: {
+                    if self.tableView.contentInset.bottom == 0{
+                        self.tableView.contentOffset.y -= keyboardHeight - bottomPadding
+                    }
+                    self.tableView.contentInset.bottom = keyboardHeight - bottomPadding
+                    self.tableView.verticalScrollIndicatorInsets.bottom = keyboardHeight - bottomPadding
+                }, completion: { finished in
+                    if finished{}
+                })
+            }
+        }
+    }
+    
+    @objc func keyboardWillHide(_ notification: Notification) {
+        if (notification.userInfo?[UIResponder.keyboardIsLocalUserInfoKey] as? Bool ?? true){
+            UIView.animate(withDuration: 0.2, animations: {
+                self.tableView.contentInset.bottom = 0
+                self.tableView.verticalScrollIndicatorInsets.bottom = 0
+            })
+        }
+    }
     
     
     
     var savedProducts = [ProductInCart]()
-    var allSavedProducts = [ProductInCart]()
     var refresher: BouncingTitleRefreshControl!
     
     override func viewDidLoad() {
@@ -65,6 +106,8 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         refresher.addTarget(self, action: #selector(self.refresh(_:)), for: UIControl.Event.valueChanged)
         // Do any additional setup after loading the view.
         tableView.addSubview(refresher)
+        checkoutBtn.isEnabled = false
+        checkoutBtn.setTitleColor(UIColor.white.withAlphaComponent(0.5), for: .disabled)
         downloadCart {
         }
     }
@@ -88,11 +131,11 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 120
+        return 85
     }
     
     func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 120
+        return 85
     }
     
     lazy var headerView: UIView? = {
@@ -107,7 +150,7 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         
-        if allSavedProducts.isEmpty{
+        if savedProducts.isEmpty{
             if isLoading{
                 loadingView?.spinner.animate()
                 return loadingView
@@ -122,37 +165,57 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        if allSavedProducts.isEmpty{
+        if savedProducts.isEmpty{
             return 150
         }
         return 0
     }
     
     @IBAction func checkOut(_ sender: UIButton) {
-        self.showErrorMessage {
-            
+        guard !savedProducts.isEmpty else{return}
+        guard checkIfCardSet() else{ showBankConfirmationMessage {}; return}
+        self.performSegue(withIdentifier: "toCheckout", sender: nil)
+    }
+    
+    func showBankConfirmationMessage(completed: @escaping () -> ()){
+        
+        let title = "Billing Information Not Set"
+        let message = "Add a billing card to purchase products from Thred, you can do this in account settings."
+        let titleColor = UIColor.label
+        
+        let yesBtn = DefaultButton(title: "OK", dismissOnTap: true) {
+            completed()
         }
+
+        showPopUp(title: title, message: message, image: nil, buttons: [yesBtn], titleColor: titleColor)
+    }
+    
+    func checkIfCardSet() -> Bool{
+                
+        if UserDefaults.standard.string(forKey: "CARD_BRAND") != nil, UserDefaults.standard.string(forKey: "CARD_LAST_4") != nil, UserDefaults.standard.string(forKey: "CARD_POSTAL_CODE") != nil{
+            return true
+        }
+        return false
     }
     
     var isLoading = true
     
-    @objc func refresh(_ sender: BouncingTitleRefreshControl){
+    @objc func refresh(_ sender: BouncingTitleRefreshControl?){
                 
         guard checkInternetConnection() else{
-            sender.endRefreshing()
+            sender?.endRefreshing()
             return
         }
         
         if !isLoading{
             isLoading = true
-            sender.animateRefresh()
+            sender?.animateRefresh()
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                self.allSavedProducts.removeAll()
                 self.savedProducts.removeAll()
                 self.downloadCart {
                     self.isLoading = false
                     DispatchQueue.main.async {
-                        sender.endRefreshing()
+                        sender?.endRefreshing()
                     }
                 }
             }
@@ -162,12 +225,20 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     func downloadCart(completed: @escaping () -> ()){
         self.getCartList(completed: { productList in
-            self.allSavedProducts = productList
-            self.getProducts(isRefreshing: true){
-                self.isLoading = false
-                if self.allSavedProducts.isEmpty{
+            if let products = productList{
+                self.savedProducts.append(contentsOf: products)
+                self.getProducts(isRefreshing: true){ hasDocs in
+                    if hasDocs{
+                        self.checkoutBtn.isEnabled = true
+                    }
+                    self.isLoading = false
                     self.tableView.reloadData()
+                    completed()
                 }
+            }
+            else{
+                self.isLoading = false
+                self.tableView.reloadData()
                 completed()
             }
         })
@@ -175,26 +246,24 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
 
     
     var downloadingPictures = [String]()
-    var downloadingProfiles = [String]()
 
-    func getProducts(isRefreshing: Bool, completed: @escaping () -> ()){
+    func getProducts(isRefreshing: Bool, completed: @escaping (Bool) -> ()){
         
-        let productIDs = allSavedProducts.compactMap({$0.product}).compactMap({$0.productID})
+        let productIDs = savedProducts.compactMap({$0.product}).compactMap({$0.productID})
         
         
         guard !productIDs.isEmpty else{
             
-            completed(); return}
+            completed(false); return}
         
+        print(productIDs)
         
         for (index, id) in productIDs.enumerated(){
             
-            let currentCartProduct = self.allSavedProducts[index]
+            let currentCartProduct = self.savedProducts[index]
 
-            if let same = savedProducts.first(where: {$0.product.productID == id && $0.product.timestamp != nil}){
-                let product = ProductInCart(product: same.product, size: currentCartProduct.size, quantity: currentCartProduct.quantity, isDeleted: currentCartProduct.isDeleted, timestamp: currentCartProduct.timestamp)
-                self.savedProducts.append(product)
-                self.tableView.reloadData()
+            if let same = savedProducts.first(where: {$0.product.productID == id && $0.product.name != nil}){
+                currentCartProduct.product = same.product
                 continue
             }
             
@@ -206,7 +275,7 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                 }
                 else{
                     guard let snap = snaps?.documents.first else{
-                        completed()
+                        completed(false)
                         return}
                     
                     let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
@@ -220,11 +289,12 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                     guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                     let comments = ((snap["Comments"]) as? Int) ?? 0
                     
-                    let product = Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: 0, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil)
-                    
-                    let productInCart = ProductInCart(product: product, size: currentCartProduct.size, quantity: currentCartProduct.quantity, isDeleted: false, timestamp: currentCartProduct.timestamp)
-                    self.savedProducts.append(productInCart)
-                    self.tableView.reloadData()
+                    let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil)
+                    currentCartProduct.product = product
+                    let downloaded = self.savedProducts.compactMap({$0.product.name})
+                    if downloaded.count == productIDs.count{
+                        completed(true)
+                    }
                     if !self.downloadingPictures.contains(snap.documentID){
                         self.downloadingPictures.append(snap.documentID)
                         let ref = Storage.storage().reference().child("Users/" + uid + "/" + "Products/" + snap.documentID + "/" + "thumbnail_\(snap.documentID)" + ".png")
@@ -260,28 +330,25 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                     }
                 }
             })
-            if id == productIDs.last{
-                completed()
-            }
         }
     }
     
     
-    func getCartList(completed: @escaping ([ProductInCart]) -> ()){
+    func getCartList(completed: @escaping ([ProductInCart]?) -> ()){
         
         guard let uid = userInfo.uid else{return}
 
         Firestore.firestore().collection("Users").document(uid).collection("Cart_Info").document("Cart_List").getDocument(completion: { doc, error in
             
             if let err = error{
+                completed(nil)
                 print(err.localizedDescription)
             }
             else{
                 guard let doc = doc else{return}
                 var localLoaded = [ProductInCart]()
                 guard let cartList = doc["Cart_List"] as? [[String : Any]] else{
-                    
-                    
+                    completed(nil)
                     return
                 }
                 
@@ -290,12 +357,13 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                     let size = product["Size"] as? String ?? "M"
                     let qty = product["Qty"] as? Int ?? 1
                     let timestamp = (product["Timestamp"] as? Timestamp)?.dateValue()
-                    guard let productID = product["Post_ID"] as? String else{return}
+                    guard let productID = product["Post_ID"] as? String else{continue}
                     if userInfo.usersBlocking.contains(uid){
                         continue
                     }
-                    let product = Product(uid: uid, picID: productID, description: nil, fullName: nil, username: nil, productID: productID, userImageID: nil, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil)
-                    let productInCart = ProductInCart(product: product, size: size, quantity: qty, isDeleted: false, timestamp: timestamp)
+
+                    let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: productID, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: userInfo.userLiked.contains(doc.documentID), designImage: nil, comments: nil, link: nil)
+                    let productInCart = ProductInCart(product: product, size: size, quantity: qty, isDeleted: false, timestamp: timestamp, timestampDiff: nil, saleID: nil)
                     localLoaded.append(productInCart)
                 }
                 completed(localLoaded)
@@ -308,10 +376,7 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return savedProducts.count
     }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-    }
-    
+
     override func viewDidDisappear(_ animated: Bool) {
         navigationController?.delegate = self
     }
@@ -324,59 +389,38 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         guard let product = savedProduct.product else{return cell!}
         cell?.productImageView.image = nil
         cell?.priceLbl.text = nil
-        cell?.usernameLbl.text = nil
         cell?.likesLbl.text = nil
         cell?.productNameLbl.text = nil
         cell?.likesView.isHidden = true
         cell?.savedProduct = nil
         cell?.cartVC = nil
-        
+        cell?.sizingLbl.text = nil
         cell?.productImageView.backgroundColor = ColorCompatibility.secondarySystemBackground
-        cell?.quantityView.isHidden = false
         cell?.sizingLbl.isHidden = false
-        
-        DispatchQueue(label: "explore").async {
-            if let dp = cache.imageFromMemoryCache(forKey: "thumbnail_\(product.productID)"){
-                DispatchQueue.main.async {
-                    cell?.productImageView.image = dp
-                }
-            }
-        }
-        cell?.productImageView.backgroundColor = UIColor(named: product.templateColor)
-        cell?.productImageView.backgroundColor = UIColor(named: product.templateColor)
-        cell?.productNameLbl.text = product.name
-        cell?.savedProduct = savedProduct
-        cell?.cartVC = self
-        
-        cell?.priceLbl.text = product.price?.formatPrice()
-        cell?.sizingLbl.text = "Size: \(savedProduct.size ?? "M")"
-        cell?.quantityField.text = "\(savedProduct.quantity ?? 0)"
-        
-        if let username = product.username{
-            cell?.usernameLbl.text = "@\(username)"
-        }
-        else{
-            if let same = savedProducts.first(where: {$0.product.uid == product.uid}), let username = same.product.username{
-                product.username = username
-                product.fullName = same.product.fullName
-                cell?.usernameLbl.text = "@\(username)"
-            }
-            else{
-                downloadUserInfo(uid: product.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: true, userInfoToUse: nil, queryOnUsername: false, completed: { uid, fullName, username, dpID, notifID, bio, image, userFollowing, usersBlocking, postCount, followersCount, followingCount in
-                    guard let username = username else{
-                        
-                        return}
-                    for post in self.savedProducts{
-                        if post.product.uid == product.uid{
-                            post.product.username = username
-                            post.product.fullName = fullName
-                            cell?.usernameLbl.text = "@\(username)"
-                        }
-                        else{
-                            
-                        }
+        cell?.quantityView.isHidden = true
+        cell?.isUserInteractionEnabled = false
+
+        if let color = product.templateColor, let name = product.name, let price = product.price{
+            cell?.quantityView.isHidden = false
+            cell?.isUserInteractionEnabled = true
+
+            cell?.productImageView.backgroundColor = UIColor(named: color)
+            cell?.productNameLbl.text = name
+            cell?.priceLbl.text = price.formatPrice()
+
+            cell?.sizingLbl.text = "Size: \(savedProduct.size ?? "M")"
+            cell?.quantityField.text = "\(savedProduct.quantity ?? 0)"
+            cell?.quantityField.textColor = UIColor(named: "LoadingColor")
+             
+            cell?.savedProduct = savedProduct
+            cell?.cartVC = self
+             
+            DispatchQueue(label: "explore").async {
+                if let dp = cache.imageFromMemoryCache(forKey: "thumbnail_\(product.productID)"){
+                    DispatchQueue.main.async {
+                        cell?.productImageView.image = dp
                     }
-                })
+                }
             }
         }
         return cell!
@@ -390,7 +434,6 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         if (editingStyle == .delete) {
             
             self.savedProducts.remove(at: indexPath.row)
-            self.allSavedProducts = savedProducts
             DispatchQueue.main.async {
                 self.tableView.performBatchUpdates({
                     self.tableView.deleteRows(at: [indexPath], with: .fade)
@@ -406,30 +449,49 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                 })
             }
         }
-    }
+    }                                
+
     
     func uploadToFirestore(){
         guard let uid = userInfo.uid else{
             
             return}
+        checkoutBtn.isEnabled = false
 
         let ref = Firestore.firestore().collection("Users/\(uid)/Cart_Info/").document("Cart_List")
         
         var finalData = [[String : Any]]()
         
+        
         for item in savedProducts{
+            
+            guard let postUID = item.product.userInfo.uid else{
+            continue}
             
             let data = [
                 "Post_ID" : item.product.productID,
                 "Qty" : item.quantity ?? 0,
                 "Size" : item.size ?? 0,
                 "Timestamp" : item.timestamp ?? 0,
-                "UID" : item.product.uid
+                "UID" : postUID
                 ] as [String : Any]
             finalData.append(data)
         }
         let dataToUpload = ["Cart_List" : finalData]
-        ref.setData(dataToUpload)
+        ref.setData(dataToUpload, completion: { error in
+            if let err = error{
+                print(err.localizedDescription)
+                self.refresh(nil)
+                if !self.savedProducts.isEmpty{
+                    self.checkoutBtn.isEnabled = true
+                }
+            }
+            else{
+                if !self.savedProducts.isEmpty{
+                    self.checkoutBtn.isEnabled = true
+                }
+            }
+        })
     }
     
     
@@ -450,6 +512,8 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         // Get the new view controller using segue.destination.
         // Pass the selected object to the new view controller.
         
-        
+        if let vc = segue.destination as? CheckoutVC{
+            vc.savedProducts = savedProducts
+        }
     }
 }

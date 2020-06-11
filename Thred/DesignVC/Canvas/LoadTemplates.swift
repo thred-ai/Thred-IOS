@@ -16,13 +16,16 @@ extension DesignViewController{
         if let loadedTees = UserDefaults.standard.object(forKey: "TemplateTeeIDs") as? [[String : String]]{
             for id in loadedTees{
                 guard let code = id["Code"] else{continue}
+                print(code)
                 guard let displayName = id["Display"] else{continue}
                 self.tees.append(Template(templateID: code, templateDisplayName: displayName))
             }
             completed()
         }
         else{
+            
             checkAuthStatus {
+                
                 Firestore.firestore().document("Templates/Tees").getDocument(completion: { snap, error in
                     if error != nil{
                         print(error?.localizedDescription ?? "")
@@ -34,7 +37,6 @@ extension DesignViewController{
                         for id in ids ?? []{
                             guard let code = id["Code"] else{continue}
                             guard let displayName = id["Display"] else{continue}
-                            
                             self.tees?.append(Template(templateID: code, templateDisplayName: displayName))
                         }
                         UserDefaults.standard.set(ids, forKey: "TemplateTeeIDs")

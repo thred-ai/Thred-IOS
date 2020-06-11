@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <capability name="collection view cell content view" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="2zx-Vx-a1J" customClass="ProductPicCell" customModule="Thred" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="375"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="ak5-cw-EUs">
+                <rect key="frame" x="0.0" y="0.0" width="375" height="375"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <imageView clipsSubviews="YES" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="zS9-cY-EsK">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="375"/>
+                        <color key="backgroundColor" systemColor="tertiarySystemGroupedBackgroundColor" red="0.94901960780000005" green="0.94901960780000005" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    </imageView>
+                </subviews>
+                <constraints>
+                    <constraint firstItem="zS9-cY-EsK" firstAttribute="top" secondItem="ak5-cw-EUs" secondAttribute="top" id="1dV-Vt-yi9"/>
+                    <constraint firstAttribute="bottom" secondItem="zS9-cY-EsK" secondAttribute="bottom" id="Kav-tp-hRE"/>
+                    <constraint firstAttribute="trailing" secondItem="zS9-cY-EsK" secondAttribute="trailing" id="teu-6I-F6o"/>
+                    <constraint firstItem="zS9-cY-EsK" firstAttribute="leading" secondItem="ak5-cw-EUs" secondAttribute="leading" id="tz2-ys-5Ka"/>
+                </constraints>
+            </collectionViewCellContentView>
+            <size key="customSize" width="375" height="375"/>
+            <connections>
+                <outlet property="imageView" destination="zS9-cY-EsK" id="bvM-r5-aSE"/>
+            </connections>
+            <point key="canvasLocation" x="213.768115942029" y="108.14732142857143"/>
+        </collectionViewCell>
+    </objects>
+</document>

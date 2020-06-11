@@ -14,7 +14,6 @@ class SearchProductTableViewCell: UITableViewCell{
     
     @IBOutlet weak var productImageView: UIImageView!
     @IBOutlet weak var productNameLbl: UILabel!
-    @IBOutlet weak var usernameLbl: UILabel!
     @IBOutlet weak var likesLbl: UILabel!
     @IBOutlet weak var priceLbl: UILabel!
     @IBOutlet weak var quantityView: UIStackView!
@@ -56,11 +55,18 @@ class SearchProductTableViewCell: UITableViewCell{
     }
     
     @objc func doneEditing(_ sender: UIButton){
-        quantityField.resignFirstResponder()
         guard let text = quantityField.text else{
         return}
-        savedProduct.quantity = Int(text)
-        cartVC.uploadToFirestore()
+        guard let intText = Int(text) else{return}
+        quantityField.resignFirstResponder()
+        savedProduct.quantity = intText
+        quantityField.text = "\(intText)"
+        if Int(text) == 0, let indexPath = cartVC.savedProducts.firstIndex(where: {$0.product.productID == savedProduct.product.productID}){
+            cartVC.tableView(cartVC.tableView, commit: .delete, forRowAt: IndexPath(row: indexPath, section: 0))
+        }
+        else{
+            cartVC.uploadToFirestore()
+        }
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {

@@ -11,7 +11,7 @@ import UIKit
 class ExplorePageFlowLayout: UICollectionViewFlowLayout {
 
     var canvasInfo = CanvasInfo()
-    let innerSpace: CGFloat = 0.5
+    let innerSpace: CGFloat = 2
     override init() {
         super.init()
         self.minimumLineSpacing = innerSpace

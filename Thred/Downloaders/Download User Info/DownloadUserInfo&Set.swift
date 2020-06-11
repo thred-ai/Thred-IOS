@@ -19,7 +19,7 @@ extension UITableView{
         print(uid)
         
         guard let vc = feedVC ?? fullVC ?? friendVC ?? userVC else{return}
-        vc.downloadUserInfo(uid: uid, userVC: userVC, feedVC: feedVC, downloadingPersonalDP: false, doNotDownloadDP: false, userInfoToUse: nil, queryOnUsername: false, completed: {[weak self] uid, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followersCount, followingCount in
+        vc.downloadUserInfo(uid: uid, userVC: userVC, feedVC: feedVC, downloadingPersonalDP: false, doNotDownloadDP: false, userInfoToUse: nil, queryOnUsername: false, completed: {[weak self] uid, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followersCount, followingCount, profileLink  in
             
             if username != nil{
                 if userVC != nil{
@@ -32,32 +32,31 @@ extension UITableView{
                     friendVC?.downloadingProfiles.removeAll(where: {$0 == uid})
                 }
                 
-                self?.setCellUserInfo(image: imgData, info: [uid, fullName, username, dpUID], feedVC: feedVC, userVC: userVC, friendVC: friendVC, fullVC: fullVC, section: section)
+                self?.setCellUserInfo(userInfo: UserInfo(uid: uid, dp: imgData, dpID: dpUID, username: username, fullName: fullName, bio: bio, notifID: notifID, userFollowing: userFollowing, userLiked: [], followerCount: followersCount, postCount: postCount, followingCount: followingCount, usersBlocking: usersBlocking, profileLink: profileLink), feedVC: feedVC, userVC: userVC, friendVC: friendVC, fullVC: fullVC, section: section)
             }
         })
     }
     
     
-    func setCellUserInfo(image: Data?, info: [String?], feedVC: FeedVC?, userVC: UserVC?, friendVC: FriendVC?, fullVC: FullProductVC?, section: Int){
+    func setCellUserInfo(userInfo: UserInfo, feedVC: FeedVC?, userVC: UserVC?, friendVC: FriendVC?, fullVC: FullProductVC?, section: Int){
         
-        guard let uid = info[0] else{return}
-        let fullname = info[1]
-        let username = info[2]
-        let dpUID = info[3]
-        
+        guard
+            let uid = userInfo.uid,
+            let fullname = userInfo.fullName,
+            let username = userInfo.username,
+            let image = userInfo.dp
+        else{ return }
 
-        let sameIDs = userVC?.loadedProducts.filter({$0.uid == uid}) ?? feedVC?.loadedProducts.filter({$0.uid == uid}) ?? friendVC?.loadedProducts.filter({$0.uid == uid})
+        let sameIDs = userVC?.loadedProducts.filter({$0.userInfo.uid == uid}) ?? feedVC?.loadedProducts.filter({$0.userInfo.uid == uid}) ?? friendVC?.loadedProducts.filter({$0.userInfo.uid == uid})
         for sameID in sameIDs ?? []{
-            sameID.username = username
-            sameID.fullName = fullname
-            sameID.userImageID = dpUID
+            sameID.userInfo = userInfo
         }
         NoProductsLoaded:
         
         if feedVC != nil{
             guard let loadedProducts = feedVC?.loadedProducts else{break NoProductsLoaded}
 
-            if !(loadedProducts.contains(where: {$0.fullName == nil && $0.username == nil})){
+            if !(loadedProducts.contains(where: {$0.userInfo.fullName == nil && $0.userInfo.username == nil})){
                 //feedVC?.removeFile(withName: "CachedFeedProducts")
                 loadedProducts.saveAllObjects(type: "FeedProducts")
             }
@@ -74,17 +73,12 @@ extension UITableView{
             DispatchQueue.main.async {
                 if let mainProductCell = self.cellForRow(at: IndexPath(row: 0, section: 0)) as? ProductCell{
                     
-                    if let user = username, let full = fullname{
-                        fullVC?.fullProduct.fullName = full
-                        fullVC?.fullProduct.username = username
-                        mainProductCell.username.text = "@" + user
-                        mainProductCell.fullName.text = full
-                        mainProductCell.removeLabelLoad()
-                    }
-                    if let img = image{
-                        mainProductCell.userImage.image = UIImage(data: img)
-                        mainProductCell.removeDpLoad()
-                    }
+                    fullVC?.fullProduct.userInfo = userInfo
+                    mainProductCell.username.text = "@" + username
+                    mainProductCell.fullName.text = fullname
+                    mainProductCell.removeLabelLoad()
+                    mainProductCell.userImage.image = UIImage(data: image)
+                    mainProductCell.removeDpLoad()
                 }
             }
         }
@@ -97,13 +91,20 @@ extension UITableView{
             
             if let indices = indexPathsForVisibleRows{
                 for index in indices{
-                    if products[index.row].uid == uid{
+                    if products[index.row].userInfo.uid == uid{
                         if let cell = cellForRow(at: index){
                             switch cell{
                             case let c as ProductCell:
                                 c.fullName.text = fullname
                                 c.username.text = "@" + (username ?? "null")
                                 c.removeLabelLoad()
+                                if let designCell = c.collectionView.cellForItem(at: IndexPath(item: 1, section: 0)) as? ProductDesignCell{
+                                    if let username = username{
+                                        designCell.usernameLbl.text = "@\(username)"
+                                        designCell.usernameLbl.removeShadow()
+                                        designCell.usernameLbl.setRadiusWithShadow()
+                                    }
+                                }
                                 if let img = image{
                                     c.userImage.image = UIImage(data: img)
                                     c.removeDpLoad()
@@ -124,7 +125,6 @@ extension UITableView{
 
 extension UITableViewCell{
     
-    
     func removeLabelLoad(){
         if let c = self as? ProductCell{
             c.nameSkeletonView.stopAnimating()
@@ -141,7 +141,7 @@ extension UITableViewCell{
 
 
 extension UIViewController{
-    func downloadUserInfo(uid: String?, userVC: UserVC?, feedVC: FeedVC?, downloadingPersonalDP: Bool, doNotDownloadDP: Bool, userInfoToUse: UserInfo?, queryOnUsername: Bool, completed: @escaping (String?, String?, String?, String?, String?, String?, Data?, [String], [String], Int, Int, Int) -> ()){
+    func downloadUserInfo(uid: String?, userVC: UserVC?, feedVC: FeedVC?, downloadingPersonalDP: Bool, doNotDownloadDP: Bool, userInfoToUse: UserInfo?, queryOnUsername: Bool, completed: @escaping (String?, String?, String?, String?, String?, String?, Data?, [String], [String], Int, Int, Int, URL?) -> ()){
         
         let ref = Firestore.firestore().collection("Users")
 
@@ -164,13 +164,13 @@ extension UIViewController{
         query.getDocuments(){(querySnaps, err) in
             if err != nil{
                 print("Error getting documents: \(err?.localizedDescription ?? "")") // LOCALIZED DESCRIPTION OF ERROR
-                completed(nil, nil, nil, nil, nil, nil, userInfoToUse?.dp ?? defaultDP, [], [], 0, 0, 0)
+                completed(nil, nil, nil, nil, nil, nil, userInfoToUse?.dp ?? defaultDP, [], [], 0, 0, 0, nil)
                 return
             }
             else{
                 
                 guard let snapDocs = querySnaps?.documents, !snapDocs.isEmpty else{
-                    completed(nil, nil, nil, nil, nil, nil, userInfoToUse?.dp ?? defaultDP, [], [], 0, 0, 0)
+                    completed(nil, nil, nil, nil, nil, nil, userInfoToUse?.dp ?? defaultDP, [], [], 0, 0, 0, nil)
                     return
                 }
                 
@@ -185,14 +185,15 @@ extension UIViewController{
                     let followerCount = (document["Followers_Count"] as? Int) ?? 0
                     let followingCount = (document["Following_Count"] as? Int) ?? 0
                     let postCount = (document["Posts_Count"] as? Int) ?? 0
+                    let profileLink = URL(string: (document["ProfileLink"] as? String) ?? "")
+                    
                     if userInfo.usersBlocking.contains(document.documentID){
-                        completed(document.documentID, fullName, username, nil, notifID, bio, nil, userFollowing, usersBlocking, postCount, followerCount, followingCount)
+                        completed(document.documentID, fullName, username, nil, notifID, bio, nil, userFollowing, usersBlocking, postCount, followerCount, followingCount, profileLink)
                         return
                     }
                     
-                    
                     if doNotDownloadDP{
-                        completed(document.documentID, fullName, username, nil, notifID, bio, nil, userFollowing, usersBlocking, postCount, followerCount, followingCount)
+                        completed(document.documentID, fullName, username, nil, notifID, bio, nil, userFollowing, usersBlocking, postCount, followerCount, followingCount, profileLink)
                         return
                     }
                     var options = SDWebImageOptions(arrayLiteral: [.scaleDownLargeImages, .continueInBackground])
@@ -204,11 +205,11 @@ extension UIViewController{
                     }
                     
                     if let image = cache.imageFromCache(forKey: dpUID){
-                        completed(document.documentID, fullName, username, dpUID, notifID, bio, image.jpegData(compressionQuality: 1.0), userFollowing, usersBlocking, postCount, followerCount, followingCount)
+                        completed(document.documentID, fullName, username, dpUID, notifID, bio, image.jpegData(compressionQuality: 1.0), userFollowing, usersBlocking, postCount, followerCount, followingCount, profileLink)
                         return
                     }
                     else{
-                        completed(document.documentID, fullName, username, dpUID, notifID, bio, nil, userFollowing, usersBlocking, postCount, followerCount, followingCount)
+                        completed(document.documentID, fullName, username, dpUID, notifID, bio, nil, userFollowing, usersBlocking, postCount, followerCount, followingCount, profileLink)
                     }
                     storageRef?.downloadURL(completion: { url, error in
                         if error != nil{
@@ -227,7 +228,7 @@ extension UIViewController{
                                             if userVC != nil || feedVC != nil{
                                                 cache.storeImageData(toDisk: imgData, forKey: dpUID)
                                             }
-                                            completed(document.documentID, fullName, username, dpUID, notifID, bio, data, userFollowing, usersBlocking, postCount, followerCount, followingCount)
+                                            completed(document.documentID, fullName, username, dpUID, notifID, bio, data, userFollowing, usersBlocking, postCount, followerCount, followingCount, profileLink)
                                         }
                                     }
                                 }

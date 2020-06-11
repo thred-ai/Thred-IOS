@@ -12,6 +12,8 @@ import SDWebImage
 import Firebase
 import FirebaseFirestore
 
+var uploadingComments = [String]()
+
 class Comment{
     
     
@@ -59,12 +61,13 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
         guard let text = textView.text, !text.isEmpty else{return}
         sender.isEnabled = false
         guard let uid = userInfo.uid else{return}
-        let commentInServer = Firestore.firestore().collection("Users/" + post.uid + "/Products/" + post.productID + "/Comments").document()
+        guard let postUID = post.userInfo.uid else{return}
+        let commentInServer = Firestore.firestore().collection("Users/" + postUID + "/Products/" + post.productID + "/Comments").document()
 
         let data = [
             
             "product_id" : post.productID,
-            "creator_uid" : post.uid,
+            "creator_uid" : postUID,
             "uid" : uid,
             "is_adding" : true,
             "message" : text,
@@ -75,6 +78,7 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
         
         let comment = Comment(timestamp: Date(), message: text, commentID: commentInServer.documentID, userInfo: userInfo)
         self.comments.insert(comment, at: 0)
+        uploadingComments.append(commentInServer.documentID)
         let indexPath = IndexPath(row: 0, section: 0)
         tableView.performBatchUpdates({
             tableView.insertRows(at: [indexPath], with: .none)
@@ -83,11 +87,7 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
                 self.tableView.scrollToRow(at: indexPath, at: .top, animated: true)
             }
         })
-        if let attr = textView.attributedText.mutableCopy() as? NSMutableAttributedString{
-            attr.removeAttribute(NSAttributedString.Key.link, range: NSMakeRange(0, attr.length))
-            attr.setAttributes([NSAttributedString.Key.font : UIFont(name: "NexaW01-Regular", size: textView.font?.pointSize ?? 15)!, NSAttributedString.Key.foregroundColor : ColorCompatibility.secondaryLabel], range: NSMakeRange(0, attr.length))
-            textView.attributedText = attr
-        }
+        
         
         textView.text.removeAll()
         textViewDidChange(textView)
@@ -96,6 +96,12 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
         
         checkAuthStatus {
             Functions.functions().httpsCallable("updateComment").call(data, completion: { result, error in
+                uploadingComments.removeAll(where: {$0 == commentInServer.documentID})
+                if let index = self.comments.firstIndex(where: {$0.commentID == commentInServer.documentID}){
+                    self.tableView.performBatchUpdates({
+                        self.tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
+                    }, completion: nil)
+                }
                 if let err = error{
                     print(err.localizedDescription)
                 }
@@ -190,13 +196,14 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
     func getComments(isRefreshing: Bool, completed: @escaping () -> ()){
         
         var query: Query! = nil
-        
+        guard let postUID = post.userInfo.uid else{completed(); return}
+
         if isRefreshing{
-            query = Firestore.firestore().collection("Users").document(post.uid).collection("Products/\(post.productID)/Comments").limit(to: 15).order(by: "Timestamp", descending: false)
+            query = Firestore.firestore().collection("Users").document(postUID).collection("Products/\(post.productID)/Comments").limit(to: 15).order(by: "Timestamp", descending: false)
         }
         else{
             guard let last = lastDocument else{return}
-            query = Firestore.firestore().collection("Users").document(post.uid).collection("Products/\(post.productID)/Comments").limit(to: 15).order(by: "Timestamp", descending: false).start(afterDocument: last)
+            query = Firestore.firestore().collection("Users").document(postUID).collection("Products/\(post.productID)/Comments").limit(to: 15).order(by: "Timestamp", descending: false).start(afterDocument: last)
         }
         query.getDocuments(completion: { (snapDocuments, err) in
             if let err = err {
@@ -220,7 +227,7 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
                         }
                         let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
                         let message = snap["Message"] as? String
-                        let userInfo = UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [])
+                        let userInfo = UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil)
                         
                         self.comments.append(Comment(timestamp: timestamp, message: message, commentID: snap.documentID, userInfo: userInfo))
                         
@@ -260,6 +267,7 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
             cell?.fullNameLbl.text = nil
             cell?.usernameLbl.text = nil
             cell?.profilePicture.image = nil
+            cell?.spinner.isHidden = true
             if let attr = cell?.messageView.attributedText.mutableCopy() as? NSMutableAttributedString{
                 attr.removeAttribute(NSAttributedString.Key.link, range: NSMakeRange(0, attr.length))
                 attr.setAttributes([NSAttributedString.Key.font : UIFont(name: "NexaW01-Regular", size: cell?.messageView.font?.pointSize ?? 16)!], range: NSMakeRange(0, attr.length))
@@ -276,6 +284,10 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
 
             if comment.userInfo.usersBlocking.contains(userUID){
                 cell?.alpha = 0.2
+            }
+            if uploadingComments.contains(comment.commentID){
+                cell?.spinner.isHidden = false
+                cell?.spinner.animate()
             }
             
             if comment.userInfo.username != nil{
@@ -312,7 +324,7 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
                 default:
                     if !downloadingProfiles.contains(uid){
                         downloadingProfiles.append(uid)
-                        self.downloadUserInfo(uid: uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: false, userInfoToUse: comment.userInfo, queryOnUsername: false, completed: { uid, fullName, username, dpUID, notifID, bio, img, userFollowing, usersBlocking, postCount, followersCount, followingCount in
+                        self.downloadUserInfo(uid: uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: false, userInfoToUse: comment.userInfo, queryOnUsername: false, completed: { uid, fullName, username, dpUID, notifID, bio, img, userFollowing, usersBlocking, postCount, followersCount, followingCount, profileLink  in
                             self.downloadingProfiles.removeAll(where: {$0 == uid})
                             
                             if usersBlocking.contains(userUID){
@@ -327,6 +339,7 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
                             comment.userInfo.postCount = postCount
                             comment.userInfo.followerCount = followersCount
                             comment.userInfo.followingCount = followingCount
+                            comment.userInfo.profileLink = profileLink
 
                             cell?.fullNameLbl.text = fullName ?? "null"
                             cell?.usernameLbl.text = "@\(username ?? "null")"
@@ -451,7 +464,6 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
     func textViewDidChange(_ textView: UITextView) {
         placeholderLabel.isHidden = !textView.text.isEmpty
         
-        textView.addLinks(isNotification: false)
         let check = (self.view.frame.height - self.view.frame.height / 2) - (textView.sizeThatFits(CGSize(width: initialWidth, height: CGFloat.greatestFiniteMagnitude)).height)
         print(check)
         if check > 100{
@@ -488,11 +500,6 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
 
         if let lastText = textView.text.components(separatedBy: " ").last{
             if lastText.starts(with: "@"){
-                if let attr = textView.attributedText.mutableCopy() as? NSMutableAttributedString{
-                    attr.removeAttribute(NSAttributedString.Key.link, range: NSMakeRange(0, attr.length))
-                    attr.setAttributes([NSAttributedString.Key.font : UIFont(name: "NexaW01-Regular", size: textView.font?.pointSize ?? 15)!, NSAttributedString.Key.foregroundColor : ColorCompatibility.secondaryLabel], range: NSMakeRange(0, attr.length))
-                    textView.attributedText = attr
-                }
                 let username = String(lastText.dropFirst())
                 searchTaggingView(searchText: username)
             }
@@ -560,12 +567,13 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
                                 let followingCount = document["Following_Count"] as? Int
                                 let postCount = document["Posts_Count"] as? Int
                                 let usersBlocking = document["Users_Blocking"] as? [String]
-                                
+                                let profileLink = URL(string: (document["ProfileLink"] as? String) ?? "")
+
                                 if usersBlocking?.contains(userUID) ?? false{
                                     continue
                                 }
                                 
-                                let user = UserInfo(uid: uid, dp: nil, dpID: dpLink, username: username, fullName: fullname, bio: bio, notifID: nil, userFollowing: userFollowing ?? [], userLiked: [], followerCount: followerCount ?? 0, postCount: postCount ?? 0, followingCount: followingCount ?? 0, usersBlocking: usersBlocking ?? [])
+                                let user = UserInfo(uid: uid, dp: nil, dpID: dpLink, username: username, fullName: fullname, bio: bio, notifID: nil, userFollowing: userFollowing ?? [], userLiked: [], followerCount: followerCount ?? 0, postCount: postCount ?? 0, followingCount: followingCount ?? 0, usersBlocking: usersBlocking ?? [], profileLink: profileLink)
 
                                 self.loadedUsers.append(user)
                                 self.taggingTableView.reloadData()
@@ -661,7 +669,6 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
                 textView.text.append("\(component) ")
             }
         }
-        textView.addLinks(isNotification: false)
     }
     
     func resetTaggingTableView(){
@@ -695,7 +702,7 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         
         if tableView == self.tableView{
-            if self.comments[indexPath.row].userInfo.uid == userInfo.uid || self.post.uid == userInfo.uid{
+            if self.comments[indexPath.row].userInfo.uid == userInfo.uid || self.post.userInfo.uid == userInfo.uid{
                 return true
             }
         }
@@ -721,11 +728,12 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
         
         guard let commentUID = comment.userInfo.uid else{return}
         guard let commentID = comment.commentID else{return}
+        guard let postUID = post.userInfo.uid else{return}
 
         let data = [
             
             "product_id" : post.productID,
-            "creator_uid" : post.uid,
+            "creator_uid" : postUID,
             "uid" : commentUID,
             "message" : message,
             "is_adding" : false,

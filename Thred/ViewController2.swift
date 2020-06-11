@@ -57,6 +57,9 @@ class ViewController2: UIViewController, WKNavigationDelegate {
         }
     }
     
+    func checkOut(){
+        
+    }
     
     func stripeAccountAuth(code: String){
         

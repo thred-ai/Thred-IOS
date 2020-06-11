@@ -14,6 +14,7 @@ import ColorCompatibility
 import SwiftyDraw
 import ColorSlider
 import AVKit
+import PopupDialog
 
 
 public enum LabelStyle {
@@ -26,6 +27,7 @@ public enum LabelStyle {
     case thriller
     case subway
 }
+
 
 class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDelegate, UIGestureRecognizerDelegate, UITextFieldDelegate, SwiftyDrawViewDelegate, UICollectionViewDelegate, UICollectionViewDataSource {
     
@@ -43,6 +45,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     @IBOutlet weak var titleView: UITextField!
     @IBOutlet weak var nextBtn: UIBarButtonItem!
     @IBOutlet weak var priceView: UITextField!
+    @IBOutlet weak var profitLbl: UILabel!
     
     var currentItemIndex: Int! = 0
     
@@ -59,8 +62,10 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     }
     
     
+    
     @IBAction func doneDesigning(_ sender: UIBarButtonItem) {
         
+        sender.isEnabled = false
         let canPost = canPostDesign()
         if canPost.0{
             if isEditingProduct{
@@ -81,7 +86,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
                             product.caption = descriptionView.text
                             product.uid = userInfo.uid
                             product.name = titleView.text
-                            product.display = displayView.makeSnapshot(clear: true, subviewsToIgnore: [zoomBtn, cell.colorDisplayLabel, thredWatermark])?.jpegData(compressionQuality: 0.5)
+                            product.display = displayView.makeSnapshot(clear: true, subviewsToIgnore: [zoomBtn, cell.colorDisplayLabel, thredWatermark])?.withBackground(color: UIColor(red: 0.949, green: 0.949, blue: 0.969, alpha: 1.0))?.jpegData(compressionQuality: 0.5)
                             product.templateColor = tees[indexPath.item].templateID
                             product.price = decimalPrice * 100
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -90,6 +95,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
                         }
                     }
                 }
+                sender.isEnabled = true
             }
         }
         else{
@@ -126,10 +132,11 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         return carousel
     }()
     
+    var toolCollectionView: UICollectionView!
     
     lazy var drawToolBar: UIStackView = {
         
-        let stack = UIStackView(frame: CGRect(x: 10, y: 5, width: view.frame.width - 20, height: 35))
+        let stack = UIStackView(frame: CGRect(x: 10, y: 5, width: view.frame.width - 40, height: 35))
         
         stack.axis = .horizontal
         stack.distribution = .fill
@@ -137,44 +144,39 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
             ColorCompatibility.systemBackground
         stack.spacing = 10
         
-        slider = ColorSlider(orientation: .horizontal, previewSide: .top)
-        slider.gradientView.layer.borderColor = UIColor(named: "LoadingColor")?.cgColor
-        slider.addTarget(self, action: #selector(colorChanged(_:)), for: .valueChanged)
-        slider.color = .cyan
         
-        let btnFrame = CGRect(x: 0, y: 0, width: stack.frame.height, height: stack.frame.height)
+        toolCollectionView = UICollectionView.init(frame: CGRect(x: 5, y: 0, width: stack.frame.width - stack.frame.height, height: stack.frame.height), collectionViewLayout: DrawToolsLayout())
+        toolCollectionView.backgroundColor = ColorCompatibility.systemBackground
+        toolCollectionView.showsHorizontalScrollIndicator = false
+        toolCollectionView.alwaysBounceHorizontal = true
+        toolCollectionView.alwaysBounceVertical = false
+        toolCollectionView.allowsSelection = false
+        toolCollectionView.layer.cornerRadius = toolCollectionView.frame.height / 2
+        toolCollectionView.clipsToBounds = true
+        toolCollectionView.delegate = self
+        toolCollectionView.dataSource = self
         
-        done = UIButton(frame: btnFrame)
-        done.tintColor = UIColor(named: "LoadingColor")
+        toolCollectionView.register(UINib(nibName: "DrawToolsCell", bundle: nil), forCellWithReuseIdentifier: "DrawToolsCell")
+        
+        done = UIButton(frame: CGRect(x: 0, y: 0, width: stack.frame.height, height: stack.frame.height))
         done.addTarget(self, action: #selector(closeDrawCanvas(_:)), for: .touchUpInside)
-        done.setImage(UIImage(nameOrSystemName: "checkmark.circle", systemPointSize: 25, iconSize: 9), for: .normal)
-
-        
-        undo = UIButton(frame: btnFrame)
-        undo.tintColor = UIColor(named: "LoadingColor")
-        undo.addTarget(self, action: #selector(undoColors(_:)), for: .touchUpInside)
-        undo.setImage(UIImage(nameOrSystemName: "arrow.uturn.left.circle", systemPointSize: 25, iconSize: 9), for: .normal)
-        
-        brushBtn = UIButton(frame: btnFrame)
-        brushBtn.tintColor = UIColor(named: "LoadingColor")
-        brushBtn.addTarget(self, action: #selector(switchBrush(_:)), for: .touchUpInside)
-        brushBtn.setImage(UIImage(nameOrSystemName: "pencil.circle", systemPointSize: 25, iconSize: 9), for: .normal)
-        brushBtn.isEnabled = true
-        
-        stack.addArrangedSubview(brushBtn)
-        stack.addArrangedSubview(slider)
-        stack.addArrangedSubview(undo)
+        done.setTitle("Done", for: .normal)
+        done.setTitleColor(ColorCompatibility.secondaryLabel, for: .normal)
+        done.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
+        stack.addArrangedSubview(toolCollectionView)
         stack.addArrangedSubview(done)
         
         return stack
     }()
     
     
-    
     var undo: UIButton!
     var brushBtn: UIButton!
     var done: UIButton!
+    var clear: UIButton!
+    var redo: UIButton!
     var slider: ColorSlider!
+    
     var garbageBtn: UIButton!
     var activeLbl: CanvasTextView?
     
@@ -264,9 +266,9 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
             activeLbl = textView
             editingTransform = textView.transform
             editingCenter = textView.center
-            if let identifier = textView.accessibilityIdentifier{
-                if !(identifier.isEmpty){
-                    textView.text = identifier
+            if let text = textView.textToStore{
+                if !(text.isEmpty){
+                    textView.text = text
                 }
             }
             textStyleBtn.superview?.isHidden = false
@@ -378,10 +380,8 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     var textEditInfo = [[String: Any]]()
     var editingTransform: CGAffineTransform!
     var editingCenter: CGPoint!
-    
-    
     var keyboardHeight: CGFloat!
-    
+
     
     
     func textViewDidChange(_ textView: UITextView) {
@@ -395,7 +395,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
             let size = textView.sizeThatFits(CGSize(width: canvas.frame.width, height: CGFloat.greatestFiniteMagnitude))
             textView.center.x = canvas.center.x
             if keyboardHeight != nil{
-                textView.accessibilityIdentifier = textView.text
+                (textView as? CanvasTextView)?.textToStore = textView.text
                 UIView.animate(withDuration: 0.1, animations: {
                     let resizedY = (self.view.frame.height - self.keyboardHeight - size.height) - self.view.safeAreaInsets.top
                     
@@ -428,7 +428,6 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         }
     }
     
-    var hoodies = [Data]()
     var tees: [Template]! = [Template]()
     
     @IBOutlet weak var displayView: UIView!
@@ -485,6 +484,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         view.backgroundColor = UIColor(named: tees[currentItemIndex].templateID)
         view.clipsToBounds = true
         let tapper = UITapGestureRecognizer(target: self, action: #selector(addLabel(_:)))
+        tapper.delegate = self
         view.addGestureRecognizer(tapper)
         exitTapper = UITapGestureRecognizer(target: self, action: #selector(exitPhotosTap(_:)))
         view.addGestureRecognizer(exitTapper)
@@ -496,11 +496,17 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         drawCanvas.brush.color = Color(.cyan)
         drawCanvas.isUserInteractionEnabled = false
         drawCanvas.addSubview(brushCircle)
-        drawCanvas.addSubview(drawTopToolBar)
         brushCircle.isHidden = true
-        drawTopToolBar.isHidden = true
         let gesture = UIPinchGestureRecognizer(target: self, action: #selector(changeBrushSize(_:)))
         drawCanvas.addGestureRecognizer(gesture)
+        
+        slider = ColorSlider(orientation: .vertical, previewSide: .right)
+        slider.frame = CGRect(x: 10, y: 10, width: 15, height: 250)
+        slider.gradientView.layer.borderColor = UIColor(named: "LoadingColor")?.cgColor
+        slider.addTarget(self, action: #selector(colorChanged(_:)), for: .valueChanged)
+        slider.color = .cyan
+        drawCanvas.addSubview(slider)
+        slider.isHidden = true
         
         lineTypeView = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
         let lineImageView = UIImageView(frame: CGRect(x: 0, y: 0, width: lineTypeView.frame.width, height: lineTypeView.frame.height))
@@ -511,18 +517,19 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         
         
         
-        
         if #available(iOS 13.0, *) {
             lineTypeView.addBackgroundBlur(blurEffect: UIBlurEffect(style: UIBlurEffect.Style.systemUltraThinMaterial))
         } else {
             lineTypeView.addBackgroundBlur(blurEffect: UIBlurEffect(style: UIBlurEffect.Style.regular))
         }
         
+ 
         
         lineTypeView.tintColor = UIColor.cyan
         lineTypeView.layer.cornerRadius = lineTypeView.frame.height / 8
         lineTypeView.clipsToBounds = true
         drawCanvas.addSubview(lineTypeView)
+        
         
         let lineWidth: CGFloat = 1
         midXLine = UIView.init(frame: CGRect(x: 0, y: 0, width: lineWidth, height: view.frame.height))
@@ -678,7 +685,6 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         doneBtn.setTitleColor(UIColor(named: "LoadingColor")?.withAlphaComponent(0.5), for: .disabled)
         doneBtn.setTitleColor(UIColor(named: "LoadingColor"), for: .normal)
         doneBtn.addTarget(self, action: #selector(minimizeDrawingArea(_:)), for: .touchUpInside)
-        
 
         cameraBtn.setImage(UIImage(nameOrSystemName: "camera.fill", systemPointSize: 20, iconSize: 9), for: .normal)
         photosBtn.setImage(UIImage(nameOrSystemName: "photo.fill", systemPointSize: 20, iconSize: 9), for: .normal)
@@ -696,31 +702,171 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         return view
     }()
     
+    var tools = [
+        
+        [
+            "Name" : "Pen",
+            "Icon_Color" : UIColor(named: "LoadingColor")!,
+            "Image" : UIImage(nameOrSystemName: "pencil.circle", systemPointSize: 25, iconSize: 9)!,
+        ],
+        
+        [
+            "Name" : "Pen_Color",
+            "Icon_Color" : UIColor.cyan,
+            "Image" : UIImage(nameOrSystemName: "largecircle.fill.circle", systemPointSize: 25, iconSize: 9)!,
+        ],
+        
+        [
+            "Name" : "Redo",
+            "Icon_Color" : UIColor(named: "LoadingColor")!,
+            "Image" : UIImage(nameOrSystemName: "arrow.uturn.right.circle", systemPointSize: 25, iconSize: 9)!,
+        ],
+        
+        [
+            "Name" : "Undo",
+            "Icon_Color" : UIColor(named: "LoadingColor")!,
+            "Image" : UIImage(nameOrSystemName: "arrow.uturn.left.circle", systemPointSize: 25, iconSize: 9)!,
+        ],
+        
+        [
+            "Name" : "Clear",
+            "Icon_Color" : UIColor(named: "LoadingColor")!,
+            "Image" : UIImage(nameOrSystemName: "xmark.circle", systemPointSize: 25, iconSize: 9)!,
+        ],
+        
+        [
+            "Name" : "Ruler",
+            "Icon_Color" : UIColor(named: "LoadingColor")!,
+            "Image" : UIImage(named: "scribble.mode")!
+        ]
+        
+    ]
+    
+    func showClearMessage(){
+        let message = "Are you sure you want to clear your drawing?"
+        let yesBtn = DefaultButton(title: "YES", dismissOnTap: true) {
+            self.drawCanvas.clear()
+        }
+        let cancelBtn = DefaultButton(title: "NEVER MIND", dismissOnTap: true) {
+        }
+        
+        showPopUp(title: nil, message: message, image: nil, buttons: [yesBtn, cancelBtn], titleColor: .label)
+    }
     
     
+
     
+    func clearDrawing(){
+        
+        if drawCanvas.lines.count >= 3{
+            showClearMessage()
+        }
+        else{
+            drawCanvas.clear()
+        }
+    }
     
+    func redoColors(){
+        drawCanvas.redo()
+    }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return self.tees.count
+        if collectionView == toolCollectionView{
+            return tools.count
+        }
+        return tees.count
+    }
+    
+    func updateToolIcons(tool: inout [String : Any]){
+        if (tool["Name"] as? String) == "Ruler"{
+            if drawCanvas.shouldDrawStraight{
+                tool["Image"] = UIImage(named: "straight.mode")
+            }
+            else{
+                tool["Image"] = UIImage(named: "scribble.mode")
+            }
+        }
+        else if tool["Name"] as? String == "Pen"{
+            if drawCanvas.brush.blendMode == .clear{
+                tool["Image"] = UIImage(named: "eraser")
+            }
+            else{
+                tool["Image"] = UIImage(nameOrSystemName: "pencil.circle", systemPointSize: 25, iconSize: 9)
+            }
+        }
+        else if tool["Name"] as? String == "Pen_Color"{
+            if slider.isHidden{
+                tool["Icon_Color"] = slider.color
+            }
+            else{
+                tool["Icon_Color"] = slider.color.withAlphaComponent(0.5)
+            }
+        }
+    }
+    
+    func showOrHideSlider(_ sender: UIButton?){
+        if slider.isHidden{
+            self.slider.isHidden = false
+            UIView.animate(withDuration: 0.2, animations: {
+                self.slider.transform = CGAffineTransform.identity
+            })
+            if let sender = sender{
+                sender.tintColor = slider.color.withAlphaComponent(0.5)
+            }
+            else if let index = tools.firstIndex(where: {$0["Name"] as? String == "Pen_Color"}){
+                tools[index]["Icon_Color"] = slider.color.withAlphaComponent(0.5)
+                if let cell = toolCollectionView?.cellForItem(at: IndexPath(item: index, section: 0)) as? DrawToolsCell{
+                    cell.toolBtn.tintColor = slider.color.withAlphaComponent(0.5)
+                }
+            }
+            
+        }
+        else{
+            UIView.animate(withDuration: 0.2, animations: {
+                self.slider.transform = CGAffineTransform(translationX: -(self.slider.frame.minX + self.slider.frame.width), y: 0)
+            }, completion: { finished in
+                if finished{
+                    self.slider.isHidden = true
+                }
+            })
+            if let sender = sender{
+                sender.tintColor = slider.color
+            }
+            else if let index = tools.firstIndex(where: {$0["Name"] as? String == "Pen_Color"}){
+                tools[index]["Icon_Color"] = slider.color
+                if let cell = toolCollectionView?.cellForItem(at: IndexPath(item: index, section: 0)) as? DrawToolsCell{
+                    cell.toolBtn.tintColor = slider.color
+                }
+            }
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
-        let tee = self.tees[indexPath.item]
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "color_icon", for: indexPath) as? TemplateColorChooserCell
-        cell?.colorView.backgroundColor = nil
-        
-        cell?.colorView.backgroundColor = UIColor(named: tee.templateID)
-        
-        return cell!
+        if collectionView == toolCollectionView{
+            var tool = self.tools[indexPath.item]
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DrawToolsCell", for: indexPath) as? DrawToolsCell
+            cell?.vc = self
+            updateToolIcons(tool: &tool)
+            cell?.tool = tool
+            return cell!
+        }
+        else{
+            let tee = self.tees[indexPath.item]
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "color_icon", for: indexPath) as? TemplateColorChooserCell
+            cell?.colorView.backgroundColor = nil
+            if let color = UIColor.init(named: tee.templateID){
+                
+                cell?.colorView.backgroundColor = color
+            }
+            
+            return cell!
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath) -> Bool {
         if collectionView.indexPathsForSelectedItems?.contains(indexPath) ?? false{
             collectionView.deselectItem(at: indexPath, animated: true)
-            
-
             return false
         }
         else{
@@ -729,7 +875,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        carousel.collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
+        carousel.collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: false)
     }
     
     
@@ -744,6 +890,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         
         if textField == priceView && textField.text == minimumPrice{
             textField.text?.removeAll()
+            profitLbl.text = "Profit (per. shirt): $0.00"
         }
     }
     
@@ -787,40 +934,15 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
                         textField.text?.append(contentsOf: ".00")
                     }
                 }
+                profitLbl.text = "Profit (per. shirt): \(Double(0.90 * (price - minPrice)).formatPrice())"
             }
             else{
                 textField.text = minimumPrice
+                profitLbl.text = "Profit (per. shirt): $0.00"
             }
         }
     }
 
-    
-    lazy var drawTopToolBar: UIView = {
-        let view = UIView.init(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: 45))
-        view.backgroundColor = .clear
-        
-        let stack = UIStackView(frame: CGRect(x: 0, y: 5, width: 110, height: 35))
-        stack.center.x = view.center.x
-        stack.axis = .horizontal
-        stack.distribution = .fill
-        let color = UIColor(named: "LoadingColor")
-        stack.spacing = 10
-        view.addSubview(stack)
-        let button = UIButton.init(frame: CGRect(x: 5, y: 5, width: 90, height: 35))
-        button.backgroundColor = UIColor.black.withAlphaComponent(0.5)
-        button.setTitle("Scribble", for: .normal)
-        button.setTitleColor(color, for: .normal)
-        button.layer.cornerRadius = button.frame.height / 2
-        button.clipsToBounds = true
-        button.layer.borderWidth = 3
-        button.layer.borderColor = color?.cgColor
-        button.showsTouchWhenHighlighted = true
-        button.addTarget(self, action: #selector(activateStraightLine(_:)), for: .touchUpInside)
-        stack.addArrangedSubview(button)
-        
-        button.setRadiusWithShadow()
-        return view
-    }()
     
     @IBOutlet weak var saveBtn: UIButton!
    
@@ -892,6 +1014,13 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
             spinner.center.y = displayView.center.y
             spinner.animate()
             
+            if !UserDefaults.standard.bool(forKey: "bank_confirm"){
+                UserDefaults.standard.set(true, forKey: "bank_confirm")
+                showBankConfirmationMessage {
+                    
+                }
+            }
+            
             loadDesigns(){
                 DispatchQueue.main.async {
                     spinner.removeFromSuperview()
@@ -906,6 +1035,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
                     self.view.addSubview(self.bottomSafeAreaView)
                     self.bottomSafeAreaView.isHidden = true
                     self.bottomBar.addSubview(self.drawToolBar)
+                    self.toolCollectionView.reloadData()
                     self.drawToolBar.isHidden = true
                     self.displayView.addSubview(self.zoomBtn)
                     self.zoomBtn.frame.origin = CGPoint(x: 5, y: self.displayView.frame.maxY - self.zoomBtn.frame.height - 5)
@@ -918,6 +1048,20 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         }
     }
     
+    func showBankConfirmationMessage(completed: @escaping () -> ()){
+        
+
+        let title = "Merchant Account"
+        let message = "In order to earn money from Thred, a merchant account must be set up in account settings. Any sales made without this will not be debited into your bank account."
+        let titleColor = UIColor.label
+        
+        let yesBtn = DefaultButton(title: "I UNDERSTAND", dismissOnTap: true) {
+            completed()
+        }
+
+        showPopUp(title: title, message: message, image: nil, buttons: [yesBtn], titleColor: titleColor)
+    }
+    
     @objc func textFieldDidChange(_ textField: UITextField){
         if textField.text?.replacingOccurrences(of: " ", with: "").isEmpty ?? false{
             nextBtn.isEnabled = false
@@ -927,9 +1071,34 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         }
     }
     
+    func showCancelMessage(completed: @escaping () -> ()){
+        
+        guard let indexPath = carousel.collectionView.indexPathsForVisibleItems.first, let cell = carousel.collectionView.cellForItem(at: indexPath) as? CarouselCollectionViewCell, (product == nil && cell.canvasDisplayView.image != nil), let titleText = titleView.text
+        else{
+            completed()
+            return
+        }
+        var title = ""
+        if !titleText.isEmpty{
+            title = #""\#(titleText)""#
+        }
+        
+        let message = "Are you sure you want to abandon your Thred-in-progress?"
+        let yesBtn = DefaultButton(title: "YES", dismissOnTap: true) {
+            completed()
+        }
+        let cancelBtn = DefaultButton(title: "NEVER MIND", dismissOnTap: true) {
+        }
+            
+        let image = displayView.makeSnapshot(clear: true, subviewsToIgnore: [zoomBtn, cell.colorDisplayLabel, thredWatermark])
+        showPopUp(title: title, message: message, image: image, buttons: [yesBtn, cancelBtn], titleColor: .label)
+    }
+    
     @objc func cancelDesigning(_ sender: UIBarButtonItem){
-        product = nil
-        performSegue(withIdentifier: "DoneDesigning", sender: nil)
+        showCancelMessage{
+            self.product = nil
+            self.performSegue(withIdentifier: "DoneDesigning", sender: nil)
+        }
     }
     
     lazy var zoomableView: UIView = {
@@ -979,11 +1148,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
    
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(true)
-        tees = nil
-        carousel.slides = nil
-        carousel.displayImage = nil
         NotificationCenter.default.removeObserver(self)
-        
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -1026,9 +1191,11 @@ extension UIView {
 
 extension UIImage {
 /// Returns a system image on iOS 13, otherwise returns an image from the Bundle provided.
+/// Icon Sizes: 3 (light), 5 (medium), 7 (bold), 8 (heavy), 9 (black)
+ 
     convenience init?(nameOrSystemName: String, systemPointSize: CGFloat?, iconSize: Int?, in bundle: Bundle? = Bundle.main, compatibleWith traitCollection: UITraitCollection? = nil) {
         if #available(iOS 13, *) {
-            self.init(systemName: nameOrSystemName, withConfiguration: UIImage.SymbolConfiguration.init(pointSize: systemPointSize ?? 20, weight: UIImage.SymbolWeight(rawValue: iconSize ?? 9) ?? UIImage.SymbolWeight.black, scale: UIImage.SymbolScale.large))
+            self.init(systemName: nameOrSystemName, withConfiguration: UIImage.SymbolConfiguration.init(pointSize: systemPointSize ?? 20, weight: UIImage.SymbolWeight(rawValue: iconSize ?? 9) ?? UIImage.SymbolWeight.heavy, scale: UIImage.SymbolScale.large))
         } else {
             self.init(named: nameOrSystemName, in: bundle, compatibleWith: traitCollection)
         }
@@ -1054,6 +1221,8 @@ extension UIViewController {
 
 class CanvasTextView: UITextView {
 
+    var textToStore: String!
+    
     var currentFontSize: CGFloat!{
         didSet{
             font = font?.withSize(currentFontSize)
@@ -1141,5 +1310,51 @@ class CanvasTextView: UITextView {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+}
+
+extension UIViewController{
+    func showPopUp(title: String?, message: String?, image: UIImage?, buttons: [DefaultButton], titleColor: UIColor){
+
+        let popup = PopupDialog(title: title, message: message, image: image)
+        let dialogAppearance = PopupDialogDefaultView.appearance()
+        dialogAppearance.backgroundColor      = ColorCompatibility.secondarySystemBackground
+        dialogAppearance.titleFont            = UIFont(name: "NexaW01-Heavy", size: 18)!
+        dialogAppearance.titleColor           = titleColor
+        dialogAppearance.titleTextAlignment   = .center
+        dialogAppearance.messageFont          = UIFont(name: "NexaW01-Regular", size: 16)!
+        dialogAppearance.messageColor         = ColorCompatibility.secondaryLabel
+        dialogAppearance.messageTextAlignment = .center
+        // Create buttons
+        
+        // This button will not the dismiss the dialog
+        
+        for button in buttons{
+            button.titleFont = UIFont(name: "NexaW01-Heavy", size: 16)
+            button.backgroundColor = ColorCompatibility.tertiarySystemBackground
+            button.setTitleColor(UIColor(named: "LoadingColor"), for: .normal)
+        }
+        
+        popup.addButtons(buttons)
+        
+        self.present(popup, animated: true, completion: nil)
+    }
+}
+
+extension UIImage {
+
+    func withBackground(color: UIColor) -> UIImage? {
+        var image: UIImage?
+        UIGraphicsBeginImageContextWithOptions(size, false, scale)
+        let imageRect = CGRect(x: 0, y: 0, width: size.width, height: size.height)
+        if let context = UIGraphicsGetCurrentContext() {
+            context.setFillColor(color.cgColor)
+            context.fill(imageRect)
+            draw(in: imageRect, blendMode: .normal, alpha: 1.0)
+            image = UIGraphicsGetImageFromCurrentImageContext()
+            UIGraphicsEndImageContext()
+            return image
+        }
+        return nil
     }
 }

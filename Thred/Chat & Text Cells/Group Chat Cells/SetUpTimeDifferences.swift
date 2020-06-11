@@ -19,6 +19,7 @@ extension UITableView{
                 return
             }
             user.timestampDiff = self.setTimeDifference(user: user, timeToUse: user.timestamp)
+            guard user.timestampDiff != nil else{return}
             DispatchQueue.main.async {
                 timestampLbl?.text = "\(user.timestampDiff!) ago"
             }
@@ -32,8 +33,23 @@ extension UITableView{
                 return
             }
             notif.timestampDiff = self.setNotifTimeDifference(notif: notif, timeToUse: notif.timestamp)
+            guard notif.timestampDiff != nil else{return}
             DispatchQueue.main.async {
                 timestampLbl?.text = "\(notif.timestampDiff ?? "some time") ago"
+            }
+        }
+    }
+    
+    func checkSalesTimes(sale: ProductInCart, timestampLbl: UILabel?){
+        
+        DispatchQueue(label: "Times").async {
+            if sale.timestamp == nil{
+                return
+            }
+            sale.timestampDiff = self.setSaleTimeDifference(sale: sale, timeToUse: sale.timestamp)
+            guard sale.timestampDiff != nil else{return}
+            DispatchQueue.main.async {
+                timestampLbl?.text = "\(sale.timestampDiff ?? "some time") ago"
             }
         }
     }
@@ -45,6 +61,7 @@ extension UITableView{
                 return
             }
             comment.timestampDiff = self.setCommentTimeDifference(comment: comment, timeToUse: comment.timestamp)
+            guard comment.timestampDiff != nil else{return}
             DispatchQueue.main.async {
                 timestampLbl?.text = "\(comment.timestampDiff!) ago"
             }
@@ -71,6 +88,20 @@ extension UITableView{
         case .some:
             
             notif.timestampDiff = nil
+            fallthrough
+              //return user.timestampDiff
+        default:
+            guard let time = timeToUse else{return "0 seconds"}
+            return calculateTimeDifference(time: time) ?? "0 seconds"
+        }
+    }
+    
+    func setSaleTimeDifference(sale: ProductInCart, timeToUse: Date?) -> String{
+        
+        switch sale.timestampDiff{
+        case .some:
+            
+            sale.timestampDiff = nil
             fallthrough
               //return user.timestampDiff
         default:

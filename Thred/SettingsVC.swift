@@ -9,6 +9,7 @@
 import UIKit
 import ColorCompatibility
 import FirebaseAuth
+import PopupDialog
 
 class SettingsVC: UITableViewController {
 
@@ -51,6 +52,10 @@ class SettingsVC: UITableViewController {
             }
         }
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        self.showCenterBtn()
+    }
 
     // MARK: - Table view data source
 
@@ -85,17 +90,24 @@ class SettingsVC: UITableViewController {
         ],
         
         [
-            "Title": "Setup my merchant account",
+            "Title": "My merchant account",
             "Function" : configureMerchantAcct,
             "Background Color" : UIColor.clear,
-            "Text Color" : ColorCompatibility.secondaryLabel
+            "Text Color" : UIColor(named: "LoadingColor")!
         ],
         
         [
-            "Title": "Add a card",
+            "Title": "My delivery address",
+            "Function" : configureAddress,
+            "Background Color" : UIColor.clear,
+            "Text Color" : UIColor(named: "LoadingColor")!
+        ],
+        
+        [
+            "Title": "My billing information",
             "Function": addCard,
             "Background Color" : UIColor.clear,
-            "Text Color" : ColorCompatibility.secondaryLabel
+            "Text Color" : UIColor(named: "LoadingColor")!
         ],
         
         [
@@ -126,13 +138,21 @@ class SettingsVC: UITableViewController {
     }
     
     func addCard(){
-        showErrorMessage{
-        }
+        performSegue(withIdentifier: "toCard", sender: nil)
+        //showErrorMessage{
+        //}
     }
     
     func configureMerchantAcct(){
-        showErrorMessage{
-        }
+        performSegue(withIdentifier: "toBank", sender: nil)
+        //showErrorMessage{
+        //}
+    }
+    
+    func configureAddress(){
+        performSegue(withIdentifier: "toAddress", sender: nil)
+        //showErrorMessage{
+        //}
     }
     
     func logOut(){
@@ -162,10 +182,6 @@ class SettingsVC: UITableViewController {
     }
     
     @IBAction func unwindToSettings(segue:  UIStoryboardSegue) {
-        
-        //if let button = getProfileBtn(){
-         //   button.setImage(userInfo.dp, for: .normal)
-        //}
         
     }
     
@@ -222,43 +238,29 @@ class SettingsVC: UITableViewController {
 
 extension UIViewController{
     func showErrorMessage(completed: @escaping () -> ()){
-        let alertController = UIAlertController(
-            title:
-            "Update: COVID-19",
-            message:
-            "Due to COVID-19 our purchasing and printing services will temporarily be unavailable.",
-            preferredStyle: .alert)
-        
-        alertController.addAction(UIAlertAction(title: "Ok", style: .default) { _ in
+        let title = "Update: COVID-19"
+        let message = "Due to COVID-19 our purchasing and printing services will temporarily be unavailable."
+        let image = UIImage(named: "covid19")
+        let okBtn = DefaultButton(title: "OK", dismissOnTap: true) {
             completed()
-        })
-        DispatchQueue.main.async {
-            self.present(alertController, animated: true)
         }
+        showPopUp(title: title, message: message, image: image, buttons: [okBtn], titleColor: .label)
     }
     
     func showAuthMessage(completed: @escaping () -> ()){
-        let alertController = UIAlertController(
-            title:
-            "Update: Authentication",
-            message:
-            "Thred has updated it's authentication system so that it ONLY requires a username/email & password. Please update your account information or you will not be able to sign in later",
-            preferredStyle: .alert)
-        
-        alertController.addAction(UIAlertAction(title: "Later", style: .default) { _ in
-            completed()
-        })
-        alertController.addAction(UIAlertAction(title: "Update", style: .default) { _ in
+        let title = "Update: Authentication"
+        let message = "Thred has updated it's authentication system so that it ONLY requires a username/email & password. Please update your account information or you will not be able to sign in later."
+        let updateBtn = DefaultButton(title: "Update", dismissOnTap: true) {
             let mainStoryboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
             if let vc: SignUpVC = mainStoryboard.instantiateViewController(withIdentifier: "SignUpVC") as? SignUpVC{
                 self.navigationController?.pushViewController(vc, animated: true)
             }
             completed()
-        })
-        
-        DispatchQueue.main.async {
-            self.present(alertController, animated: true)
         }
+        let laterBtn = DefaultButton(title: "Later", dismissOnTap: true) {
+            completed()
+        }
+        showPopUp(title: title, message: message, image: nil, buttons: [updateBtn, laterBtn], titleColor: .label)
     }
     
     

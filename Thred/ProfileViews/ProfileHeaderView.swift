@@ -8,6 +8,9 @@
 
 import UIKit
 import ColorCompatibility
+import FirebaseStorage
+import FirebaseDynamicLinks
+import FirebaseFirestore
 
 class ProfileHeaderView: UIView, UITextViewDelegate{
 
@@ -49,6 +52,7 @@ class ProfileHeaderView: UIView, UITextViewDelegate{
     
     @IBOutlet weak var emailNotSetView: UIButton!
     
+    @IBOutlet weak var shareProfileBtn: UIButton!
     @IBOutlet weak var userContentView: UIView!
     @IBOutlet weak var fullnameLbl: UILabel!
     @IBOutlet weak var usernameLbl: UILabel!
@@ -62,8 +66,115 @@ class ProfileHeaderView: UIView, UITextViewDelegate{
         super.awakeFromNib()
         self.backgroundColor = UIColor.clear
         bioView.delegate = self
+        shareProfileBtn.setImage(UIImage(nameOrSystemName: "arrowshape.turn.up.right", systemPointSize: 17, iconSize: 7), for: .normal)
+    }
+    @IBOutlet weak var progressView: UIProgressView!
+    
+    func animateProgressBar(value: CGFloat){
+        self.progressView.setProgress(Float(value), animated: true)
     }
     
+    @IBAction func shareAccount(_ sender: UIButton) {
+      
+        guard fullnameLbl.text != nil, !(fullnameLbl.text?.isEmpty ?? false) else{return}
+        guard usernameLbl.text != nil, !(usernameLbl.text?.isEmpty ?? false) else{return}
+        animateProgressBar(value: 0.2)
+        
+        
+        getLink(completed: { url in
+            guard let url = url else{return}
+            self.animateProgressBar(value: 1.0)
+            let activity = UIActivityViewController(
+                  activityItems: [url],
+                  applicationActivities: nil
+            )
+            //activity.popoverPresentationController?.bu
+                // 3
+            self.getViewController()?.present(activity, animated: true, completion: nil)
+            DispatchQueue.main.async {
+                self.progressView.setProgress(0.0, animated: false)
+            }
+        })
+    }
+    
+    func uploadLink(link: URL?, uid: String?){
+        guard let link = link else{return}
+        guard let uid = uid, uid == userInfo.uid else{return}
+        UserDefaults.standard.set(link, forKey: "PROFILE_LINK")
+        Firestore.firestore().collection("Users").document(uid).updateData(["ProfileLink" : link.absoluteString])
+    }
+    
+    func getLink(completed: @escaping (URL?) -> ()){
+        self.animateProgressBar(value: 0.4)
+        let info = (vc as? FriendVC)?.friendInfo ?? userInfo
+        if info.profileLink == nil{
+            generateLink(userInfo: info, completed: { link in
+                info.profileLink = link
+                self.uploadLink(link: link, uid: info.uid)
+                self.animateProgressBar(value: 0.8)
+                completed(link)
+            })
+        }
+        else{
+            completed(info.profileLink)
+        }
+    }
+    
+    func getThumbnailURL(uid: String, dpID: String?, completed: @escaping (URL?) -> ()){
+        guard let dpID = dpID else {
+            completed(nil)
+            return
+        }
+
+        let ref = Storage.storage().reference().child("Users/" + uid + "/" + "profile_pic-" + dpID + ".jpeg")
+        ref.downloadURL(completion: { url, error in
+            if error != nil{
+                print(error?.localizedDescription ?? "")
+                completed(nil)
+            }
+            else{
+                completed(url)
+            }
+        })
+        
+    }
+    
+    func generateLink(userInfo: UserInfo, completed: @escaping (URL?) -> ()){
+        guard let username = userInfo.username, let fullname = userInfo.fullName, let uid = userInfo.uid else{
+            completed(nil)
+            return}
+        guard let link = URL(string: "https://thredapps.com/users/\(username)/\(uid)") else {
+            return }
+        let dynamicLinksDomainURIPrefix = "https://thred.thredapps.com"
+        let linkBuilder = DynamicLinkComponents(link: link, domainURIPrefix: dynamicLinksDomainURIPrefix)
+        linkBuilder?.iOSParameters = DynamicLinkIOSParameters(bundleID: "thred.Thred")
+        linkBuilder?.androidParameters = DynamicLinkAndroidParameters(packageName: "com.example.android")
+        linkBuilder?.iOSParameters?.appStoreID = "1506286170"
+        let shareMessage = "\(fullname) (\(username)) • Thred design and sell"
+        linkBuilder?.socialMetaTagParameters = DynamicLinkSocialMetaTagParameters()
+        linkBuilder?.socialMetaTagParameters?.title = shareMessage
+        linkBuilder?.options = DynamicLinkComponentsOptions()
+        linkBuilder?.options?.pathLength = .short
+        getThumbnailURL(uid: uid, dpID: userInfo.dpID, completed: { url in
+            self.animateProgressBar(value: 0.6)
+            linkBuilder?.socialMetaTagParameters?.imageURL = url
+            guard let longDynamicLink = linkBuilder?.url else {
+                completed(nil)
+                return }
+            print("The long URL is: \(longDynamicLink)")
+            linkBuilder?.shorten() { url, warnings, error in
+                if let err = error{
+                    print(err.localizedDescription)
+                    completed(nil)
+                }
+                else{
+                    completed(url)
+                    guard let url = url else { return }
+                    print("The short URL is: \(url)")
+                }
+            }
+        })
+    }
     
     
     func clearAll(actionBtnTitle: String){
@@ -125,6 +236,7 @@ class ProfileHeaderView: UIView, UITextViewDelegate{
             attr.setAttributes([NSAttributedString.Key.font : UIFont(name: "NexaW01-Regular", size: bioView.font?.pointSize ?? 16)!], range: NSMakeRange(0, attr.length))
             bioView.attributedText = attr
         }
+        
         bioView?.text = nil
         usernameLbl.text = "@" + (username ?? "null")
         fullnameLbl.text = fullname ?? "null"
@@ -152,7 +264,7 @@ class ProfileHeaderView: UIView, UITextViewDelegate{
             if scheme.starts(with: "mention"){
                 let username = URL.absoluteString.replacingOccurrences(of: "mention:", with: "")
                 if username != userInfo.username, username != (vc as? FriendVC)?.friendInfo.username{
-                    let user = UserInfo(uid: nil, dp: nil, dpID: nil, username: username, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [])
+                    let user = UserInfo(uid: nil, dp: nil, dpID: nil, username: username, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil)
                     (vc as? FriendVC)?.selectedUser = user
                     (vc as? UserVC)?.selectedUser = user
                     vc?.performSegue(withIdentifier: "toFriend", sender: nil)
@@ -182,6 +294,8 @@ class ProfileHeaderView: UIView, UITextViewDelegate{
         profileImgView.layer.borderWidth = profileImgView.frame.width / 17.75
         actionBtn.layer.cornerRadius = actionBtn.frame.height / 4
         actionBtn.clipsToBounds = true
+        shareProfileBtn.layer.cornerRadius = shareProfileBtn.frame.height / 4
+        shareProfileBtn.clipsToBounds = true
         if vc == nil{
             vc = getViewController()
         }

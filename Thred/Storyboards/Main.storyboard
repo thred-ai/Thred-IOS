@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="icp-Vx-IR7">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="icp-Vx-IR7">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
-        <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -139,8 +138,8 @@
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="fCu-g1-6M0">
                                                 <rect key="frame" x="0.0" y="0.0" width="285" height="135"/>
                                                 <subviews>
-                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="envelope.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="UIe-ej-oAc">
-                                                        <rect key="frame" x="0.0" y="1.5" width="285" height="71.5"/>
+                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="envelope.fill" translatesAutoresizingMaskIntoConstraints="NO" id="UIe-ej-oAc">
+                                                        <rect key="frame" x="0.0" y="0.0" width="285" height="75"/>
                                                         <color key="tintColor" name="LoadingColor"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" constant="75" id="tj6-xb-CaJ"/>
@@ -173,7 +172,7 @@
                                                         <rect key="frame" x="0.0" y="40" width="285" height="65"/>
                                                         <color key="backgroundColor" systemColor="secondarySystemBackgroundColor" red="0.94901960780000005" green="0.94901960780000005" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="height" constant="65" id="Z5o-FJ-Oxn"/>
+                                                            <constraint firstAttribute="height" priority="999" constant="65" id="Z5o-FJ-Oxn"/>
                                                         </constraints>
                                                         <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
                                                         <textInputTraits key="textInputTraits" keyboardType="emailAddress" returnKeyType="continue" enablesReturnKeyAutomatically="YES" textContentType="email"/>
@@ -536,8 +535,8 @@
                                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="Vmh-2b-NYs">
                                                         <rect key="frame" x="0.0" y="0.0" width="285" height="105"/>
                                                         <subviews>
-                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="lock.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="OQ4-qF-zoR">
-                                                                <rect key="frame" x="0.0" y="0.5" width="285" height="73.5"/>
+                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="lock.fill" translatesAutoresizingMaskIntoConstraints="NO" id="OQ4-qF-zoR">
+                                                                <rect key="frame" x="0.0" y="0.0" width="285" height="75"/>
                                                                 <color key="tintColor" name="LoadingColor"/>
                                                                 <constraints>
                                                                     <constraint firstAttribute="height" constant="75" id="JOf-KQ-9rN"/>
@@ -573,7 +572,7 @@
                                                                         <rect key="frame" x="0.0" y="0.0" width="285" height="65"/>
                                                                         <color key="backgroundColor" systemColor="secondarySystemBackgroundColor" red="0.94901960780000005" green="0.94901960780000005" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                                         <constraints>
-                                                                            <constraint firstAttribute="height" constant="65" id="p9g-Bw-YaO"/>
+                                                                            <constraint firstAttribute="height" priority="999" constant="65" id="p9g-Bw-YaO"/>
                                                                         </constraints>
                                                                         <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
                                                                         <textInputTraits key="textInputTraits" returnKeyType="continue" enablesReturnKeyAutomatically="YES" secureTextEntry="YES" textContentType="password"/>
@@ -658,8 +657,8 @@
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="kK5-GK-0SZ">
                                                 <rect key="frame" x="0.0" y="0.0" width="285" height="275"/>
                                                 <subviews>
-                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="lock.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="D2M-mT-qZ1">
-                                                        <rect key="frame" x="0.0" y="0.5" width="285" height="73.5"/>
+                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="lock.fill" translatesAutoresizingMaskIntoConstraints="NO" id="D2M-mT-qZ1">
+                                                        <rect key="frame" x="0.0" y="0.0" width="285" height="75"/>
                                                         <color key="tintColor" name="LoadingColor"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" constant="75" id="Jgk-f2-Mkw"/>
@@ -690,7 +689,7 @@
                                                                 <rect key="frame" x="0.0" y="0.0" width="285" height="65"/>
                                                                 <color key="backgroundColor" systemColor="secondarySystemBackgroundColor" red="0.94901960780000005" green="0.94901960780000005" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                                 <constraints>
-                                                                    <constraint firstAttribute="height" constant="65" id="2kJ-Jr-wXF"/>
+                                                                    <constraint firstAttribute="height" priority="999" constant="65" id="2kJ-Jr-wXF"/>
                                                                 </constraints>
                                                                 <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
                                                                 <textInputTraits key="textInputTraits" returnKeyType="continue" enablesReturnKeyAutomatically="YES" textContentType="username"/>
@@ -798,8 +797,8 @@
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="h90-U7-8kx">
                                                 <rect key="frame" x="0.0" y="0.0" width="285" height="135"/>
                                                 <subviews>
-                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="envelope.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="zqO-pS-mJE">
-                                                        <rect key="frame" x="0.0" y="1.5" width="285" height="71.5"/>
+                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="envelope.fill" translatesAutoresizingMaskIntoConstraints="NO" id="zqO-pS-mJE">
+                                                        <rect key="frame" x="0.0" y="0.0" width="285" height="75"/>
                                                         <color key="tintColor" name="LoadingColor"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" constant="75" id="9w7-KW-nTA"/>
@@ -832,7 +831,7 @@
                                                         <rect key="frame" x="0.0" y="30" width="285" height="65"/>
                                                         <color key="backgroundColor" systemColor="secondarySystemBackgroundColor" red="0.94901960780000005" green="0.94901960780000005" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="height" constant="65" id="b4a-w2-YKY"/>
+                                                            <constraint firstAttribute="height" priority="999" constant="65" id="b4a-w2-YKY"/>
                                                         </constraints>
                                                         <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
                                                         <textInputTraits key="textInputTraits" keyboardType="emailAddress" returnKeyType="continue" enablesReturnKeyAutomatically="YES" textContentType="email"/>
@@ -886,11 +885,18 @@
             <point key="canvasLocation" x="-1251" y="-1073"/>
         </scene>
     </scenes>
+    <inferredMetricsTieBreakers>
+        <segue reference="I07-QZ-O1a"/>
+        <segue reference="Lww-vz-Z3P"/>
+        <segue reference="BQH-9Z-GUg"/>
+        <segue reference="N3T-jh-p31"/>
+    </inferredMetricsTieBreakers>
+    <color key="tintColor" name="LoadingColor"/>
     <resources>
         <image name="arrowBtn" width="30" height="30"/>
-        <image name="envelope.fill" catalog="system" width="64" height="46"/>
+        <image name="envelope.fill" width="33.5" height="33.5"/>
         <image name="launch_image" width="550" height="550"/>
-        <image name="lock.fill" catalog="system" width="64" height="64"/>
+        <image name="lock.fill" width="33.5" height="33.5"/>
         <image name="person.fill" width="33.5" height="33.5"/>
         <namedColor name="LoadingColor">
             <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -899,11 +905,4 @@
             <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
-    <inferredMetricsTieBreakers>
-        <segue reference="I07-QZ-O1a"/>
-        <segue reference="Lww-vz-Z3P"/>
-        <segue reference="3Dh-nY-jAx"/>
-        <segue reference="N3T-jh-p31"/>
-    </inferredMetricsTieBreakers>
-    <color key="tintColor" name="LoadingColor"/>
 </document>

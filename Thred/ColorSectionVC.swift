@@ -49,10 +49,10 @@ class ColorSectionVC: UICollectionViewController {
     func getProducts(fromInterval: Int?, completed: @escaping ()->()){
         
         if fromInterval == nil{
-            query = Firestore.firestore().collectionGroup("Products").whereField("Template_Color", isEqualTo: templateColor).whereField("Blurred", isEqualTo: false).whereField("Has_Picture", isEqualTo: true).order(by: "Likes", descending: true).limit(to: 12)
+            query = Firestore.firestore().collectionGroup("Products").whereField("Template_Color", isEqualTo: templateColor).whereField("Blurred", isEqualTo: false).whereField("Has_Picture", isEqualTo: true).order(by: "Likes", descending: true).limit(to: 36)
         }
         else if last != nil{
-            query = Firestore.firestore().collectionGroup("Products").whereField("Template_Color", isEqualTo: templateColor).whereField("Blurred", isEqualTo: false).whereField("Has_Picture", isEqualTo: true).order(by: "Likes", descending: true).start(afterDocument: last).limit(to: 12)
+            query = Firestore.firestore().collectionGroup("Products").whereField("Template_Color", isEqualTo: templateColor).whereField("Blurred", isEqualTo: false).whereField("Has_Picture", isEqualTo: true).order(by: "Likes", descending: true).start(afterDocument: last).limit(to: 36)
         }
         
         guard let userUID = userInfo.uid else{return}
@@ -80,8 +80,10 @@ class ColorSectionVC: UICollectionViewController {
                                 guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                                 let likes = snap["Likes"] as? Int
                                 let comments = ((snap["Comments"]) as? Int) ?? 0
+                                
+                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil)
 
-                                self.loadedProducts.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil))
+                                self.loadedProducts.append(product)
                                 
                                 self.collectionView.performBatchUpdates({
                                     self.collectionView.insertItems(at: [IndexPath(item: self.loadedProducts.count - 1, section: 0)])
@@ -189,7 +191,7 @@ class ColorSectionVC: UICollectionViewController {
             if !(tokens.contains(loadedProducts[indexPath.item].picID ?? "null")){
                     cell?.circularProgress.isHidden = false
                     tokens.append(loadedProducts[indexPath.item].picID ?? "null")
-                self.collectionView.downloadExploreProductImage(circularProgress: cell?.circularProgress, followingUID: self.loadedProducts[indexPath.item].uid, picID: self.loadedProducts[indexPath.item].picID ?? "", index: indexPath.item, product: self.loadedProducts[indexPath.item], isThumbnail: true){ image in
+                self.collectionView.downloadExploreProductImage(circularProgress: cell?.circularProgress, followingUID: self.loadedProducts[indexPath.item].userInfo.uid ?? "", picID: self.loadedProducts[indexPath.item].picID ?? "", index: indexPath.item, product: self.loadedProducts[indexPath.item], isThumbnail: true){ image in
                         
                         self.tokens.removeAll(where: {$0 == self.loadedProducts[indexPath.item].picID})
                         
@@ -231,8 +233,17 @@ class ColorSectionVC: UICollectionViewController {
     }
 
     override func collectionView(_ collectionView: UICollectionView, performAction action: Selector, forItemAt indexPath: IndexPath, withSender sender: Any?) {
-    
+    '
     }
     */
+    
+    override func didReceiveMemoryWarning() {
+        cache.clearMemory()
+    }
 
+}
+
+extension UIViewController{
+    
+    
 }

@@ -26,7 +26,32 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
     var header: ProfileHeaderView?
     var reportType: ReportLevel!
     var refresher: BouncingTitleRefreshControl!
+    var offsets = [CGFloat]()
 
+    
+    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        ///For every cell, retrieve the height value and store it in the dictionary
+        if let cell = cell as? ProductCell{
+            if offsets.indices.contains(indexPath.row){
+                cell.collectionViewOffset = offsets[indexPath.row]
+            }
+            else{
+                cell.collectionViewOffset = 0
+            }
+        }
+        cellHeights[indexPath] = cell.frame.size.height
+    }
+
+    override func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if let cell = cell as? ProductCell{
+            if offsets.indices.contains(indexPath.row){
+                offsets[indexPath.row] = cell.collectionViewOffset
+            }
+            else{
+                offsets.append(cell.collectionViewOffset)
+            }
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -46,12 +71,10 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         navigationController?.navigationBar.setBackgroundImage(UIImage.init(), for: UIBarMetrics.default)
         navigationController?.navigationBar.shadowImage = UIImage.init()
 
-        header?.clearAll(actionBtnTitle: header?.headerActionBtnTitle ?? "null")
         header?.actionBtn.addTarget(self, action: #selector(followBtnPressed(_:)), for: .touchUpInside)
         header?.actionBtn.isUserInteractionEnabled = true
         header?.optionBtn.setImage(UIImage(nameOrSystemName: "ellipsis.circle", systemPointSize: 20, iconSize: 7), for: .normal)
         header?.optionBtn.addTarget(self, action: #selector(openOptionMenu(_:)), for: .touchUpInside)
-
         initialRefresh(onlyDownloadProducts: false)
     }
     
@@ -59,7 +82,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         if updateForBlocking() ?? false{
             return
         }
-        self.header?.setUpInfo(username: friendInfo.username, fullname: friendInfo.fullName, bio: friendInfo.bio, notifID: friendInfo.notifID, dpUID: nil, image: friendInfo.dp, actionBtnTitle: header?.headerActionBtnTitle ?? "null", followerCount: friendInfo.followerCount, followingCount: friendInfo.followingCount, postCount: friendInfo.postCount)
+        self.header?.setUpInfo(username: friendInfo.username, fullname: friendInfo.fullName ?? "", bio: friendInfo.bio ?? "", notifID: friendInfo.notifID, dpUID: nil, image: friendInfo.dp, actionBtnTitle: header?.headerActionBtnTitle ?? "null", followerCount: friendInfo.followerCount, followingCount: friendInfo.followingCount, postCount: friendInfo.postCount)
 
         if friendInfo.dp != nil{
             switch onlyDownloadProducts{
@@ -95,6 +118,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
             self.refresh(refresher)
         }
     }
+    
     
     
     @objc func followBtnPressed(_ sender: UIButton){
@@ -188,9 +212,9 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
                 self.checkAuthStatus {
                     self.refreshLists(userUID: userUID){
                         self.downloadUserInfo(uid: self.friendInfo.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: true, doNotDownloadDP: false, userInfoToUse: self.friendInfo, queryOnUsername: self.friendInfo.uid == nil, completed: {
-                            uid, fullName, username, dpID, notifID, bio, image, userFollowing, usersBlocking, postCount, followersCount, followingCount  in
+                            uid, fullName, username, dpID, notifID, bio, image, userFollowing, usersBlocking, postCount, followersCount, followingCount, profileLink   in
                             if username != nil{
-                                self.setInfo(username: username, fullname: fullName, dpID: dpID, image: image, notifID: notifID, bio: bio, userFollowing: userFollowing, uid: uid, followerCount: followersCount, postCount: postCount, followingCount: followingCount, usersBlocking: usersBlocking)
+                                self.setInfo(username: username, fullname: fullName, dpID: dpID, image: image, notifID: notifID, bio: bio, userFollowing: userFollowing, uid: uid, followerCount: followersCount, postCount: postCount, followingCount: followingCount, usersBlocking: usersBlocking, profileLink: profileLink)
                                 if self.updateForBlocking() ?? false{
                                     return
                                 }
@@ -233,7 +257,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         self.tableView.reloadData()
     }
     
-    func setInfo(username: String?, fullname: String?, dpID: String?, image: Data?, notifID: String?, bio: String?, userFollowing: [String], uid: String?, followerCount: Int, postCount: Int, followingCount: Int, usersBlocking: [String]){
+    func setInfo(username: String?, fullname: String?, dpID: String?, image: Data?, notifID: String?, bio: String?, userFollowing: [String], uid: String?, followerCount: Int, postCount: Int, followingCount: Int, usersBlocking: [String], profileLink: URL?){
         
         guard let username = username else{return}
         guard let fullname = fullname else{return}
@@ -254,6 +278,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         friendInfo.followingCount = followingCount
         friendInfo.postCount = postCount
         friendInfo.usersBlocking = usersBlocking
+        friendInfo.profileLink = profileLink
         guard let img = image else{return}
         friendInfo.dp = img
     }
@@ -273,6 +298,10 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
                 if !self.loadedProducts.isEmpty{
                     self.loadedProducts.removeAll()
                     self.cellHeights.removeAll()
+                    self.offsets.removeAll()
+                    for cell in (self.tableView.visibleCells as! [ProductCell]){
+                        cell.collectionViewOffset = 0
+                    }
                     self.tableView.reloadData()
                 }
             }
@@ -285,6 +314,8 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
             }
         }
     }
+    
+    var lastDoc: DocumentSnapshot!
     
     func getProducts(fromInterval: Date?, completed: @escaping (Bool?, [DocumentSnapshot]?) -> ()){
            
@@ -304,8 +335,8 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         if fromInterval == nil{
             query = Firestore.firestore().collection("Users").document(friendUID).collection("Products").whereField("Timestamp", isLessThanOrEqualTo: Timestamp(date: Date())).whereField("Has_Picture", isEqualTo: true).limit(to: 8).order(by: "Timestamp", descending: true)
         }
-        else if let last = fromInterval{
-            query = Firestore.firestore().collection("Users").document(friendUID).collection("Products").whereField("Timestamp", isLessThan: Timestamp(date: last)).whereField("Has_Picture", isEqualTo: true).limit(to: 8).order(by: "Timestamp", descending: true)
+        else if let lastDoc = lastDoc{
+            query = Firestore.firestore().collection("Users").document(friendUID).collection("Products").whereField("Has_Picture", isEqualTo: true).limit(to: 8).order(by: "Timestamp", descending: true).start(afterDocument: lastDoc)
         }
         query.getDocuments(completion: { (snapDocuments, err) in
             if let err = err {
@@ -330,6 +361,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
                     }
                 default:
                     guard let snaps = snapDocuments?.documents else {return}
+                    self.lastDoc = snaps.last
                     completed(true, snaps)
                     var productsToUse: [Product]! = [Product]()
                     for (index, snap) in snaps.enumerated(){ // LOADED DOCUMENTS FROM \(snapDocuments)
@@ -370,7 +402,9 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
                                     }
                                 }
                                 
-                                productsToUse.append(Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil))
+                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil)
+                                
+                                productsToUse.append(product)
                                 
                                 if productsToUse.count == (snaps.count){
                                     UserDefaults.standard.set(userInfo.userLiked, forKey: "LikedPosts")
@@ -438,10 +472,6 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
     var cellHeights: [IndexPath: CGFloat] = [:]
        
     ///* Dynamic Cell Sizing *///
-    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        ///For every cell, retrieve the height value and store it in the dictionary
-        cellHeights[indexPath] = cell.frame.size.height
-    }
     
     override func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
         return cellHeights[indexPath] ?? 1500
@@ -487,12 +517,18 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let user = self.loadedProducts[indexPath.row]
-        let cell = tableView.setPictureCell(indexPath: indexPath, product: user, productLocation: self)
-        return cell
+        let cell = tableView.dequeueReusableCell(withIdentifier: "PictureProduct", for: indexPath) as? ProductCell
+        tableView.setPictureCell(cell: cell, indexPath: indexPath, product: user, productLocation: self, shouldDownloadPic: true)
+        return cell!
     }
     
     override func viewWillAppear(_ animated: Bool) {
         
+        if let viewControllers = navigationController?.viewControllers, let index = viewControllers.firstIndex(of: self){
+            if !(viewControllers[index - 1] is FullProductVC || viewControllers[index - 1] is SalesVC){
+                showCenterBtn()
+            }
+        }
         tableView.syncPostLikes(loadedProducts: loadedProducts, vc: self)
     }
 

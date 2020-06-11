@@ -18,7 +18,9 @@ extension DesignViewController{
         
         drawToolBar.isHidden = false
         sender.superview?.isHidden = true
-        drawTopToolBar.isHidden = false
+        if slider.isHidden{
+            showOrHideSlider(nil)
+        }
         if !cameraRollCollectionView.isHidden{
             configurePhotos(photosBtn)
         }
@@ -26,7 +28,6 @@ extension DesignViewController{
             label.isUserInteractionEnabled = false
         }
         drawCanvas.isEnabled = true
-        canvas.gestureRecognizers?.first?.isEnabled = false
         drawCanvas.isUserInteractionEnabled = true
         sender.isSelected = true
         
@@ -37,12 +38,23 @@ extension DesignViewController{
             label.isUserInteractionEnabled = true
         }
         drawToolBar.isHidden = true
-        canvas.gestureRecognizers?.first?.isEnabled = true
-        drawTopToolBar.isHidden = true
+        if !slider.isHidden{
+            showOrHideSlider(nil)
+        }
         drawCanvas.isUserInteractionEnabled = false
         drawBtn.superview?.isHidden = false
         drawCanvas.isEnabled = false
         drawBtn.isSelected = false
+    }
+    
+    func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        if gestureRecognizer.isKind(of: UITapGestureRecognizer.self){
+            if !drawCanvas.isEnabled{
+                return true
+            }
+            return false
+        }
+        return true
     }
     
     
@@ -59,7 +71,14 @@ extension DesignViewController{
     
     @objc func colorChanged(_ sender: ColorSlider){
         if sender == slider{
+            slider.gradientView.layer.borderColor = sender.color.cgColor
             drawCanvas.brush.color = Color(sender.color)
+            if let index = tools.firstIndex(where: {$0["Name"] as? String == "Pen_Color"}){
+                tools[index]["Icon_Color"] = sender.color.withAlphaComponent(0.5)
+                if let cell = toolCollectionView?.cellForItem(at: IndexPath(item: index, section: 0)) as? DrawToolsCell{
+                    cell.toolBtn.tintColor = sender.color.withAlphaComponent(0.5)
+                }
+            }
         }
         else if sender == textSlider{
             activeLbl?.color = sender.color
@@ -68,18 +87,23 @@ extension DesignViewController{
     
     @objc func undoColors(_ sender: UIButton){
         drawCanvas.undo()
+        if drawCanvas.lines.isEmpty{
+            if drawCanvas.brush.blendMode == .clear{
+                drawCanvas.isEnabled = false
+            }
+        }
     }
     
     @objc func switchBrush(_ sender: UIButton){
         
         if drawCanvas.brush.blendMode == .clear{
-            brushBtn.setImage(UIImage(nameOrSystemName: "pencil.circle", systemPointSize: 25, iconSize: 9), for: .normal)
+            sender.setImage(UIImage(nameOrSystemName: "pencil.circle", systemPointSize: 25, iconSize: 9), for: .normal)
             drawCanvas.brush.blendMode = .normal
             drawCanvas.brush.color = Color(slider.color)
             drawCanvas.isEnabled = true
         }
         else{
-            brushBtn.setImage(UIImage(named: "eraser"), for: .normal)
+            sender.setImage(UIImage(named: "eraser"), for: .normal)
             drawCanvas.brush.blendMode = .clear
             if drawCanvas.lines.isEmpty{
                 drawCanvas.isEnabled = false
@@ -98,12 +122,13 @@ extension DesignViewController{
             if drawCanvas.shouldDrawStraight{
                 drawCanvas.shouldDrawStraight = false
                 lineImageView.image = UIImage(named: "scribble.mode")
-                sender.setTitle("Scribble", for: .normal)
+                sender.setImage(UIImage(named: "scribble.mode"), for: .normal)
+
             }
             else{
                 drawCanvas.shouldDrawStraight = true
                 lineImageView.image = UIImage(named: "straight.mode")
-                sender.setTitle("Straight", for: .normal)
+                sender.setImage(UIImage(named: "straight.mode"), for: .normal)
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5){
                 UIView.animate(withDuration: 0.2, animations: {
@@ -119,7 +144,7 @@ extension DesignViewController{
     }
     
     func swiftyDraw(didBeginDrawingIn drawingView: SwiftyDrawView, using touch: UITouch) {
-        hideTopBar()
+        
     }
     
     func swiftyDraw(isDrawingIn drawingView: SwiftyDrawView, using touch: UITouch) {
@@ -127,31 +152,8 @@ extension DesignViewController{
     }
     
     func swiftyDraw(didFinishDrawingIn drawingView: SwiftyDrawView, using touch: UITouch) {
-        showTopBar()
     }
     
-    func hideTopBar(){
-        drawTopToolBar.layer.removeAllAnimations()
-        UIView.animate(withDuration: 0.2, animations: {
-            self.drawTopToolBar.alpha = 0.0
-        }, completion: { finished in
-            if finished{
-                self.drawTopToolBar.isHidden = true
-            }
-        })
-    }
-    
-    func showTopBar(){
-        self.drawTopToolBar.isHidden = false
-        drawTopToolBar.layer.removeAllAnimations()
-        UIView.animate(withDuration: 0.2, animations: {
-            self.drawTopToolBar.alpha = 1.0
-        }, completion: { finished in
-            if finished{
-                
-            }
-        })
-    }
     
     func swiftyDraw(didCancelDrawingIn drawingView: SwiftyDrawView, using touch: UITouch) {
     }
@@ -159,7 +161,9 @@ extension DesignViewController{
     @objc func changeBrushSize(_ sender: UIPinchGestureRecognizer){
         switch sender.state {
         case .began:
-            drawCanvas.undo()
+            if !drawCanvas.lines.isEmpty{
+                drawCanvas.undo()
+            }
         case .changed:
             if drawCanvas.brush.blendMode == .clear{
                 brushCircle.backgroundColor = UIColor.white.withAlphaComponent(0.45)
@@ -188,18 +192,15 @@ extension DesignViewController{
             if sender.numberOfTouches == 2{
                 brushCircle.center = sender.location(in: canvas)
                 brushCircle.isHidden = false
-
             }
             sender.scale = 1
             
         case .ended:
             brushCircle.isHidden = true
             drawCanvas.isEnabled = true
-            showTopBar()
         default:
             brushCircle.isHidden = true
             drawCanvas.isEnabled = true
-            showTopBar()
             return
         }
     }

@@ -16,23 +16,23 @@ extension UITableView{
     
     func checkAndDownloadUserInfoInFullVC(user: Product, dp: UIImageView, userLbl: UILabel, fullLbl: UILabel, picCell: ProductCell?, fullVC: FullProductVC){
         
-        switch user.uid{
+        switch user.userInfo.uid{
         case userInfo.uid:
             guard let imgData = userInfo.dp else{fallthrough}
             dp.image = UIImage(data: imgData)
-            user.fullName = userInfo.fullName
-            user.username = userInfo.username
+            user.userInfo.fullName = userInfo.fullName
+            user.userInfo.username = userInfo.username
             fullLbl.text = userInfo.fullName
             userLbl.text = "@" + (userInfo.username ?? "null")
             picCell?.removeLabelLoad()
             picCell?.removeDpLoad()
         default:
-            switch (user.fullName, user.username){
+            switch (user.userInfo.fullName, user.userInfo.username){
             case (.some, .some):
-                if let imageFromCache = cache.imageFromCache(forKey: user.userImageID){
+                if let imageData = user.userInfo.dp, let imageFromCache = UIImage(data: imageData) ?? cache.imageFromCache(forKey: user.userInfo.dpID){
                     dp.image = imageFromCache
-                    fullLbl.text = user.fullName
-                    userLbl.text = "@" + (user.username ?? "null")
+                    fullLbl.text = user.userInfo.fullName
+                    userLbl.text = "@" + (user.userInfo.username ?? "null")
                     picCell?.removeLabelLoad()
                     picCell?.removeDpLoad()
                 }
@@ -43,17 +43,17 @@ extension UITableView{
                 }
                 
                 picCell?.dpSkeletonView.startAnimating()
-                beginDownloadingUserInfo(uid: user.uid, userVC: nil, feedVC: nil, friendVC: nil, fullVC: fullVC, section: 0)
+                beginDownloadingUserInfo(uid: user.userInfo.uid ?? "", userVC: nil, feedVC: nil, friendVC: nil, fullVC: fullVC, section: 0)
             }
         }
     }
     
     func checkAndDownloadUserInfoInFeed(feed: FeedVC?, user: Product, dp: UIImageView, userLbl: UILabel, fullLbl: UILabel, picCell: ProductCell?){
         
-        if user.uid == userInfo.uid, let username = userInfo.username, let fullname = userInfo.fullName, let imgData = userInfo.dp{
-            user.username = username
-            user.fullName = fullname
-            user.userImageID = userInfo.dpID
+        if user.userInfo.uid == userInfo.uid, let username = userInfo.username, let fullname = userInfo.fullName, let imgData = userInfo.dp{
+            user.userInfo.username = username
+            user.userInfo.fullName = fullname
+            user.userInfo.dpID = userInfo.dpID
             fullLbl.text = fullname
             userLbl.text = "@\(username)"
             picCell?.removeLabelLoad()
@@ -62,21 +62,21 @@ extension UITableView{
         }
         else{
             DispatchQueue(label: "cache").async {
-                switch (user.fullName, user.username){
+                switch (user.userInfo.fullName, user.userInfo.username){
                     
                 case (.some, .some):
                     
-                    if let imageFromCache = cache.imageFromCache(forKey: user.userImageID){
+                    if let imageData = user.userInfo.dp, let imageFromCache = UIImage(data: imageData) ?? cache.imageFromCache(forKey: user.userInfo.dpID){
                         DispatchQueue.main.async {
                             dp.image = imageFromCache
-                            fullLbl.text = user.fullName
-                            userLbl.text = "@" + (user.username ?? "null")
+                            fullLbl.text = user.userInfo.fullName
+                            userLbl.text = "@" + (user.userInfo.username ?? "null")
                             picCell?.removeLabelLoad()
                             picCell?.removeDpLoad()
                         }
                     }
                     else{
-                        if user.uid == userInfo.uid, let imgData = userInfo.dp{
+                        if user.userInfo.uid == userInfo.uid, let imgData = userInfo.dp{
                             DispatchQueue.main.async {
                                 dp.image = UIImage(data: imgData)
                                 fullLbl.text = userInfo.fullName
@@ -90,13 +90,13 @@ extension UITableView{
                         }
                     }
                 default:
-                    switch feed?.loadedProducts.contains(where: {$0.uid == user.uid}){
+                    switch feed?.loadedProducts.contains(where: {$0.userInfo.uid == user.userInfo.uid}){
                     case true:
-                        let cachedUserInfo = feed?.loadedProducts.first(where: {$0.uid == user.uid && $0.username != nil})
-                        user.username = cachedUserInfo?.username
-                        user.fullName = cachedUserInfo?.fullName
-                        user.userImageID = cachedUserInfo?.userImageID
-                        if let fullName = cachedUserInfo?.fullName{
+                        let cachedUserInfo = feed?.loadedProducts.first(where: {$0.userInfo.uid == user.userInfo.uid && $0.userInfo.username != nil})
+                        user.userInfo.username = cachedUserInfo?.userInfo.username
+                        user.userInfo.fullName = cachedUserInfo?.userInfo.fullName
+                        user.userInfo.dpID = cachedUserInfo?.userInfo.dpID
+                        if let fullName = cachedUserInfo?.userInfo.fullName{
                             DispatchQueue.main.async {
                                 fullLbl.text = fullName
                                 picCell?.removeLabelLoad()
@@ -105,7 +105,7 @@ extension UITableView{
                         else{
                             fallthrough
                         }
-                        if let username = cachedUserInfo?.username{
+                        if let username = cachedUserInfo?.userInfo.username{
                             DispatchQueue.main.async {
                                 userLbl.text = "@" + (username)
                                 picCell?.removeLabelLoad()
@@ -115,9 +115,9 @@ extension UITableView{
                             fallthrough
                         }
                         
-                        if let img = cache.imageFromCache(forKey: cachedUserInfo?.userImageID){
+                        if let imageData = user.userInfo.dp, let imageFromCache = UIImage(data: imageData) ?? cache.imageFromCache(forKey: user.userInfo.dpID){
                             DispatchQueue.main.async {
-                                dp.image = img
+                                dp.image = imageFromCache
                                 picCell?.removeDpLoad()
                             }
                         }
@@ -131,10 +131,10 @@ extension UITableView{
                                 picCell?.nameSkeletonView.startAnimating()
                             }
                             picCell?.dpSkeletonView.startAnimating()
-                            if !(feed?.downloadingProfiles.contains(user.uid) ?? false){
+                            if !(feed?.downloadingProfiles.contains(user.userInfo.uid ?? "") ?? false){
                                 feed?.downloadCount += 1
-                                feed?.downloadingProfiles.append(user.uid)
-                                self.beginDownloadingUserInfo(uid: user.uid, userVC: nil, feedVC: feed, friendVC: nil, fullVC: nil, section: 0)
+                                feed?.downloadingProfiles.append(user.userInfo.uid ?? "")
+                                self.beginDownloadingUserInfo(uid: user.userInfo.uid ?? "", userVC: nil, feedVC: feed, friendVC: nil, fullVC: nil, section: 0)
                             }
                         }
                     }
@@ -145,12 +145,12 @@ extension UITableView{
     
     func checkAndDownloadUserInfoInProfile(userVC: UserVC?, friendVC: FriendVC?, user: Product, dp: UIImageView, userLbl: UILabel, fullLbl: UILabel,picCell: ProductCell?, userInfo: UserInfo){
         
-        if user.uid == userInfo.uid{
+        if user.userInfo.uid == userInfo.uid{
             if let imgData = userInfo.dp{
                 dp.image = UIImage(data: imgData)
             }
-            user.fullName = userInfo.fullName
-            user.username = userInfo.username
+            user.userInfo.fullName = userInfo.fullName
+            user.userInfo.username = userInfo.username
             userLbl.text = "@" + (userInfo.username ?? "null")
             fullLbl.text = userInfo.fullName
             picCell?.removeLabelLoad()
@@ -158,15 +158,17 @@ extension UITableView{
         }
         else{
             DispatchQueue(label: "cache").async {
-                switch cache.imageFromCache(forKey: user.picID){
+                switch user.userInfo.dp{
                 case let img:
-                    let username = user.username
-                    let fullname = user.fullName
-                    if username == nil || fullname == nil{
+                    let username = user.userInfo.username
+                    let fullname = user.userInfo.fullName
+                    if username == nil || fullname == nil || img == nil{
                         fallthrough
                     }
+                    let imageFromCache = UIImage(data: img!) ?? cache.imageFromCache(forKey: user.userInfo.dpID)
+                    
                     DispatchQueue.main.async {
-                        dp.image = img
+                        dp.image = imageFromCache
                         userLbl.text = "@" + (username ?? "null")
                         fullLbl.text = fullname
                         picCell?.removeLabelLoad()
@@ -177,11 +179,11 @@ extension UITableView{
                         picCell?.nameSkeletonView.startAnimating()
                         picCell?.dpSkeletonView.startAnimating()
                         
-                        if !(userVC?.downloadingProfiles.contains(user.uid) ?? friendVC?.downloadingProfiles.contains(user.uid) ?? false){
-                            userVC?.downloadingProfiles.append(user.uid)
-                            friendVC?.downloadingProfiles.append(user.uid)
+                        if !(userVC?.downloadingProfiles.contains(user.userInfo.uid ?? "") ?? friendVC?.downloadingProfiles.contains(user.userInfo.uid ?? "") ?? false){
+                            userVC?.downloadingProfiles.append(user.userInfo.uid ?? "")
+                            friendVC?.downloadingProfiles.append(user.userInfo.uid ?? "")
 
-                            self.beginDownloadingUserInfo(uid: user.uid, userVC: userVC, feedVC: nil, friendVC: nil, fullVC: nil, section: 0)
+                            self.beginDownloadingUserInfo(uid: user.userInfo.uid ?? "", userVC: userVC, feedVC: nil, friendVC: nil, fullVC: nil, section: 0)
                         }
                     }
                 }

@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Zd9-tE-b3V">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Nexa W01 Heavy.ttf">
+            <string>NexaW01-Heavy</string>
+        </array>
+        <array key="Nexa W01 Regular.ttf">
+            <string>NexaW01-Regular</string>
+        </array>
+    </customFonts>
+    <scenes>
+        <!--CheckoutVC-->
+        <scene sceneID="h53-FI-pdV">
+            <objects>
+                <viewController id="Zd9-tE-b3V" customClass="CheckoutVC" customModule="Thred" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="cFV-lP-xKJ">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="623"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="VwW-GO-o9E">
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="448"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                            </tableView>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="xtK-pp-LS6">
+                                <rect key="frame" x="10" y="448" width="355" height="100"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="2ao-sp-w6B">
+                                        <rect key="frame" x="10" y="5" width="335" height="95"/>
+                                        <subviews>
+                                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="8uf-GZ-DBh">
+                                                <rect key="frame" x="0.0" y="0.0" width="335" height="30"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Subtotal:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Jq7-Xr-d0Z">
+                                                        <rect key="frame" x="0.0" y="0.0" width="80" height="30"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="width" constant="80" id="Lcq-22-U4G"/>
+                                                        </constraints>
+                                                        <fontDescription key="fontDescription" name="NexaW01-Regular" family="NexaW01-Regular" pointSize="17"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="$0.00" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DCC-FM-UbK">
+                                                        <rect key="frame" x="80" y="0.0" width="255" height="30"/>
+                                                        <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                </subviews>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="30" id="xLu-dK-e9J"/>
+                                                </constraints>
+                                            </stackView>
+                                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="8V3-Qv-mMV">
+                                                <rect key="frame" x="0.0" y="30" width="335" height="30"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Shipping and Tax:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ghi-OP-Cho">
+                                                        <rect key="frame" x="0.0" y="0.0" width="150" height="30"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="width" constant="150" id="4gQ-FN-dNm"/>
+                                                        </constraints>
+                                                        <fontDescription key="fontDescription" name="NexaW01-Regular" family="NexaW01-Regular" pointSize="17"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="$0.00" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2uF-Bt-bBu">
+                                                        <rect key="frame" x="150" y="0.0" width="185" height="30"/>
+                                                        <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                </subviews>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="30" id="kOQ-W8-hD9"/>
+                                                </constraints>
+                                            </stackView>
+                                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="jcn-ka-h4X">
+                                                <rect key="frame" x="0.0" y="60" width="335" height="30"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Total:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PXR-wW-Tzv">
+                                                        <rect key="frame" x="0.0" y="0.0" width="50" height="30"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="width" constant="50" id="0DG-Dc-2Op"/>
+                                                        </constraints>
+                                                        <fontDescription key="fontDescription" name="NexaW01-Regular" family="NexaW01-Regular" pointSize="17"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="$0.00" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kLC-uv-YbY">
+                                                        <rect key="frame" x="50" y="0.0" width="285" height="30"/>
+                                                        <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                </subviews>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="30" id="Kd8-h3-m3i"/>
+                                                </constraints>
+                                            </stackView>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="AoN-NT-RrV">
+                                                <rect key="frame" x="0.0" y="90" width="335" height="5"/>
+                                            </stackView>
+                                        </subviews>
+                                    </stackView>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="YbR-49-AOf">
+                                        <rect key="frame" x="0.0" y="0.0" width="355" height="100"/>
+                                        <subviews>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="335-3d-cCg" customClass="MapSpinnerView" customModule="Thred" customModuleProvider="target">
+                                                <rect key="frame" x="157.5" y="30" width="40" height="40"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" secondItem="335-3d-cCg" secondAttribute="height" multiplier="1:1" id="YQO-kW-wE0"/>
+                                                    <constraint firstAttribute="width" constant="40" id="dFS-eC-BRD"/>
+                                                </constraints>
+                                            </view>
+                                        </subviews>
+                                        <color key="backgroundColor" systemColor="secondarySystemBackgroundColor" red="0.94901960780000005" green="0.94901960780000005" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <constraints>
+                                            <constraint firstItem="335-3d-cCg" firstAttribute="centerX" secondItem="YbR-49-AOf" secondAttribute="centerX" id="9IK-ty-hQz"/>
+                                            <constraint firstItem="335-3d-cCg" firstAttribute="centerY" secondItem="YbR-49-AOf" secondAttribute="centerY" id="q3z-3r-JxE"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
+                                <color key="backgroundColor" systemColor="secondarySystemBackgroundColor" red="0.94901960780000005" green="0.94901960780000005" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="trailing" secondItem="YbR-49-AOf" secondAttribute="trailing" id="5u4-Wx-Zao"/>
+                                    <constraint firstAttribute="bottom" secondItem="2ao-sp-w6B" secondAttribute="bottom" id="GJv-fc-QUa"/>
+                                    <constraint firstAttribute="bottom" secondItem="YbR-49-AOf" secondAttribute="bottom" id="LuD-nL-pUh"/>
+                                    <constraint firstAttribute="trailing" secondItem="2ao-sp-w6B" secondAttribute="trailing" constant="10" id="NOq-qP-wNc"/>
+                                    <constraint firstItem="YbR-49-AOf" firstAttribute="top" secondItem="xtK-pp-LS6" secondAttribute="top" id="hbb-TW-cy6"/>
+                                    <constraint firstItem="2ao-sp-w6B" firstAttribute="leading" secondItem="xtK-pp-LS6" secondAttribute="leading" constant="10" id="kVN-3S-nQJ"/>
+                                    <constraint firstItem="YbR-49-AOf" firstAttribute="leading" secondItem="xtK-pp-LS6" secondAttribute="leading" id="rT1-EJ-Efs"/>
+                                    <constraint firstAttribute="height" constant="100" id="vhI-R9-JzY"/>
+                                    <constraint firstItem="2ao-sp-w6B" firstAttribute="top" secondItem="xtK-pp-LS6" secondAttribute="top" constant="5" id="x1V-qI-n0W"/>
+                                </constraints>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2l2-mk-nmD">
+                                <rect key="frame" x="0.0" y="548" width="375" height="75"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="G5c-2I-OSd">
+                                        <rect key="frame" x="10" y="10" width="355" height="55"/>
+                                        <subviews>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="VGI-pD-HqB">
+                                                <rect key="frame" x="0.0" y="0.0" width="355" height="55"/>
+                                                <color key="backgroundColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="22"/>
+                                                <state key="normal" title="Confirm Payment">
+                                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                </state>
+                                                <connections>
+                                                    <action selector="confirmPayment:" destination="Zd9-tE-b3V" eventType="touchUpInside" id="LUh-lE-vg6"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                    </stackView>
+                                </subviews>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="bottom" secondItem="G5c-2I-OSd" secondAttribute="bottom" constant="10" id="151-qF-aLq"/>
+                                    <constraint firstItem="G5c-2I-OSd" firstAttribute="top" secondItem="2l2-mk-nmD" secondAttribute="top" constant="10" id="Shn-F8-vuA"/>
+                                    <constraint firstAttribute="trailing" secondItem="G5c-2I-OSd" secondAttribute="trailing" constant="10" id="akc-iJ-M5k"/>
+                                    <constraint firstAttribute="height" constant="75" id="fyz-Aa-TgL"/>
+                                    <constraint firstItem="G5c-2I-OSd" firstAttribute="leading" secondItem="2l2-mk-nmD" secondAttribute="leading" constant="10" id="wih-pH-a4h"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <constraints>
+                            <constraint firstItem="2l2-mk-nmD" firstAttribute="top" secondItem="xtK-pp-LS6" secondAttribute="bottom" id="5Xx-hS-fWR"/>
+                            <constraint firstItem="VwW-GO-o9E" firstAttribute="leading" secondItem="cFV-lP-xKJ" secondAttribute="leading" id="68P-fg-V0F"/>
+                            <constraint firstItem="xtK-pp-LS6" firstAttribute="leading" secondItem="cFV-lP-xKJ" secondAttribute="leading" constant="10" id="Es7-OD-hMG"/>
+                            <constraint firstItem="fxY-4e-5Ed" firstAttribute="bottom" secondItem="2l2-mk-nmD" secondAttribute="bottom" id="Wac-zu-gLP"/>
+                            <constraint firstItem="VwW-GO-o9E" firstAttribute="top" secondItem="fxY-4e-5Ed" secondAttribute="top" id="ap2-Yl-1ig"/>
+                            <constraint firstItem="fxY-4e-5Ed" firstAttribute="trailing" secondItem="VwW-GO-o9E" secondAttribute="trailing" id="bMA-50-UjT"/>
+                            <constraint firstItem="2l2-mk-nmD" firstAttribute="leading" secondItem="cFV-lP-xKJ" secondAttribute="leading" id="dIZ-Fn-xPI"/>
+                            <constraint firstItem="fxY-4e-5Ed" firstAttribute="trailing" secondItem="xtK-pp-LS6" secondAttribute="trailing" constant="10" id="jyj-9K-cgS"/>
+                            <constraint firstItem="xtK-pp-LS6" firstAttribute="top" secondItem="VwW-GO-o9E" secondAttribute="bottom" id="kSF-bi-WUy"/>
+                            <constraint firstAttribute="trailing" secondItem="2l2-mk-nmD" secondAttribute="trailing" id="sJp-OK-JLH"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="fxY-4e-5Ed"/>
+                    </view>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO"/>
+                    <connections>
+                        <outlet property="payBtn" destination="VGI-pD-HqB" id="1iD-Cu-Oe2"/>
+                        <outlet property="priceBackgroundView" destination="xtK-pp-LS6" id="lQI-gA-J0y"/>
+                        <outlet property="shippingAndTaxLbl" destination="Ghi-OP-Cho" id="ecG-ur-IgB"/>
+                        <outlet property="spinner" destination="335-3d-cCg" id="qWC-c2-AtU"/>
+                        <outlet property="spinnerView" destination="YbR-49-AOf" id="F5I-oU-rKV"/>
+                        <outlet property="subtotalField" destination="DCC-FM-UbK" id="5kk-ro-M7I"/>
+                        <outlet property="tableView" destination="VwW-GO-o9E" id="8N4-at-dgV"/>
+                        <outlet property="taxShippingField" destination="2uF-Bt-bBu" id="5ge-dT-gum"/>
+                        <outlet property="totalField" destination="kLC-uv-YbY" id="a4R-G8-8G5"/>
+                        <segue destination="edz-jN-ZMw" kind="show" identifier="toFinish" id="gyR-6m-Cq4"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dai-IY-osh" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-75.362318840579718" y="99.776785714285708"/>
+        </scene>
+        <!--Finished PurchaseVC-->
+        <scene sceneID="ZaY-3C-3em">
+            <objects>
+                <viewController id="edz-jN-ZMw" customClass="FinishedPurchaseVC" customModule="Thred" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="V2O-T3-cBc">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="71K-bu-09x">
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9nK-PO-YBJ">
+                                        <rect key="frame" x="0.0" y="0.0" width="375" height="175"/>
+                                        <subviews>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="MDy-T5-pHz">
+                                                <rect key="frame" x="110" y="20" width="155" height="155"/>
+                                                <subviews>
+                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="thred.logo" translatesAutoresizingMaskIntoConstraints="NO" id="F2b-sv-ACT">
+                                                        <rect key="frame" x="0.0" y="0.0" width="155" height="155"/>
+                                                        <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="default"/>
+                                                    </imageView>
+                                                </subviews>
+                                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                                <constraints>
+                                                    <constraint firstItem="F2b-sv-ACT" firstAttribute="leading" secondItem="MDy-T5-pHz" secondAttribute="leading" id="7BP-gq-Nwj"/>
+                                                    <constraint firstAttribute="bottom" secondItem="F2b-sv-ACT" secondAttribute="bottom" id="BUY-s9-9G9"/>
+                                                    <constraint firstAttribute="width" secondItem="MDy-T5-pHz" secondAttribute="height" multiplier="1:1" id="Jrr-i2-McF"/>
+                                                    <constraint firstItem="F2b-sv-ACT" firstAttribute="top" secondItem="MDy-T5-pHz" secondAttribute="top" id="O9A-2K-iov"/>
+                                                    <constraint firstAttribute="trailing" secondItem="F2b-sv-ACT" secondAttribute="trailing" id="f1N-Vg-l1G"/>
+                                                </constraints>
+                                            </view>
+                                        </subviews>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                        <constraints>
+                                            <constraint firstItem="MDy-T5-pHz" firstAttribute="top" secondItem="9nK-PO-YBJ" secondAttribute="top" constant="20" id="38J-wu-MY5"/>
+                                            <constraint firstAttribute="trailing" secondItem="MDy-T5-pHz" secondAttribute="trailing" constant="110" id="Bsp-Vl-6Es"/>
+                                            <constraint firstAttribute="bottom" secondItem="MDy-T5-pHz" secondAttribute="bottom" id="ge8-hH-G0K"/>
+                                            <constraint firstItem="MDy-T5-pHz" firstAttribute="centerX" secondItem="9nK-PO-YBJ" secondAttribute="centerX" id="njN-e2-q6y"/>
+                                        </constraints>
+                                    </view>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="1" translatesAutoresizingMaskIntoConstraints="NO" id="0Nv-0n-7G1">
+                                        <rect key="frame" x="0.0" y="175" width="375" height="207.5"/>
+                                        <subviews>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="xj1-et-AW5">
+                                                <rect key="frame" x="0.0" y="0.0" width="375" height="23.5"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Thank you for buying from Thred!" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KCq-hF-tlV">
+                                                        <rect key="frame" x="40" y="0.0" width="295" height="23.5"/>
+                                                        <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="18"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                </subviews>
+                                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                                <constraints>
+                                                    <constraint firstItem="KCq-hF-tlV" firstAttribute="leading" secondItem="xj1-et-AW5" secondAttribute="leading" constant="40" id="COo-qa-Qme"/>
+                                                    <constraint firstItem="KCq-hF-tlV" firstAttribute="top" secondItem="xj1-et-AW5" secondAttribute="top" id="Otw-uP-lQt"/>
+                                                    <constraint firstAttribute="bottom" secondItem="KCq-hF-tlV" secondAttribute="bottom" id="YDR-SS-NqM"/>
+                                                    <constraint firstAttribute="trailing" secondItem="KCq-hF-tlV" secondAttribute="trailing" constant="40" id="bY3-6q-lzp"/>
+                                                </constraints>
+                                            </view>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="v56-As-gnW">
+                                                <rect key="frame" x="0.0" y="24.5" width="375" height="75.5"/>
+                                                <subviews>
+                                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" editable="NO" text="You will receive an email with your tracking number once the order has been shipped." textAlignment="center" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PKB-zB-ufB">
+                                                        <rect key="frame" x="40" y="0.0" width="295" height="75.5"/>
+                                                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                                        <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+                                                        <fontDescription key="fontDescription" name="NexaW01-Regular" family="NexaW01-Regular" pointSize="15"/>
+                                                        <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                                    </textView>
+                                                </subviews>
+                                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                                <constraints>
+                                                    <constraint firstItem="PKB-zB-ufB" firstAttribute="leading" secondItem="v56-As-gnW" secondAttribute="leading" constant="40" id="EVg-13-Z8N"/>
+                                                    <constraint firstItem="PKB-zB-ufB" firstAttribute="top" secondItem="v56-As-gnW" secondAttribute="top" id="fNE-v6-ylF"/>
+                                                    <constraint firstAttribute="trailing" secondItem="PKB-zB-ufB" secondAttribute="trailing" constant="40" id="wmc-hr-ahh"/>
+                                                    <constraint firstAttribute="bottom" secondItem="PKB-zB-ufB" secondAttribute="bottom" id="z2K-qW-R3k"/>
+                                                </constraints>
+                                            </view>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wh9-wX-uDx">
+                                                <rect key="frame" x="0.0" y="101" width="375" height="60.5"/>
+                                                <subviews>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Clj-69-8rx">
+                                                        <rect key="frame" x="20" y="0.0" width="335" height="60.5"/>
+                                                        <subviews>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="&quot;ORDER NUMBER&quot;" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="K6A-iU-Bw3">
+                                                                <rect key="frame" x="0.0" y="0.0" width="335" height="60.5"/>
+                                                                <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="14"/>
+                                                                <nil key="textColor"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                        </subviews>
+                                                    </stackView>
+                                                </subviews>
+                                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                                <constraints>
+                                                    <constraint firstItem="Clj-69-8rx" firstAttribute="top" secondItem="wh9-wX-uDx" secondAttribute="top" id="Vmt-cX-43z"/>
+                                                    <constraint firstAttribute="trailing" secondItem="Clj-69-8rx" secondAttribute="trailing" constant="20" id="a1z-Aj-APW"/>
+                                                    <constraint firstAttribute="bottom" secondItem="Clj-69-8rx" secondAttribute="bottom" id="hdw-CJ-Amr"/>
+                                                    <constraint firstItem="Clj-69-8rx" firstAttribute="leading" secondItem="wh9-wX-uDx" secondAttribute="leading" constant="20" id="seR-ID-Kqa"/>
+                                                </constraints>
+                                            </view>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8CZ-jm-gk8">
+                                                <rect key="frame" x="0.0" y="162.5" width="375" height="45"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="45" id="jbg-1c-o6i"/>
+                                                </constraints>
+                                                <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="14"/>
+                                                <color key="tintColor" name="LoadingColor"/>
+                                                <state key="normal" title="Back to home"/>
+                                                <connections>
+                                                    <action selector="backToHome:" destination="edz-jN-ZMw" eventType="touchUpInside" id="135-UE-USM"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                    </stackView>
+                                    <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="jVO-fE-GZS">
+                                        <rect key="frame" x="0.0" y="382.5" width="375" height="284.5"/>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                    </tableView>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <constraints>
+                            <constraint firstAttribute="bottom" secondItem="71K-bu-09x" secondAttribute="bottom" id="5hI-XD-dmy"/>
+                            <constraint firstItem="71K-bu-09x" firstAttribute="top" secondItem="bSB-ap-95h" secondAttribute="top" id="CKh-vh-x12"/>
+                            <constraint firstItem="71K-bu-09x" firstAttribute="leading" secondItem="bSB-ap-95h" secondAttribute="leading" id="FqX-OF-fOG"/>
+                            <constraint firstAttribute="trailing" secondItem="71K-bu-09x" secondAttribute="trailing" id="eF8-YG-zGR"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="bSB-ap-95h"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="h8d-T5-CqQ"/>
+                    <nil key="simulatedTopBarMetrics"/>
+                    <connections>
+                        <outlet property="orderNumberField" destination="K6A-iU-Bw3" id="g3o-dc-h2P"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="sNO-g7-VYA" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="860" y="98.50074962518741"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="thred.logo" width="550" height="550"/>
+        <namedColor name="LoadingColor">
+            <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>

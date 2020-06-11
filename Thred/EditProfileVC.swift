@@ -242,17 +242,14 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
             return}
 
         let data = [
-            "Bio" : editUserInfo.bio ?? "",
-            "Username" : editUserInfo.username,
-            "Fullname" : editUserInfo.fullName,
-            "UID" : userInfo.uid
-        ]
+            "Bio" : editUserInfo.bio ?? userInfo.bio ?? "",
+            "Username" : editUserInfo.username ?? userInfo.username ?? "",
+            "Full_Name" : editUserInfo.fullName ?? userInfo.fullName ?? "",
+        ] as [String:Any]
         
-        Functions.functions().httpsCallable("updateUserInfo").call(data, completion: { result, error  in
-           
-            if error != nil{
-                print(error?.localizedDescription ?? "")
-                
+        Firestore.firestore().collection("Users").document(uid).updateData(data, completion: { error in
+            if let err = error{
+                print(err.localizedDescription)
             }
             else{
                 if let dp = self.editUserInfo.dp, dp != userInfo.dp{
@@ -260,6 +257,7 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
 
                     let picID = NSUUID().uuidString.replacingOccurrences(of: "-", with: "")
                     let ref = Storage.storage().reference().child("Users/" + uid + "/" + "profile_pic-" + picID + ".jpeg")
+                    
                     ref.putData(imageData, metadata: nil, completion: { metaData, error in
                         
                         if error != nil{
@@ -279,6 +277,8 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
                 }
             }
         })
+        
+        
     }
     
 
@@ -290,7 +290,7 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
         spinner.animate()
         save {
             spinner.removeFromSuperview()
-            self.setUserInfo(username: self.editUserInfo.username, fullname: self.editUserInfo.fullName, image: self.editUserInfo.dp, bio: self.editUserInfo.bio, notifID: self.editUserInfo.notifID, dpUID: self.editUserInfo.dpID, userFollowing: userInfo.userFollowing, followerCount: userInfo.followerCount, postCount: userInfo.postCount, followingCount: userInfo.followingCount, usersBlocking: userInfo.usersBlocking)
+            self.setUserInfo(username: self.editUserInfo.username, fullname: self.editUserInfo.fullName, image: self.editUserInfo.dp, bio: self.editUserInfo.bio, notifID: self.editUserInfo.notifID, dpUID: self.editUserInfo.dpID, userFollowing: userInfo.userFollowing, followerCount: userInfo.followerCount, postCount: userInfo.postCount, followingCount: userInfo.followingCount, usersBlocking: userInfo.usersBlocking, profileLink: userInfo.profileLink)
             self.performSegue(withIdentifier: "backToProfile", sender: nil)
         }
  

@@ -16,7 +16,260 @@ let window = UIApplication.shared.windows.first
 
 var likeQueue = [String: Bool]()
 
-class ProductCell: UITableViewCell, UITextViewDelegate {
+class ProductCell: UITableViewCell, UITextViewDelegate, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+    
+    @IBOutlet weak var pageControl: UIPageControl!
+    
+    var collectionViewOffset: CGFloat {
+        get {
+            return collectionView.contentOffset.x
+        }
+
+        set {
+            scrollViewDidScroll(collectionView)
+            collectionView.contentOffset.x = newValue
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return 2
+    }
+    
+    func checkForDesign(cell: ProductDesignCell?, indexPath: IndexPath){
+        
+        let feedVC = self.vc as? FeedVC
+        let userVC = self.vc as? UserVC
+        let friendVC = self.vc as? FriendVC
+        let fullVC = self.vc as? FullProductVC
+        cell?.vc = vc
+        cell?.cell = self
+        cell?.setGestureRecognizers()
+        cell?.usernameLbl.text = product.name
+        cell?.usernameLbl.removeShadow()
+        cell?.usernameLbl.setRadiusWithShadow()
+        guard let product = product else{return}
+        
+
+        let tableView = friendVC?.tableView ?? userVC?.tableView ?? feedVC?.tableView ?? fullVC?.tableView
+        
+        cell?.imageView.image = nil
+        cell?.imageView.backgroundColor = ColorCompatibility.tertiarySystemGroupedBackground
+        
+        if let username = product.userInfo.username{
+            cell?.usernameLbl.text = "@\(username)"
+            cell?.usernameLbl.removeShadow()
+            cell?.usernameLbl.setRadiusWithShadow()
+        }
+        
+        if let picCell = collectionView.cellForItem(at: IndexPath(item: 0, section: 0)) as? ProductPicCell{
+            cell?.circularProgress.setProgressWithAnimation(duration: 0.0, value: picCell.circularProgress.progressValue, from: 0, finished: true){
+                
+            }
+        }
+        
+        DispatchQueue(label: "cache").async {
+            let img = cache.imageFromCache(forKey: product.picID)
+            
+            DispatchQueue.main.async {
+                if let imgFromCache = img{
+                    let products = feedVC?.loadedProducts ?? userVC?.loadedProducts ?? friendVC?.loadedProducts
+
+                    let index = products?.firstIndex(where: {$0.productID == product.picID!}) ?? 0
+                        
+                    if let cell = tableView?.cellForRow(at: IndexPath(row: index, section: 0)) as? ProductCell{
+                        if let designCell = cell.collectionView.cellForItem(at: indexPath) as? ProductDesignCell{
+                            designCell.imageView.backgroundColor = UIColor(named: product.templateColor)
+                            designCell.imageView.image = imgFromCache
+                            designCell.circularProgress.isHidden = true
+                        }
+                    }
+                }
+            }
+        }
+        
+    }
+    
+    func checkForPic(cell: ProductPicCell?, indexPath: IndexPath, shouldDownload: Bool){
+        
+        let feedVC = self.vc as? FeedVC
+        let userVC = self.vc as? UserVC
+        let friendVC = self.vc as? FriendVC
+        let fullVC = self.vc as? FullProductVC
+        guard let product = product else{return}
+
+        let tableView = friendVC?.tableView ?? userVC?.tableView ?? feedVC?.tableView ?? fullVC?.tableView
+        
+        cell?.imageView.image = nil
+        cell?.canvasDisplayView.image = nil
+        cell?.circularProgress.isHidden = true
+        cell?.vc = vc
+        cell?.cell = self
+        cell?.setGestureRecognizers()
+        
+        if let full = self.vc as? FullProductVC{
+            if full.selectedComment != nil{
+                full.navigationItem.hidesBackButton = true
+            }
+        }
+        
+        DispatchQueue(label: "cache").async {
+            let img = cache.imageFromCache(forKey: product.picID)
+            let bundlePath = Bundle.main.path(forResource: product.templateColor, ofType: "png")
+            let image = UIImage(contentsOfFile: bundlePath!)
+            
+            DispatchQueue.main.async {
+                if let imgFromCache = img{
+                    let products = feedVC?.loadedProducts ?? userVC?.loadedProducts ?? friendVC?.loadedProducts
+
+                    let index = products?.firstIndex(where: {$0.productID == product.picID!}) ?? 0
+                        
+                    if let cell = tableView?.cellForRow(at: IndexPath(row: index, section: 0)) as? ProductCell{
+                        if let picCell = cell.collectionView.cellForItem(at: indexPath) as? ProductPicCell{
+                            picCell.imageView.image = image
+                            picCell.canvasDisplayView.image = imgFromCache
+                            picCell.circularProgress.isHidden = true
+                            picCell.imageView.removeShadow()
+                            picCell.imageView.addShadowToImageNotLayer()
+                        }
+                        if let designCell = cell.collectionView.cellForItem(at: indexPath) as? ProductDesignCell{
+                            designCell.imageView.image = imgFromCache
+                            designCell.circularProgress.isHidden = true
+                        }
+                    }
+                    if let full = self.vc as? FullProductVC{
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                            full.navigationItem.hidesBackButton = false
+                            if full.selectedComment != nil{
+                                full.performSegue(withIdentifier: "toComments", sender: nil)
+                            }
+                        }
+                    }
+                }
+                else if shouldDownload{
+                    self.checkAndDownload(picID: product.picID!, cp: cell?.circularProgress, completed: { imgDownloaded, picID in
+                        let products = feedVC?.loadedProducts ?? userVC?.loadedProducts ?? friendVC?.loadedProducts
+
+                        let index = products?.firstIndex(where: {$0.productID == product.picID!}) ?? 0
+                        
+                        if let cell = tableView?.cellForRow(at: IndexPath(row: index, section: 0)) as? ProductCell{
+                            cell.collectionView.reloadData()
+                        }
+                    })
+                }
+            }
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        
+        if let picCell = cell as? ProductPicCell{
+            if picCell.canvasDisplayView.image == nil{
+                checkForPic(cell: picCell, indexPath: indexPath, shouldDownload: false)
+            }
+        }
+        else if let designCell = cell as? ProductDesignCell{
+            if designCell.imageView.image == nil{
+                checkForDesign(cell: designCell, indexPath: indexPath)
+            }
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        
+
+        if indexPath.row == 0{
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "productPic", for: indexPath) as? ProductPicCell
+            checkForPic(cell: cell, indexPath: indexPath, shouldDownload: true)
+            return cell!
+        }
+        else{
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "productDesign", for: indexPath) as? ProductDesignCell
+            checkForDesign(cell: cell, indexPath: indexPath)
+            return cell!
+        }
+    }
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let x = scrollView.contentOffset.x
+        let w = scrollView.bounds.size.width
+        let currentPage = Int(ceil(x/w))
+        pageControl.currentPage = currentPage
+    }
+    
+    func checkAndDownload(picID: String, cp: CircularProgress?, completed: @escaping (UIImage?, String?) -> ()){
+        let pic_id = picID
+        //if product?.blurred ?? false{
+         //   pic_id = "blur_\(pic_id)"
+        //}
+        
+        //if vc is FullProductVC{
+        //    pic_id = "thumbnail_\(picID)"
+        //}
+        cp?.isHidden = false
+
+        let ref = Storage.storage().reference().child("Users/" + product.userInfo.uid! + "/" + "Products/" + picID + "/" + pic_id + ".png")
+        ref.downloadURL(completion: { url, error in
+            if error != nil{
+                print(error?.localizedDescription ?? "")
+                completed(nil, picID)
+            }
+            else{
+                var dub: CGFloat = 0
+                var oldDub: CGFloat = 0
+                downloader.requestImage(with: url, options: [.highPriority, .continueInBackground, .scaleDownLargeImages], context: nil, progress: { (receivedSize: Int, expectedSize: Int, link) -> Void in
+                    dub = CGFloat(receivedSize) / CGFloat(expectedSize)
+                    print("Progress \(dub)")
+                    print("Old Progress \(oldDub)")
+                    DispatchQueue.main.async {
+                        
+                        cp?.setProgressWithAnimation(duration: 0.0, value: dub, from: oldDub, finished: true){
+                            oldDub = dub
+                        }
+                    }
+                }, completed: {(image, data, error, finished) in
+                    if error != nil{
+                        print(error?.localizedDescription ?? "")
+                        completed(nil, picID)
+                    }
+                    else{
+                        if let imgData = data{
+                            completed(image, picID)
+                            if self.vc is FullProductVC{
+                                DispatchQueue(label: "store").async {
+                                    cache.storeImageData(toDisk: imgData, forKey: pic_id)
+                                }
+                            }
+                            else{
+                                let feedVC = self.vc as? FeedVC
+                                let userVC = self.vc as? UserVC
+                                let friendVC = self.vc as? FriendVC
+
+                                if let products = feedVC?.loadedProducts ?? userVC?.loadedProducts ?? friendVC?.loadedProducts {
+                                    if let index = products.firstIndex(where: {$0.productID == self.product.productID}){
+                                        DispatchQueue(label: "store").async {
+                                            if index <= 7{
+                                                cache.storeImageData(toDisk: imgData, forKey: picID)
+                                            }
+                                            else{
+                                                cache.storeImage(toMemory: image, forKey: picID)
+                                            }
+                                        }
+                                    }
+                                    else{
+                                        
+                                    }
+                                }
+                                else{
+                                    
+                                }
+                            }
+                        }
+                    }
+                })
+            }
+        })
+    }
+    
 
     @IBOutlet weak var progressView: UIProgressView!
     
@@ -40,8 +293,8 @@ class ProductCell: UITableViewCell, UITextViewDelegate {
     @IBOutlet weak var userImage: UIImageView!
     @IBOutlet weak var fullName: UILabel!
     @IBOutlet weak var username: UILabel!
-    @IBOutlet weak var productPicture: UIImageView!
     @IBOutlet weak var imageStackBar: UIStackView!
+    @IBOutlet weak var collectionView: UICollectionView!
     
     @IBOutlet weak var likeBtn: UIButton!
     @IBOutlet weak var likesLbl: UILabel!
@@ -49,7 +302,7 @@ class ProductCell: UITableViewCell, UITextViewDelegate {
     @IBOutlet weak var productDescription: UITextView!
     
     @IBOutlet weak var price: UILabel!
-    @IBOutlet weak var title: UITextField!
+    @IBOutlet weak var title: UIButton!
     weak var vc: UIViewController?
     @IBOutlet weak var optionMenuActionBtn1: UIButton!
     @IBOutlet weak var optionMenuCancelBtn: UIButton!
@@ -74,13 +327,11 @@ class ProductCell: UITableViewCell, UITextViewDelegate {
     }
     
     
-    let circularProgress = CircularProgress(frame: CGRect(x: 0, y: 0, width: 80, height: 80))
-
-    var imageCenter: CGPoint!
-    
     let selectedColor = UIColor(red: 1, green: 0, blue: 0.3137, alpha: 0.9) /* #ff0050 */
     
     @objc func toProfile(_ sender: UITapGestureRecognizer) {
+        
+        
         if vc is FeedVC || vc is FullProductVC{
             
             switch vc {
@@ -101,15 +352,14 @@ class ProductCell: UITableViewCell, UITextViewDelegate {
                     }
                 }
             default:
-                if product.uid == userInfo.uid{
+                if product.userInfo.uid == userInfo.uid{
                     vc?.tabBarController?.selectedIndex = 4
                     return
                 }
             }
             
-            let info = UserInfo(uid: product.uid, dp: self.userImage?.image?.jpegData(compressionQuality: 1.0), dpID: product.userImageID ?? "null", username: product.username ?? "", fullName: product.fullName ?? "", bio: "", notifID: "", userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [])
-            (vc as? FullProductVC)?.friendInfo = info
-            (vc as? FeedVC)?.selectedUser = info
+            (vc as? FullProductVC)?.friendInfo = product.userInfo
+            (vc as? FeedVC)?.selectedUser = product.userInfo
             vc?.performSegue(withIdentifier: "toFriend", sender: nil)
         }
         if let userVC = vc as? UserVC{
@@ -143,7 +393,7 @@ class ProductCell: UITableViewCell, UITextViewDelegate {
             guard let url = url else{return}
             self.animateProgressBar(value: 1.0)
             var shareMessage = "Check out this t-shirt on Thred!"
-            if self.product.uid == userInfo.uid{
+            if self.product.userInfo.uid == userInfo.uid{
                 shareMessage = "Check out my t-shirt on Thred!"
             }
             let activity = UIActivityViewController(
@@ -174,7 +424,11 @@ class ProductCell: UITableViewCell, UITextViewDelegate {
     }
     
     func getThumbnailURL(completed: @escaping (URL?) -> ()){
-        let ref = Storage.storage().reference().child("Users/" + product.uid + "/" + "Products/" + product.productID + "/" + "link_" + product.productID + ".png")
+        guard let productUID = product.userInfo.uid else{
+            completed(nil)
+            return
+        }
+        let ref = Storage.storage().reference().child("Users/" + productUID + "/" + "Products/" + product.productID + "/" + "link_" + product.productID + ".png")
         ref.downloadURL(completion: { url, error in
             if error != nil{
                 print(error?.localizedDescription ?? "")
@@ -188,7 +442,11 @@ class ProductCell: UITableViewCell, UITextViewDelegate {
     }
     
     func generateLink(product: Product, completed: @escaping (URL?) -> ()){
-        guard let link = URL(string: "https://thredapps.com/users/\(product.uid)/product/\(product.productID)") else {
+        guard let productUID = product.userInfo.uid else{
+            completed(nil)
+            return
+        }
+        guard let link = URL(string: "https://thredapps.com/users/\(productUID)/product/\(product.productID)") else {
             completed(nil)
             return }
         let dynamicLinksDomainURIPrefix = "https://thred.thredapps.com"
@@ -202,7 +460,7 @@ class ProductCell: UITableViewCell, UITextViewDelegate {
         if let description = product.description, !description.isEmpty{
             descriptionToAdd = " - \(description)"
         }
-        if let fullName = product.fullName{
+        if let fullName = product.userInfo.fullName{
             fullNameToAdd = "\(fullName)'s "
         }
         linkBuilder?.socialMetaTagParameters = DynamicLinkSocialMetaTagParameters()
@@ -236,7 +494,7 @@ class ProductCell: UITableViewCell, UITextViewDelegate {
             return
         }
         
-        let productToOpen = Product(uid: product.uid, picID: product.picID, description: product.description, fullName: product.fullName, username: product.username, productID: product.productID, userImageID: product.userImageID, timestamp: product.timestamp, index: product.index, timestampDiff: product.timestampDiff, blurred: product.blurred, price: product.price, name: product.name, templateColor: product.templateColor, likes: product.likes, liked: product.liked, designImage: product.designImage, comments: product.comments, link: nil)
+        let productToOpen = Product(userInfo: product.userInfo, picID: product.picID, description: product.description, productID: product.productID, timestamp: product.timestamp, index: product.index, timestampDiff: product.timestampDiff, blurred: product.blurred, price: product.price, name: product.name, templateColor: product.templateColor, likes: product.likes, liked: product.liked, designImage: product.designImage, comments: product.comments, link: nil)
         
         switch vc{
             
@@ -351,10 +609,11 @@ class ProductCell: UITableViewCell, UITextViewDelegate {
     func updateLiking(loadedProducts: [Product]?, saveType: String?){
         
         guard let uid = userInfo.uid else{return}
+        guard let productUID = product.userInfo.uid else{return}
 
         let data = [
             "product_id" : product.productID,
-            "creator_uid" : product.uid,
+            "creator_uid" : productUID,
             "uid" : uid,
             "is_liking" : isLiked
             ] as [String : Any]
@@ -381,22 +640,24 @@ class ProductCell: UITableViewCell, UITextViewDelegate {
     }
     
     
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        return CGSize(width: self.frame.width, height: self.frame.width)
+    }
     
-    lazy var canvasDisplayView: UIImageView = {
-        let view = UIImageView(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
-        view.isUserInteractionEnabled = false
-        view.backgroundColor = .clear
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
-    }()
     
     
     
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
-        imageCenter = productPicture.center
         productDescription.delegate = self
+        collectionView.delegate = self
+        collectionView.dataSource = self
+        collectionView.register(UINib(nibName: "ProductPicCell", bundle: nil), forCellWithReuseIdentifier: "productPic")
+        collectionView.register(UINib(nibName: "ProductDesignCell", bundle: nil), forCellWithReuseIdentifier: "productDesign")
+
+        title.titleLabel?.adjustsFontSizeToFitWidth = true
+        title.titleLabel?.minimumScaleFactor = 0.5
         likeBtn.imageView?.animationImages = [
             (likedImage?.imageWithColor(selectedColor))!,
             (UIImage(named: "flap1")?.imageWithColor(selectedColor))!,
@@ -416,28 +677,22 @@ class ProductCell: UITableViewCell, UITextViewDelegate {
 
         
         likeBtn.setImage(unlikedImage, for: .normal)
-        likeBtn.tintColor = ColorCompatibility.secondaryLabel
+        likeBtn.tintColor = UIColor.lightGray
         
         if let dpMask = self.dpMaskingViews.first{
             dpMask.layer.cornerRadius = dpMask.frame.height / 2
             dpMask.clipsToBounds = true
         }
-        setUpCircularProgress()
         let tap = UITapGestureRecognizer(target: self, action: #selector(toProfile(_:)))
         userInfoView.addGestureRecognizer(tap)
         
-        productPicture.addSubview(canvasDisplayView)
-
+        shareBtn.setImage(UIImage(nameOrSystemName: "arrowshape.turn.up.right", systemPointSize: 17, iconSize: 7), for: .normal)
         
         let tapper2 = UITapGestureRecognizer(target: self, action: #selector(segueToFull(_:)))
         tapper2.numberOfTapsRequired = 1
         infoStack.addGestureRecognizer(tapper2)
         
-
-        NSLayoutConstraint(item: canvasDisplayView, attribute: .centerX, relatedBy: .equal, toItem: productPicture, attribute: .centerX, multiplier: 1.0, constant: 0).isActive = true
-        NSLayoutConstraint(item: canvasDisplayView, attribute: .centerY, relatedBy: .equal, toItem: productPicture, attribute: .centerY, multiplier: 1.0, constant: -20).isActive = true
-        NSLayoutConstraint(item: canvasDisplayView, attribute: .width, relatedBy: .equal, toItem: productPicture, attribute: .width, multiplier: 0.25, constant: 0).isActive = true
-        NSLayoutConstraint(item: canvasDisplayView, attribute: .height, relatedBy: .equal, toItem: canvasDisplayView, attribute: .width, multiplier: canvasInfo.aspectRatio, constant: 0).isActive = true
+        
         
         optionMenu.backgroundColor = ColorCompatibility.systemBackground.withAlphaComponent(0.9)
         let gesture = UITapGestureRecognizer.init(target: self, action: #selector(openOptionMenu(_:)))
@@ -445,54 +700,21 @@ class ProductCell: UITableViewCell, UITextViewDelegate {
 
         let tapper = UITapGestureRecognizer(target: self, action: #selector(doubleTapped(_:)))
         tapper.numberOfTapsRequired = 2
-        productPicture.addGestureRecognizer(tapper)
+        collectionView.addGestureRecognizer(tapper)
 
     }
     
-    @objc func segueToFull(_ sender: UITapGestureRecognizer){
-        guard let imageData = product.designImage ?? productPicture.makeSnapshot(clear: false, subviewsToIgnore: [])?.pngData() else{
-            return
-        }
-        DispatchQueue.main.async {
-            self.product.designImage = imageData
-            
-            guard !(self.vc is FullProductVC) else{return}
-            (self.vc as? UserVC)?.productToOpen = self.product
-            (self.vc as? FriendVC)?.productToOpen = self.product
-            (self.vc as? FeedVC)?.productToOpen = self.product
-            self.vc?.performSegue(withIdentifier: "toFull", sender: nil)
-        }
+    @IBAction @objc func segueToFull(_ sender: Any){
+        
+        guard !(self.vc is FullProductVC) else{return}
+        (self.vc as? UserVC)?.productToOpen = self.product
+        (self.vc as? FriendVC)?.productToOpen = self.product
+        (self.vc as? FeedVC)?.productToOpen = self.product
+        self.vc?.performSegue(withIdentifier: "toFull", sender: nil)
+        
     }
     
-    func setGestureRecognizers(){
-        if vc is FullProductVC{
-            let pinch = UIPinchGestureRecognizer(target: self, action: #selector(handleZoom(_:)))
-            let pan = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
-            pan.minimumNumberOfTouches = 2
-            pan.maximumNumberOfTouches = 2
-            pan.delegate = self
-            pinch.delegate = self
-            imageCenter = productPicture.center
-            productPicture.addGestureRecognizer(pinch)
-            productPicture.addGestureRecognizer(pan)
-        }
-        else{
-            for gesture in productPicture.gestureRecognizers ?? []{
-                gesture.delegate = nil
-                imageCenter = nil
-                productPicture.removeGestureRecognizer(gesture)
-            }
-        }
-    }
     
-    override func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
-        return true
-    }
-    
-    override func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
-        guard let fullVC = (vc as? FullProductVC) else{return false}
-        return !fullVC.isRasterizing
-    }
     
     func textView(_ textView: UITextView, shouldInteractWith URL: URL, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {
         
@@ -503,7 +725,7 @@ class ProductCell: UITableViewCell, UITextViewDelegate {
             if scheme.starts(with: "mention"){
                 let username = URL.absoluteString.replacingOccurrences(of: "mention:", with: "")
                 if username != userInfo.username, username != (vc as? FriendVC)?.friendInfo.username{
-                    let user = UserInfo(uid: nil, dp: nil, dpID: nil, username: username, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [])
+                    let user = UserInfo(uid: nil, dp: nil, dpID: nil, username: username, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil)
                     (vc as? FriendVC)?.selectedUser = user
                     (vc as? UserVC)?.selectedUser = user
                     (vc as? FeedVC)?.selectedUser = user
@@ -519,23 +741,7 @@ class ProductCell: UITableViewCell, UITextViewDelegate {
     }
     
     
-    func setUpCircularProgress(){
-        
-        if !self.productPicture.subviews.contains(circularProgress){
-            circularProgress.isHidden = true
-            circularProgress.progressColor = (UIColor(named: "loadingColor") ?? UIColor(red: 0.4235, green: 0.7863, blue: 0.9882, alpha: 1)) /* #e0e0e0 */
-            circularProgress.trackColor = ColorCompatibility.systemFill
-            circularProgress.translatesAutoresizingMaskIntoConstraints = false
-            self.productPicture.addSubview(circularProgress)
-            self.bringSubviewToFront(circularProgress)
-            NSLayoutConstraint.activate([
-                circularProgress.heightAnchor.constraint(equalToConstant: 80),
-                circularProgress.widthAnchor.constraint(equalToConstant: 80),
-                circularProgress.centerXAnchor.constraint(equalTo: self.productPicture.centerXAnchor),
-                circularProgress.centerYAnchor.constraint(equalTo: self.productPicture.centerYAnchor)
-            ])
-        }
-    }
+    
 
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
@@ -573,7 +779,7 @@ class ProductCell: UITableViewCell, UITextViewDelegate {
         (vc as? FriendVC)?.reportType = .post
         (vc as? FriendVC)?.selectedReportID = product.productID
         (vc as? FeedVC)?.selectedReportID = product.productID
-        (vc as? FeedVC)?.selectedReportUID = product.uid
+        (vc as? FeedVC)?.selectedReportUID = product.userInfo.uid
 
         vc?.performSegue(withIdentifier: "toReport", sender: nil)
     }
@@ -589,10 +795,12 @@ class ProductCell: UITableViewCell, UITextViewDelegate {
             }
             tableView?.isScrollEnabled = false
             tableView?.allowsSelection = false
-            if product?.uid == userInfo.uid{
+            if product?.userInfo.uid == userInfo.uid{
+                optionMenuActionBtn1.titleLabel?.text = "Edit"
                 optionMenuActionBtn1.setTitle("Edit", for: .normal)
             }
             else{
+                optionMenuActionBtn1.titleLabel?.text = "Report"
                 optionMenuActionBtn1.setTitle("Report", for: .normal)
             }
             optionMenu.alpha = 0.0
@@ -633,59 +841,11 @@ class ProductCell: UITableViewCell, UITextViewDelegate {
     
     override func prepareForReuse() {
         super.prepareForReuse()
-        productPicture?.image = nil
         optionMenu.isHidden = true
         //Stop or reset anything else that is needed here
     }
     
-    @objc func handleZoom(_ gesture: UIPinchGestureRecognizer) {
-        switch gesture.state {
-        case .began, .changed:
-            if gesture.scale >= 1 {
-                let scale = gesture.scale
-                gesture.view!.transform = CGAffineTransform(scaleX: scale, y: scale)
-            }
-            break;
-        default:
-            UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseInOut, animations: {
-              gesture.view!.transform = .identity
-            }) { completed in
-                if completed{
-                    DispatchQueue.main.async {
-                        self.likeBtn.isHidden = false
-                        self.likesLbl.isHidden = false
-                    }
-                }
-            }
-            (vc as? FullProductVC)?.tableView.isScrollEnabled = true
-        }
-    }
     
-    
-    @objc func handlePan(_ gesture: UIPanGestureRecognizer) {
-        
-        switch gesture.state {
-        case .began, .changed:
-            self.likeBtn.isHidden = true
-            self.likesLbl.isHidden = true
-            (vc as? FullProductVC)?.tableView.isScrollEnabled = false
-            let translation = gesture.translation(in: self.contentView)
-            gesture.view?.center = CGPoint(x: gesture.view!.center.x + translation.x, y: gesture.view!.center.y + translation.y)
-            gesture.setTranslation(.zero, in: self.contentView)
-            break;
-        default:
-            UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseInOut, animations: {
-                gesture.view?.center = self.imageCenter
-                gesture.setTranslation(.zero, in: self.contentView)
-            }) { completed in
-                if completed{
-                   
-                }
-            }
-            (vc as? FullProductVC)?.tableView.isScrollEnabled = true
-            break
-        }
-    }
 }
  
 extension UIView {

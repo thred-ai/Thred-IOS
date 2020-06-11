@@ -20,15 +20,18 @@ class SignInVC: UIViewController {
     
     @IBAction func signIn(_ sender: UIBarButtonItem) {
         sender.isEnabled = false
+        self.navigationItem.hidesBackButton = true
         guard let text = passwordField.text
         else{
             sender.isEnabled = true
+            self.navigationItem.hidesBackButton = false
             return
         }
         
         guard let usernameOrEmail = usernameField.text
         else{
             sender.isEnabled = true
+            self.navigationItem.hidesBackButton = false
             return
                 
         }
@@ -48,8 +51,7 @@ class SignInVC: UIViewController {
         spinner.animate()
         
         if usernameOrEmail.contains("@"){
-            sender.isEnabled = true
-            self.signIn(email: usernameOrEmail, password: text, spinner: spinner)
+            self.signIn(email: usernameOrEmail, password: text, spinner: spinner, sender: sender)
         }
         else{
             Functions.functions().httpsCallable("auth").call(data, completion: { result, error in
@@ -60,7 +62,6 @@ class SignInVC: UIViewController {
                     sender.isEnabled = true
                 }
                 else{
-                    sender.isEnabled = true
                     guard let result = result else{return}
                     guard let returnedString = result.data as? String else{return}
                     if returnedString.starts(with: "ERROR:"){
@@ -68,16 +69,18 @@ class SignInVC: UIViewController {
                         let err = returnedString.replacingOccurrences(of: "ERROR:", with: "")
                         print(err)
                         self.updateErrorView(text: err)
+                        sender.isEnabled = true
+                        self.navigationItem.hidesBackButton = false
                     }
                     else{
-                        self.signIn(email: returnedString, password: text, spinner: spinner)
+                        self.signIn(email: returnedString, password: text, spinner: spinner, sender: sender)
                     }
                 }
             })
         }
     }
     
-    func signIn(email: String, password: String, spinner: MapSpinnerView){
+    func signIn(email: String, password: String, spinner: MapSpinnerView, sender: UIBarButtonItem?){
         Auth.auth().signIn(withEmail: email, password: password, completion: { result, error in
             if let err = error{
                 spinner.removeFromSuperview()
@@ -90,6 +93,8 @@ class SignInVC: UIViewController {
                 UserDefaults.standard.set(userUID, forKey: "UID")
                 userInfo.uid = userUID
                 self.loadUser(userUID: userUID){ success in
+                    sender?.isEnabled = true
+                    self.navigationItem.hidesBackButton = false
                     if success{
                         if let appdelegate: AppDelegate = UIApplication.shared.delegate as? AppDelegate{
                             appdelegate.registerNotifs(application: UIApplication.shared)
@@ -125,6 +130,91 @@ class SignInVC: UIViewController {
         
         passwordField.layer.cornerRadius = passwordField.frame.height / 2
         passwordField.clipsToBounds = true
+    }
+    
+    func loadUser(userUID: String, completed: @escaping (Bool) -> ()){
+        self.downloadUserInfo(uid: userUID, userVC: nil, feedVC: nil, downloadingPersonalDP: true, doNotDownloadDP: false, userInfoToUse: nil, queryOnUsername: false, completed: { uid, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followersCount, followingCount, profileLink  in
+            
+            if username == nil{
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.5){
+                    completed(false)
+                }
+            }
+            else{
+                self.getBankInfo {
+                    self.getCardInfo {
+                        self.getFromFirestore(completed: { _ in
+                            if let appdelegate: AppDelegate = UIApplication.shared.delegate as? AppDelegate{
+                                appdelegate.registerNotifs(application: UIApplication.shared)
+                            }
+                            self.setUserInfo(username: username, fullname: fullName, image: imgData, bio: bio, notifID: notifID, dpUID: dpUID, userFollowing: userFollowing, followerCount: followersCount, postCount: postCount, followingCount: followingCount, usersBlocking: usersBlocking, profileLink: profileLink)
+                            completed(true)
+                        })
+                    }
+                }
+            }
+        })
+    }
+    
+    func getBankInfo(completed: @escaping () -> ()){
+        let data = ["uid" : userInfo.uid ?? ""]
+        Functions.functions().httpsCallable("getBankInfo").call(data, completion: { result, error in
+            if error != nil{
+                print(error?.localizedDescription ?? "")
+                completed()
+            }
+            else{
+                if let res = result?.data as? [String:Any]{
+                    if let accounts = res["external_accounts"] as? [String : Any]{
+                        if let data = accounts["data"] as? [[String:Any]]{
+                            guard let firstAccount = data.first, let bankAccount = firstAccount["bank_name"] as? String, let lastFour = firstAccount["last4"] as? String else{completed(); return}
+                            UserDefaults.standard.set(bankAccount, forKey: "BANK_INSTITUTION")
+                            UserDefaults.standard.set(lastFour, forKey: "BANK_LAST_4")
+                            completed()
+                        }
+                        else{
+                            completed()
+                        }
+                    }
+                    else{
+                        completed()
+                    }
+                }
+                else{
+                    completed()
+                }
+            }
+        })
+    }
+    
+    func getCardInfo(completed: @escaping () -> ()){
+        let data = ["uid" : userInfo.uid ?? ""]
+        Functions.functions().httpsCallable("getCardInfo").call(data, completion: { result, error  in
+            if error != nil{
+                print(error?.localizedDescription ?? "")
+                completed()
+            }
+            else{
+                if let res = result?.data as? [String:Any]{
+                    if let card = res["card"] as? [String : Any], let billingDetails = res["billing_details"] as? [String : Any], let address = billingDetails["address"] as? [String : Any]{
+                        let cardBrand = card["brand"] as? String
+                        let cardLast4 = card["last4"] as? String
+                        let postalCode = address["postal_code"] as? String
+
+                        UserDefaults.standard.set(cardBrand, forKey: "CARD_BRAND")
+                        UserDefaults.standard.set(cardLast4, forKey: "CARD_LAST_4")
+                        UserDefaults.standard.set(postalCode, forKey: "CARD_POSTAL_CODE")
+                        completed()
+                    }
+                    else{
+                        completed()
+                    }
+                }
+                else{
+                    completed()
+                }
+            }
+        })
     }
     
     

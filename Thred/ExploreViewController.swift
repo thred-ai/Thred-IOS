@@ -36,7 +36,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
 
         tableView.register(UINib(nibName: "ExploreColorCell", bundle: nil), forCellReuseIdentifier: "ExploreColorCell")
         featuredHeader = tableView.loadFeaturedHeaderFromNib()
-        featuredHeader.exploreVC = self
+        featuredHeader.vc = self
         searchBar.delegate = self
         
         navigationItem.titleView = searchBar
@@ -46,6 +46,8 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
         tableView.addSubview(refresher)
         
         tableView.adjustForCenterBtn(footerColor: nil, offset: 5, vc: self)
+        
+        
         getTemplates{_ in
             self.isLoading = false
         }
@@ -56,7 +58,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
     func getFeaturedPost(){
         
         guard let userUID = userInfo.uid else{return}
-        Firestore.firestore().collectionGroup("Products").whereField("Timestamp", isGreaterThan: Timestamp(date: Date().adding(hours: -72))).order(by: "Timestamp").whereField("Blurred", isEqualTo: false).whereField("Has_Picture", isEqualTo: true).order(by: "Likes", descending: true).limit(to: 5).getDocuments(completion: { docs, error in
+        Firestore.firestore().collectionGroup("Products").whereField("Timestamp", isGreaterThan: Timestamp(date: Date().adding(hours: -120))).order(by: "Timestamp").whereField("Blurred", isEqualTo: false).whereField("Has_Picture", isEqualTo: true).order(by: "Likes", descending: true).limit(to: 5).getDocuments(completion: { docs, error in
             
             if let err = error{
                 print(err.localizedDescription)
@@ -100,11 +102,12 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                             }
                         }
                         
-                        let product = Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: nil, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil)
+                        let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: nil, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil)
                         
                         self.featuredHeader.featuredProducts.append(product)
                         
                         if self.featuredHeader.featuredProducts.count == 5{
+                            self.featuredHeader.numberOfItems = 5
                             self.featuredHeader.featuredProducts.sort(by: {$0.likes > $1.likes})
                             DispatchQueue.main.async {
                                 self.featuredHeader.collectionView.reloadData()
@@ -125,12 +128,13 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
         search.searchBarStyle = .default
         search.keyboardType = .alphabet
         search.tintColor = UIColor(named: "LoadingColor")
-        search.placeholder = "Search"
+        search.placeholder = "Search users and threds"
         search.showsCancelButton = false
-        //search.searchTextField.font = UIFont(name: "NexaW01-Heavy", size: 16)
-        //search.searchTextField.adjustsFontSizeToFitWidth = true
+        
+        search.searchTextField.font = UIFont(name: "NexaW01-Heavy", size: 14)
+        search.searchTextField.adjustsFontSizeToFitWidth = true
         search.isTranslucent = false
-        //search.searchTextField.minimumFontSize = 15
+        search.searchTextField.minimumFontSize = 12
         if #available(iOS 13.0, *) {
             let attributes:[NSAttributedString.Key:Any] = [
                 NSAttributedString.Key.foregroundColor : UIColor.label,
@@ -220,8 +224,8 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
         guard let post = postArray.first(where: {$0.productID == productToOpen.productID}) else{return}
         post.liked = productToOpen.liked
         post.likes = productToOpen.likes
-        post.username = productToOpen.username
-        post.fullName = productToOpen.fullName
+        post.userInfo.username = productToOpen.userInfo.username
+        post.userInfo.fullName = productToOpen.userInfo.fullName
     }
     
     var isLoading = false
@@ -242,7 +246,6 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                 cache.clearMemory()
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                     self.featuredHeader.featuredProducts.removeAll()
-                    self.featuredHeader.collectionView.reloadData()
                     self.getTemplates{ error in
                         if error == nil{
                             self.colorSections.removeAll()
@@ -303,11 +306,16 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                             guard let code = id["Code"] else{continue}
                             guard let displayName = id["Display"] else{continue}
 
-                            self.colorSections.append(["Array": nil, "ID": code, "Display" : displayName, "Offset": 0, "Downloading" : []])
+                            self.colorSections.append([
+                                "Array": nil,
+                                "ID": code,
+                                "Display" : displayName,
+                                "Offset": 0,
+                                "Downloading" : [],
+                                "Color_Downloading" : []
+                            ])
                         }
-                        DispatchQueue.main.async {
-                            self.tableView.reloadData()
-                        }
+                        self.tableView.reloadData()
                     }
                 })
             }
@@ -322,30 +330,47 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
+    func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if let cell = cell as? ExploreColorCell{
+            cell.postArray.removeAll()
+            cell.collectionView.reloadData()
+            if colorSections.indices.contains(indexPath.row){
+                colorSections[indexPath.row]["Offset"] = cell.collectionViewOffset
+            }
+            
+        }
+    }
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         if tableView == self.tableView{
             let cell = tableView.dequeueReusableCell(withIdentifier: "ExploreColorCell", for: indexPath) as? ExploreColorCell
+            
+            let postSection = colorSections[indexPath.row]
+            guard let sectionID = postSection["ID"] as? String else{return cell!}
+            let displayName = postSection["Display"] as? String
             cell?.colorIcon.backgroundColor = nil
             cell?.exploreVC = nil
             cell?.templateColor = nil
             cell?.colorNameLbl.text = nil
-            
-            cell?.colorIcon.backgroundColor = UIColor(named: self.colorSections[indexPath.row]["ID"] as? String ?? "null")
-            cell?.colorNameLbl.text = self.colorSections[indexPath.row]["Display"] as? String ?? "null"
-            cell?.exploreVC = self
-            cell?.templateColor = self.colorSections[indexPath.row]["ID"] as? String //problem
+            cell?.postArray = nil
 
-            if let postArray = self.colorSections[indexPath.row]["Array"] as? [Product]{
+            
+            cell?.colorIcon.backgroundColor = UIColor(named: postSection["ID"] as? String ?? "null")
+            cell?.colorNameLbl.text = displayName ?? "null"
+            cell?.exploreVC = self
+            cell?.templateColor = sectionID //problem
+
+            if let postArray = postSection["Array"] as? [Product]{
                 cell?.postArray = postArray
             }
-            else{
-                cell?.postArray = nil
+            
+            var downloading = postSection["Color_Downloading"] as? [String]
+            if !(downloading?.contains(sectionID) ?? false){
+                downloading?.append(sectionID)
             }
             cell?.getProducts{
-                DispatchQueue.main.async {
-                    cell?.collectionView.reloadData()
-                }
+                cell?.collectionView.reloadData()
             }
             return cell!
         }
@@ -371,7 +396,6 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
             let product = self.searchedProducts[indexPath.row]
             cell?.productImageView.image = nil
             cell?.priceLbl.text = nil
-            cell?.usernameLbl.text = nil
             cell?.likesLbl.text = nil
             cell?.productNameLbl.text = nil
             cell?.productImageView.backgroundColor = ColorCompatibility.secondarySystemBackground
@@ -393,19 +417,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
             cell?.priceLbl.text = product.price?.formatPrice()
 
             cell?.likesLbl.text = "\(product.likes)"
-            
-            if let username = product.username{
-                cell?.usernameLbl.text = "@\(username)"
-            }
-            else{
-                downloadUserInfo(uid: product.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: true, userInfoToUse: nil, queryOnUsername: false, completed: { uid, fullName, username, dpID, notifID, bio, image, userFollowing, usersBlocking, postCount, followersCount, followingCount in
-                    guard let username = username else{return}
-                    product.username = username
-                    product.fullName = fullName
-                    cell?.usernameLbl.text = "@\(username)"
-                })
-            }
-            
+                        
             return cell!
         }
     }
@@ -427,8 +439,13 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
         let view = UIView.init(frame: CGRect(x: 0, y: insets.top, width: self.view.frame.width, height: self.view.frame.height - (insets.top + insets.bottom)))
         view.backgroundColor = ColorCompatibility.secondarySystemBackground.withAlphaComponent(1)
 
-        topTab = UISegmentedControl.init(frame: CGRect(x: 5, y: 5, width: view.frame.width - 10, height: 45))
+        topTab = UISegmentedControl.init(frame: CGRect(x: 5, y: 5, width: view.frame.width - 10, height: 30))
+        topTab.setTitleFont(UIFont(name: "NexaW01-Heavy", size: 14)!)
+        topTab.setTitleColor(.white)
+        topTab.selectedSegmentTintColor = UIColor(named: "LoadingColor")
+        topTab.backgroundColor = ColorCompatibility.systemGroupedBackground
         topTab.insertSegment(withTitle: "Users", at: 0, animated: false)
+        
         topTab.insertSegment(withTitle: "Threds", at: 1, animated: false)
         topTab.layer.cornerRadius = 0
         topTab.selectedSegmentIndex = 0
@@ -539,11 +556,13 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                                 let followingCount = document["Following_Count"] as? Int
                                 let postCount = document["Posts_Count"] as? Int
                                 let usersBlocking = document["Users_Blocking"] as? [String]
+                                let profileLink = URL(string: (document["ProfileLink"] as? String) ?? "")
+
                                 if userInfo.usersBlocking.contains(uid){
                                     continue
                                 }
                                 
-                                let user = UserInfo(uid: uid, dp: nil, dpID: dpLink, username: username, fullName: fullname, bio: bio, notifID: nil, userFollowing: userFollowing ?? [], userLiked: [], followerCount: followerCount ?? 0, postCount: postCount ?? 0, followingCount: followingCount ?? 0, usersBlocking: usersBlocking ?? [])
+                                let user = UserInfo(uid: uid, dp: nil, dpID: dpLink, username: username, fullName: fullname, bio: bio, notifID: nil, userFollowing: userFollowing ?? [], userLiked: [], followerCount: followerCount ?? 0, postCount: postCount ?? 0, followingCount: followingCount ?? 0, usersBlocking: usersBlocking ?? [], profileLink: profileLink)
 
                                 if uid == userInfo.uid{
                                     user.dp = userInfo.dp
@@ -631,7 +650,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                                 let comments = ((document["Comments"]) as? Int) ?? 0
                                 let productID = document.documentID
                                 
-                                let product = Product(uid: uid, picID: productID, description: description, fullName: nil, username: nil, productID: productID, userImageID: nil, timestamp: timestamp, index: 0, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(productID), designImage: nil, comments: comments, link: nil)
+                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: productID, description: description, productID: productID, timestamp: timestamp, index: 0, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(productID), designImage: nil, comments: comments, link: nil)
 
                                 self.searchedProducts.append(product)
                                 self.searchedProducts.sort(by: {$0.likes > $1.likes})
@@ -708,16 +727,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     
-    func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        if let cell = cell as? ExploreColorCell{
-            cell.postArray.removeAll()
-            cell.collectionView.reloadData()
-            if colorSections.indices.contains(indexPath.row){
-                colorSections[indexPath.row]["Offset"] = cell.collectionViewOffset
-            }
-            
-        }
-    }
+    
     
     var selectedTemplateColor: String?
     
@@ -754,7 +764,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
             return 55
         }
         else if tableView == searchProductsTable{
-            return 120
+            return 85
         }
         else{
             return UITableView.automaticDimension

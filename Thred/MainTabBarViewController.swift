@@ -63,6 +63,7 @@ class MainTabBarViewController: UITabBarController, UITabBarControllerDelegate {
         
         if posted ?? false{
             selectedIndex = 4
+            posted = false
             if let profileVC = (viewControllers?[selectedIndex] as? UINavigationController)?.viewControllers.first as? UserVC{
                 profileVC.uploadPost(post: product, isRetryingWithID: nil)
             }
@@ -71,12 +72,16 @@ class MainTabBarViewController: UITabBarController, UITabBarControllerDelegate {
             if product != nil{
                 if let vc = (selectedViewController as? UINavigationController)?.viewControllers.last{
                     vc.checkAuthStatus {
-                        if let tableView = (vc as? UITableViewController)?.tableView ?? (vc as? FullProductVC)?.tableView{
+                        if let tableView = (vc as? UITableViewController)?.tableView ?? (vc as? FullProductVC)?.tableView ?? (vc as? UserVC)?.tableView{
                             if self.deletingPost{
-                                tableView.deletingPost(post: self.product, vc: vc)
+                                tableView.deletingPost(post: self.product, vc: vc){
+                                    self.product = nil
+                                }
                             }
                             else{
-                                tableView.updatePost(post: self.product, vc: vc)
+                                tableView.updatePost(post: self.product, vc: vc){
+                                    self.product = nil
+                                }
                             }
                         }
                     }
@@ -160,7 +165,7 @@ class MainTabBarViewController: UITabBarController, UITabBarControllerDelegate {
 
 extension UITableView{
     
-    func updatePost(post: ProductInProgress, vc: UIViewController?){
+    func updatePost(post: ProductInProgress, vc: UIViewController?, completed: @escaping () -> ()){
         
         var index = 0
         
@@ -179,6 +184,8 @@ extension UITableView{
             product.name = post.name
         }
         let indexPath = IndexPath(row: index, section: 0)
+        (vc as? FullProductVC)?.editedPost = true
+
         if let cell = cellForRow(at: indexPath) as? ProductCell{
             cell.optionMenu.isHidden = true
             performBatchUpdates({
@@ -197,6 +204,7 @@ extension UITableView{
         ] as [String : Any]
         
         doc.updateData(data, completion: { error in
+            completed()
             if let err = error{
                 uploadingPosts.removeAll(where: {$0 == productID})
                 print(err.localizedDescription)
@@ -214,10 +222,11 @@ extension UITableView{
         })
     }
     
-    func deletingPost(post: ProductInProgress, vc: UIViewController?){
+    func deletingPost(post: ProductInProgress, vc: UIViewController?, completed: @escaping () -> ()){
         
-        
-        guard let productID = post.productID else{return}
+        guard let productID = post.productID else{
+            
+            return}
         let topVC = vc?.navigationController?.viewControllers.first
         let products = ((vc as? FeedVC)?.loadedProducts ?? (vc as? UserVC)?.loadedProducts) ?? ((topVC as? FeedVC)?.loadedProducts ?? (topVC as? UserVC)?.loadedProducts)
         
@@ -256,6 +265,7 @@ extension UITableView{
         let doc = Firestore.firestore().collection("Users").document(post.uid).collection("Products").document(productID)
 
         doc.delete(completion: { error in
+            completed()
             if let err = error{
                 print(err.localizedDescription)
             }
@@ -278,17 +288,17 @@ extension UINavigationController{
     }
     
     func segueToSales(){
-        showErrorMessage {
+        //showErrorMessage {
             
-        }
+        //}
         
         ///Later On
-        /*
+        
          let salesVC: UIStoryboard = UIStoryboard(name: "SalesVC", bundle: nil)
 
         if let sales: SalesVC = salesVC.instantiateViewController(withIdentifier: "SalesVC") as? SalesVC{
-            navigationController?.pushViewController(sales)
+            pushViewController(sales, animated: true)
         }
- */
+ 
     }
 }

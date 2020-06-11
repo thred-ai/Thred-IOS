@@ -125,7 +125,7 @@ class CarouselCollectionViewCell: UICollectionViewCell {
     }
     
     func parseData(forSlide slide: TemplateCarouselSlide) {
-        let bundlePath = Bundle.main.path(forResource: slide.canvasColorID, ofType: "png")
+        let bundlePath = Bundle.main.path(forResource: slide.canvasColorID!, ofType: "png")
         let image = UIImage(contentsOfFile: bundlePath!)
         if let image = image {
             backgroundImageView.image = image

@@ -13,6 +13,7 @@ class CircularProgress: UIView, CAAnimationDelegate {
     
     fileprivate var progressLayer = CAShapeLayer()
     fileprivate var tracklayer = CAShapeLayer()
+    var progressValue = CGFloat()
     
     /*
      // Only override draw() if you perform custom drawing.
@@ -77,6 +78,7 @@ class CircularProgress: UIView, CAAnimationDelegate {
     
     func setProgressWithAnimation(duration: TimeInterval, value: CGFloat, from: CGFloat, finished: Bool, completed: @escaping () -> ()) {
         
+        progressValue = value
         CATransaction.begin()
         CATransaction.setCompletionBlock({
             completed()

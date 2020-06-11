@@ -48,7 +48,6 @@ extension DesignViewController{
                 self.bottomBar.frame.origin.y = bottomBarY
                 self.bottomSafeAreaView.frame.origin.y = self.bottomBar.frame.maxY
                 self.bottomSafeAreaView.frame.size.height = self.view.frame.maxY - self.bottomSafeAreaView.frame.origin.y
-                
                 UIView.animate(withDuration: 0.2, animations: {
                     self.descriptionView?.alpha = 0.0
                     self.canvasDisplayView.frame = CGRect(x: 0, y: y, width: width, height: height)
@@ -69,7 +68,13 @@ extension DesignViewController{
     }
     
     
+    
+    
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        
+        if gestureRecognizer is UITapGestureRecognizer || otherGestureRecognizer is UITapGestureRecognizer{
+            return false
+        }
         return true
     }
     

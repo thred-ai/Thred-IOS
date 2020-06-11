@@ -21,6 +21,11 @@ class ExploreProductCell: UICollectionViewCell {
         
     }
     
+    override func layoutSubviews() {
+        contentView.layer.cornerRadius = contentView.frame.height / 20
+        contentView.clipsToBounds = true
+    }
+    
     override func prepareForReuse() {
         self.imageView.image = nil
         self.backgroundColor = .clear

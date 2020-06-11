@@ -148,13 +148,14 @@ extension DesignViewController{
                 }
                 
                 imageView.image = nil
+                textView.textToStore = textView.text
+
                 if !textChars.isEmpty{
                     imageView.isHidden = false
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
                         if let img = textView.makeSnapshot(clear: true, subviewsToIgnore: [imageView]){
                             imageView.image = img
                         }
-                        textView.accessibilityIdentifier = textView.text
                         textView.text = nil
                         if self.editingTransform != nil && self.editingCenter != nil{
                             textView.transform = self.editingTransform

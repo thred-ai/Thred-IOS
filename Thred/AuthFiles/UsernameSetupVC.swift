@@ -33,6 +33,7 @@ class UsernameSetupVC: UIViewController {
         fullNameView.inputAccessoryView = toolBar
         usernameView.addTarget(self, action: #selector(textFieldDidChange(_:)),
         for: .editingChanged)
+        self.navigationItem.setHidesBackButton(true, animated: true)
     }
     
     var oldText: String!
@@ -86,32 +87,35 @@ class UsernameSetupVC: UIViewController {
                         sender.isEnabled = true
                         return}
 
-                    let data = [
-                        "Username": fieldText,
-                        "Full_Name" : fullname,
-                        "Bio" : ""
-                    ]
-                    self.checkAuthStatus {
-                        Firestore.firestore().collection("Users").document(uid).updateData(data, completion: { error in
-                            if let err = error{
-                                sender.isEnabled = true
-                                self.updateErrorView(text: err.localizedDescription)
-                            }
-                            else{
-                                UserDefaults.standard.set(fieldText, forKey: "USERNAME")
-                                UserDefaults.standard.set(fullname, forKey: "FULLNAME")
-                                self.setDefaultDP(uid: uid){ success in
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 5){
+                        let data = [
+                            "Username": fieldText,
+                            "Full_Name" : fullname
+                        ]
+                        self.checkAuthStatus {
+                            Firestore.firestore().collection("Users").document(uid).updateData(data, completion: { error in
+                                if let err = error{
                                     sender.isEnabled = true
-                                    if success{
-                                        self.loadUserInfo()
-                                        if let appdelegate: AppDelegate = UIApplication.shared.delegate as? AppDelegate{
-                                            appdelegate.registerNotifs(application: UIApplication.shared)
+                                    self.updateErrorView(text: err.localizedDescription)
+                                }
+                                else{
+                                    UserDefaults.standard.set(fieldText, forKey: "USERNAME")
+                                    UserDefaults.standard.set(fullname, forKey: "FULLNAME")
+                                    self.setDefaultDP(uid: uid){ success in
+                                        self.setProfileLink {
+                                            sender.isEnabled = true
+                                            if success{
+                                                self.loadUserInfo()
+                                                if let appdelegate: AppDelegate = UIApplication.shared.delegate as? AppDelegate{
+                                                    appdelegate.registerNotifs(application: UIApplication.shared)
+                                                }
+                                                self.performSegue(withIdentifier: "toProfile", sender: nil)
+                                            }
                                         }
-                                        self.performSegue(withIdentifier: "toProfile", sender: nil)
                                     }
                                 }
-                            }
-                        })
+                            })
+                        }
                     }
                 }
                 else{
@@ -139,6 +143,89 @@ class UsernameSetupVC: UIViewController {
                 cache.storeImageData(toDisk: imageData, forKey: picID)
                 DispatchQueue.main.async {
                     completed(true)
+                }
+            }
+        })
+    }
+    
+    func setProfileLink(completed: @escaping () -> ()){
+        
+        getLink(completed: { url in
+            UserDefaults.standard.set(url, forKey: "PROFILE_LINK")
+            completed()
+        })
+    }
+        
+    func uploadLink(link: URL?, uid: String?){
+        guard let link = link else{return}
+        guard let uid = uid, uid == userInfo.uid else{return}
+        Firestore.firestore().collection("Users").document(uid).updateData(["ProfileLink" : link.absoluteString])
+    }
+    
+    func getLink(completed: @escaping (URL?) -> ()){
+        let info = userInfo
+        if info.profileLink == nil{
+            generateLink(userInfo: info, completed: { link in
+                info.profileLink = link
+                self.uploadLink(link: link, uid: info.uid)
+                completed(link)
+            })
+        }
+        else{
+            completed(info.profileLink)
+        }
+    }
+        
+    func getThumbnailURL(uid: String, dpID: String?, completed: @escaping (URL?) -> ()){
+        guard let dpID = dpID else {
+            completed(nil)
+            return
+        }
+
+        let ref = Storage.storage().reference().child("Users/" + uid + "/" + "profile_pic-" + dpID + ".jpeg")
+        ref.downloadURL(completion: { url, error in
+            if error != nil{
+                print(error?.localizedDescription ?? "")
+                completed(nil)
+            }
+            else{
+                completed(url)
+            }
+        })
+        
+    }
+        
+    func generateLink(userInfo: UserInfo, completed: @escaping (URL?) -> ()){
+        guard let username = userInfo.username, let fullname = userInfo.fullName, let uid = userInfo.uid else{
+            completed(nil)
+            return}
+        guard let link = URL(string: "https://thredapps.com/users/\(uid)") else {
+            return }
+        let dynamicLinksDomainURIPrefix = "https://thred.thredapps.com"
+        let linkBuilder = DynamicLinkComponents(link: link, domainURIPrefix: dynamicLinksDomainURIPrefix)
+        linkBuilder?.iOSParameters = DynamicLinkIOSParameters(bundleID: "thred.Thred")
+        linkBuilder?.androidParameters = DynamicLinkAndroidParameters(packageName: "com.example.android")
+        linkBuilder?.iOSParameters?.appStoreID = "1506286170"
+        let shareMessage = "\(fullname) (\(username)) • Thred design and sell"
+        linkBuilder?.socialMetaTagParameters = DynamicLinkSocialMetaTagParameters()
+        linkBuilder?.socialMetaTagParameters?.title = shareMessage
+        linkBuilder?.options = DynamicLinkComponentsOptions()
+        linkBuilder?.options?.pathLength = .short
+        getThumbnailURL(uid: uid, dpID: userInfo.dpID, completed: { url in
+            linkBuilder?.socialMetaTagParameters?.imageURL = url
+            guard let longDynamicLink = linkBuilder?.url else {
+                completed(nil)
+                return }
+            print("The long URL is: \(longDynamicLink)")
+            linkBuilder?.shorten() { url, warnings, error in
+                if let err = error{
+                    print(err.localizedDescription)
+                    completed(nil)
+                }
+                else{
+                    completed(url)
+                    guard let url = url else { return }
+                    print("The short URL is: \(url)")
                 }
             }
         })
@@ -278,7 +365,12 @@ extension UIViewController{
         if let followingCount = UserDefaults.standard.object(forKey: "FOLLOWING_COUNT") as? Int{
             userInfo.followingCount = followingCount
         }
-        
+        if let blocking = UserDefaults.standard.stringArray(forKey: "BLOCKING"){
+            userInfo.usersBlocking = blocking
+        }
+        if let profileLink = UserDefaults.standard.url(forKey: "PROFILE_LINK"){
+            userInfo.profileLink = profileLink
+        }
         if let likesToUpdate = UserDefaults.standard.object(forKey: "likeQueue") as? [String : Bool]{
             likeQueue = likesToUpdate
         }

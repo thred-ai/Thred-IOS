@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="16096" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina5_9" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -73,31 +73,58 @@
                             </constraints>
                         </stackView>
                         <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" editable="NO" text="&quot;Bio&quot;" textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="mgd-gl-KIz">
-                            <rect key="frame" x="0.0" y="54.999999999999979" width="275" height="121.66666666666669"/>
+                            <rect key="frame" x="0.0" y="54.999999999999979" width="275" height="109.66666666666669"/>
                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
                             <fontDescription key="fontDescription" name="NexaW01-Regular" family="NexaW01-Regular" pointSize="14"/>
                             <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             <dataDetectorType key="dataDetectorTypes" link="YES"/>
                         </textView>
+                        <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="y6s-UP-Abj">
+                            <rect key="frame" x="0.0" y="174.66666666666663" width="275" height="2"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="2" id="25D-XW-mGZ"/>
+                            </constraints>
+                            <color key="progressTintColor" name="LoadingColor"/>
+                            <color key="trackTintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        </progressView>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="4ka-kY-j36">
                             <rect key="frame" x="0.0" y="186.66666666666663" width="275" height="60"/>
                             <subviews>
-                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hrF-NM-2Mo">
-                                    <rect key="frame" x="0.0" y="7.6666666666666856" width="275" height="45"/>
-                                    <color key="backgroundColor" systemColor="quaternarySystemFillColor" red="0.4549019608" green="0.4549019608" blue="0.50196078430000002" alpha="0.080000000000000002" colorSpace="custom" customColorSpace="sRGB"/>
-                                    <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
-                                    <state key="normal" title="Button">
-                                        <color key="titleColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
-                                    </state>
-                                </button>
+                                <stackView opaque="NO" contentMode="scaleToFill" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="TBx-HY-GD9">
+                                    <rect key="frame" x="0.0" y="5" width="275" height="50"/>
+                                    <subviews>
+                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hrF-NM-2Mo">
+                                            <rect key="frame" x="0.0" y="0.0" width="220" height="50"/>
+                                            <color key="backgroundColor" systemColor="quaternarySystemFillColor" red="0.4549019608" green="0.4549019608" blue="0.50196078430000002" alpha="0.080000000000000002" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
+                                            <state key="normal" title="Button">
+                                                <color key="titleColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+                                            </state>
+                                        </button>
+                                        <button opaque="NO" contentMode="bottom" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WJY-PI-cl3">
+                                            <rect key="frame" x="225" y="0.0" width="50" height="50"/>
+                                            <color key="backgroundColor" systemColor="quaternarySystemFillColor" red="0.4549019608" green="0.4549019608" blue="0.50196078430000002" alpha="0.080000000000000002" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <color key="tintColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <state key="normal" image="arrowshape.turn.up.right">
+                                                <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="large" weight="bold"/>
+                                            </state>
+                                            <connections>
+                                                <action selector="shareAccount:" destination="0N2-d2-UYm" eventType="touchUpInside" id="17a-jD-O1C"/>
+                                            </connections>
+                                        </button>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="WJY-PI-cl3" firstAttribute="width" secondItem="WJY-PI-cl3" secondAttribute="height" multiplier="1:1" id="GgK-Z1-MUa"/>
+                                    </constraints>
+                                </stackView>
                             </subviews>
                             <constraints>
-                                <constraint firstItem="hrF-NM-2Mo" firstAttribute="leading" secondItem="4ka-kY-j36" secondAttribute="leading" id="0tt-eT-YKa"/>
-                                <constraint firstAttribute="trailing" secondItem="hrF-NM-2Mo" secondAttribute="trailing" id="A0I-PI-fpP"/>
+                                <constraint firstAttribute="trailing" secondItem="TBx-HY-GD9" secondAttribute="trailing" id="5gq-pv-kA7"/>
                                 <constraint firstAttribute="height" constant="60" id="Kyl-MN-0Hn"/>
-                                <constraint firstItem="hrF-NM-2Mo" firstAttribute="height" secondItem="4ka-kY-j36" secondAttribute="height" multiplier="0.75" id="Qyf-XQ-W3A"/>
-                                <constraint firstItem="hrF-NM-2Mo" firstAttribute="centerY" secondItem="4ka-kY-j36" secondAttribute="centerY" id="hF2-H9-Kya"/>
+                                <constraint firstAttribute="bottom" secondItem="TBx-HY-GD9" secondAttribute="bottom" constant="5" id="MGD-Wp-aLY"/>
+                                <constraint firstItem="TBx-HY-GD9" firstAttribute="leading" secondItem="4ka-kY-j36" secondAttribute="leading" id="XJ7-7Z-ey5"/>
+                                <constraint firstItem="TBx-HY-GD9" firstAttribute="top" secondItem="4ka-kY-j36" secondAttribute="top" constant="5" id="xRT-Er-vsz"/>
                             </constraints>
                         </view>
                         <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="NbL-71-bLc">
@@ -200,6 +227,8 @@
                 <outlet property="optionBtn" destination="2UV-it-LmA" id="tyG-T4-XuE"/>
                 <outlet property="postNum" destination="qge-BZ-JCV" id="RCi-XV-dv8"/>
                 <outlet property="profileImgView" destination="EhI-4W-1kM" id="Tfa-El-Imh"/>
+                <outlet property="progressView" destination="y6s-UP-Abj" id="bDZ-j2-C1P"/>
+                <outlet property="shareProfileBtn" destination="WJY-PI-cl3" id="8a1-BJ-kMm"/>
                 <outlet property="userContentView" destination="p6k-MY-udt" id="iPU-7e-qGR"/>
                 <outlet property="usernameLbl" destination="Dak-Hv-czS" id="iIs-S9-t3M"/>
             </connections>
@@ -222,6 +251,7 @@
         </tapGestureRecognizer>
     </objects>
     <resources>
+        <image name="arrowshape.turn.up.right" width="33.333332061767578" height="33.333332061767578"/>
         <image name="default_DP" width="33.333332061767578" height="33.333332061767578"/>
         <image name="gear" width="30" height="30"/>
         <namedColor name="LoadingColor">

@@ -15,10 +15,6 @@ class TemplateCarousel: UIView, UICollectionViewDelegateFlowLayout, UICollection
     
     var slides: [TemplateCarouselSlide]! = [TemplateCarouselSlide]()
      
-    deinit {
-        print("")
-        
-    }
     
     func setCarouselTemplates(templates: [Template]){
         for (index, template) in templates.enumerated(){
@@ -123,11 +119,11 @@ class TemplateCarousel: UIView, UICollectionViewDelegateFlowLayout, UICollection
     }
     
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-            let x = scrollView.contentOffset.x
-            let w = scrollView.bounds.size.width
-            let currentPage = Int(ceil(x/w))
-            guard let colorCollectionView = (getViewController() as? DesignViewController)?.colorCollectionView else{return}
-            colorCollectionView.selectItem(at: IndexPath(item: currentPage, section: 0), animated: true, scrollPosition: .centeredHorizontally)
+        let x = scrollView.contentOffset.x
+        let w = scrollView.bounds.size.width
+        let currentPage = Int(ceil(x/w))
+        guard let colorCollectionView = (getViewController() as? DesignViewController)?.colorCollectionView else{return}
+        colorCollectionView.selectItem(at: IndexPath(item: currentPage, section: 0), animated: true, scrollPosition: .centeredHorizontally)
     }
     
     func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {

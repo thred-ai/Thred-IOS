@@ -17,64 +17,38 @@ import ColorCompatibility
 extension UITableView{
     
 
-    func setPictureCell(indexPath: IndexPath, product: Product, productLocation: UIViewController) -> ProductCell{
-
-        let cell = dequeueReusableCell(withIdentifier: "PictureProduct", for: indexPath) as? ProductCell
+    func setPictureCell(cell: ProductCell?, indexPath: IndexPath, product: Product, productLocation: UIViewController, shouldDownloadPic: Bool){
         
         cell?.selectionStyle = .none
         guard let userLbl = cell?.username else {
-            
-            return cell!}
+            return }
         guard let fullLbl = cell?.fullName else {
-            
-            return cell!}
+            return }
         guard let dp = cell?.userImage else {
-            
-            return cell!}
-        guard let picID = product.picID else{
-            
-            return cell!}
+            return }
         
-        guard let nameMasks = cell?.nameMaskingViews else {
-            
-            return cell!}
-        guard let dpMasks = cell?.dpMaskingViews else {
-            
-            return cell!}
-
-        if cell?.nameSkeletonView.layer.mask == nil{
-            cell?.nameSkeletonView.setMaskingViews(nameMasks)
-            cell?.nameSkeletonView.addLayers()
-        }
-        if cell?.dpSkeletonView.layer.mask == nil{
-            cell?.dpSkeletonView.setMaskingViews(dpMasks)
-            cell?.dpSkeletonView.addLayers()
-        }
-        userLbl.text = nil
-        dp.image = nil
-        fullLbl.text = nil
         if let attr = cell?.productDescription.attributedText.mutableCopy() as? NSMutableAttributedString{
             attr.removeAttribute(NSAttributedString.Key.link, range: NSMakeRange(0, attr.length))
             attr.setAttributes([NSAttributedString.Key.font : UIFont(name: "NexaW01-Regular", size: cell?.productDescription.font?.pointSize ?? 16)!], range: NSMakeRange(0, attr.length))
             cell?.productDescription.attributedText = attr
         }
         cell?.productDescription.text = nil
-        cell?.productPicture?.image = nil
-        cell?.canvasDisplayView.image = nil
-        cell?.commentBtn.setTitle("View 0 comments", for: .normal)
+        
+        if shouldDownloadPic{
+            cell?.collectionView.reloadData()
+            cell?.pageControl.currentPage = 0
+        }
+        
+    
+        cell?.commentBtn.setTitle("View comments", for: .normal)
         cell?.likesLbl.text = "\(0)"
-        cell?.productPicture.removeShadow()
-        cell?.productPicture.gestureRecognizers = nil
+        
         cell?.product = product
         cell?.vc = productLocation
-        cell?.setGestureRecognizers()
         cell?.progressView.progress = 0.0
-        cell?.title.textColor = ColorCompatibility.label
-        
-        let tapper = UITapGestureRecognizer(target: cell, action: #selector(cell?.doubleTapped(_:)))
-        tapper.numberOfTapsRequired = 2
-        cell?.productPicture.addGestureRecognizer(tapper)
-        
+        cell?.title.titleLabel?.textColor = ColorCompatibility.label
+        cell?.title.setTitleColor(ColorCompatibility.label, for: .normal)
+
         if let uploadView = cell?.uploadView{
             if uploadingPosts.contains(product.productID){
                 uploadView.isHidden = false
@@ -87,7 +61,7 @@ extension UITableView{
             }
         }
         
-        if product.liked ?? false{
+        if product.liked || userInfo.userLiked.contains(product.productID) {
             cell?.isLiked = true
         }
         else{
@@ -100,7 +74,8 @@ extension UITableView{
             cell?.productDescription.addLinks(isNotification: false)
         }
         if product.name != nil{
-            cell?.title.text = product.name
+            cell?.title.titleLabel?.text = product.name
+            cell?.title.setTitle(product.name, for: .normal)
         }
         
         cell?.price.text = product.price?.formatPrice()
@@ -111,27 +86,40 @@ extension UITableView{
         cell?.commentBtn.setTitle("View comments", for: .normal)
         
         checkTimes(user: product, timestampLbl: cell?.timestampLbl)
+        if shouldDownloadPic{
+            
+            guard let nameMasks = cell?.nameMaskingViews else {
+                return }
+            guard let dpMasks = cell?.dpMaskingViews else {
+                return }
+            if cell?.nameSkeletonView.layer.mask == nil{
+                cell?.nameSkeletonView.setMaskingViews(nameMasks)
+                cell?.nameSkeletonView.addLayers()
+            }
+            if cell?.dpSkeletonView.layer.mask == nil{
+                cell?.dpSkeletonView.setMaskingViews(dpMasks)
+                cell?.dpSkeletonView.addLayers()
+            }
+            userLbl.text = nil
+            dp.image = nil
+            fullLbl.text = nil
+        }
         switch productLocation{
         case let feed as FeedVC:
             feed.loadedProducts[indexPath.row].index = indexPath.row
-            checkAndDownloadProductImage(user: product, vc: feed, picID: picID, cell: cell, index: indexPath.row, type: "OtherProductsPictures")
             checkAndDownloadUserInfoInFeed(feed: feed, user: product, dp: dp, userLbl: userLbl, fullLbl: fullLbl, picCell: cell)
         case let userVC as UserVC:
             userVC.loadedProducts[indexPath.row].index = indexPath.row
-            checkAndDownloadProductImage(user: product, vc: userVC, picID: picID, cell: cell, index: indexPath.row, type: "ProductsPictures")
             checkAndDownloadUserInfoInProfile(userVC: userVC, friendVC: nil, user: product, dp: dp, userLbl: userLbl, fullLbl: fullLbl, picCell: cell, userInfo: userInfo)
         case let friendVC as FriendVC:
             friendVC.loadedProducts[indexPath.row].index = indexPath.row
-            checkAndDownloadProductImage(user: product, vc: friendVC, picID: picID, cell: cell, index: indexPath.row, type: nil)
             checkAndDownloadUserInfoInProfile(userVC: nil, friendVC: friendVC, user: product, dp: dp, userLbl: userLbl, fullLbl: fullLbl, picCell: cell, userInfo: friendVC.friendInfo)
         case let fullVC as FullProductVC:
             fullVC.fullProduct.index = indexPath.row
-            checkAndDownloadProductImage(user: product, vc: fullVC, picID: picID, cell: cell, index: indexPath.row, type: nil)
             checkAndDownloadUserInfoInFullVC(user: product, dp: dp, userLbl: userLbl, fullLbl: fullLbl, picCell: cell, fullVC: fullVC)
         default:
             break
         }
-        return cell!
     }
     
     
@@ -179,7 +167,7 @@ extension UITableView{
 extension Double{
     
     func formatPrice() -> String{
-        var priceAsString = "\(self)"
+        var priceAsString = "\(self.rounded(toPlaces: 2))"
         if let index = priceAsString.firstIndex(of: ".")?.utf16Offset(in: priceAsString){
             switch index{
             case priceAsString.count - 1:
@@ -191,5 +179,13 @@ extension Double{
             }
         }
         return "$\(priceAsString)"
+    }
+}
+
+extension Double {
+    /// Rounds the double to decimal places value
+    func rounded(toPlaces places:Int) -> Double {
+        let divisor = pow(10.0, Double(places))
+        return (self * divisor).rounded() / divisor
     }
 }

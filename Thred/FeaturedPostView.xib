@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
-    <device id="retina6_1" orientation="portrait" appearance="light"/>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="dark"/>
     <dependencies>
-        <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -19,35 +19,86 @@
             <rect key="frame" x="0.0" y="0.0" width="376" height="386"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" alwaysBounceHorizontal="YES" pagingEnabled="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="none" prefetchingEnabled="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rcy-QC-ocE">
-                    <rect key="frame" x="0.0" y="0.0" width="376" height="386"/>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="HYm-bh-W43">
+                    <rect key="frame" x="0.0" y="0.0" width="376" height="356"/>
+                    <subviews>
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ebm-c3-bBt">
+                            <rect key="frame" x="10" y="0.0" width="356" height="356"/>
+                            <subviews>
+                                <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" alwaysBounceHorizontal="YES" pagingEnabled="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="none" prefetchingEnabled="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rcy-QC-ocE">
+                                    <rect key="frame" x="0.0" y="0.0" width="356" height="356"/>
+                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <collectionViewFlowLayout key="collectionViewLayout" scrollDirection="horizontal" minimumLineSpacing="10" minimumInteritemSpacing="10" id="uld-kz-lgJ">
+                                        <size key="itemSize" width="57" height="50"/>
+                                        <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                        <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                        <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                    </collectionViewFlowLayout>
+                                </collectionView>
+                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="GkF-7H-Xlp">
+                                    <rect key="frame" x="123" y="5" width="110" height="25"/>
+                                    <subviews>
+                                        <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="&quot;TITLE&quot;" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="Lcr-wj-QfF">
+                                            <rect key="frame" x="10" y="0.0" width="90" height="25"/>
+                                            <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="15"/>
+                                            <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                    <color key="backgroundColor" name="ProfileMask"/>
+                                    <constraints>
+                                        <constraint firstAttribute="trailing" secondItem="Lcr-wj-QfF" secondAttribute="trailing" constant="10" id="CAz-QC-v9E"/>
+                                        <constraint firstItem="Lcr-wj-QfF" firstAttribute="centerX" secondItem="GkF-7H-Xlp" secondAttribute="centerX" id="U87-iS-gpF"/>
+                                        <constraint firstAttribute="height" constant="25" id="Xky-rm-ub6"/>
+                                        <constraint firstItem="Lcr-wj-QfF" firstAttribute="leading" secondItem="GkF-7H-Xlp" secondAttribute="leading" constant="10" id="m3U-sG-c7w"/>
+                                        <constraint firstAttribute="bottom" secondItem="Lcr-wj-QfF" secondAttribute="bottom" id="mzn-kx-hyv"/>
+                                        <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="110" id="rbN-4h-SNA"/>
+                                        <constraint firstItem="Lcr-wj-QfF" firstAttribute="top" secondItem="GkF-7H-Xlp" secondAttribute="top" id="sl4-Yn-Xdx"/>
+                                    </constraints>
+                                </view>
+                            </subviews>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <constraints>
+                                <constraint firstItem="rcy-QC-ocE" firstAttribute="centerX" secondItem="ebm-c3-bBt" secondAttribute="centerX" id="HUU-VH-AfP"/>
+                                <constraint firstItem="rcy-QC-ocE" firstAttribute="top" secondItem="ebm-c3-bBt" secondAttribute="top" id="QFj-O8-Aa9"/>
+                                <constraint firstItem="rcy-QC-ocE" firstAttribute="top" secondItem="ebm-c3-bBt" secondAttribute="top" id="RjC-jc-1Vo"/>
+                                <constraint firstItem="GkF-7H-Xlp" firstAttribute="centerX" secondItem="ebm-c3-bBt" secondAttribute="centerX" id="VIX-dS-Byx"/>
+                                <constraint firstAttribute="trailing" secondItem="rcy-QC-ocE" secondAttribute="trailing" id="XeO-AA-XSg"/>
+                                <constraint firstItem="rcy-QC-ocE" firstAttribute="leading" secondItem="ebm-c3-bBt" secondAttribute="leading" id="dMt-ad-vYJ"/>
+                                <constraint firstAttribute="width" secondItem="ebm-c3-bBt" secondAttribute="height" multiplier="1:1" id="neX-ZE-e4c"/>
+                                <constraint firstItem="rcy-QC-ocE" firstAttribute="centerY" secondItem="ebm-c3-bBt" secondAttribute="centerY" id="qoH-TX-gur"/>
+                                <constraint firstAttribute="bottom" secondItem="rcy-QC-ocE" secondAttribute="bottom" id="rQ4-jJ-1nF"/>
+                                <constraint firstAttribute="bottom" secondItem="rcy-QC-ocE" secondAttribute="bottom" id="ujA-nv-yQv"/>
+                                <constraint firstItem="GkF-7H-Xlp" firstAttribute="top" secondItem="ebm-c3-bBt" secondAttribute="top" constant="5" id="yAS-gp-Vhd"/>
+                            </constraints>
+                        </view>
+                    </subviews>
                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                    <collectionViewFlowLayout key="collectionViewLayout" scrollDirection="horizontal" minimumLineSpacing="10" minimumInteritemSpacing="10" id="uld-kz-lgJ">
-                        <size key="itemSize" width="57" height="50"/>
-                        <size key="headerReferenceSize" width="0.0" height="0.0"/>
-                        <size key="footerReferenceSize" width="0.0" height="0.0"/>
-                        <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
-                    </collectionViewFlowLayout>
-                </collectionView>
-                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Trending" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="Lcr-wj-QfF">
-                    <rect key="frame" x="20" y="5" width="336" height="30"/>
                     <constraints>
-                        <constraint firstAttribute="height" constant="30" id="i55-nM-cNG"/>
+                        <constraint firstItem="ebm-c3-bBt" firstAttribute="centerX" secondItem="HYm-bh-W43" secondAttribute="centerX" id="LTL-yZ-o3M"/>
+                        <constraint firstItem="ebm-c3-bBt" firstAttribute="centerY" secondItem="HYm-bh-W43" secondAttribute="centerY" id="eLv-li-FAc"/>
+                        <constraint firstAttribute="bottom" secondItem="ebm-c3-bBt" secondAttribute="bottom" id="jNP-UJ-UR3"/>
+                        <constraint firstItem="ebm-c3-bBt" firstAttribute="top" secondItem="HYm-bh-W43" secondAttribute="top" id="tfT-82-aIv"/>
                     </constraints>
-                    <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="20"/>
-                    <nil key="textColor"/>
-                    <nil key="highlightedColor"/>
-                </label>
+                </view>
+                <pageControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="NDw-ld-8bP">
+                    <rect key="frame" x="0.0" y="356" width="376" height="30"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="30" id="U7B-Kw-jE0"/>
+                    </constraints>
+                    <color key="pageIndicatorTintColor" systemColor="systemFillColor" red="0.47058823529999999" green="0.47058823529999999" blue="0.50196078430000002" alpha="0.20000000000000001" colorSpace="custom" customColorSpace="sRGB"/>
+                    <color key="currentPageIndicatorTintColor" name="LoadingColor"/>
+                </pageControl>
             </subviews>
-            <color key="backgroundColor" systemColor="tertiarySystemBackgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <color key="backgroundColor" name="DefaultProductBackground"/>
             <constraints>
-                <constraint firstItem="vUN-kp-3ea" firstAttribute="bottom" secondItem="rcy-QC-ocE" secondAttribute="bottom" id="3il-1C-E8W"/>
-                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="Lcr-wj-QfF" secondAttribute="trailing" constant="20" id="AjL-n9-xtR"/>
-                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="rcy-QC-ocE" secondAttribute="trailing" id="DmU-2h-hq9"/>
-                <constraint firstItem="rcy-QC-ocE" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" id="JQI-Lm-hHZ"/>
-                <constraint firstItem="rcy-QC-ocE" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="XHG-MQ-bqf"/>
-                <constraint firstItem="Lcr-wj-QfF" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="20" id="nAK-D3-70V"/>
-                <constraint firstItem="Lcr-wj-QfF" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="5" id="uzY-Af-Sng"/>
+                <constraint firstAttribute="trailing" secondItem="HYm-bh-W43" secondAttribute="trailing" id="ASN-H2-SxD"/>
+                <constraint firstItem="NDw-ld-8bP" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" id="JFG-vu-Gcm"/>
+                <constraint firstItem="HYm-bh-W43" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="Q16-SR-rDN"/>
+                <constraint firstItem="HYm-bh-W43" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="bYo-f6-u4Z"/>
+                <constraint firstItem="NDw-ld-8bP" firstAttribute="top" secondItem="HYm-bh-W43" secondAttribute="bottom" id="f0E-MI-vWa"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="bottom" secondItem="NDw-ld-8bP" secondAttribute="bottom" id="gOL-zD-2Yr"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="NDw-ld-8bP" secondAttribute="trailing" id="rug-Ef-kwL"/>
             </constraints>
             <nil key="simulatedTopBarMetrics"/>
             <nil key="simulatedBottomBarMetrics"/>
@@ -55,8 +106,21 @@
             <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
             <connections>
                 <outlet property="collectionView" destination="rcy-QC-ocE" id="u2I-j1-QLd"/>
+                <outlet property="pageControl" destination="NDw-ld-8bP" id="ozZ-gq-S1w"/>
+                <outlet property="trendingLbl" destination="Lcr-wj-QfF" id="5Km-cR-2Sr"/>
             </connections>
             <point key="canvasLocation" x="165.21739130434784" y="-48.214285714285715"/>
         </view>
     </objects>
+    <resources>
+        <namedColor name="DefaultProductBackground">
+            <color red="0.95200002193450928" green="0.94800001382827759" blue="0.9570000171661377" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+        </namedColor>
+        <namedColor name="LoadingColor">
+            <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="ProfileMask">
+            <color red="0.85900002717971802" green="0.86699998378753662" blue="0.86699998378753662" alpha="0.5" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
 </document>

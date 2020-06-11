@@ -114,19 +114,36 @@ class PasswordVC: UIViewController {
                 }
                 else{
                     if let user = result?.user{
-                        UserDefaults.standard.set(user.email, forKey: "EMAIL")
-                        UserDefaults.standard.set(user.uid, forKey: "UID")
-                        user.sendEmailVerification(with: actionCodeSettings, completion: { error in
+                        let data = [
+                            "Full_Name" : "",
+                            "Bio" : "",
+                            "ProfilePicID" : "",
+                            "notification_tokens" : [],
+                            "Following_List" : [],
+                            "Following_Count" : 0,
+                            "Followers_Count" : 0,
+                            "Posts_Count" : 0,
+                            ] as [String : Any]
+                        Firestore.firestore().collection("Users").addDocument(data: data, completion: { error in
                             if let err = error{
-                                sender.isEnabled = true
-                                print(err.localizedDescription)
+                                self.updateErrorView(text: err.localizedDescription)
                             }
                             else{
-                                
+                                UserDefaults.standard.set(user.email, forKey: "EMAIL")
+                                UserDefaults.standard.set(user.uid, forKey: "UID")
+                                user.sendEmailVerification(with: actionCodeSettings, completion: { error in
+                                    if let err = error{
+                                        sender.isEnabled = true
+                                        print(err.localizedDescription)
+                                    }
+                                    else{
+                                        
+                                    }
+                                })
+                                sender.isEnabled = true
+                                self.performSegue(withIdentifier: "toAccountSetup", sender: nil)
                             }
                         })
-                        sender.isEnabled = true
-                        self.performSegue(withIdentifier: "toAccountSetup", sender: nil)
                     }
                     else{
                         sender.isEnabled = true

@@ -12,7 +12,7 @@ class ColorSectionFlowLayout: UICollectionViewFlowLayout {
 
     var canvasInfo = CanvasInfo()
 
-    let innerSpace: CGFloat = 2
+    let innerSpace: CGFloat = 4
     let numberOfCellsOnRow: CGFloat = 3
     override init() {
         super.init()

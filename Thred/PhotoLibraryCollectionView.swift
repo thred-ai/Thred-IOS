@@ -20,9 +20,13 @@ class PhotosView: UIView{
     
     lazy var topTab: UISegmentedControl = {
         
-        let control = UISegmentedControl.init(frame: CGRect(x: 5, y: 5, width: self.frame.width - 10, height: 45))
+        let control = UISegmentedControl.init(frame: CGRect(x: 5, y: 5, width: self.frame.width - 10, height: 30))
         control.insertSegment(withTitle: "Photos", at: 0, animated: false)
         control.insertSegment(withTitle: "My Threds", at: 1, animated: false)
+        control.setTitleFont(UIFont(name: "NexaW01-Heavy", size: 14)!)
+        control.setTitleColor(.white)
+        control.selectedSegmentTintColor = UIColor(named: "LoadingColor")
+        control.backgroundColor =                                                                                                                                                                                                                ColorCompatibility.systemGroupedBackground
         control.layer.cornerRadius = 0
         control.selectedSegmentIndex = 0
         control.clipsToBounds = true
@@ -488,10 +492,13 @@ class ThredListView: UICollectionView, UICollectionViewDelegate, UICollectionVie
                     for snap in snaps{
                         
                         let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
+                        let color = snap["Template_Color"] as? String
+
                         self.images.append([
                             "ID" : snap.documentID,
                             "Timestamp" : timestamp,
-                            "Image" : nil
+                            "Image" : nil,
+                            "Color" : color
                             ])
                         self.performBatchUpdates({
                             self.insertItems(at: [IndexPath(item: self.images.count - 1, section: 0)])
@@ -507,18 +514,22 @@ class ThredListView: UICollectionView, UICollectionViewDelegate, UICollectionVie
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotosCell", for: indexPath) as? PhotosCell
         cell?.photoImageView.clipsToBounds = true
+        cell?.photoImageView.backgroundColor = ColorCompatibility.tertiarySystemGroupedBackground
         cell?.photo = nil
         let design = self.images[indexPath.item]
+        guard let color = design["Color"] as? String else{return cell!}
         guard let designID = design["ID"] as? String else{return cell!}
         guard let uid = userInfo.uid else{return cell!}
         let designImg = design["Image"] as? UIImage
 
         if designImg != nil{
             cell?.photo = designImg
+            cell?.photoImageView.backgroundColor = UIColor(named: color)
         }
         else{
             if let image = cache.imageFromCache(forKey: designID){
                 cell?.photo = image
+                cell?.photoImageView.backgroundColor = UIColor(named: color)
                 self.images[indexPath.item]["Image"] = image
             }
             else{
@@ -531,6 +542,7 @@ class ThredListView: UICollectionView, UICollectionViewDelegate, UICollectionVie
                             self.images[indexPath.item]["Image"] = img
                             if cell != nil{
                                 cell?.photo = img
+                                cell?.photoImageView.backgroundColor = UIColor(named: color)
                             }
                         }
                     }

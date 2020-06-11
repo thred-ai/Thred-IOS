@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="DrawToolsCell" id="gTV-IL-0wX" customClass="DrawToolsCell" customModule="Thred" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
+                <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                <subviews>
+                    <button opaque="NO" contentMode="scaleAspectFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" reversesTitleShadowWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8g4-CR-f4D">
+                        <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                        <viewLayoutGuide key="safeArea" id="aso-Si-Jr4"/>
+                        <color key="tintColor" name="LoadingColor"/>
+                        <connections>
+                            <action selector="toolTapped:" destination="gTV-IL-0wX" eventType="touchUpInside" id="y2G-jR-dVP"/>
+                        </connections>
+                    </button>
+                </subviews>
+            </view>
+            <constraints>
+                <constraint firstItem="8g4-CR-f4D" firstAttribute="centerX" secondItem="gTV-IL-0wX" secondAttribute="centerX" id="44S-1V-UAI"/>
+                <constraint firstItem="8g4-CR-f4D" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="VVC-zt-ajq"/>
+                <constraint firstItem="8g4-CR-f4D" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="gVb-79-fno"/>
+                <constraint firstItem="8g4-CR-f4D" firstAttribute="centerY" secondItem="gTV-IL-0wX" secondAttribute="centerY" id="l84-fx-2Wd"/>
+                <constraint firstAttribute="bottom" secondItem="8g4-CR-f4D" secondAttribute="bottom" id="rmT-p3-sml"/>
+                <constraint firstAttribute="trailing" secondItem="8g4-CR-f4D" secondAttribute="trailing" id="zQw-hE-Amn"/>
+            </constraints>
+            <viewLayoutGuide key="safeArea" id="ZTg-uK-7eu"/>
+            <connections>
+                <outlet property="toolBtn" destination="8g4-CR-f4D" id="vGp-UN-JgL"/>
+            </connections>
+            <point key="canvasLocation" x="139" y="128"/>
+        </collectionViewCell>
+    </objects>
+    <resources>
+        <namedColor name="LoadingColor">
+            <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>

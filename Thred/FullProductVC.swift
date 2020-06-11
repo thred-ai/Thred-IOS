@@ -16,13 +16,14 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
 
     @IBOutlet weak var addToCartBtn: UIButton!
     var selectedSize: String!
+    var editedPost = false
     
     
     @IBAction func addToCart(_ sender: UIButton) {
         
         sender.isEnabled = false
         UIView.animate(withDuration: 0.2, animations: {
-            sender.setTitle("Added item to cart", for: .normal)
+            sender.setTitle("Added to cart", for: .normal)
         })
         DispatchQueue.main.asyncAfter(deadline: .now() + 3){
             UIView.animate(withDuration: 0.2, animations: {
@@ -36,11 +37,12 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
         
         let size = selectedSize ?? "M"
         guard let uid = userInfo.uid else{
-            
+            return}
+        guard let postUID = fullProduct.userInfo.uid else{
             return}
         
         let mappedData = [
-            "UID" : fullProduct.uid,
+            "UID" : postUID,
             "Size" : size,
             "Qty" : 1,
             "Timestamp" : Date(),
@@ -100,9 +102,8 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
 
         tableView.register(UINib(nibName: "ProductCell", bundle: nil), forCellReuseIdentifier: "PictureProduct")
         
-        if fullProduct.name == nil{
-            getProduct()
-        }
+        getProduct()
+        
     }
     
     
@@ -128,47 +129,58 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
                 print(err.localizedDescription)
             }
             else{
-                guard let snap = snaps?.documents.first else{
-                    return}
-                let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
-                let uid = snap["UID"] as! String
-                let description = snap["Description"] as? String
-                let name = snap["Name"] as? String
-                let blurred = snap["Blurred"] as? Bool
-                let templateColor = snap["Template_Color"] as? String
-                let likes = snap["Likes"] as? Int
-                guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
-                let comments = ((snap["Comments"]) as? Int) ?? 0
+                if snaps?.isEmpty ?? true{
+                    self.navigationController?.popViewController(animated: true)
+                }
+                else{
+                    guard let snap = snaps?.documents.first else{
+                        self.navigationController?.popViewController(animated: true)
+                        return}
+                    let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
+                    let uid = snap["UID"] as! String
+                    let description = snap["Description"] as? String
+                    let name = snap["Name"] as? String
+                    let blurred = snap["Blurred"] as? Bool
+                    let templateColor = snap["Template_Color"] as? String
+                    let likes = snap["Likes"] as? Int
+                    guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
+                    let comments = ((snap["Comments"]) as? Int) ?? 0
 
-                Firestore.firestore().collection("Users").document(self.fullProduct.uid).collection("Products").document(snap.documentID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userUID).getDocuments(completion: { snapLikes, error in
-                
-                    var liked: Bool!
+                    Firestore.firestore().collection("Users").document(uid).collection("Products").document(snap.documentID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userUID).getDocuments(completion: { snapLikes, error in
                     
-                    if error != nil{
-                        print(error?.localizedDescription ?? "")
-                    }
-                    else{
-                        userInfo.userLiked.removeAll(where: {$0 == snap.documentID})
-                        if let likeDocs = snapLikes?.documents{
-                            if likeDocs.isEmpty{
-                                liked = false
-                            }
-                            else{
-                                liked = true
-                                if !(userInfo.userLiked.contains(snap.documentID)){
-                                    userInfo.userLiked.append(snap.documentID)
-                                }
-                            }
+                        var liked: Bool!
+                        
+                        if error != nil{
+                            print(error?.localizedDescription ?? "")
                         }
                         else{
-                            liked = false
+                            userInfo.userLiked.removeAll(where: {$0 == snap.documentID})
+                            if let likeDocs = snapLikes?.documents{
+                                if likeDocs.isEmpty{
+                                    liked = false
+                                }
+                                else{
+                                    liked = true
+                                    if !(userInfo.userLiked.contains(snap.documentID)){
+                                        userInfo.userLiked.append(snap.documentID)
+                                    }
+                                }
+                            }
+                            else{
+                                liked = false
+                            }
                         }
-                    }
-                    
-                    self.fullProduct = Product(uid: uid, picID: snap.documentID, description: description, fullName: nil, username: nil, productID: snap.documentID, userImageID: nil, timestamp: timestamp, index: nil, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil)
-                    
-                    self.tableView.reloadData()
-                })
+                        
+                        self.fullProduct = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: nil, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil)
+                        
+                        if let cell = self.tableView.cellForRow(at: IndexPath(row: 0, section: 0)) as? ProductCell{
+                            self.tableView.setPictureCell(cell: cell, indexPath: IndexPath(row: 0, section: 0), product: self.fullProduct, productLocation: self, shouldDownloadPic: false)
+                        }
+                        else{
+                            self.tableView.reloadData()
+                        }
+                    })
+                }
             }
         })
     }
@@ -216,11 +228,23 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
     
     
     func navigationController(_ navigationController: UINavigationController, didShow viewController: UIViewController, animated: Bool) {
-        if let index = ((viewController as? FeedVC)?.loadedProducts ?? (viewController as? FriendVC)?.loadedProducts ?? (viewController as? UserVC)?.loadedProducts)?.firstIndex(where: {$0.productID == fullProduct.productID}){
+        
+        guard editedPost else{
+        return}
+        if let products = ((viewController as? FeedVC)?.loadedProducts ?? (viewController as? FriendVC)?.loadedProducts ?? (viewController as? UserVC)?.loadedProducts){
+            
+            guard let index = products.firstIndex(where: {$0.productID == fullProduct.productID}) else{
+                
+                return}
+
             let tableView = (viewController as? UserVC)?.tableView ?? (viewController as? FriendVC)?.tableView ?? (viewController as? FeedVC)?.tableView
+            
             tableView?.performBatchUpdates({
                 tableView?.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
             }, completion: nil)
+        }
+        else{
+            
         }
     }
 
@@ -228,80 +252,47 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
     func navigationController(_ navigationController: UINavigationController, willShow viewController: UIViewController, animated: Bool) {
         
         guard let uid = userInfo.uid else{return}
+        guard let productUID = fullProduct.userInfo.uid else{return}
+
         if viewController == self{
-            guard let index = navigationController.viewControllers.firstIndex(of: self) else{return}
-            let vc = navigationController.viewControllers[index - 1]
-            if vc is ExploreViewController || vc is ColorSectionVC{
-                
-                let cell = self.tableView.cellForRow(at: IndexPath(row: 0, section: 0)) as? ProductCell
+            let cell = self.tableView.cellForRow(at: IndexPath(row: 0, section: 0)) as? ProductCell
+            cell?.isUserInteractionEnabled = true
+            if !(userInfo.userLiked.contains(fullProduct.productID)){
                 cell?.isUserInteractionEnabled = false
+                Firestore.firestore().collection("Users").document(productUID).collection("Products").document(fullProduct.productID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: uid).getDocuments(completion: { snapLikes, error in
                     
-                if !(userInfo.userLiked.contains(fullProduct.productID)){
-                    Firestore.firestore().collection("Users").document(fullProduct.uid).collection("Products").document(fullProduct.productID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: uid).getDocuments(completion: { snapLikes, error in
-                        
-                        var liked: Bool!
-                        
-                        if error != nil{
-                            print(error?.localizedDescription ?? "")
-                        }
-                        else{
-                            userInfo.userLiked.removeAll(where: {$0 == self.fullProduct.productID})
-                            if let likeDocs = snapLikes?.documents{
-                                if likeDocs.isEmpty{
-                                    liked = false
-                                }
-                                else{
-                                    liked = true
-                                    if !(userInfo.userLiked.contains(self.fullProduct.uid)){
-                                        userInfo.userLiked.append(self.fullProduct.uid)
-                                    }
-                                }
-                            }
-                            else{
+                    var liked: Bool!
+                    
+                    if error != nil{
+                        print(error?.localizedDescription ?? "")
+                    }
+                    else{
+                        userInfo.userLiked.removeAll(where: {$0 == self.fullProduct.productID})
+                        if let likeDocs = snapLikes?.documents{
+                            if likeDocs.isEmpty{
                                 liked = false
                             }
+                            else{
+                                liked = true
+                                if !(userInfo.userLiked.contains(self.fullProduct.productID)){
+                                    userInfo.userLiked.append(self.fullProduct.productID)
+                                }
+                            }
                         }
-                        cell?.isUserInteractionEnabled = true
-                        UserDefaults.standard.set(userInfo.userLiked, forKey: "LikedPosts")
-                        self.fullProduct.liked = liked
-                        DispatchQueue.main.async {
-                            self.tableView.reloadData()
+                        else{
+                            liked = false
                         }
-                    })
-                }
-                
+                    }
+                    cell?.isUserInteractionEnabled = true
+                    UserDefaults.standard.set(userInfo.userLiked, forKey: "LikedPosts")
+                    self.fullProduct.liked = liked
+                    DispatchQueue.main.async {
+                        self.tableView.reloadData()
+                    }
+                })
             }
         }
     }
-    
-    func rasterizeProductCellDisplay(cell: ProductCell?, image: UIImage?, product: Product?){
-        isRasterizing = true
-        cell?.canvasDisplayView.isHidden = false
-        cell?.canvasDisplayView.image = image
-        let bundlePath = Bundle.main.path(forResource: product?.templateColor, ofType: "png")
-        let img = UIImage(contentsOfFile: bundlePath!)
-        cell?.productPicture.image = img
-        cell?.productPicture.addShadowToImageNotLayer()
-        cell?.circularProgress.removeFromSuperview()
-        navigationController?.navigationBar.isUserInteractionEnabled = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            let fullData = cell?.productPicture.makeSnapshot(clear: true, subviewsToIgnore: [])?.pngData()
-            cell?.canvasDisplayView.isHidden = true
-            self.navigationController?.navigationBar.isUserInteractionEnabled = true
-
-            self.navigationItem.hidesBackButton = false
-            self.fullProduct.designImage = fullData
-            guard let fullImgData = fullData else{return}
-            cell?.productPicture.image = UIImage(data: fullImgData)
-            self.isRasterizing = false
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            if self.selectedComment != nil{
-                self.performSegue(withIdentifier: "toComments", sender: nil)
-            }
-        }
-    }
-    
     
 
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
@@ -330,7 +321,9 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         if indexPath.section == 0{
-            return tableView.setPictureCell(indexPath: indexPath, product: fullProduct, productLocation: self)
+            let cell = tableView.dequeueReusableCell(withIdentifier: "PictureProduct", for: indexPath) as? ProductCell
+            tableView.setPictureCell(cell: cell, indexPath: indexPath, product: fullProduct, productLocation: self, shouldDownloadPic: true)
+            return cell!
         }
         else{
             let cell = tableView.dequeueReusableCell(withIdentifier: "sizeCell", for: indexPath) as? SizeCell
@@ -427,13 +420,13 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
         }
         else if let designVC = (segue.destination as? UINavigationController)?.viewControllers.first as? DesignViewController{
             if let img = cache.imageFromCache(forKey: fullProduct.productID){
-                designVC.product = ProductInProgress(templateColor: fullProduct.templateColor, design: img, uid: fullProduct.uid, caption: fullProduct.description, name: fullProduct.name, price: fullProduct.price, productID: fullProduct.productID, display: fullProduct.designImage)
+                designVC.product = ProductInProgress(templateColor: fullProduct.templateColor, design: img, uid: fullProduct.userInfo.uid, caption: fullProduct.description, name: fullProduct.name, price: fullProduct.price, productID: fullProduct.productID, display: fullProduct.designImage)
             }
         }
         else if let reportVC = (segue.destination as? UINavigationController)?.viewControllers.first as? ReportVC{
             reportVC.reportLevel = .post
             reportVC.reportPostID = fullProduct.productID
-            reportVC.reportUID = fullProduct.uid
+            reportVC.reportUID = fullProduct.userInfo.uid
         }
     }
 

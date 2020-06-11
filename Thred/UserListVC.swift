@@ -34,7 +34,8 @@ class UserListVC: UITableViewController {
         tableView.separatorStyle = .none
         tableView.register(UINib(nibName: "SearchUserTableViewCell", bundle: nil), forCellReuseIdentifier: "search")
         isLoading = true
-        
+        tableView.adjustForCenterBtn(footerColor: nil, offset: 5, vc: self)
+
         getUsers(fromInterval: nil){
             self.isLoading = false
         }
@@ -84,7 +85,8 @@ class UserListVC: UITableViewController {
                             let followingCount = document["Following_Count"] as? Int
                             let postCount = document["Posts_Count"] as? Int
                             let usersBlocking = document["Users_Blocking"] as? [String]
-                            let user = UserInfo(uid: uid, dp: nil, dpID: dpLink, username: username, fullName: fullname, bio: bio, notifID: nil, userFollowing: userFollowing ?? [], userLiked: [], followerCount: followerCount ?? 0, postCount: postCount ?? 0, followingCount: followingCount ?? 0, usersBlocking: usersBlocking ?? [])
+                            let profileLink = URL(string: (document["ProfileLink"] as? String) ?? "")
+                            let user = UserInfo(uid: uid, dp: nil, dpID: dpLink, username: username, fullName: fullname, bio: bio, notifID: nil, userFollowing: userFollowing ?? [], userLiked: [], followerCount: followerCount ?? 0, postCount: postCount ?? 0, followingCount: followingCount ?? 0, usersBlocking: usersBlocking ?? [], profileLink: profileLink)
                             self.listUsers.append(user)
                             self.tableView.performBatchUpdates({
                                 self.tableView.insertRows(at: [IndexPath(row: self.listUsers.count - 1, section: 0)], with: .none)
