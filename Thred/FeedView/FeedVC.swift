@@ -77,9 +77,10 @@ class Product: Codable, Equatable{
     var designImage: Data!
     var comments = Int()
     var link: URL!
+    var isAvailable: Bool!
 
     
-    init(userInfo: UserInfo, picID: String?, description: String?, productID: String, timestamp: Date?, index: Int?, timestampDiff: String?, blurred: Bool?, price: Double?, name: String?, templateColor: String?, likes: Int?, liked: Bool?, designImage: Data?, comments: Int?, link: URL?) {
+    init(userInfo: UserInfo, picID: String?, description: String?, productID: String, timestamp: Date?, index: Int?, timestampDiff: String?, blurred: Bool?, price: Double?, name: String?, templateColor: String?, likes: Int?, liked: Bool?, designImage: Data?, comments: Int?, link: URL?, isAvailable: Bool!) {
         
         self.userInfo = userInfo
         self.picID = picID
@@ -97,10 +98,11 @@ class Product: Codable, Equatable{
         self.designImage = designImage
         self.comments = comments ?? 0
         self.link = link
+        self.isAvailable = isAvailable
     }
     
     convenience init() {
-        self.init(userInfo: UserInfo(), picID: nil, description: nil, productID: "", timestamp: nil,  index: nil, timestampDiff: nil, blurred: false, price: nil, name: nil, templateColor: nil, likes: 0, liked: false, designImage: nil, comments: 0, link: nil)
+        self.init(userInfo: UserInfo(), picID: nil, description: nil, productID: "", timestamp: nil,  index: nil, timestampDiff: nil, blurred: false, price: nil, name: nil, templateColor: nil, likes: 0, liked: false, designImage: nil, comments: 0, link: nil, isAvailable: nil)
     }
     
 }
@@ -145,13 +147,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         return cell!
         
     }
-    
-    override func didReceiveMemoryWarning() {
-        likeQueue.removeAll()
-        DispatchQueue.global(qos: .background).sync {
-            cache.clearMemory()
-        }
-    }
+
     
     @objc func newproduct(_ sender: UIBarButtonItem){
         performSegue(withIdentifier: "newproduct", sender: nil)
@@ -351,7 +347,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         if arrays.indices.contains(lastIndex){
             let array = arrays[lastIndex]
             lastIndex = (arrays.firstIndex(of: array) ?? 0) + 1
-            query = Firestore.firestore().collectionGroup("Products").whereField("UID", in: array).whereField("Has_Picture", isEqualTo: true).limit(to: docLimit).order(by: "Timestamp", descending: true)
+            query = Firestore.firestore().collectionGroup("Products").whereField("UID", in: array).whereField("Has_Picture", isEqualTo: true).whereField("Available", isEqualTo: true).limit(to: docLimit).order(by: "Timestamp", descending: true)
             
             query.getDocuments(completion: { (snapDocuments, err) in
                 if let err = err {
@@ -385,7 +381,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                                 let likes = snap["Likes"] as? Int
                                 guard let priceCents = (snap["Price_Cents"] as? Double) else{continue}
                                 let comments = ((snap["Comments"]) as? Int) ?? 0
-                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil)
+                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: true)
                                 localLoaded.append(product)
                             }
                         }
@@ -635,6 +631,14 @@ extension UIViewController{
         return loadingView!
     }
     
+    func loadOrdersHeaderFromNib() -> EmptyOrdersView?{
+        let ordersHeaderView = UINib(
+            nibName: "EmptyOrdersView",
+            bundle: nil
+        ).instantiate(withOwner: nil, options: nil)[0] as? EmptyOrdersView
+        return ordersHeaderView
+    }
+    
     func loadNotifHeaderFromNib() -> EmptyNotifView?{
         let notifHeaderView = UINib(
             nibName: "EmptyNotifView",
@@ -657,14 +661,6 @@ extension UIViewController{
             bundle: nil
         ).instantiate(withOwner: nil, options: nil)[0] as? EmptySalesView
         return salesHeaderView
-    }
-    
-    func loadOrdersHeaderFromNib() -> EmptyOrdersView?{
-        let ordersHeaderView = UINib(
-            nibName: "EmptyOrdersView",
-            bundle: nil
-        ).instantiate(withOwner: nil, options: nil)[0] as? EmptyOrdersView
-        return ordersHeaderView
     }
 }
 

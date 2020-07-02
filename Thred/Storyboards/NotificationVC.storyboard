@@ -66,7 +66,7 @@
                                     <action selector="toCart:" destination="b26-ny-SLm" id="B3L-ni-3of"/>
                                 </connections>
                             </barButtonItem>
-                            <barButtonItem image="creditcard.fill" id="agr-0f-dMy">
+                            <barButtonItem image="cash" id="agr-0f-dMy">
                                 <color key="tintColor" name="LoadingColor"/>
                                 <connections>
                                     <action selector="toSales:" destination="b26-ny-SLm" id="XRg-o5-DJy"/>
@@ -248,7 +248,7 @@
     </scenes>
     <resources>
         <image name="cart" width="33.333332061767578" height="33.333332061767578"/>
-        <image name="creditcard.fill" width="33.333332061767578" height="33.333332061767578"/>
+        <image name="cash" width="30" height="30"/>
         <image name="tag" width="33.333332061767578" height="33.333332061767578"/>
         <namedColor name="LoadingColor">
             <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

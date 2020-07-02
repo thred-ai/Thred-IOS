@@ -12,6 +12,7 @@ import Stripe
 
 class CardVC: UIViewController, STPAddCardViewControllerDelegate {
 
+    @IBOutlet weak var doneBtn: UIBarButtonItem!
     @IBOutlet weak var postalCodeField: UILabel!
     @IBOutlet weak var actionBtn: UIButton!
     @IBOutlet weak var loadingView: UIView!
@@ -20,6 +21,11 @@ class CardVC: UIViewController, STPAddCardViewControllerDelegate {
     var hasCard = false
     @IBOutlet weak var lastFourField: UILabel!
     @IBOutlet weak var cardType: UILabel!
+    
+    @IBAction func doneBtnPressed(_ sender: UIBarButtonItem) {
+        navigationController?.popViewController(animated: true)
+    }
+    
     
     @IBAction func cardInfoAction(_ sender: UIButton) {
         sender.isEnabled = false
@@ -36,6 +42,7 @@ class CardVC: UIViewController, STPAddCardViewControllerDelegate {
     
     func deleteCard(completed: @escaping () -> ()){
         let data = ["uid" : userInfo.uid ?? ""]
+        doneBtn.isEnabled = false
         showLoadingView()
         Functions.functions().httpsCallable("removeCard").call(data, completion: { result, error  in
             if error != nil{
@@ -82,6 +89,7 @@ class CardVC: UIViewController, STPAddCardViewControllerDelegate {
             postalCodeField.text = postalCode
             setActionBtnTitle("Remove Card")
             hasCard = true
+            doneBtn.isEnabled = true
             hideLoadingView()
         }
         else{
@@ -89,6 +97,7 @@ class CardVC: UIViewController, STPAddCardViewControllerDelegate {
             lastFourField.text = "None"
             postalCodeField.text = "None"
             setActionBtnTitle("Add Card")
+            doneBtn.isEnabled = false
             hasCard = false
         }
     }
@@ -162,6 +171,7 @@ class CardVC: UIViewController, STPAddCardViewControllerDelegate {
         super.viewDidLoad()
 
         errorView.text = nil
+        doneBtn.isEnabled = false
         hideCenterBtn()
         getCardInfo()
         // Do any additional setup after loading the view.

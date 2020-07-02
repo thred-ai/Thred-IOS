@@ -39,6 +39,8 @@ extension UITableView{
             cell?.pageControl.currentPage = 0
         }
         
+        
+        (productLocation as? FullProductVC)?.isDeleted = !(product.isAvailable ?? false)
     
         cell?.commentBtn.setTitle("View comments", for: .normal)
         cell?.likesLbl.text = "\(0)"

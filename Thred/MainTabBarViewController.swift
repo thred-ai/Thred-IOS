@@ -264,7 +264,7 @@ extension UITableView{
         
         let doc = Firestore.firestore().collection("Users").document(post.uid).collection("Products").document(productID)
 
-        doc.delete(completion: { error in
+        doc.updateData(["Available" : false], completion: { error in
             completed()
             if let err = error{
                 print(err.localizedDescription)
@@ -273,6 +273,7 @@ extension UITableView{
                 
             }
         })
+
     }
 }
 

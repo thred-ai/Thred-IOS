@@ -139,7 +139,7 @@ class ProductCell: UITableViewCell, UITextViewDelegate, UICollectionViewDelegate
                     if let full = self.vc as? FullProductVC{
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
                             full.navigationItem.hidesBackButton = false
-                            if full.selectedComment != nil{
+                            if full.selectedComment != nil, product.isAvailable{
                                 full.performSegue(withIdentifier: "toComments", sender: nil)
                             }
                         }
@@ -494,7 +494,7 @@ class ProductCell: UITableViewCell, UITextViewDelegate, UICollectionViewDelegate
             return
         }
         
-        let productToOpen = Product(userInfo: product.userInfo, picID: product.picID, description: product.description, productID: product.productID, timestamp: product.timestamp, index: product.index, timestampDiff: product.timestampDiff, blurred: product.blurred, price: product.price, name: product.name, templateColor: product.templateColor, likes: product.likes, liked: product.liked, designImage: product.designImage, comments: product.comments, link: nil)
+        let productToOpen = Product(userInfo: product.userInfo, picID: product.picID, description: product.description, productID: product.productID, timestamp: product.timestamp, index: product.index, timestampDiff: product.timestampDiff, blurred: product.blurred, price: product.price, name: product.name, templateColor: product.templateColor, likes: product.likes, liked: product.liked, designImage: product.designImage, comments: product.comments, link: nil, isAvailable: product.isAvailable)
         
         switch vc{
             

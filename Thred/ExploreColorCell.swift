@@ -50,7 +50,7 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
             postArray = [Product]()
             
             let color = templateColor
-            Firestore.firestore().collectionGroup("Products").whereField("Template_Color", isEqualTo: templateColor ?? "").whereField("Has_Picture", isEqualTo: true).whereField("Blurred", isEqualTo: false).order(by: "Likes", descending: true).limit(to: 8).getDocuments(completion: { snaps, err in
+            Firestore.firestore().collectionGroup("Products").whereField("Template_Color", isEqualTo: templateColor ?? "").whereField("Has_Picture", isEqualTo: true).whereField("Blurred", isEqualTo: false).whereField("Available", isEqualTo: true).order(by: "Likes", descending: true).limit(to: 8).getDocuments(completion: { snaps, err in
                 if err != nil{
                     completed()
                     print(err?.localizedDescription ?? "")
@@ -70,7 +70,7 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
                             continue
                         }
                         if self.templateColor == color{
-                            self.postArray?.append(Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil))
+                            self.postArray?.append(Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: true))
                         }
                     }
                     self.postArray?.sort(by: {$0.likes > $1.likes})
@@ -206,47 +206,48 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
 
 extension UICollectionView{
     func downloadExploreProductImage(circularProgress: CircularProgress?, followingUID: String, picID: String, index: Int, product: Product?, isThumbnail: Bool, completed: @escaping (UIImage?) -> ()){
-            circularProgress?.isHidden = false
-            let pic_id = picID
-            //if product?.blurred ?? false{
-            //    pic_id = "blur_\(pic_id)"
-            //}
-            let ref = Storage.storage().reference().child("Users/" + followingUID + "/" + "Products/" + picID + "/" + "thumbnail_" + pic_id + ".png")
-            ref.downloadURL(completion: { url, error in
-                if error != nil{
-                    print(error?.localizedDescription ?? "")
-                    completed(nil)
-                }
-                else{
-                    var dub: CGFloat = 0
-                    var oldDub: CGFloat = 0
-                    downloader.requestImage(with: url, options: [.highPriority, .continueInBackground, .scaleDownLargeImages, .avoidDecodeImage], context: nil, progress: { (receivedSize: Int, expectedSize: Int, link) -> Void in
-                        dub = CGFloat(receivedSize) / CGFloat(expectedSize)
-                        print("Progress \(dub)")
-                        print("Old Progress \(oldDub)")
-                        DispatchQueue.main.async {
-                            circularProgress?.setProgressWithAnimation(duration: 0.0, value: dub, from: oldDub, finished: true){
-                                oldDub = dub
-                            }
+        circularProgress?.isHidden = false
+        var pic_id = picID
+            
+        if isThumbnail{
+            pic_id = "thumbnail_\(picID)"
+        }
+        let ref = Storage.storage().reference().child("Users/" + followingUID + "/" + "Products/" + picID + "/" + pic_id + ".png")
+        
+        ref.downloadURL(completion: { url, error in
+            if error != nil{
+                print(error?.localizedDescription ?? "")
+                completed(nil)
+            }
+            else{
+                var dub: CGFloat = 0
+                var oldDub: CGFloat = 0
+                downloader.requestImage(with: url, options: [.highPriority, .continueInBackground, .scaleDownLargeImages, .avoidDecodeImage], context: nil, progress: { (receivedSize: Int, expectedSize: Int, link) -> Void in
+                    dub = CGFloat(receivedSize) / CGFloat(expectedSize)
+                    print("Progress \(dub)")
+                    print("Old Progress \(oldDub)")
+                    DispatchQueue.main.async {
+                        circularProgress?.setProgressWithAnimation(duration: 0.0, value: dub, from: oldDub, finished: true){
+                            oldDub = dub
                         }
-                    }, completed: { (image, data, error, finished) in
-                        if error != nil{
-                            print(error?.localizedDescription ?? "")
-                            completed(nil)
+                    }
+                }, completed: { (image, data, error, finished) in
+                    if error != nil{
+                        print(error?.localizedDescription ?? "")
+                        completed(nil)
+                    }
+                    else{
+                        if isThumbnail{
+                            cache.storeImage(toMemory: image, forKey: "thumbnail_\(picID)")
                         }
                         else{
-                            if isThumbnail{
-                                cache.storeImage(toMemory: image, forKey: "thumbnail_\(picID)")
-                            }
-                            else{
-                                cache.storeImage(toMemory: image, forKey: "\(picID)")
-                            }
-                            completed(image)
+                            cache.storeImage(toMemory: image, forKey: "\(picID)")
                         }
-                    })
-                }
-            })
-
+                        completed(image)
+                    }
+                })
+            }
+        })
     }
     
     

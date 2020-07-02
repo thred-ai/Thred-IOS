@@ -11,7 +11,7 @@ import ColorCompatibility
 import CoreLocation
 import Firebase
 
-class AddressVC: UIViewController {
+class AddressVC: UIViewController, UINavigationControllerDelegate {
     
     @IBOutlet weak var streetField: UITextField!
     @IBOutlet weak var cityField: UITextField!
@@ -22,28 +22,44 @@ class AddressVC: UIViewController {
     @IBOutlet weak var unitField: UITextField!
     @IBOutlet weak var scrollView: UIScrollView!
     
+    @IBOutlet weak var removeBtn: UIButton!
     @IBOutlet weak var errorView: UITextView!
+    var isGiftAddress = false
+    @IBOutlet weak var subtitleLbl: UITextView!
+    
+    var address = [String : String]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        navigationController?.delegate = self
+        
         streetField.inputAccessoryView = toolBar
         cityField.inputAccessoryView = toolBar
         provinceField.inputAccessoryView = toolBar
         countryField.inputAccessoryView = toolBar
         postalCodeField.inputAccessoryView = toolBar
         unitField.inputAccessoryView = toolBar
-
         errorView.text = nil
-        getFromFirestore(completed: { hasAddress in
-            if hasAddress{
-                self.setExistingAddress()
-            }
-            else{
-                self.removeExistingAddress()
-                self.setExistingAddress()
-            }
-        })
+        
+        if isGiftAddress && hasAddress(){
+            
+            subtitleLbl.text = "This address will be used for this order ONLY"
+            subtitleLbl.textColor = UIColor(named: "LoadingColor")
+            removeBtn.isEnabled = false
+            removeBtn.isHidden = true
+        }
+        else{
+            getFromFirestore(completed: { hasAddress in
+                if hasAddress{
+                    self.setExistingAddress()
+                }
+                else{
+                    self.removeExistingAddress()
+                    self.setExistingAddress()
+                }
+            })
+        }
         // Do any additional setup after loading the view.
     }
     
@@ -55,10 +71,22 @@ class AddressVC: UIViewController {
         UserDefaults.standard.removeObject(forKey: "postal_code")
     }
     
+    func hasAddress() -> Bool{
+        let street = UserDefaults.standard.string(forKey: "street")
+        let city = UserDefaults.standard.string(forKey: "city")
+        let adminArea = UserDefaults.standard.string(forKey: "admin_area")
+        let country = UserDefaults.standard.string(forKey: "country")
+        let postalCode = UserDefaults.standard.string(forKey: "postal_code")
+        
+        return street != nil && city != nil && adminArea != nil && country != nil && postalCode != nil
+    }
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(true)
         hideCenterBtn()
-        setExistingAddress()
+        if !isGiftAddress{
+            setExistingAddress()
+        }
         setKeyBoardNotifs()
     }
     
@@ -105,6 +133,7 @@ class AddressVC: UIViewController {
             }
             else{
                 self.setNewAddress(street: street, city: city, adminArea: adminArea, country: country, postalCode: postalCode, unitNumber: unitNumber)
+                
                 self.navigationController?.popViewController(animated: true)
             }
         })
@@ -172,25 +201,37 @@ class AddressVC: UIViewController {
             })
         }
     }
-    
-    func checkIfHasOrders(completed: @escaping (Bool) -> ()){
-        
-        guard let uid = userInfo.uid else{ completed(false); return}
-        
-        Firestore.firestore().collection("Users/\(uid)/Orders").whereField("finished_processing", isEqualTo: false).getDocuments(completion: { snaps, error in
+    @IBAction func removeAddress(_ sender: UIButton) {
+        sender.isEnabled = false
+        guard let uid = userInfo.uid else{return}
+        Firestore.firestore().collection("Users/\(uid)/Payment_Info").document("Delivery_Address").delete(completion: { error in
             if let err = error{
                 print(err.localizedDescription)
-                completed(false)
             }
             else{
-                if snaps?.documents.isEmpty ?? true{
-                    completed(true)
-                }
-                else{
-                    completed(false)
-                }
+                UserDefaults.standard.removeObject(forKey: "street")
+                UserDefaults.standard.removeObject(forKey: "city")
+                UserDefaults.standard.removeObject(forKey: "admin_area")
+                UserDefaults.standard.removeObject(forKey: "country")
+                UserDefaults.standard.removeObject(forKey: "postal_code")
+                UserDefaults.standard.removeObject(forKey: "unit_number")
             }
+            self.navigationController?.popViewController(animated: true)
         })
+        
+    }
+    
+    func navigationController(_ navigationController: UINavigationController, willShow viewController: UIViewController, animated: Bool) {
+        if let vc = viewController as? CheckoutVC{
+            guard
+                let adminArea = address["Area"],
+                let country = address["Country"],
+                let city = address["City"],
+                let street = address["Street"]
+            else { return }
+            let unit = address["Unit"]
+            vc.getAddress(street: street, city: city, adminArea: adminArea, country: country, unitNum: unit)
+        }
     }
     
     @IBAction func nextBtnPressed(_ sender: UIBarButtonItem) {
@@ -198,34 +239,48 @@ class AddressVC: UIViewController {
         sender.isEnabled = false
         errorView.text = nil
         
-        checkIfHasOrders(completed: { canChange in
-            if canChange{
-                guard let street = self.streetField.text, let adminArea = self.provinceField.text, let city = self.cityField.text, let country = self.countryField.text, self.postalCodeField.text != nil else {
-                    self.setErrorView("1 or more fields empty")
-                    sender.isEnabled = true
-                    return
+        guard let street = self.streetField.text, let adminArea = self.provinceField.text, let city = self.cityField.text, let country = self.countryField.text, self.postalCodeField.text != nil else {
+            self.setErrorView("1 or more fields empty")
+            sender.isEnabled = true
+            return
+        }
+        
+        let address = "\(street), \(city), \(adminArea), \(country)"
+        let unitNumber = self.unitField.text
+        
+        self.validateAddress(address: address, completed: { country, adminArea, city, street, postalCode, isValid in
+            sender.isEnabled = true
+            if isValid{
+                guard let street = street, let country = country, let adminArea = adminArea, let postalCode = postalCode, let city = city else{return}
+                if country != "Canada"{
+                    
                 }
-                
-                let address = "\(street), \(city), \(adminArea), \(country)"
-                let unitNumber = self.unitField.text
-                
-                self.validateAddress(address: address, completed: { country, adminArea, city, street, postalCode, isValid in
-                    sender.isEnabled = true
-                    if isValid{
-                        guard let street = street, let country = country, let adminArea = adminArea, let postalCode = postalCode, let city = city else{return}
-                        if country != "Canada"{
-                            
+                switch self.isGiftAddress{
+                    
+                case true:
+                    self.address = [
+                        "Country": country,
+                        "City": city,
+                        "Area": adminArea,
+                        "Postal": postalCode,
+                        "Street": street
+                    ]
+                    if self.hasAddress(){
+                        
+                        if let unitNum = unitNumber, !unitNum.isEmpty{
+                            self.address["Unit"] = unitNum
                         }
-                        self.setInFirestore(street: street, city: city, adminArea: adminArea, country: country, postalCode: postalCode, unitNumber: unitNumber)
+                        self.navigationController?.popViewController(animated: true)
                     }
                     else{
-                        self.setErrorView("This delivery address is invalid")
+                        fallthrough
                     }
-                })
+                default:
+                    self.setInFirestore(street: street, city: city, adminArea: adminArea, country: country, postalCode: postalCode, unitNumber: unitNumber)
+                }
             }
             else{
-                sender.isEnabled = true
-                self.errorView.text = "This address cannot be changed because an order is pending for this address."
+                self.setErrorView("This delivery address is invalid")
             }
         })
     }
@@ -233,22 +288,16 @@ class AddressVC: UIViewController {
     override func viewWillLayoutSubviews() {
         streetField.layer.cornerRadius = streetField.frame.height / 2
         streetField.clipsToBounds = true
-        
         cityField.layer.cornerRadius = cityField.frame.height / 2
         cityField.clipsToBounds = true
-        
         provinceField.layer.cornerRadius = provinceField.frame.height / 2
         provinceField.clipsToBounds = true
-        
         countryField.layer.cornerRadius = countryField.frame.height / 2
         countryField.clipsToBounds = true
-        
         postalCodeField.layer.cornerRadius = postalCodeField.frame.height / 2
         postalCodeField.clipsToBounds = true
-        
         unitField.layer.cornerRadius = unitField.frame.height / 2
         unitField.clipsToBounds = true
-        
     }
     
 
@@ -316,7 +365,12 @@ extension UIViewController{
                         completed(country, province, city, street, postalCode, true)
                     }
                     else{
-                        completed(nil, nil, nil, nil, nil, false)
+                        if let province = placemarks.first?.administrativeArea, let country = placemarks.first?.country, let postalCode = placemarks.first?.postalCode{
+                            completed(country, province, nil, nil, postalCode, true)
+                        }
+                        else{
+                            completed(nil, nil, nil, nil, nil, false)
+                        }
                     }
                 }
                 else{

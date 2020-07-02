@@ -3,12 +3,16 @@
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
         <array key="Nexa W01 Heavy.ttf">
             <string>NexaW01-Heavy</string>
+        </array>
+        <array key="Nexa W01 Regular.ttf">
+            <string>NexaW01-Regular</string>
         </array>
     </customFonts>
     <objects>
@@ -98,12 +102,52 @@
                                     <constraint firstAttribute="width" secondItem="HlO-tw-mBE" secondAttribute="height" multiplier="1:1" id="zre-Fr-mDz"/>
                                 </constraints>
                             </view>
+                            <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="WUl-II-aB6">
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="320"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="fvD-vT-sox">
+                                        <rect key="frame" x="40" y="118.5" width="240" height="83"/>
+                                        <subviews>
+                                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" editable="NO" textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="4dD-2l-yc3">
+                                                <rect key="frame" x="0.0" y="0.0" width="240" height="83"/>
+                                                <string key="text">This product has been removed from your order as it violated our Community Guidelines. You will receive a full refund for this product. </string>
+                                                <color key="textColor" systemColor="labelColor" cocoaTouchSystemColor="darkTextColor"/>
+                                                <fontDescription key="fontDescription" name="NexaW01-Regular" family="NexaW01-Regular" pointSize="14"/>
+                                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                            </textView>
+                                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="c7T-2b-tcS">
+                                                <rect key="frame" x="0.0" y="0.0" width="240" height="30"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="30" id="3eM-fO-K7d"/>
+                                                </constraints>
+                                                <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="14"/>
+                                                <state key="normal" title="Learn more">
+                                                    <color key="titleColor" name="LoadingColor"/>
+                                                </state>
+                                                <connections>
+                                                    <action selector="toRemovedLink:" destination="gTV-IL-0wX" eventType="touchUpInside" id="o8J-cj-Be7"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                    </stackView>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="fvD-vT-sox" firstAttribute="centerX" secondItem="WUl-II-aB6" secondAttribute="centerX" id="NcS-dk-2mo"/>
+                                    <constraint firstItem="fvD-vT-sox" firstAttribute="leading" secondItem="WUl-II-aB6" secondAttribute="leading" constant="40" id="ZKR-Ho-oG4"/>
+                                    <constraint firstAttribute="trailing" secondItem="fvD-vT-sox" secondAttribute="trailing" constant="40" id="kMY-A5-IcC"/>
+                                    <constraint firstItem="fvD-vT-sox" firstAttribute="centerY" secondItem="WUl-II-aB6" secondAttribute="centerY" id="tQn-NF-V9g"/>
+                                </constraints>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" systemColor="tertiarySystemGroupedBackgroundColor" red="0.94901960780000005" green="0.94901960780000005" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="VLq-qe-B1t" secondAttribute="trailing" constant="20" id="3RC-mP-q3Z"/>
                             <constraint firstItem="VLq-qe-B1t" firstAttribute="leading" secondItem="VN4-zW-o2C" secondAttribute="leading" constant="20" id="4nI-gW-cyH"/>
+                            <constraint firstItem="WUl-II-aB6" firstAttribute="leading" secondItem="VN4-zW-o2C" secondAttribute="leading" id="6hP-BT-qNY"/>
+                            <constraint firstAttribute="bottom" secondItem="WUl-II-aB6" secondAttribute="bottom" id="7rC-Ae-Uec"/>
+                            <constraint firstAttribute="trailing" secondItem="WUl-II-aB6" secondAttribute="trailing" id="GWb-Qc-LtQ"/>
                             <constraint firstItem="hOr-dI-5vh" firstAttribute="height" secondItem="VN4-zW-o2C" secondAttribute="height" multiplier="0.225" id="GaP-Ou-HFd"/>
+                            <constraint firstItem="WUl-II-aB6" firstAttribute="top" secondItem="VN4-zW-o2C" secondAttribute="top" id="Qtm-Ut-I5o"/>
                             <constraint firstAttribute="trailing" secondItem="hOr-dI-5vh" secondAttribute="trailing" id="Rrg-yp-ytB"/>
                             <constraint firstAttribute="bottom" secondItem="hOr-dI-5vh" secondAttribute="bottom" id="SdA-Rt-y4n"/>
                             <constraint firstAttribute="bottom" secondItem="VLq-qe-B1t" secondAttribute="bottom" constant="20" id="UNY-18-Vel"/>
@@ -131,6 +175,8 @@
                 <outlet property="likesLbl" destination="SLM-3j-CsC" id="P3i-85-SQ1"/>
                 <outlet property="nameLbl" destination="bIz-t0-eFL" id="rUW-2v-QaX"/>
                 <outlet property="priceLbl" destination="1ML-6P-sh8" id="R8W-fY-3gT"/>
+                <outlet property="productRemovedView" destination="WUl-II-aB6" id="iDt-bB-3BR"/>
+                <outlet property="removedTextView" destination="4dD-2l-yc3" id="UbN-nO-W5q"/>
                 <outlet property="thredIcon" destination="itW-1o-0fP" id="Vio-LI-CAi"/>
             </connections>
             <point key="canvasLocation" x="95.652173913043484" y="52.232142857142854"/>
@@ -138,5 +184,8 @@
     </objects>
     <resources>
         <image name="liked" width="600" height="600"/>
+        <namedColor name="LoadingColor">
+            <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
     </resources>
 </document>

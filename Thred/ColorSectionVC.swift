@@ -49,10 +49,10 @@ class ColorSectionVC: UICollectionViewController {
     func getProducts(fromInterval: Int?, completed: @escaping ()->()){
         
         if fromInterval == nil{
-            query = Firestore.firestore().collectionGroup("Products").whereField("Template_Color", isEqualTo: templateColor).whereField("Blurred", isEqualTo: false).whereField("Has_Picture", isEqualTo: true).order(by: "Likes", descending: true).limit(to: 36)
+            query = Firestore.firestore().collectionGroup("Products").whereField("Template_Color", isEqualTo: templateColor).whereField("Blurred", isEqualTo: false).whereField("Has_Picture", isEqualTo: true).whereField("Available", isEqualTo: true).order(by: "Likes", descending: true).limit(to: 36)
         }
         else if last != nil{
-            query = Firestore.firestore().collectionGroup("Products").whereField("Template_Color", isEqualTo: templateColor).whereField("Blurred", isEqualTo: false).whereField("Has_Picture", isEqualTo: true).order(by: "Likes", descending: true).start(afterDocument: last).limit(to: 36)
+            query = Firestore.firestore().collectionGroup("Products").whereField("Template_Color", isEqualTo: templateColor).whereField("Blurred", isEqualTo: false).whereField("Has_Picture", isEqualTo: true).whereField("Available", isEqualTo: true).order(by: "Likes", descending: true).start(afterDocument: last).limit(to: 36)
         }
         
         guard let userUID = userInfo.uid else{return}
@@ -81,7 +81,7 @@ class ColorSectionVC: UICollectionViewController {
                                 let likes = snap["Likes"] as? Int
                                 let comments = ((snap["Comments"]) as? Int) ?? 0
                                 
-                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil)
+                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: true)
 
                                 self.loadedProducts.append(product)
                                 
@@ -236,10 +236,6 @@ class ColorSectionVC: UICollectionViewController {
     '
     }
     */
-    
-    override func didReceiveMemoryWarning() {
-        cache.clearMemory()
-    }
 
 }
 

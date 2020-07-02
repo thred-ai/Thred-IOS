@@ -67,10 +67,10 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
         var query: Query?
         guard let uid = userInfo.uid else{ completed(false); return}
         if let doc = lastDoc{
-            query = Firestore.firestore().collectionGroup("Purchases").whereField("merchant_uid", isEqualTo: uid).order(by: "timestamp", descending: true).start(afterDocument: doc).limit(to: 15)
+            query = Firestore.firestore().collectionGroup("Purchases").whereField("merchant_uid", isEqualTo: uid).whereField("status", isEqualTo: "confirmed").order(by: "timestamp", descending: true).start(afterDocument: doc).limit(to: 15)
         }
         else{
-            query = Firestore.firestore().collectionGroup("Purchases").whereField("merchant_uid", isEqualTo: uid).order(by: "timestamp", descending: true).limit(to: 15)
+            query = Firestore.firestore().collectionGroup("Purchases").whereField("merchant_uid", isEqualTo: uid).whereField("status", isEqualTo: "confirmed").order(by: "timestamp", descending: true).limit(to: 15)
         }
         
         query?.getDocuments(completion: { snaps, error in
@@ -89,13 +89,13 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
                         let product_id = doc["productID"] as? String,
                         let size = doc["size"] as? String,
                         let quantity = doc["quantity"] as? Int,
-                        let timestamp = (doc["timestamp"] as? Timestamp)?.dateValue(),
-                        let price = doc["amount"] as? Double
+                        let timestamp = (doc["timestamp"] as? Timestamp)?.dateValue()
                     else{ continue }
-                    
+                    let price = (doc["amount"] as? Double ?? 0) / 100
+
                     let productUserInfo = UserInfo(uid: customer_uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil)
                     
-                    let product = Product(userInfo: productUserInfo, picID: nil, description: nil, productID: product_id, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: price / Double(quantity), name: nil, templateColor: nil, likes: nil, liked: userInfo.userLiked.contains(doc.documentID), designImage: nil, comments: nil, link: nil)
+                    let product = Product(userInfo: productUserInfo, picID: nil, description: nil, productID: product_id, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: price / Double(quantity), name: nil, templateColor: nil, likes: nil, liked: userInfo.userLiked.contains(doc.documentID), designImage: nil, comments: nil, link: nil, isAvailable: true)
                     
                     self.salesProducts.append(ProductInCart(product: product, size: size, quantity: quantity, isDeleted: false, timestamp: timestamp, timestampDiff: nil, saleID: doc.documentID))
                    
@@ -132,6 +132,7 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
         cell?.timestampLbl.text = nil
         cell?.removedNotifView.isHidden = true
         cell?.isUserInteractionEnabled = false
+        cell?.notifPic.alpha = 1.0
         cell?.salesProduct = sale
         self.tableView.checkSalesTimes(sale: sale, timestampLbl: cell?.timestampLbl)
 
@@ -185,11 +186,17 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
         if let color = sale.product.templateColor{
             cell?.notifPic.backgroundColor = UIColor(named: color)
             DispatchQueue(label: "cache").async {
-                if let img = cache.imageFromCache(forKey: "thumbnail_\(sale.product.picID ?? "")"){
+                if let img = cache.imageFromCache(forKey: "thumbnail_\(sale.product.productID)"){
                     DispatchQueue.main.async {
                         guard let index = self.salesProducts.firstIndex(where: {$0.saleID == sale.saleID}) else{return}
                         if let cell = tableView.cellForRow(at: IndexPath(row: index, section: 0)) as? NotificationCell{
                             cell.notifPic.image = img
+                            if sale.product?.isAvailable ?? false{
+                                cell.notifPic.alpha = 1.0
+                            }
+                            else{
+                                cell.notifPic.alpha = 0.25
+                            }
                         }
                     }
                 }
@@ -216,6 +223,12 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
                                     guard let index = self.salesProducts.firstIndex(where: {$0.saleID == sale.saleID}) else{return}
                                     if let cell = tableView.cellForRow(at: IndexPath(row: index, section: 0)) as? NotificationCell{
                                         cell.notifPic.image = img
+                                        if product?.isAvailable ?? false{
+                                            cell.notifPic.alpha = 1.0
+                                        }
+                                        else{
+                                            cell.notifPic.alpha = 0.25
+                                        }
                                     }
                                 }
                             }
@@ -224,12 +237,18 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
                                 DispatchQueue.main.async {
                                     tableView.downloadProductImage(pictureProduct: nil, followingUID: productUID, picID: sale.product.productID, index: 0, feedVC: nil, friendVC: nil, userVC: nil, fullVC: nil, type: nil, product: nil, completed: { img, imgID in
                                         DispatchQueue(label: "cache").async {
-                                            cache.storeImageData(toDisk: img?.pngData(), forKey: imgID)
+                                            cache.storeImageData(toDisk: img?.pngData(), forKey: "thumbnail_\(sale.product.productID)")
                                         }
                                         sale.product.picID = imgID
                                         guard let index = self.salesProducts.firstIndex(where: {$0.saleID == sale.saleID}) else{return}
                                         if let cell = tableView.cellForRow(at: IndexPath(row: index, section: 0)) as? NotificationCell{
                                             cell.notifPic.image = img
+                                            if product?.isAvailable ?? false{
+                                                cell.notifPic.alpha = 1.0
+                                            }
+                                            else{
+                                                cell.notifPic.alpha = 0.25
+                                            }
                                         }
                                     })
                                 }
@@ -390,6 +409,7 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
             sender?.animateRefresh()
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                 self.lastDoc = nil
+                self.loadSalesCount()
                 if !self.salesProducts.isEmpty{
                     self.salesProducts.removeAll()
                     self.tableView.reloadData()

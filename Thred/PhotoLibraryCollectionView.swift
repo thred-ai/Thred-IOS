@@ -468,10 +468,10 @@ class ThredListView: UICollectionView, UICollectionViewDelegate, UICollectionVie
             if let view = self.backgroundView{
                 view.addViewSpinner(centerX: view.center.x, centerY: (visibleSize.height / 2), width: 40, height: 40)
             }
-            query = Firestore.firestore().collection("Users").document(uid).collection("Products").whereField("Timestamp", isLessThanOrEqualTo: Timestamp(date: Date())).limit(to: 15).order(by: "Timestamp", descending: true)
+            query = Firestore.firestore().collection("Users").document(uid).collection("Products").whereField("Timestamp", isLessThanOrEqualTo: Timestamp(date: Date())).whereField("Available", isEqualTo: true).limit(to: 15).order(by: "Timestamp", descending: true)
         }
         else if let last = fromInterval{
-            query = Firestore.firestore().collection("Users").document(uid).collection("Products").whereField("Timestamp", isLessThan: Timestamp(date: last)).limit(to: 15).order(by: "Timestamp", descending: true)
+            query = Firestore.firestore().collection("Users").document(uid).collection("Products").whereField("Timestamp", isLessThan: Timestamp(date: last)).whereField("Available", isEqualTo: true).limit(to: 15).order(by: "Timestamp", descending: true)
         }
         query.getDocuments(completion: { (snapDocuments, err) in
             if let err = err {

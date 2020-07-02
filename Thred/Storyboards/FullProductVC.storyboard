@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="TTd-by-I1I">
-    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <device id="retina6_1" orientation="portrait" appearance="dark"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
@@ -96,11 +96,37 @@
                                     <constraint firstAttribute="bottom" secondItem="nUg-TC-cmh" secondAttribute="bottom" constant="10" id="kEY-b6-M9q"/>
                                 </constraints>
                             </view>
+                            <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cU1-n5-flz">
+                                <rect key="frame" x="0.0" y="88" width="414" height="808"/>
+                                <subviews>
+                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" editable="NO" text="This product has been removed." textAlignment="center" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="R79-bF-HyO">
+                                        <rect key="frame" x="20" y="364" width="374" height="80"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="80" id="PRY-Pr-zN2"/>
+                                        </constraints>
+                                        <color key="textColor" systemColor="labelColor" cocoaTouchSystemColor="darkTextColor"/>
+                                        <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="24"/>
+                                        <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                    </textView>
+                                </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstItem="R79-bF-HyO" firstAttribute="centerY" secondItem="cU1-n5-flz" secondAttribute="centerY" id="Kyb-qC-oz4"/>
+                                    <constraint firstItem="R79-bF-HyO" firstAttribute="leading" secondItem="cU1-n5-flz" secondAttribute="leading" constant="20" id="ntA-bh-9QJ"/>
+                                    <constraint firstItem="R79-bF-HyO" firstAttribute="centerX" secondItem="cU1-n5-flz" secondAttribute="centerX" id="w2X-Rq-URH"/>
+                                    <constraint firstAttribute="trailing" secondItem="R79-bF-HyO" secondAttribute="trailing" constant="20" id="w8j-5I-sB1"/>
+                                </constraints>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <constraints>
                             <constraint firstItem="xpv-8I-VK6" firstAttribute="trailing" secondItem="m3i-nE-n4Z" secondAttribute="trailing" id="0GK-h8-Qc0"/>
+                            <constraint firstItem="cU1-n5-flz" firstAttribute="leading" secondItem="xpv-8I-VK6" secondAttribute="leading" id="Dt8-UR-5ir"/>
                             <constraint firstItem="m3i-nE-n4Z" firstAttribute="top" secondItem="xpv-8I-VK6" secondAttribute="top" id="G2R-aD-fvB"/>
+                            <constraint firstItem="xpv-8I-VK6" firstAttribute="trailing" secondItem="cU1-n5-flz" secondAttribute="trailing" id="H0o-kX-hhc"/>
+                            <constraint firstItem="cU1-n5-flz" firstAttribute="top" secondItem="xpv-8I-VK6" secondAttribute="top" id="Oin-q2-qTQ"/>
+                            <constraint firstAttribute="bottom" secondItem="cU1-n5-flz" secondAttribute="bottom" id="Pwc-qg-1Z7"/>
                             <constraint firstItem="m3i-nE-n4Z" firstAttribute="leading" secondItem="xpv-8I-VK6" secondAttribute="leading" id="eQA-Hd-8CI"/>
                             <constraint firstItem="wLK-Kf-DT2" firstAttribute="top" secondItem="m3i-nE-n4Z" secondAttribute="bottom" id="gxh-YD-yqv"/>
                             <constraint firstItem="xpv-8I-VK6" firstAttribute="trailing" secondItem="wLK-Kf-DT2" secondAttribute="trailing" id="jbL-b5-KIg"/>
@@ -118,7 +144,7 @@
                                     <action selector="toCart:" destination="TTd-by-I1I" id="5hh-4n-F35"/>
                                 </connections>
                             </barButtonItem>
-                            <barButtonItem image="creditcard.fill" id="YFD-Pg-SKD">
+                            <barButtonItem image="cash" id="YFD-Pg-SKD">
                                 <color key="tintColor" name="LoadingColor"/>
                                 <connections>
                                     <action selector="toSales:" destination="TTd-by-I1I" id="TwE-gI-cah"/>
@@ -130,6 +156,7 @@
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="addToCartBtn" destination="0Tz-3R-uDx" id="5Lr-pP-8R5"/>
+                        <outlet property="deletedView" destination="cU1-n5-flz" id="FqR-es-TmO"/>
                         <outlet property="tableView" destination="m3i-nE-n4Z" id="Xye-RL-T1K"/>
                         <segue destination="Wqj-YT-XeZ" kind="show" identifier="toFriend" id="lRg-j5-WXq"/>
                         <segue destination="bEb-vl-rHS" kind="show" identifier="toComments" id="7ii-ii-2UH"/>
@@ -182,7 +209,7 @@
     </scenes>
     <resources>
         <image name="cart" width="33.5" height="33.5"/>
-        <image name="creditcard.fill" width="33.5" height="33.5"/>
+        <image name="cash" width="30" height="30"/>
         <namedColor name="LoadingColor">
             <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

@@ -82,7 +82,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         if updateForBlocking() ?? false{
             return
         }
-        self.header?.setUpInfo(username: friendInfo.username, fullname: friendInfo.fullName ?? "", bio: friendInfo.bio ?? "", notifID: friendInfo.notifID, dpUID: nil, image: friendInfo.dp, actionBtnTitle: header?.headerActionBtnTitle ?? "null", followerCount: friendInfo.followerCount, followingCount: friendInfo.followingCount, postCount: friendInfo.postCount)
+        self.header?.setUpInfo(username: friendInfo.username ?? "", fullname: friendInfo.fullName ?? "", bio: friendInfo.bio ?? "", notifID: friendInfo.notifID, dpUID: nil, image: friendInfo.dp, actionBtnTitle: header?.headerActionBtnTitle ?? "null", followerCount: friendInfo.followerCount, followingCount: friendInfo.followingCount, postCount: friendInfo.postCount)
 
         if friendInfo.dp != nil{
             switch onlyDownloadProducts{
@@ -333,10 +333,10 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         guard let friendUID = friendInfo.uid else{return}
         guard let userUID = userInfo.uid else{return}
         if fromInterval == nil{
-            query = Firestore.firestore().collection("Users").document(friendUID).collection("Products").whereField("Timestamp", isLessThanOrEqualTo: Timestamp(date: Date())).whereField("Has_Picture", isEqualTo: true).limit(to: 8).order(by: "Timestamp", descending: true)
+            query = Firestore.firestore().collection("Users").document(friendUID).collection("Products").whereField("Timestamp", isLessThanOrEqualTo: Timestamp(date: Date())).whereField("Has_Picture", isEqualTo: true).whereField("Available", isEqualTo: true).limit(to: 8).order(by: "Timestamp", descending: true)
         }
         else if let lastDoc = lastDoc{
-            query = Firestore.firestore().collection("Users").document(friendUID).collection("Products").whereField("Has_Picture", isEqualTo: true).limit(to: 8).order(by: "Timestamp", descending: true).start(afterDocument: lastDoc)
+            query = Firestore.firestore().collection("Users").document(friendUID).collection("Products").whereField("Has_Picture", isEqualTo: true).whereField("Available", isEqualTo: true).limit(to: 8).order(by: "Timestamp", descending: true).start(afterDocument: lastDoc)
         }
         query.getDocuments(completion: { (snapDocuments, err) in
             if let err = err {
@@ -402,7 +402,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
                                     }
                                 }
                                 
-                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil)
+                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil, isAvailable: true)
                                 
                                 productsToUse.append(product)
                                 
@@ -525,7 +525,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
     override func viewWillAppear(_ animated: Bool) {
         
         if let viewControllers = navigationController?.viewControllers, let index = viewControllers.firstIndex(of: self){
-            if !(viewControllers[index - 1] is FullProductVC || viewControllers[index - 1] is SalesVC){
+            if !(viewControllers[index - 1] is FullProductVC || viewControllers[index - 1] is SalesVC || viewControllers[index - 1] is CommentsVC){
                 showCenterBtn()
             }
         }
@@ -534,14 +534,9 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
 
 
     override func viewDidDisappear(_ animated: Bool) {
+        
     }
     
-    override func didReceiveMemoryWarning() {
-        likeQueue.removeAll()
-        DispatchQueue.global(qos: .background).sync {
-            cache.clearMemory()
-        }
-    }
      
     /*
     // Override to support conditional editing of the table view.

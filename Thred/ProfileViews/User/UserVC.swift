@@ -149,8 +149,27 @@ class UserVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
                 if self.loadedProducts.isEmpty{
                 }
                 else{
+                    
                     for postID in uploadingPosts{
-                        guard let post = self.loadedProducts.first(where: {$0.productID == postID}), let color = post.templateColor, let design = cache.imageFromCache(forKey: postID), let designImage = post.designImage else{continue}
+                        
+                        guard let post = self.loadedProducts.first(where: {$0.productID == postID}) else{
+                            continue}
+                        
+                        guard let color = post.templateColor else{return}
+                        
+                        
+                        guard let design = cache.imageFromCache(forKey: postID) else{return}
+                        
+                        guard let designImage = post.designImage else{
+                            uploadingPosts.removeAll(where: {$0 == postID})
+                            UserDefaults.standard.set(uploadingPosts, forKey: "UploadingPosts")
+                            self.loadedProducts.removeAll(where: {$0.productID == post.productID})
+                            self.loadedProducts.saveAllObjects(type: "Products")
+                            DispatchQueue.main.async {
+                                self.tableView.reloadData()
+                            }
+                            return}
+                        
                         self.uploadPost(post: ProductInProgress(templateColor: color, design: design, uid: post.userInfo.uid, caption: post.description, name: post.name, price: (post.price ?? 20) * 100, productID: postID, display: designImage), isRetryingWithID: postID)
                     }
                 }
@@ -257,7 +276,7 @@ class UserVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
             uploadingPosts.append(doc.documentID)
             UserDefaults.standard.set(uploadingPosts, forKey: "UploadingPosts")
 
-            let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: doc.documentID, description: post.caption, productID: doc.documentID, timestamp: date, index: nil, timestampDiff: "1 second", blurred: false, price: (post.price ?? 2000) / 100, name: post.name, templateColor: post.templateColor, likes: 0, liked: false, designImage: nil, comments: 0, link: nil)
+            let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: doc.documentID, description: post.caption, productID: doc.documentID, timestamp: date, index: nil, timestampDiff: "1 second", blurred: false, price: (post.price ?? 2000) / 100, name: post.name, templateColor: post.templateColor, likes: 0, liked: false, designImage: post.display, comments: 0, link: nil, isAvailable: true)
             
             cache.storeImageData(toDisk: designData, forKey: doc.documentID)
             self.loadedProducts.insert(product, at: 0)
@@ -280,7 +299,8 @@ class UserVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
             "Likes" : 0,
             "Comments" : 0,
             "Has_Picture" : false,
-            "Product_ID" : doc.documentID
+            "Product_ID" : doc.documentID,
+            "Available" : true
         ] as [String : Any]
         
         
@@ -336,10 +356,10 @@ class UserVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
         
         if fromInterval == nil{
-            query = Firestore.firestore().collection("Users").document(uid).collection("Products").whereField("Timestamp", isLessThanOrEqualTo: Timestamp(date: Date())).limit(to: 8).order(by: "Timestamp", descending: true)
+            query = Firestore.firestore().collection("Users").document(uid).collection("Products").whereField("Timestamp", isLessThanOrEqualTo: Timestamp(date: Date())).whereField("Available", isEqualTo: true).limit(to: 8).order(by: "Timestamp", descending: true)
         }
         else if let last = fromInterval{
-            query = Firestore.firestore().collection("Users").document(uid).collection("Products").whereField("Timestamp", isLessThan: Timestamp(date: last)).limit(to: 8).order(by: "Timestamp", descending: true)
+            query = Firestore.firestore().collection("Users").document(uid).collection("Products").whereField("Timestamp", isLessThan: Timestamp(date: last)).whereField("Available", isEqualTo: true).limit(to: 8).order(by: "Timestamp", descending: true)
         }
         query.getDocuments(completion: { (snapDocuments, err) in
             if let err = err {
@@ -382,7 +402,7 @@ class UserVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
                             guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                             let comments = ((snap["Comments"]) as? Int) ?? 0
 
-                            localLoaded.append(Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description,  productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil))
+                            localLoaded.append(Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description,  productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: true))
                         }
                     }
                     if fromInterval == nil{
@@ -554,13 +574,6 @@ class UserVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
             return nil
         }
         return indexPath
-    }
-    
-    override func didReceiveMemoryWarning() {
-        likeQueue.removeAll()
-        DispatchQueue.global(qos: .background).sync {
-            cache.clearMemory()
-        }
     }
     
     var productToOpen = Product()

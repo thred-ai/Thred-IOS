@@ -90,21 +90,21 @@ class SettingsVC: UITableViewController {
         ],
         
         [
-            "Title": "My merchant account",
+            "Title": "Bank Account",
             "Function" : configureMerchantAcct,
             "Background Color" : UIColor.clear,
             "Text Color" : UIColor(named: "LoadingColor")!
         ],
         
         [
-            "Title": "My delivery address",
+            "Title": "Home Address",
             "Function" : configureAddress,
             "Background Color" : UIColor.clear,
             "Text Color" : UIColor(named: "LoadingColor")!
         ],
         
         [
-            "Title": "My billing information",
+            "Title": "Credit Card",
             "Function": addCard,
             "Background Color" : UIColor.clear,
             "Text Color" : UIColor(named: "LoadingColor")!

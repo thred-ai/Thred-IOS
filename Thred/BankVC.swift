@@ -37,6 +37,7 @@ class BankVC: UIViewController, WKNavigationDelegate {
     
     func deleteBankAccount(completed: @escaping () -> ()){
         showLoadingView()
+        doneBtn.isEnabled = false
         let data = ["uid" : userInfo.uid ?? ""]
         Functions.functions().httpsCallable("removeBankAccount").call(data, completion: { result, error  in
             if error != nil{
@@ -85,12 +86,14 @@ class BankVC: UIViewController, WKNavigationDelegate {
             setActionBtnTitle("Remove Bank Account")
             hasBankAccount = true
             loadingView.isHidden = true
+            doneBtn.isEnabled = true
         }
         else{
             instField.text = "None"
             lastFourField.text = "None"
             setActionBtnTitle("Add Bank Account")
             hasBankAccount = false
+            doneBtn.isEnabled = false
         }
     }
     
@@ -112,6 +115,7 @@ class BankVC: UIViewController, WKNavigationDelegate {
         errorView.text = nil
         hideCenterBtn()
         view.addSubview(webViewBack)
+        doneBtn.isEnabled = false
         getBankInfo()
         // Do any additional setup after loading the view.
     }
@@ -197,6 +201,11 @@ class BankVC: UIViewController, WKNavigationDelegate {
                 self.getBankInfo()
             }
         })
+    }
+    
+    @IBOutlet weak var doneBtn: UIBarButtonItem!
+    @IBAction func doneBtnPressed(_ sender: UIBarButtonItem) {
+        navigationController?.popViewController(animated: true)
     }
     
     func getBankInfo(){

@@ -14,8 +14,6 @@ import FirebaseFirestore
 import SwiftKeychainWrapper
 import FirebaseMessaging
 //
-var isMerchant = false
-var hasCard = false
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate, MessagingDelegate {
@@ -24,6 +22,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         FirebaseApp.configure()
+        
+
+            
         DispatchQueue(label: "Info").async {
             if let stripeKey = Bundle.main.object(forInfoDictionaryKey: "StripeKeyLive") as? String{
                 STPAPIClient.shared().publishableKey = stripeKey
@@ -112,14 +113,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         let commentMsg = userInfo["CommentMessage"] as? String
         let timestampString = userInfo["Timestamp"] as? String
         
-        guard let visibleViewController = self.visibleViewController(), !(visibleViewController is DesignViewController) else{return}
+        guard let visibleViewController = self.visibleViewController(), !(visibleViewController is DesignViewController || visibleViewController is CheckoutVC || visibleViewController is ShoppingCartVC) else{return}
         self.processNotif(type: type, uid: uid, postID: postID, commentID: commentID, commentMsg: commentMsg, timestampString: timestampString, rootViewController: visibleViewController)
     }
     
    
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
                 
-        guard let visibleViewController = visibleViewController(), !(visibleViewController is DesignViewController), Auth.auth().currentUser != nil else{return}
+        guard let visibleViewController = visibleViewController(), !(visibleViewController is DesignViewController || visibleViewController is CheckoutVC || visibleViewController is ShoppingCartVC), Auth.auth().currentUser != nil else{return}
         notifInfo = notification.request.content.userInfo
         if let payload = notification.request.content.userInfo["aps"] as? [String : Any]{
             if let alert = payload["alert"] as? [String:Any]{
@@ -167,14 +168,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             guard let productID = postID else{return}
             let fullSB: UIStoryboard = UIStoryboard(name: "FullProductVC", bundle: nil)
             if let fullVC: FullProductVC = fullSB.instantiateViewController(withIdentifier: "FullVC") as? FullProductVC{
-                fullVC.fullProduct = Product(userInfo: userInfo, picID: nil, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil)
+                fullVC.fullProduct = Product(userInfo: userInfo, picID: nil, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil, isAvailable: true)
                 vcToPush = fullVC
             }
         case "Buy":
             guard let productID = postID else{return}
             let fullSB: UIStoryboard = UIStoryboard(name: "FullProductVC", bundle: nil)
             if let fullVC: FullProductVC = fullSB.instantiateViewController(withIdentifier: "FullVC") as? FullProductVC{
-                fullVC.fullProduct = Product(userInfo: userInfo, picID: nil, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil)
+                fullVC.fullProduct = Product(userInfo: userInfo, picID: nil, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil, isAvailable: true)
                 vcToPush = fullVC
             }
         case "Bio_Mention":
@@ -187,7 +188,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             guard let productID = postID else{return}
             let fullSB: UIStoryboard = UIStoryboard(name: "FullProductVC", bundle: nil)
             if let fullVC: FullProductVC = fullSB.instantiateViewController(withIdentifier: "FullVC") as? FullProductVC{
-                fullVC.fullProduct = Product(userInfo: UserInfo(), picID: productID, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil)
+                fullVC.fullProduct = Product(userInfo: UserInfo(), picID: productID, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil, isAvailable: true)
                 vcToPush = fullVC
             }
         case "Comment":
@@ -199,7 +200,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             let fullSB: UIStoryboard = UIStoryboard(name: "FullProductVC", bundle: nil)
             if let fullVC: FullProductVC = fullSB.instantiateViewController(withIdentifier: "FullVC") as? FullProductVC{
                 ///Fix uid for mention
-                fullVC.fullProduct = Product(userInfo: UserInfo(), picID: productID, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil)
+                fullVC.fullProduct = Product(userInfo: UserInfo(), picID: productID, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil, isAvailable: true)
                 fullVC.selectedComment = Comment(timestamp: timestamp, message: commentMsg, commentID: commentID, userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil))
                 vcToPush = fullVC
             }
@@ -217,7 +218,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         guard let uid = uid else {return}
         var vcToPush: UIViewController!
         
-        guard let visibleViewController = visibleViewController(), !(visibleViewController is DesignViewController) else{return}
+        guard let visibleViewController = visibleViewController(), !(visibleViewController is DesignViewController || visibleViewController is CheckoutVC || visibleViewController is ShoppingCartVC) else{return}
 
         switch isProduct{
             
@@ -225,7 +226,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             let fullSB: UIStoryboard = UIStoryboard(name: "FullProductVC", bundle: nil)
             if let fullVC: FullProductVC = fullSB.instantiateViewController(withIdentifier: "FullVC") as? FullProductVC{
                 guard let productID = productID else{return}
-                fullVC.fullProduct = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: productID, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil)
+                fullVC.fullProduct = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: productID, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil, isAvailable: true)
                 vcToPush = fullVC
             }
         default:
@@ -306,7 +307,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         let timestampString = userInfo["Timestamp"] as? String
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            guard let visibleViewController = self.visibleViewController(), !(visibleViewController is DesignViewController), Auth.auth().currentUser != nil else{return}
+            guard let visibleViewController = self.visibleViewController(), !(visibleViewController is DesignViewController || visibleViewController is CheckoutVC || visibleViewController is ShoppingCartVC), Auth.auth().currentUser != nil else{return}
             self.processNotif(type: type, uid: uid, postID: postID, commentID: commentID, commentMsg: commentMsg, timestampString: timestampString, rootViewController: visibleViewController)
         }
         
@@ -375,9 +376,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
       
     }
     
-    
-    
-    
+    func applicationDidReceiveMemoryWarning(_ application: UIApplication) {
+        likeQueue.removeAll()
+        
+        DispatchQueue.global(qos: .background).sync {
+            cache.clearMemory()
+        }
+    }
     
     func applicationWillEnterForeground(_ application: UIApplication) {
         // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.

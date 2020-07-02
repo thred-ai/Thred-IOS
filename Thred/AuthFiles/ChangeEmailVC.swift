@@ -24,7 +24,7 @@ class ChangeEmailVC: UIViewController {
         currentEmailLbl.text = Auth.auth().currentUser?.email
         // Do any additional setup after loading the view.
     }
-    
+
     @IBAction func changeEmail(_ sender: UIButton) {
         
         sender.isEnabled = false
@@ -35,7 +35,7 @@ class ChangeEmailVC: UIViewController {
         }
         
         
-        guard let email = emailField.text?.lowercased(), !email.isEmpty, email.filter({$0 == "@"}).count == 1 else{
+        guard let email = emailField.text?.lowercased().replacingOccurrences(of: " ", with: ""), !email.isEmpty, email.filter({$0 == "@"}).count == 1 else{
             updateErrorView(text: "Not a valid email")
             sender.isEnabled = true
             return

@@ -12,6 +12,7 @@ import ColorCompatibility
 class SizeCell: UITableViewCell, UIPickerViewDelegate, UIPickerViewDataSource {
     
     var sizes = [
+        "XS (Fun Size)",
         "S",
         "M",
         "L",
@@ -58,8 +59,9 @@ class SizeCell: UITableViewCell, UIPickerViewDelegate, UIPickerViewDataSource {
     
     
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-        sizingView.text = "Size: \(sizes[row])"
-        vc.selectedSize = sizes[row]
+        let size = sizes[row].replacingOccurrences(of: " (Fun Size)", with: "")
+        sizingView.text = "Size: \(size)"
+        vc.selectedSize = size
     }
     
     
@@ -69,7 +71,9 @@ class SizeCell: UITableViewCell, UIPickerViewDelegate, UIPickerViewDataSource {
         sizePicker.delegate = self
         sizePicker.dataSource = self
         sizePicker.reloadComponent(0)
-        
+        if let index = sizes.firstIndex(of: "M"){
+            sizePicker.selectRow(index, inComponent: 0, animated: false)
+        }
     }
     
     override func layoutSubviews() {
@@ -83,7 +87,7 @@ class SizeCell: UITableViewCell, UIPickerViewDelegate, UIPickerViewDataSource {
     }
     
     func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        return 5
+        return sizes.count
     }
     
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {

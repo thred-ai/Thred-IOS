@@ -18,16 +18,18 @@ class NotificationCell: UITableViewCell{
             if notifLbl.text.isEmpty || notifLbl.text == nil{
                 setNotifMessage()
             }
+            
             let name = notif?.userInfo?.fullName ?? ""
             setName(name: name)
         }
     }
     var salesProduct: ProductInCart!{
         didSet{
+            
             if notifLbl.text.isEmpty || notifLbl.text == nil{
                 guard let quantity = salesProduct.quantity else{return}
                 guard let price = salesProduct.product.price else{return}
-                notifLbl.text = "\(quantity) x \((price / 100.0).formatPrice())"
+                notifLbl.text = "\(quantity) x \((price).formatPrice())"
             }
             let name = salesProduct.product?.userInfo.fullName ?? ""
             setName(name: name)
@@ -67,7 +69,7 @@ class NotificationCell: UITableViewCell{
             notifLbl.textColor = ColorCompatibility.secondaryLabel
         }
         else if notif.notifType == "Buy"{
-            notifLbl.text = "purchased your T-shirt"
+            notifLbl.text = "purchased your t-shirt"
             notifLbl.textColor = UIColor(named: "ActiveColor")
         }
         else if notif.notifType == "Comment"{

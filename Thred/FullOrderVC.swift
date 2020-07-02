@@ -43,10 +43,7 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
     }
     
     override func viewWillAppear(_ animated: Bool) {
-    }
-    
-    @IBAction func dismissVC(_ sender: UIButton) {
-        dismiss(animated: true, completion: nil)
+        hideCenterBtn()
     }
     
     override func viewDidLayoutSubviews() {
@@ -88,9 +85,25 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
         if indexPath.row == 2{
             let cell = UITableViewCell(style: .default, reuseIdentifier: "DefaultCell")
             cell.textLabel?.textAlignment = .center
-            cell.textLabel?.text = "Cancel Order"
-            cell.textLabel?.textColor = UIColor.red
+            var color: UIColor!
+            let string = "Cancel Order"
+            
+            switch order.status{
+            case "confirmed":
+                color = UIColor.red
+            case "cancelled":
+                color = UIColor.systemFill
+            case "cancelled-print":
+                color = UIColor.systemFill
+            case "completed":
+                color = UIColor.systemFill
+            default:
+                break
+            }
+            cell.textLabel?.text = string
+            cell.textLabel?.textColor = color
             cell.textLabel?.font = UIFont(name: "NexaW01-Heavy", size: 14)
+            
             return cell
         }
         else{
@@ -109,17 +122,35 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
                 
             case 0:
                 cell.textLabel?.text = "Order Status:"
-                if order.canCancel{
-                    cell.detailTextLabel?.text = "CONFIRMED"
-                    cell.detailTextLabel?.textColor = .red
+                var color: UIColor!
+                var string: String!
+                
+                switch order.status{
+                case "confirmed":
+                    color = UIColor.systemYellow
+                    string = "CONFIRMED"
+                case "cancelled":
+                    color = UIColor.red
+                    string = "CANCELLED"
+                case "cancelled-print":
+                    color = UIColor.red
+                    string = "CANCELLED"
+                case "completed":
+                    color = UIColor.systemGreen
+                    string = "COMPLETED"
+                default:
+                    break
                 }
-                else{
-                    cell.detailTextLabel?.text = "COMPLETED"
-                    cell.detailTextLabel?.textColor = .systemGreen
-                }
+                cell.detailTextLabel?.text = string
+                cell.detailTextLabel?.textColor = color
             case 1:
                 cell.textLabel?.text = "Shipping:"
-                cell.detailTextLabel?.text = "\(order.shippingCost.formatPrice())"
+                if let cost = order.shippingCost, cost != 0.00{
+                    cell.detailTextLabel?.text = "\((order.shippingCost ?? 0.00).formatPrice())"
+                }
+                else{
+                    cell.detailTextLabel?.text = "FREE"
+                }
             default:
                 break
             }
@@ -150,15 +181,26 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
         var description = String()
         var titleColor = UIColor()
         
-        if order.canCancel{
+        switch order.status{
+        case "confirmed":
+            titleColor = UIColor.systemYellow
             title = "CONFIRMED"
-            titleColor = .red
             description = "Your order is confirmed and is still processing. Orders in this stage can be cancelled."
-        }
-        else{
-            title = "COMPLETE"
-            titleColor = .systemGreen
+
+        case "cancelled":
+            titleColor = UIColor.red
+            title = "CANCELLED"
+            description = "Your order has been cancelled and a full refund has been issued to your card."
+        case "cancelled-print":
+            titleColor = UIColor.red
+            title = "CANCELLED"
+            description = "Your order has been cancelled and a full refund has been issued to your card."
+        case "completed":
+            titleColor = UIColor.systemGreen
+            title = "COMPLETED"
             description = "Your order is completed and may take 1-2 business days to ship. Orders in this stage cannot be cancelled."
+        default:
+            break
         }
         
         let yesBtn = DefaultButton(title: "OK", dismissOnTap: true) {
@@ -224,10 +266,15 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
         
         let spinner = loadingView.subviews.first(where: {$0.isKind(of: MapSpinnerView.self)}) as? MapSpinnerView
         spinner?.animate()
-        
-        guard let intents = order.intents, !intents.isEmpty, let shippingCost = order.shippingCost, let id = order.orderID, let uid = userInfo.uid else{
+        guard
+            let uncancelledOrders = order.products?.filter({!($0.isDeleted)}).compactMap({$0.saleID}),
+            let intents = order.intents?.filter({uncancelledOrders.contains($0["ID"] ?? "null")}), !intents.isEmpty,
+            let shippingCost = order.shippingCost,
+            let id = order.orderID,
+            let uid = userInfo.uid else{
             errorCancelling {}
-            return }
+        return }
+        print(intents)
         
         let shipping_intent = order.shippingIntent ?? ""
         
@@ -259,16 +306,12 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
 
         if didCancel{
             if let vc = viewController as? NotificationVC, let section = vc.orders.firstIndex(where: {$0.orderID == order.orderID}){
-                vc.orders.remove(at: section)
+                vc.orders[section].status = "cancelled"
                 vc.ordersTableView.performBatchUpdates({
-                    vc.ordersTableView.deleteSections(IndexSet(integer: section), with: .automatic)
+                    vc.ordersTableView.reloadSections(IndexSet(integer: section), with: .automatic)
                 }, completion: { finished in
                     if finished{
-                        for (index, _) in vc.orders.enumerated(){
-                            vc.ordersTableView.performBatchUpdates({
-                                vc.ordersTableView.reloadSections(IndexSet(integer: index), with: .automatic)
-                            }, completion: { finished in })
-                        }
+                        
                     }
                 })
             }
@@ -282,9 +325,8 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-
+        if let full = segue.destination as? FullProductVC{
+            full.fullProduct = productToOpen
+        }
     }
-    
-
 }

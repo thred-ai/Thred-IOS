@@ -58,7 +58,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
     func getFeaturedPost(){
         
         guard let userUID = userInfo.uid else{return}
-        Firestore.firestore().collectionGroup("Products").whereField("Timestamp", isGreaterThan: Timestamp(date: Date().adding(hours: -120))).order(by: "Timestamp").whereField("Blurred", isEqualTo: false).whereField("Has_Picture", isEqualTo: true).order(by: "Likes", descending: true).limit(to: 5).getDocuments(completion: { docs, error in
+        Firestore.firestore().collectionGroup("Products").whereField("Timestamp", isGreaterThan: Timestamp(date: Date().adding(hours: -120))).order(by: "Timestamp").whereField("Blurred", isEqualTo: false).whereField("Has_Picture", isEqualTo: true).whereField("Available", isEqualTo: true).order(by: "Likes", descending: true).limit(to: 5).getDocuments(completion: { docs, error in
             
             if let err = error{
                 print(err.localizedDescription)
@@ -102,7 +102,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                             }
                         }
                         
-                        let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: nil, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil)
+                        let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: nil, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil, isAvailable: true)
                         
                         self.featuredHeader.featuredProducts.append(product)
                         
@@ -618,7 +618,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
         else{
             //searchBar.isLoading = true
             Firestore.firestore().collectionGroup("Products")
-                .whereField("Search_Name", isGreaterThanOrEqualTo: searchText).whereField("Search_Name", isLessThanOrEqualTo: searchText + "\u{f8ff}").limit(to: 8).getDocuments(completion: { query, error in
+                .whereField("Search_Name", isGreaterThanOrEqualTo: searchText).whereField("Search_Name", isLessThanOrEqualTo: searchText + "\u{f8ff}").whereField("Available", isEqualTo: true).limit(to: 8).getDocuments(completion: { query, error in
                 
                 //searchBar.isLoading = false
                 if error != nil{
@@ -650,7 +650,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                                 let comments = ((document["Comments"]) as? Int) ?? 0
                                 let productID = document.documentID
                                 
-                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: productID, description: description, productID: productID, timestamp: timestamp, index: 0, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(productID), designImage: nil, comments: comments, link: nil)
+                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: productID, description: description, productID: productID, timestamp: timestamp, index: 0, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(productID), designImage: nil, comments: comments, link: nil, isAvailable: true)
 
                                 self.searchedProducts.append(product)
                                 self.searchedProducts.sort(by: {$0.likes > $1.likes})

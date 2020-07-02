@@ -26,10 +26,9 @@ class SignUpVC: UIViewController {
             return}
         errorView.text = nil
         print(text)
-        emailToUse = text.lowercased()
+        emailToUse = text.lowercased().replacingOccurrences(of: " ", with: "")
         self.performSegue(withIdentifier: "toPassword", sender: nil)
     }
-    
     
     @IBAction func toSignIn(_ sender: UIButton) {
         
@@ -52,6 +51,7 @@ class SignUpVC: UIViewController {
 
         // Do any additional setup after loading the view.
         emailField.inputAccessoryView = toolBar
+
         addGuidelinesLink()
 
         if Auth.auth().currentUser != nil{

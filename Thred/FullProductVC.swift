@@ -17,7 +17,20 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
     @IBOutlet weak var addToCartBtn: UIButton!
     var selectedSize: String!
     var editedPost = false
+    @IBOutlet weak var deletedView: UIView!
     
+    var isDeleted: Bool! = false{
+        didSet{
+            if isDeleted{
+                addToCartBtn.isEnabled = false
+                deletedView.isHidden = false
+            }
+            else{
+                addToCartBtn.isEnabled = true
+                deletedView.isHidden = true
+            }
+        }
+    }
     
     @IBAction func addToCart(_ sender: UIButton) {
         
@@ -91,6 +104,9 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        deletedView.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.5)
+        isDeleted = false
+        addToCartBtn.isEnabled = false
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
@@ -101,7 +117,6 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
         navigationController?.interactivePopGestureRecognizer?.delegate = self
 
         tableView.register(UINib(nibName: "ProductCell", bundle: nil), forCellReuseIdentifier: "PictureProduct")
-        
         getProduct()
         
     }
@@ -136,6 +151,7 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
                     guard let snap = snaps?.documents.first else{
                         self.navigationController?.popViewController(animated: true)
                         return}
+                    let isAvailable = snap["Available"] as? Bool
                     let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
                     let uid = snap["UID"] as! String
                     let description = snap["Description"] as? String
@@ -170,9 +186,10 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
                                 liked = false
                             }
                         }
-                        
-                        self.fullProduct = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: nil, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil)
-                        
+                        if isAvailable == false{
+                            
+                        }
+                        self.fullProduct = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: nil, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil, isAvailable: isAvailable)
                         if let cell = self.tableView.cellForRow(at: IndexPath(row: 0, section: 0)) as? ProductCell{
                             self.tableView.setPictureCell(cell: cell, indexPath: IndexPath(row: 0, section: 0), product: self.fullProduct, productLocation: self, shouldDownloadPic: false)
                         }

@@ -21,12 +21,25 @@ class SearchProductTableViewCell: UITableViewCell{
     weak var cartVC: ShoppingCartVC!
     @IBOutlet weak var quantityField: UITextField!
     
+    @IBOutlet weak var deletedView: UIView!
     @IBOutlet weak var sizingLbl: UILabel!
     @IBOutlet weak var likesView: UIStackView!
+    
+    var isDeleted: Bool!{
+        didSet{
+            if isDeleted{
+                deletedView.isHidden = false
+            }
+            else{
+                deletedView.isHidden = true
+            }
+        }
+    }
     
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
+        deletedView.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.75)
         productImageView.layer.cornerRadius = productImageView.frame.height / 8
         productImageView.clipsToBounds = true
         quantityField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)

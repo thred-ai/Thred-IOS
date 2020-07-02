@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="mWr-dz-FBQ">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--SettingsVC-->
+        <scene sceneID="mDv-qH-d4L">
+            <objects>
+                <tableViewController id="mWr-dz-FBQ" customClass="SettingsVC" customModule="Thred" customModuleProvider="target" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="yus-Om-uZt">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <prototypes>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="SettingsCell" rowHeight="82" id="OXX-fS-rBH">
+                                <rect key="frame" x="0.0" y="28" width="414" height="82"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="OXX-fS-rBH" id="JW8-pI-miM">
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="82"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                </tableViewCellContentView>
+                            </tableViewCell>
+                        </prototypes>
+                        <connections>
+                            <outlet property="dataSource" destination="mWr-dz-FBQ" id="1f6-AC-TFS"/>
+                            <outlet property="delegate" destination="mWr-dz-FBQ" id="obi-JW-ivz"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" id="49R-SD-xvZ"/>
+                    <connections>
+                        <segue destination="Qsn-GC-46C" kind="show" identifier="toEmailChange" id="QLR-Rr-cwS"/>
+                        <segue destination="wkp-si-vH7" kind="show" identifier="toPasswordChange" id="HUe-IL-wdW"/>
+                        <segue destination="Q8P-of-JH0" kind="show" identifier="toCard" id="TdA-QH-nmX"/>
+                        <segue destination="lzS-Oz-cmq" kind="show" identifier="toBank" id="smw-9X-3IZ"/>
+                        <segue destination="axf-Ll-Mpi" kind="show" identifier="toAddress" id="PzL-W8-he8"/>
+                    </connections>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="OVc-so-5PE" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="5828" y="346"/>
+        </scene>
+        <!--ChangeEmailVC-->
+        <scene sceneID="qF0-Lx-qx8">
+            <objects>
+                <viewControllerPlaceholder storyboardName="ChangeEmailVC" id="Qsn-GC-46C" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="TkB-Jw-CHy"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="UQM-Be-Wik" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="6745" y="-1131"/>
+        </scene>
+        <!--BankVC-->
+        <scene sceneID="Qeh-79-dOX">
+            <objects>
+                <viewControllerPlaceholder storyboardName="BankVC" id="lzS-Oz-cmq" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="8v7-F2-IkE"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="l21-JP-22J" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="6709.6000000000004" y="-278.57142857142856"/>
+        </scene>
+        <!--CardVC-->
+        <scene sceneID="jcy-RQ-go0">
+            <objects>
+                <viewControllerPlaceholder storyboardName="CardVC" id="Q8P-of-JH0" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="HVB-0L-BgA"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="2f4-Se-dp4" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="6744.8000000000002" y="612.5615763546798"/>
+        </scene>
+        <!--ChangePasswordVC-->
+        <scene sceneID="CnX-C0-uKR">
+            <objects>
+                <viewControllerPlaceholder storyboardName="ChangePasswordVC" id="wkp-si-vH7" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="6Ax-u4-IxU"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="khy-lg-wmQ" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="6745" y="1400"/>
+        </scene>
+        <!--AddressVC-->
+        <scene sceneID="WOQ-RN-q22">
+            <objects>
+                <viewControllerPlaceholder storyboardName="AddressVC" id="axf-Ll-Mpi" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="nZv-RN-csZ"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Xru-Nz-lOB" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="6745" y="2225"/>
+        </scene>
+    </scenes>
+</document>

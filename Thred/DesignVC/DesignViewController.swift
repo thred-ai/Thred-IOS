@@ -79,8 +79,14 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
                     if let cell = carousel.collectionView.cellForItem(at: indexPath) as? CarouselCollectionViewCell{
                         if cell.canvasDisplayView.image != nil{
                             saveToPhotosLbl.isHidden = true
-                            guard let price = priceView.text else{return}
-                            guard let decimalPrice = Double(price) else{return}
+                            guard let price = priceView.text else{
+                                sender.isEnabled = true
+                                return
+                            }
+                            guard let decimalPrice = Double(price) else{
+                                sender.isEnabled = true
+                                return
+                            }
                             product = ProductInProgress()
                             product.design = cell.canvasDisplayView.image
                             product.caption = descriptionView.text
@@ -93,9 +99,17 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
                                 self.performSegue(withIdentifier: "DoneDesigning", sender: nil)
                             }
                         }
+                        else{
+                            sender.isEnabled = true
+                        }
+                    }
+                    else{
+                        sender.isEnabled = true
                     }
                 }
-                sender.isEnabled = true
+                else{
+                    sender.isEnabled = true
+                }
             }
         }
         else{
@@ -609,13 +623,6 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         return view
     }()
     
-    
-    
-    override func didReceiveMemoryWarning() {
-        
-    }
-    
-    
     var fontSlider: UISlider!
     
     
@@ -628,13 +635,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         view.backgroundColor = bottomBar.backgroundColor
         return view
     }()
-    
-    
-    deinit {
-        
-    }
-    
-    
+
     
     lazy var cameraRollCollectionView: PhotosView = {
         
@@ -1052,7 +1053,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         
 
         let title = "Merchant Account"
-        let message = "In order to earn money from Thred, a merchant account must be set up in account settings. Any sales made without this will not be debited into your bank account."
+        let message = "In order to earn money from Thred, a bank account must be set linked in account settings. Any sales made without this will not be deposited into your bank account."
         let titleColor = UIColor.label
         
         let yesBtn = DefaultButton(title: "I UNDERSTAND", dismissOnTap: true) {

@@ -59,6 +59,7 @@ class SignInVC: UIViewController {
                     spinner.removeFromSuperview()
                     self.updateErrorView(text: err.localizedDescription)
                     print(err.localizedDescription)
+                    self.navigationItem.hidesBackButton = false
                     sender.isEnabled = true
                 }
                 else{
@@ -84,11 +85,15 @@ class SignInVC: UIViewController {
         Auth.auth().signIn(withEmail: email, password: password, completion: { result, error in
             if let err = error{
                 spinner.removeFromSuperview()
+                sender?.isEnabled = true
+                self.navigationItem.hidesBackButton = false
                 self.updateErrorView(text: "Invalid Password")
                 print(err.localizedDescription)
             }
             else{
                 guard let userUID = Auth.auth().currentUser?.uid else{
+                    sender?.isEnabled = true
+                    self.navigationItem.hidesBackButton = false
                     return}
                 UserDefaults.standard.set(userUID, forKey: "UID")
                 userInfo.uid = userUID

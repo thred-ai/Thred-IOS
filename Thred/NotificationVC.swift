@@ -55,23 +55,30 @@ class Order{
     var orderID: String!
     var timestamp: Date!
     var products: [ProductInCart]!
-    var canCancel: Bool!
-    var intents: [String]!
-    var shippingIntent: String!
-    var shippingCost: Double!
+    var status: String!
+    var intents: [[String : String]]!
+    var shippingIntent: String?
+    var shippingCost: Double?
     
-    init(orderID: String?, timestamp: Date?, products: [ProductInCart], canCancel: Bool!, intents: [String], shippingIntent: String?, shippingCost: Double!) {
+    var canCancel: Bool{
+        get{
+            guard status != nil else{return false}
+            return status == "confirmed"
+        }
+    }
+    
+    init(orderID: String?, timestamp: Date?, products: [ProductInCart], status: String!, intents: [[String : String]], shippingIntent: String?, shippingCost: Double?) {
         self.orderID = orderID
         self.timestamp = timestamp
         self.products = products
-        self.canCancel = canCancel
+        self.status = status
         self.shippingCost = shippingCost
         self.intents = intents
         self.shippingIntent = shippingIntent
     }
     
     convenience init(){
-        self.init(orderID: nil, timestamp: nil, products: [], canCancel: nil, intents: [], shippingIntent: nil, shippingCost: nil)
+        self.init(orderID: nil, timestamp: nil, products: [], status: nil, intents: [], shippingIntent: nil, shippingCost: nil)
     }
 }
 
@@ -156,12 +163,12 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                 self.lastDoc = docs.last
                 for doc in docs{
                     let timestamp = (doc["timestamp"] as? Timestamp)?.dateValue()
-                    let finishedProcessing = doc["finished_processing"] as? Bool ?? true
-                    let intents = doc["order_intents"] as? [String] ?? []
+                    let status = doc["status"] as? String ?? "cancelled"
+                    let intents = doc["order_intents"] as? [[String : String]] ?? [[:]]
                     let shippingIntent = doc["shipping_intent"] as? String
                     let shippingCost = doc["shipping_cost"] as? Double
                     
-                    let order = Order(orderID: doc.documentID, timestamp: timestamp, products: [], canCancel: !finishedProcessing, intents: intents, shippingIntent: shippingIntent, shippingCost: shippingCost! / 100.0)
+                    let order = Order(orderID: doc.documentID, timestamp: timestamp, products: [], status: status, intents: intents, shippingIntent: shippingIntent, shippingCost: (shippingCost ?? 0.00) / 100.0)
                     
                     localLoaded.append(order)
                     doc.reference.collection("Purchases").getDocuments(completion: { pSnaps, error in
@@ -177,13 +184,15 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                                     let quantity = pDoc["quantity"] as? Int,
                                     let size = pDoc["size"] as? String
                                 else{continue}
-                                
+                                let status = pDoc["status"] as? String
+
                                 self.getPostBackgroundInfo(postID: productID, completed: { product in
                                     
-                                    let orderProduct = ProductInCart(product: product, size: size, quantity: quantity, isDeleted: false, timestamp: timestamp, timestampDiff: nil, saleID: nil)
+                                    let orderProduct = ProductInCart(product: product, size: size, quantity: quantity, isDeleted: status == "cancelled-print", timestamp: timestamp, timestampDiff: nil, saleID: pDoc.documentID)
                                     
                                     order.products.append(orderProduct)
                                     if order.products.count == pDocs.count{
+                                        order.products.sort(by: {$0.product.productID > $1.product.productID})
                                         downloaded += 1
                                     }
                                     if downloaded == docs.count{
@@ -253,6 +262,7 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
             cell?.timestampLbl.text = nil
             cell?.removedNotifView.isHidden = true
             cell?.isUserInteractionEnabled = false
+            cell?.notifPic.alpha = 1.0
             cell?.notif = notif
             self.tableView.checkNotifTimes(notif: notif, timestampLbl: cell?.timestampLbl)
 
@@ -336,6 +346,12 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                                 guard let index = self.notifications.firstIndex(where: {$0.notifID == notif.notifID}) else{return}
                                 if let cell = tableView.cellForRow(at: IndexPath(row: index, section: 0)) as? NotificationCell{
                                     cell.notifPic.image = img
+                                    if notif.product?.isAvailable ?? false{
+                                        cell.notifPic.alpha = 1.0
+                                    }
+                                    else{
+                                        cell.notifPic.alpha = 0.25
+                                    }
                                 }
                             }
                         }
@@ -363,6 +379,12 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                                         guard let index = self.notifications.firstIndex(where: {$0.notifID == notif.notifID}) else{return}
                                         if let cell = tableView.cellForRow(at: IndexPath(row: index, section: 0)) as? NotificationCell{
                                             cell.notifPic.image = img
+                                            if notif.product?.isAvailable ?? false{
+                                                cell.notifPic.alpha = 1.0
+                                            }
+                                            else{
+                                                cell.notifPic.alpha = 0.25
+                                            }
                                         }
                                     }
                                 }
@@ -377,6 +399,12 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                                             guard let index = self.notifications.firstIndex(where: {$0.notifID == notif.notifID}) else{return}
                                             if let cell = tableView.cellForRow(at: IndexPath(row: index, section: 0)) as? NotificationCell{
                                                 cell.notifPic.image = img
+                                                if notif.product?.isAvailable ?? false{
+                                                    cell.notifPic.alpha = 1.0
+                                                }
+                                                else{
+                                                    cell.notifPic.alpha = 0.25
+                                                }
                                             }
                                         })
                                     }
@@ -419,7 +447,12 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
             cell?.quantityView.isHidden = true
             cell?.productImageView.backgroundColor = ColorCompatibility.secondarySystemBackground
             cell?.sizingLbl.isHidden = false
+            cell?.isDeleted = false
+            cell?.productImageView.alpha = 1.0
             
+            if !(product.isAvailable){
+                cell?.productImageView.alpha = 0.25
+            }
             DispatchQueue(label: "explore").async {
                 if let dp = cache.imageFromMemoryCache(forKey: "thumbnail_\(product.productID)"){
                     DispatchQueue.main.async {
@@ -613,6 +646,7 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         ordersTableView.addSubview(orderRefresher)
         
         tableView.adjustForCenterBtn(footerColor: ColorCompatibility.systemBackground, offset: nil, vc: self)
+        ordersTableView.adjustForCenterBtn(footerColor: ColorCompatibility.systemBackground, offset: nil, vc: self)
      
         segmentedControl.setTitleFont(UIFont(name: "NexaW01-Heavy", size: 14)!)
         segmentedControl.setTitleColor(.white)
@@ -811,13 +845,21 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         var color: UIColor!
         var string: String!
         
-        if orders[section].canCancel{
-            color = UIColor.red
+        switch orders[section].status.lowercased(){
+        case "confirmed":
+            color = UIColor.systemYellow
             string = "CONFIRMED"
-        }
-        else{
+        case "cancelled":
+            color = UIColor.red
+            string = "CANCELLED"
+        case "cancelled-print":
+            color = UIColor.red
+            string = "CANCELLED"
+        case "completed":
             color = UIColor.systemGreen
             string = "COMPLETED"
+        default:
+            break
         }
         
         imageView.tintColor = color
@@ -935,9 +977,6 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         return nil
     }
     
-    override func didReceiveMemoryWarning() {
-        cache.clearMemory()
-    }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         
@@ -1018,6 +1057,7 @@ extension UIViewController{
                 let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
                 guard let uid = snap["UID"] as? String else{
                     return}
+                let isAvailable = snap["Available"] as? Bool
                 let description = snap["Description"] as? String
                 let name = snap["Name"] as? String
                 let blurred = snap["Blurred"] as? Bool
@@ -1026,7 +1066,7 @@ extension UIViewController{
                 guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                 let comments = ((snap["Comments"]) as? Int) ?? 0
 
-                completed(Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: 0, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil))
+                completed(Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: 0, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: isAvailable))
                 return
             }
         })

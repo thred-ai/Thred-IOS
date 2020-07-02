@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="0YH-V8-Rwm">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Nexa W01 Heavy.ttf">
+            <string>NexaW01-Heavy</string>
+        </array>
+        <array key="Nexa W01 Regular.ttf">
+            <string>NexaW01-Regular</string>
+        </array>
+    </customFonts>
+    <scenes>
+        <!--BankVC-->
+        <scene sceneID="fk3-PS-2e2">
+            <objects>
+                <viewController modalPresentationStyle="fullScreen" hidesBottomBarWhenPushed="YES" id="0YH-V8-Rwm" customClass="BankVC" customModule="Thred" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="8ip-aA-o4w">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" translatesAutoresizingMaskIntoConstraints="NO" id="3Mn-Lz-1cz">
+                                <rect key="frame" x="0.0" y="44" width="414" height="818"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="TBr-SS-9R7">
+                                        <rect key="frame" x="0.0" y="0.0" width="414" height="446.5"/>
+                                        <subviews>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="cHi-aI-x08">
+                                                <rect key="frame" x="20" y="20" width="374" height="426.5"/>
+                                                <subviews>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="EWh-Gb-vVN">
+                                                        <rect key="frame" x="0.0" y="0.0" width="374" height="148.5"/>
+                                                        <subviews>
+                                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="eig-ZQ-NIi">
+                                                                <rect key="frame" x="0.0" y="0.0" width="374" height="120"/>
+                                                                <subviews>
+                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bank" translatesAutoresizingMaskIntoConstraints="NO" id="FUV-8B-66K">
+                                                                        <rect key="frame" x="127" y="0.0" width="120" height="120"/>
+                                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                        <color key="tintColor" name="LoadingColor"/>
+                                                                        <constraints>
+                                                                            <constraint firstAttribute="width" secondItem="FUV-8B-66K" secondAttribute="height" multiplier="1:1" id="7T1-gr-0Z4"/>
+                                                                        </constraints>
+                                                                    </imageView>
+                                                                </subviews>
+                                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="height" constant="120" id="WW3-EY-dIm"/>
+                                                                    <constraint firstItem="FUV-8B-66K" firstAttribute="centerX" secondItem="eig-ZQ-NIi" secondAttribute="centerX" id="aWq-Uk-Rk3"/>
+                                                                    <constraint firstItem="FUV-8B-66K" firstAttribute="top" secondItem="eig-ZQ-NIi" secondAttribute="top" id="k0n-jW-F40"/>
+                                                                    <constraint firstAttribute="bottom" secondItem="FUV-8B-66K" secondAttribute="bottom" id="xyT-9p-NEn"/>
+                                                                </constraints>
+                                                            </view>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Bank Account" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="KxB-bD-jGq">
+                                                                <rect key="frame" x="0.0" y="125" width="374" height="23.5"/>
+                                                                <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="20"/>
+                                                                <nil key="textColor"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                        </subviews>
+                                                    </stackView>
+                                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" editable="NO" text="&quot;Error View&quot;" textAlignment="center" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cqK-O3-yC6">
+                                                        <rect key="frame" x="0.0" y="168.5" width="374" height="33"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <color key="textColor" systemColor="systemRedColor" red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                        <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                                    </textView>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cXK-CH-DMO">
+                                                        <rect key="frame" x="0.0" y="221.5" width="374" height="205"/>
+                                                        <subviews>
+                                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="rb8-YD-g1M">
+                                                                <rect key="frame" x="0.0" y="0.0" width="374" height="205"/>
+                                                                <subviews>
+                                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="RhL-fh-bJm">
+                                                                        <rect key="frame" x="0.0" y="0.0" width="374" height="55"/>
+                                                                        <subviews>
+                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Institution" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="iIz-5Q-FSS">
+                                                                                <rect key="frame" x="0.0" y="0.0" width="374" height="30.5"/>
+                                                                                <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="20"/>
+                                                                                <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                                <nil key="highlightedColor"/>
+                                                                            </label>
+                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="&quot;Bank Name&quot;" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="Y2y-Xv-fJD">
+                                                                                <rect key="frame" x="0.0" y="30.5" width="374" height="24.5"/>
+                                                                                <fontDescription key="fontDescription" name="NexaW01-Regular" family="NexaW01-Regular" pointSize="16"/>
+                                                                                <nil key="textColor"/>
+                                                                                <nil key="highlightedColor"/>
+                                                                            </label>
+                                                                        </subviews>
+                                                                    </stackView>
+                                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="3nq-e5-wRd">
+                                                                        <rect key="frame" x="0.0" y="75" width="374" height="55"/>
+                                                                        <subviews>
+                                                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="2.5" translatesAutoresizingMaskIntoConstraints="NO" id="tom-w2-mOY">
+                                                                                <rect key="frame" x="0.0" y="0.0" width="374" height="32"/>
+                                                                                <subviews>
+                                                                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="w9q-Ds-f40">
+                                                                                        <rect key="frame" x="0.0" y="0.0" width="374" height="14.5"/>
+                                                                                        <subviews>
+                                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Bank Number" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="Ydq-vY-7Hg">
+                                                                                                <rect key="frame" x="0.0" y="0.0" width="374" height="14.5"/>
+                                                                                                <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="20"/>
+                                                                                                <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                                                <nil key="highlightedColor"/>
+                                                                                            </label>
+                                                                                        </subviews>
+                                                                                    </stackView>
+                                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="(Last 4 Digits)" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dV3-th-8sU">
+                                                                                        <rect key="frame" x="0.0" y="17" width="374" height="15"/>
+                                                                                        <constraints>
+                                                                                            <constraint firstAttribute="height" constant="15" id="wka-b6-dRD"/>
+                                                                                        </constraints>
+                                                                                        <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="12"/>
+                                                                                        <color key="textColor" systemColor="tertiaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.29999999999999999" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                                        <nil key="highlightedColor"/>
+                                                                                    </label>
+                                                                                </subviews>
+                                                                            </stackView>
+                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="&quot;Last 4 Digits&quot;" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="d3r-8D-eXw">
+                                                                                <rect key="frame" x="0.0" y="42" width="374" height="13"/>
+                                                                                <fontDescription key="fontDescription" name="NexaW01-Regular" family="NexaW01-Regular" pointSize="16"/>
+                                                                                <nil key="textColor"/>
+                                                                                <nil key="highlightedColor"/>
+                                                                            </label>
+                                                                        </subviews>
+                                                                    </stackView>
+                                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="i2T-0k-Z81">
+                                                                        <rect key="frame" x="0.0" y="150" width="374" height="55"/>
+                                                                        <color key="backgroundColor" name="LoadingColor"/>
+                                                                        <constraints>
+                                                                            <constraint firstAttribute="height" constant="55" id="dOg-FG-Is1"/>
+                                                                        </constraints>
+                                                                        <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="20"/>
+                                                                        <state key="normal" title="Remove Bank Account">
+                                                                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                        </state>
+                                                                        <connections>
+                                                                            <action selector="bankInfoAction:" destination="0YH-V8-Rwm" eventType="touchUpInside" id="BXe-ur-97P"/>
+                                                                        </connections>
+                                                                    </button>
+                                                                </subviews>
+                                                            </stackView>
+                                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sbv-6c-XzE">
+                                                                <rect key="frame" x="0.0" y="0.0" width="374" height="205"/>
+                                                                <subviews>
+                                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pZN-oM-8Qg" customClass="MapSpinnerView" customModule="Thred" customModuleProvider="target">
+                                                                        <rect key="frame" x="167" y="10" width="40" height="40"/>
+                                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                        <constraints>
+                                                                            <constraint firstAttribute="width" secondItem="pZN-oM-8Qg" secondAttribute="height" multiplier="1:1" id="IuU-e4-HVO"/>
+                                                                            <constraint firstAttribute="width" constant="40" id="Ld6-hZ-TW9"/>
+                                                                        </constraints>
+                                                                    </view>
+                                                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" editable="NO" textAlignment="center" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cr1-eJ-pAP">
+                                                                        <rect key="frame" x="73" y="55" width="228.5" height="49.5"/>
+                                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                        <string key="text">Loading bank account information.
+This may take a few moments...</string>
+                                                                        <color key="textColor" systemColor="labelColor" cocoaTouchSystemColor="darkTextColor"/>
+                                                                        <fontDescription key="fontDescription" name="NexaW01-Regular" family="NexaW01-Regular" pointSize="14"/>
+                                                                        <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                                                    </textView>
+                                                                </subviews>
+                                                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                                                <constraints>
+                                                                    <constraint firstItem="cr1-eJ-pAP" firstAttribute="centerX" secondItem="sbv-6c-XzE" secondAttribute="centerX" id="OCk-S4-47I"/>
+                                                                    <constraint firstItem="pZN-oM-8Qg" firstAttribute="centerX" secondItem="sbv-6c-XzE" secondAttribute="centerX" id="Vf6-zl-pyu"/>
+                                                                    <constraint firstItem="cr1-eJ-pAP" firstAttribute="top" secondItem="pZN-oM-8Qg" secondAttribute="bottom" constant="5" id="Yhi-xv-s0j"/>
+                                                                    <constraint firstItem="pZN-oM-8Qg" firstAttribute="top" secondItem="sbv-6c-XzE" secondAttribute="top" constant="10" id="Zfc-53-z85"/>
+                                                                </constraints>
+                                                            </view>
+                                                        </subviews>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="bottom" secondItem="rb8-YD-g1M" secondAttribute="bottom" id="8XC-CO-lCk"/>
+                                                            <constraint firstItem="sbv-6c-XzE" firstAttribute="leading" secondItem="cXK-CH-DMO" secondAttribute="leading" id="GUp-Ph-B3i"/>
+                                                            <constraint firstAttribute="trailing" secondItem="sbv-6c-XzE" secondAttribute="trailing" id="KFm-4X-3IN"/>
+                                                            <constraint firstItem="rb8-YD-g1M" firstAttribute="leading" secondItem="cXK-CH-DMO" secondAttribute="leading" id="OfV-fE-aqF"/>
+                                                            <constraint firstItem="rb8-YD-g1M" firstAttribute="top" secondItem="cXK-CH-DMO" secondAttribute="top" id="WNu-DM-IqP"/>
+                                                            <constraint firstAttribute="bottom" secondItem="sbv-6c-XzE" secondAttribute="bottom" id="YE8-LY-K6S"/>
+                                                            <constraint firstItem="sbv-6c-XzE" firstAttribute="top" secondItem="cXK-CH-DMO" secondAttribute="top" id="gcc-wY-g2f"/>
+                                                            <constraint firstAttribute="trailing" secondItem="rb8-YD-g1M" secondAttribute="trailing" id="t62-q9-uPS"/>
+                                                        </constraints>
+                                                    </view>
+                                                </subviews>
+                                            </stackView>
+                                        </subviews>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstItem="cHi-aI-x08" firstAttribute="centerX" secondItem="TBr-SS-9R7" secondAttribute="centerX" id="Afp-Z5-0RQ"/>
+                                            <constraint firstAttribute="trailing" secondItem="cHi-aI-x08" secondAttribute="trailing" constant="20" id="CQs-2I-wNI"/>
+                                            <constraint firstItem="cHi-aI-x08" firstAttribute="leading" secondItem="TBr-SS-9R7" secondAttribute="leading" constant="20" id="N7g-mG-Mik"/>
+                                            <constraint firstAttribute="bottom" secondItem="cHi-aI-x08" secondAttribute="bottom" id="OED-Nq-6HZ"/>
+                                            <constraint firstItem="cHi-aI-x08" firstAttribute="top" secondItem="TBr-SS-9R7" secondAttribute="top" constant="20" id="bK7-JZ-8LH"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="TBr-SS-9R7" firstAttribute="top" secondItem="3Mn-Lz-1cz" secondAttribute="top" id="BRb-HB-KNa"/>
+                                    <constraint firstItem="TBr-SS-9R7" firstAttribute="leading" secondItem="3Mn-Lz-1cz" secondAttribute="leading" id="Hjq-VW-30K"/>
+                                    <constraint firstItem="TBr-SS-9R7" firstAttribute="centerX" secondItem="3Mn-Lz-1cz" secondAttribute="centerX" id="McX-bN-EH2"/>
+                                    <constraint firstItem="TBr-SS-9R7" firstAttribute="right" secondItem="3Mn-Lz-1cz" secondAttribute="right" id="fMh-Lb-GBL"/>
+                                    <constraint firstAttribute="bottom" secondItem="TBr-SS-9R7" secondAttribute="bottom" id="rGq-PK-bDo"/>
+                                </constraints>
+                                <viewLayoutGuide key="contentLayoutGuide" id="X3m-yO-c5b"/>
+                                <viewLayoutGuide key="frameLayoutGuide" id="wgu-bM-alO"/>
+                            </scrollView>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <constraints>
+                            <constraint firstItem="3Mn-Lz-1cz" firstAttribute="top" secondItem="Wbh-jl-C9n" secondAttribute="top" id="LhK-ea-sBe"/>
+                            <constraint firstItem="3Mn-Lz-1cz" firstAttribute="trailing" secondItem="Wbh-jl-C9n" secondAttribute="trailing" id="qDI-XV-YYx"/>
+                            <constraint firstItem="3Mn-Lz-1cz" firstAttribute="leading" secondItem="Wbh-jl-C9n" secondAttribute="leading" id="sNH-DQ-1zA"/>
+                            <constraint firstItem="Wbh-jl-C9n" firstAttribute="bottom" secondItem="3Mn-Lz-1cz" secondAttribute="bottom" id="wRg-6u-8yd"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="Wbh-jl-C9n"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="L7w-WK-7Z1">
+                        <barButtonItem key="rightBarButtonItem" systemItem="done" id="dlz-ol-edm">
+                            <connections>
+                                <action selector="doneBtnPressed:" destination="0YH-V8-Rwm" id="ybq-vP-ebS"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="actionBtn" destination="i2T-0k-Z81" id="qrJ-RS-IMn"/>
+                        <outlet property="doneBtn" destination="dlz-ol-edm" id="YjC-ky-Wfk"/>
+                        <outlet property="errorView" destination="cqK-O3-yC6" id="6hM-pW-0zK"/>
+                        <outlet property="instField" destination="Y2y-Xv-fJD" id="602-eN-hLp"/>
+                        <outlet property="lastFourField" destination="d3r-8D-eXw" id="Sci-Gt-yaV"/>
+                        <outlet property="loadingView" destination="sbv-6c-XzE" id="YBf-NB-tm3"/>
+                        <outlet property="spinner" destination="pZN-oM-8Qg" id="snM-Jj-y5J"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="IA1-rK-aRc" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="6709.6000000000004" y="-278.57142857142856"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="bank" width="100" height="100"/>
+        <namedColor name="LoadingColor">
+            <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>

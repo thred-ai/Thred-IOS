@@ -29,7 +29,7 @@
                                     <action selector="toCart:" destination="5UA-1s-RDD" id="O1f-8I-3jb"/>
                                 </connections>
                             </barButtonItem>
-                            <barButtonItem image="creditcard.fill" width="30" id="qVt-v0-Oyr">
+                            <barButtonItem image="cash" width="30" id="qVt-v0-Oyr">
                                 <color key="tintColor" name="LoadingColor"/>
                                 <connections>
                                     <action selector="toSales:" destination="5UA-1s-RDD" id="VWa-aK-dBQ"/>
@@ -133,7 +133,7 @@
     </scenes>
     <resources>
         <image name="cart" width="33.5" height="33.5"/>
-        <image name="creditcard.fill" width="33.5" height="33.5"/>
+        <image name="cash" width="30" height="30"/>
         <image name="feed" width="30" height="30"/>
         <namedColor name="LoadingColor">
             <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

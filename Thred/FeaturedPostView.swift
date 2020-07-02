@@ -78,6 +78,8 @@ class FeaturedPostView: UIView, UICollectionViewDelegate, UICollectionViewDataSo
         return order.products?.count ?? 0
     }
     
+    
+    
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "FeaturedCell", for: indexPath) as? FeaturedCell
         cell?.imageView.image = nil
@@ -85,7 +87,10 @@ class FeaturedPostView: UIView, UICollectionViewDelegate, UICollectionViewDataSo
         cell?.nameLbl.text = nil
         cell?.priceLbl.text = nil
         cell?.likesLbl.text = "0"
+        cell?.imageView.alpha = 1.0
         cell?.isUserInteractionEnabled = false
+        cell?.productRemovedView.isHidden = true
+        cell?.isRemoved = false
         var product: Product!
         if vc is ExploreViewController{
             cell?.dotLabel.isHidden = false
@@ -99,7 +104,10 @@ class FeaturedPostView: UIView, UICollectionViewDelegate, UICollectionViewDataSo
         else if vc is FullOrderVC{
             cell?.dotLabel.isHidden = true
             cell?.thredIcon.isHidden = true
+            
             guard let orderProducts = order.products, orderProducts.indices.contains(indexPath.item), let price = orderProducts[indexPath.item].product?.price, let quantity = orderProducts[indexPath.item].quantity, let size = orderProducts[indexPath.item].size else{return cell!}
+            cell?.isRemoved = orderProducts[indexPath.item].isDeleted
+            
             product = orderProducts[indexPath.item].product
             cell?.nameLbl.text = product.name
             cell?.priceLbl.text = "\(quantity) x \(price.formatPrice())"
@@ -116,6 +124,9 @@ class FeaturedPostView: UIView, UICollectionViewDelegate, UICollectionViewDataSo
                     cell?.circularProgress.isHidden = true
                     cell?.canvasDisplayView.image = img
                     cell?.imageView.image = image
+                    if !(product.isAvailable ?? false){
+                        cell?.imageView.alpha = 0.5
+                    }
                     cell?.imageView.addShadowToImageNotLayer()
                 }
             }

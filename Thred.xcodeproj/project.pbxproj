@@ -28,6 +28,12 @@
 		AA2067C4243264F900459478 /* ReportScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA2067C3243264F900459478 /* ReportScreen.storyboard */; };
 		AA2067C624326A0A00459478 /* ReportVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2067C524326A0A00459478 /* ReportVC.swift */; };
 		AA242B00243542AC00C4DD24 /* UsernameSetupVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA242AFF243542AC00C4DD24 /* UsernameSetupVC.swift */; };
+		AA25B18F24A6B03A00C090CA /* SettingsVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA25B18E24A6B03A00C090CA /* SettingsVC.storyboard */; };
+		AA25B19124A6B0CD00C090CA /* ChangeEmailVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA25B19024A6B0CD00C090CA /* ChangeEmailVC.storyboard */; };
+		AA25B19324A6B0E400C090CA /* BankVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA25B19224A6B0E400C090CA /* BankVC.storyboard */; };
+		AA25B19524A7978F00C090CA /* CardVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA25B19424A7978F00C090CA /* CardVC.storyboard */; };
+		AA25B19724A7AD9800C090CA /* ChangePasswordVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA25B19624A7AD9800C090CA /* ChangePasswordVC.storyboard */; };
+		AA25B19924A7ADEC00C090CA /* AddressVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA25B19824A7ADEC00C090CA /* AddressVC.storyboard */; };
 		AA3151D123EC081E003BF268 /* akaDora.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA3151D023EC0800003BF268 /* akaDora.ttf */; };
 		AA44090A23EDFB75009F5774 /* TemplateCarousel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA44090923EDFB75009F5774 /* TemplateCarousel.swift */; };
 		AA44090E23F3DFC5009F5774 /* ProductInProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA44090D23F3DFC5009F5774 /* ProductInProgress.swift */; };
@@ -250,6 +256,12 @@
 		AA2067C3243264F900459478 /* ReportScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ReportScreen.storyboard; sourceTree = "<group>"; };
 		AA2067C524326A0A00459478 /* ReportVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportVC.swift; sourceTree = "<group>"; };
 		AA242AFF243542AC00C4DD24 /* UsernameSetupVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameSetupVC.swift; sourceTree = "<group>"; };
+		AA25B18E24A6B03A00C090CA /* SettingsVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = SettingsVC.storyboard; sourceTree = "<group>"; };
+		AA25B19024A6B0CD00C090CA /* ChangeEmailVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = ChangeEmailVC.storyboard; sourceTree = "<group>"; };
+		AA25B19224A6B0E400C090CA /* BankVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = BankVC.storyboard; sourceTree = "<group>"; };
+		AA25B19424A7978F00C090CA /* CardVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = CardVC.storyboard; sourceTree = "<group>"; };
+		AA25B19624A7AD9800C090CA /* ChangePasswordVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = ChangePasswordVC.storyboard; sourceTree = "<group>"; };
+		AA25B19824A7ADEC00C090CA /* AddressVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = AddressVC.storyboard; sourceTree = "<group>"; };
 		AA3151D023EC0800003BF268 /* akaDora.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = akaDora.ttf; sourceTree = "<group>"; };
 		AA44090923EDFB75009F5774 /* TemplateCarousel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateCarousel.swift; sourceTree = "<group>"; };
 		AA44090D23F3DFC5009F5774 /* ProductInProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductInProgress.swift; sourceTree = "<group>"; };
@@ -676,6 +688,12 @@
 				AAA4B03624269989007BC407 /* EditBioVC.storyboard */,
 				AAA4B0322426972C007BC407 /* FullProductVC.storyboard */,
 				AAA4B02E24269694007BC407 /* UserVC.storyboard */,
+				AA25B18E24A6B03A00C090CA /* SettingsVC.storyboard */,
+				AA25B19824A7ADEC00C090CA /* AddressVC.storyboard */,
+				AA25B19624A7AD9800C090CA /* ChangePasswordVC.storyboard */,
+				AA25B19424A7978F00C090CA /* CardVC.storyboard */,
+				AA25B19224A6B0E400C090CA /* BankVC.storyboard */,
+				AA25B19024A6B0CD00C090CA /* ChangeEmailVC.storyboard */,
 				AA05AFE6244A222E0009F5F1 /* UserListVC.storyboard */,
 				AAA4B02C24269676007BC407 /* NotificationVC.storyboard */,
 				AAA4B02A24269635007BC407 /* ExploreVC.storyboard */,
@@ -1063,6 +1081,7 @@
 				AAD3F3D02418ABE300F8FF8F /* orange.png in Resources */,
 				AAD3F421241DEDB900F8FF8F /* NotificationCell.xib in Resources */,
 				AAA4B029242695CF007BC407 /* FeedVC.storyboard in Resources */,
+				AA25B19124A6B0CD00C090CA /* ChangeEmailVC.storyboard in Resources */,
 				AAD3F3D82418ABE300F8FF8F /* gray4.png in Resources */,
 				AA453A8424366D9600BA2B12 /* EmptyCartView.xib in Resources */,
 				AAA4B02B24269635007BC407 /* ExploreVC.storyboard in Resources */,
@@ -1079,6 +1098,7 @@
 				AA2067C4243264F900459478 /* ReportScreen.storyboard in Resources */,
 				AAD3F3C82418ABE300F8FF8F /* blue2.png in Resources */,
 				AA02AA302429F00D0003CFCE /* PlaceholderVC.storyboard in Resources */,
+				AA25B18F24A6B03A00C090CA /* SettingsVC.storyboard in Resources */,
 				AAA4B03D24269A22007BC407 /* FriendVC.storyboard in Resources */,
 				AAD3F3D32418ABE300F8FF8F /* gray2.png in Resources */,
 				AA0B60B4243EDEAB00C7F3D9 /* FeaturedPostView.xib in Resources */,
@@ -1086,6 +1106,8 @@
 				AAABC06A23C9432700E48987 /* Nexa W01 Heavy.ttf in Resources */,
 				AAD3F3CD2418ABE300F8FF8F /* blue1.png in Resources */,
 				AAABC15F23C947AF00E48987 /* Main.storyboard in Resources */,
+				AA25B19324A6B0E400C090CA /* BankVC.storyboard in Resources */,
+				AA25B19724A7AD9800C090CA /* ChangePasswordVC.storyboard in Resources */,
 				AAD3F3C42418ABE300F8FF8F /* red3.png in Resources */,
 				AAD3F3DA2418ABE300F8FF8F /* purple.png in Resources */,
 				AA453A7C2435F3E900BA2B12 /* EmptyNotifView.xib in Resources */,
@@ -1097,6 +1119,7 @@
 				AA44092423F66DD1009F5774 /* HOPE-HYPE.ttf in Resources */,
 				AAA4B0332426972C007BC407 /* FullProductVC.storyboard in Resources */,
 				AAD3F3C52418ABE300F8FF8F /* red2.png in Resources */,
+				AA25B19524A7978F00C090CA /* CardVC.storyboard in Resources */,
 				AA4CE2772406F69B009BAC92 /* ExploreColorCell.xib in Resources */,
 				AAD3F3C32418ABE300F8FF8F /* red1.png in Resources */,
 				AA453A782435C8CB00BA2B12 /* EmptyProductsView.xib in Resources */,
@@ -1116,6 +1139,7 @@
 				AAA4B027242693AA007BC407 /* DesignVC.storyboard in Resources */,
 				AA4EAFE424904DFB00D4D144 /* EmptySalesView.xib in Resources */,
 				AAD3F3D22418ABE300F8FF8F /* cyan.png in Resources */,
+				AA25B19924A7ADEC00C090CA /* AddressVC.storyboard in Resources */,
 				AAD3F3D12418ABE300F8FF8F /* gray3.png in Resources */,
 				AAD3F3C72418ABE300F8FF8F /* blue3.png in Resources */,
 				AAD3F3D72418ABE300F8FF8F /* white.png in Resources */,
