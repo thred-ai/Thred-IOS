@@ -23,16 +23,16 @@
                     <toolbarItems/>
                     <navigationItem key="navigationItem" id="xna-bW-ePJ">
                         <rightBarButtonItems>
-                            <barButtonItem image="cart" id="JT7-L5-V00">
-                                <color key="tintColor" name="LoadingColor"/>
-                                <connections>
-                                    <action selector="toCart:" destination="5UA-1s-RDD" id="O1f-8I-3jb"/>
-                                </connections>
-                            </barButtonItem>
                             <barButtonItem image="cash" width="30" id="qVt-v0-Oyr">
                                 <color key="tintColor" name="LoadingColor"/>
                                 <connections>
                                     <action selector="toSales:" destination="5UA-1s-RDD" id="VWa-aK-dBQ"/>
+                                </connections>
+                            </barButtonItem>
+                            <barButtonItem image="cart" id="JT7-L5-V00">
+                                <color key="tintColor" name="LoadingColor"/>
+                                <connections>
+                                    <action selector="toCart:" destination="5UA-1s-RDD" id="O1f-8I-3jb"/>
                                 </connections>
                             </barButtonItem>
                         </rightBarButtonItems>

@@ -84,7 +84,7 @@ class FeaturedCell: UICollectionViewCell {
         // Initialization code
         
         circularProgress.progressColor = (UIColor(named: "loadingColor") ?? UIColor(red: 0.4235, green: 0.7863, blue: 0.9882, alpha: 1)) /* #e0e0e0 */
-        circularProgress.trackColor = ColorCompatibility.systemFill
+        circularProgress.trackColor = .systemFill
         productRemovedView.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.75)
         infoView.backgroundColor = UIColor(named: "ProfileMask")?.withAlphaComponent(0.4)
         

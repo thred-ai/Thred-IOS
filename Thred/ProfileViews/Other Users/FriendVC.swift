@@ -212,9 +212,9 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
                 self.checkAuthStatus {
                     self.refreshLists(userUID: userUID){
                         self.downloadUserInfo(uid: self.friendInfo.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: true, doNotDownloadDP: false, userInfoToUse: self.friendInfo, queryOnUsername: self.friendInfo.uid == nil, completed: {
-                            uid, fullName, username, dpID, notifID, bio, image, userFollowing, usersBlocking, postCount, followersCount, followingCount, profileLink   in
+                            uid, fullName, username, dpID, notifID, bio, image, userFollowing, usersBlocking, postCount, followersCount, followingCount in
                             if username != nil{
-                                self.setInfo(username: username, fullname: fullName, dpID: dpID, image: image, notifID: notifID, bio: bio, userFollowing: userFollowing, uid: uid, followerCount: followersCount, postCount: postCount, followingCount: followingCount, usersBlocking: usersBlocking, profileLink: profileLink)
+                                self.setInfo(username: username, fullname: fullName, dpID: dpID, image: image, notifID: notifID, bio: bio, userFollowing: userFollowing, uid: uid, followerCount: followersCount, postCount: postCount, followingCount: followingCount, usersBlocking: usersBlocking)
                                 if self.updateForBlocking() ?? false{
                                     return
                                 }
@@ -257,7 +257,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         self.tableView.reloadData()
     }
     
-    func setInfo(username: String?, fullname: String?, dpID: String?, image: Data?, notifID: String?, bio: String?, userFollowing: [String], uid: String?, followerCount: Int, postCount: Int, followingCount: Int, usersBlocking: [String], profileLink: URL?){
+    func setInfo(username: String?, fullname: String?, dpID: String?, image: Data?, notifID: String?, bio: String?, userFollowing: [String], uid: String?, followerCount: Int, postCount: Int, followingCount: Int, usersBlocking: [String]){
         
         guard let username = username else{return}
         guard let fullname = fullname else{return}
@@ -278,7 +278,6 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         friendInfo.followingCount = followingCount
         friendInfo.postCount = postCount
         friendInfo.usersBlocking = usersBlocking
-        friendInfo.profileLink = profileLink
         guard let img = image else{return}
         friendInfo.dp = img
     }
@@ -333,10 +332,10 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         guard let friendUID = friendInfo.uid else{return}
         guard let userUID = userInfo.uid else{return}
         if fromInterval == nil{
-            query = Firestore.firestore().collection("Users").document(friendUID).collection("Products").whereField("Timestamp", isLessThanOrEqualTo: Timestamp(date: Date())).whereField("Has_Picture", isEqualTo: true).whereField("Available", isEqualTo: true).limit(to: 8).order(by: "Timestamp", descending: true)
+            query = Firestore.firestore().collection("Users").document(friendUID).collection("Products").whereField("Public", isEqualTo: true).whereField("Timestamp", isLessThanOrEqualTo: Timestamp(date: Date())).whereField("Has_Picture", isEqualTo: true).whereField("Available", isEqualTo: true).limit(to: 8).order(by: "Timestamp", descending: true)
         }
         else if let lastDoc = lastDoc{
-            query = Firestore.firestore().collection("Users").document(friendUID).collection("Products").whereField("Has_Picture", isEqualTo: true).whereField("Available", isEqualTo: true).limit(to: 8).order(by: "Timestamp", descending: true).start(afterDocument: lastDoc)
+            query = Firestore.firestore().collection("Users").document(friendUID).collection("Products").whereField("Public", isEqualTo: true).whereField("Has_Picture", isEqualTo: true).whereField("Available", isEqualTo: true).limit(to: 8).order(by: "Timestamp", descending: true).start(afterDocument: lastDoc)
         }
         query.getDocuments(completion: { (snapDocuments, err) in
             if let err = err {
@@ -402,7 +401,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
                                     }
                                 }
                                 
-                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil, isAvailable: true)
+                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil, isAvailable: true, isPublic: true)
                                 
                                 productsToUse.append(product)
                                 
@@ -484,15 +483,15 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         
     }
     
-    override func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+    override func scrollViewDidScroll(_ scrollView: UIScrollView) {
         
-        if tableView.contentOffset.y >= (tableView.contentSize.height - tableView.frame.size.height){
+        if tableView.contentOffset.y >= (tableView.contentSize.height - tableView.frame.size.height) / 2{
             print("fromScroll")
             if let last = self.loadedProducts.last{
                 
                 if let interval = last.timestamp{
                     
-                    if !self.isLoading{
+                    if !self.isLoading, canLoadMore{
                         self.isLoading = true
                         self.getProducts(fromInterval: interval){ _,_ in
                             self.isLoading = false
@@ -503,6 +502,19 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
                     }
                 }
             }
+        }
+    }
+    
+    var canLoadMore = false
+    
+    override func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        let translation = scrollView.panGestureRecognizer.translation(in: scrollView.superview)
+        if translation.y > 0 {
+            canLoadMore = false
+            // swipes from top to bottom of screen -> down
+        } else {
+            canLoadMore = true
+            // swipes from bottom to top of screen -> up
         }
     }
     
@@ -584,7 +596,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         
         //view.translatesAutoresizingMaskIntoConstraints = false
        
-        view.backgroundColor = ColorCompatibility.systemBackground.withAlphaComponent(0.9)
+        view.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.9)
 
         let stackView = UIStackView.init(frame: view.bounds)
         stackView.axis = .horizontal
@@ -599,7 +611,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         
         optionMenuActionBtn1 = UIButton.init(frame: CGRect(x: 0, y:0, width: buttonSize, height: buttonSize))
         optionMenuActionBtn1.setTitle("Report", for: .normal)
-        optionMenuActionBtn1.backgroundColor = ColorCompatibility.tertiarySystemFill
+        optionMenuActionBtn1.backgroundColor = .tertiarySystemFill
         optionMenuActionBtn1.setTitleColor(UIColor(named: "LoadingColor"), for: .normal)
         optionMenuActionBtn1.layer.cornerRadius = optionMenuActionBtn1.frame.height / 2
         optionMenuActionBtn1.clipsToBounds = true
@@ -613,7 +625,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         optionMenuActionBtn2 = UIButton.init(frame: CGRect(x: 0, y:0, width: buttonSize, height: buttonSize))
         optionMenuActionBtn2.setTitle("Block", for: .normal)
         optionMenuActionBtn2.setTitleColor(.red, for: .normal)
-        optionMenuActionBtn2.backgroundColor = ColorCompatibility.tertiarySystemFill
+        optionMenuActionBtn2.backgroundColor = .tertiarySystemFill
         optionMenuActionBtn2.setTitleColor(.red, for: .normal)
         optionMenuActionBtn2.layer.cornerRadius = optionMenuActionBtn2.frame.height / 2
         optionMenuActionBtn2.clipsToBounds = true
@@ -629,8 +641,8 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         let optionMenuView3 = UIView.init(frame: CGRect(x: 0, y:0, width: stackView.frame.width / 3, height: stackView.frame.height))
         optionMenuCancelBtn = UIButton.init(frame: CGRect(x: 0, y:0, width: buttonSize, height: buttonSize))
         optionMenuCancelBtn.setTitle("Cancel", for: .normal)
-        optionMenuCancelBtn.backgroundColor = ColorCompatibility.tertiarySystemFill
-        optionMenuCancelBtn.setTitleColor(ColorCompatibility.label, for: .normal)
+        optionMenuCancelBtn.backgroundColor = .tertiarySystemFill
+        optionMenuCancelBtn.setTitleColor(.label, for: .normal)
         optionMenuCancelBtn.layer.cornerRadius = optionMenuCancelBtn.frame.height / 2
         optionMenuCancelBtn.clipsToBounds = true
         optionMenuCancelBtn.center = optionMenuView3.center

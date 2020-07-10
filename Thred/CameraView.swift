@@ -222,7 +222,7 @@ class CameraView: UIView, AVCapturePhotoCaptureDelegate{
         useBtn.setImage(UIImage.init(named: "SendIcon"), for: .normal)
         
         addUseImageButtonTarget()
-        useBtn.backgroundColor = ColorCompatibility.systemBackground
+        useBtn.backgroundColor = .systemBackground
         
         useBtn.layer.borderColor = UIColor.cyan.cgColor
         useBtn.layer.borderWidth = 2

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
-    <device id="retina5_9" orientation="portrait" appearance="light"/>
+    <device id="retina5_9" orientation="portrait" appearance="dark"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
@@ -155,8 +155,8 @@
                                         <color key="progressTintColor" name="LoadingColor"/>
                                         <color key="trackTintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     </progressView>
-                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="v6d-vm-nET">
-                                        <rect key="frame" x="0.0" y="7" width="355" height="199.66666666666666"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="v6d-vm-nET">
+                                        <rect key="frame" x="0.0" y="7" width="355" height="159.66666666666666"/>
                                         <subviews>
                                             <pageControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" numberOfPages="2" translatesAutoresizingMaskIntoConstraints="NO" id="QJ0-di-uaQ">
                                                 <rect key="frame" x="0.0" y="0.0" width="355" height="10"/>
@@ -167,7 +167,7 @@
                                                 <color key="currentPageIndicatorTintColor" name="LoadingColor"/>
                                             </pageControl>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="wtY-5w-tiQ">
-                                                <rect key="frame" x="0.0" y="10" width="355" height="55"/>
+                                                <rect key="frame" x="0.0" y="15" width="355" height="55"/>
                                                 <subviews>
                                                     <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="TO4-oZ-Ckh">
                                                         <rect key="frame" x="0.0" y="0.0" width="355" height="30"/>
@@ -218,7 +218,7 @@
                                                 </subviews>
                                             </stackView>
                                             <textView clipsSubviews="YES" contentMode="scaleToFill" verticalHuggingPriority="1000" bounces="NO" scrollEnabled="NO" editable="NO" text="&quot;Description&quot;" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="9vJ-jq-xDm">
-                                                <rect key="frame" x="0.0" y="65" width="355" height="109.66666666666669"/>
+                                                <rect key="frame" x="0.0" y="75" width="355" height="54.666666666666657"/>
                                                 <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                                 <color key="textColor" systemColor="tertiaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.29999999999999999" colorSpace="custom" customColorSpace="sRGB"/>
                                                 <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="15"/>
@@ -226,7 +226,7 @@
                                                 <dataDetectorType key="dataDetectorTypes" link="YES"/>
                                             </textView>
                                             <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="LIG-Ul-qC6">
-                                                <rect key="frame" x="0.0" y="174.66666666666663" width="355" height="25"/>
+                                                <rect key="frame" x="0.0" y="134.66666666666663" width="355" height="25"/>
                                                 <subviews>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="leading" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Asy-BI-E8W">
                                                         <rect key="frame" x="0.0" y="0.0" width="208.33333333333334" height="25"/>
@@ -255,6 +255,37 @@
                                             </stackView>
                                         </subviews>
                                     </stackView>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ZeA-Sd-EH3">
+                                        <rect key="frame" x="0.0" y="171.66666666666663" width="355" height="35"/>
+                                        <subviews>
+                                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="aXQ-XQ-pgd">
+                                                <rect key="frame" x="10" y="0.0" width="345" height="35"/>
+                                                <subviews>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="leading" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="x4V-69-5fI">
+                                                        <rect key="frame" x="0.0" y="0.0" width="154" height="35"/>
+                                                        <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="15"/>
+                                                        <state key="normal" title="This product is private">
+                                                            <color key="titleColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+                                                        </state>
+                                                        <connections>
+                                                            <action selector="privateBannerTapped:" destination="qto-th-NSw" eventType="touchUpInside" id="8YI-VY-smN"/>
+                                                        </connections>
+                                                    </button>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="CLm-lK-adG">
+                                                        <rect key="frame" x="154" y="0.0" width="191" height="35"/>
+                                                    </view>
+                                                </subviews>
+                                            </stackView>
+                                        </subviews>
+                                        <color key="backgroundColor" systemColor="secondarySystemBackgroundColor" red="0.94901960780000005" green="0.94901960780000005" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <constraints>
+                                            <constraint firstAttribute="trailing" secondItem="aXQ-XQ-pgd" secondAttribute="trailing" id="4O0-ry-DnV"/>
+                                            <constraint firstItem="aXQ-XQ-pgd" firstAttribute="leading" secondItem="ZeA-Sd-EH3" secondAttribute="leading" constant="10" id="J8q-qt-a4K"/>
+                                            <constraint firstAttribute="height" constant="35" id="b8d-NQ-hKp"/>
+                                            <constraint firstAttribute="bottom" secondItem="aXQ-XQ-pgd" secondAttribute="bottom" id="nil-Wo-1Ds"/>
+                                            <constraint firstItem="aXQ-XQ-pgd" firstAttribute="top" secondItem="ZeA-Sd-EH3" secondAttribute="top" id="t55-A7-ED7"/>
+                                        </constraints>
+                                    </view>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="BAQ-UJ-ZMU">
                                         <rect key="frame" x="0.0" y="211.66666666666663" width="355" height="0.33333333333334281"/>
                                         <color key="backgroundColor" red="0.754" green="0.75408679249999999" blue="0.75407713649999997" alpha="0.5" colorSpace="custom" customColorSpace="sRGB"/>
@@ -462,6 +493,7 @@
                 <outlet property="optionMenuCancelBtn" destination="Vwr-ub-uax" id="06u-gu-kzU"/>
                 <outlet property="pageControl" destination="QJ0-di-uaQ" id="UoE-Cz-gWx"/>
                 <outlet property="price" destination="Aq5-4R-7E4" id="rFK-UQ-cx2"/>
+                <outlet property="privateBanner" destination="ZeA-Sd-EH3" id="Ntw-No-SDo"/>
                 <outlet property="productDescription" destination="9vJ-jq-xDm" id="VEw-jb-bY6"/>
                 <outlet property="progressView" destination="AOj-h8-EtN" id="PvS-6m-NcP"/>
                 <outlet property="shareBtn" destination="vvC-gw-8qY" id="iZs-O7-r0D"/>

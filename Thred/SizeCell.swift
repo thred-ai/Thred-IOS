@@ -40,13 +40,13 @@ class SizeCell: UITableViewCell, UIPickerViewDelegate, UIPickerViewDataSource {
     
     lazy var toolBar: UIView = {
         let bar = UIView(frame: CGRect(x: 0, y: 0, width: self.contentView.frame.width, height: 45))
-        bar.backgroundColor = ColorCompatibility.systemBackground.withAlphaComponent(0.8)
+        bar.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.8)
         let stackView = UIStackView(frame: bar.frame)
         bar.addSubview(stackView)
         let button = UIButton(frame: CGRect(x: 0, y: 0, width: 45, height: 45))
         button.setTitle("Done", for: .normal)
         
-        button.setTitleColor(ColorCompatibility.label, for: .normal)
+        button.setTitleColor(.label, for: .normal)
         button.addTarget(self, action: #selector(doneEditing(_:)), for: .touchUpInside)
         stackView.addArrangedSubview(button)
         

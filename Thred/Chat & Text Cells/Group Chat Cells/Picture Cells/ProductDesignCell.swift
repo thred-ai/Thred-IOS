@@ -22,7 +22,7 @@ class ProductDesignCell: UICollectionViewCell, UIGestureRecognizerDelegate {
         if !self.imageView.subviews.contains(circularProgress){
             circularProgress.isHidden = true
             circularProgress.progressColor = (UIColor(named: "loadingColor") ?? UIColor(red: 0.4235, green: 0.7863, blue: 0.9882, alpha: 1)) /* #e0e0e0 */
-            circularProgress.trackColor = ColorCompatibility.systemFill
+            circularProgress.trackColor = .systemFill
             circularProgress.translatesAutoresizingMaskIntoConstraints = false
             self.imageView.addSubview(circularProgress)
             self.bringSubviewToFront(circularProgress)

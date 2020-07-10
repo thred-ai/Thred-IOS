@@ -19,7 +19,7 @@ extension UITableView{
         print(uid)
         
         guard let vc = feedVC ?? fullVC ?? friendVC ?? userVC else{return}
-        vc.downloadUserInfo(uid: uid, userVC: userVC, feedVC: feedVC, downloadingPersonalDP: false, doNotDownloadDP: false, userInfoToUse: nil, queryOnUsername: false, completed: {[weak self] uid, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followersCount, followingCount, profileLink  in
+        vc.downloadUserInfo(uid: uid, userVC: userVC, feedVC: feedVC, downloadingPersonalDP: false, doNotDownloadDP: false, userInfoToUse: nil, queryOnUsername: false, completed: {[weak self] uid, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followersCount, followingCount  in
             
             if username != nil{
                 if userVC != nil{
@@ -32,7 +32,7 @@ extension UITableView{
                     friendVC?.downloadingProfiles.removeAll(where: {$0 == uid})
                 }
                 
-                self?.setCellUserInfo(userInfo: UserInfo(uid: uid, dp: imgData, dpID: dpUID, username: username, fullName: fullName, bio: bio, notifID: notifID, userFollowing: userFollowing, userLiked: [], followerCount: followersCount, postCount: postCount, followingCount: followingCount, usersBlocking: usersBlocking, profileLink: profileLink), feedVC: feedVC, userVC: userVC, friendVC: friendVC, fullVC: fullVC, section: section)
+                self?.setCellUserInfo(userInfo: UserInfo(uid: uid, dp: imgData, dpID: dpUID, username: username, fullName: fullName, bio: bio, notifID: notifID, userFollowing: userFollowing, userLiked: [], followerCount: followersCount, postCount: postCount, followingCount: followingCount, usersBlocking: usersBlocking, profileLink: nil), feedVC: feedVC, userVC: userVC, friendVC: friendVC, fullVC: fullVC, section: section)
             }
         })
     }
@@ -141,7 +141,7 @@ extension UITableViewCell{
 
 
 extension UIViewController{
-    func downloadUserInfo(uid: String?, userVC: UserVC?, feedVC: FeedVC?, downloadingPersonalDP: Bool, doNotDownloadDP: Bool, userInfoToUse: UserInfo?, queryOnUsername: Bool, completed: @escaping (String?, String?, String?, String?, String?, String?, Data?, [String], [String], Int, Int, Int, URL?) -> ()){
+    func downloadUserInfo(uid: String?, userVC: UserVC?, feedVC: FeedVC?, downloadingPersonalDP: Bool, doNotDownloadDP: Bool, userInfoToUse: UserInfo?, queryOnUsername: Bool, completed: @escaping (String?, String?, String?, String?, String?, String?, Data?, [String], [String], Int, Int, Int) -> ()){
         
         let ref = Firestore.firestore().collection("Users")
 
@@ -164,13 +164,13 @@ extension UIViewController{
         query.getDocuments(){(querySnaps, err) in
             if err != nil{
                 print("Error getting documents: \(err?.localizedDescription ?? "")") // LOCALIZED DESCRIPTION OF ERROR
-                completed(nil, nil, nil, nil, nil, nil, userInfoToUse?.dp ?? defaultDP, [], [], 0, 0, 0, nil)
+                completed(nil, nil, nil, nil, nil, nil, userInfoToUse?.dp ?? defaultDP, [], [], 0, 0, 0)
                 return
             }
             else{
                 
                 guard let snapDocs = querySnaps?.documents, !snapDocs.isEmpty else{
-                    completed(nil, nil, nil, nil, nil, nil, userInfoToUse?.dp ?? defaultDP, [], [], 0, 0, 0, nil)
+                    completed(nil, nil, nil, nil, nil, nil, userInfoToUse?.dp ?? defaultDP, [], [], 0, 0, 0)
                     return
                 }
                 
@@ -185,15 +185,14 @@ extension UIViewController{
                     let followerCount = (document["Followers_Count"] as? Int) ?? 0
                     let followingCount = (document["Following_Count"] as? Int) ?? 0
                     let postCount = (document["Posts_Count"] as? Int) ?? 0
-                    let profileLink = URL(string: (document["ProfileLink"] as? String) ?? "")
                     
                     if userInfo.usersBlocking.contains(document.documentID){
-                        completed(document.documentID, fullName, username, nil, notifID, bio, nil, userFollowing, usersBlocking, postCount, followerCount, followingCount, profileLink)
+                        completed(document.documentID, fullName, username, nil, notifID, bio, nil, userFollowing, usersBlocking, postCount, followerCount, followingCount)
                         return
                     }
                     
                     if doNotDownloadDP{
-                        completed(document.documentID, fullName, username, nil, notifID, bio, nil, userFollowing, usersBlocking, postCount, followerCount, followingCount, profileLink)
+                        completed(document.documentID, fullName, username, nil, notifID, bio, nil, userFollowing, usersBlocking, postCount, followerCount, followingCount)
                         return
                     }
                     var options = SDWebImageOptions(arrayLiteral: [.scaleDownLargeImages, .continueInBackground])
@@ -205,11 +204,11 @@ extension UIViewController{
                     }
                     
                     if let image = cache.imageFromCache(forKey: dpUID){
-                        completed(document.documentID, fullName, username, dpUID, notifID, bio, image.jpegData(compressionQuality: 1.0), userFollowing, usersBlocking, postCount, followerCount, followingCount, profileLink)
+                        completed(document.documentID, fullName, username, dpUID, notifID, bio, image.jpegData(compressionQuality: 1.0), userFollowing, usersBlocking, postCount, followerCount, followingCount)
                         return
                     }
                     else{
-                        completed(document.documentID, fullName, username, dpUID, notifID, bio, nil, userFollowing, usersBlocking, postCount, followerCount, followingCount, profileLink)
+                        completed(document.documentID, fullName, username, dpUID, notifID, bio, nil, userFollowing, usersBlocking, postCount, followerCount, followingCount)
                     }
                     storageRef?.downloadURL(completion: { url, error in
                         if error != nil{
@@ -228,7 +227,7 @@ extension UIViewController{
                                             if userVC != nil || feedVC != nil{
                                                 cache.storeImageData(toDisk: imgData, forKey: dpUID)
                                             }
-                                            completed(document.documentID, fullName, username, dpUID, notifID, bio, data, userFollowing, usersBlocking, postCount, followerCount, followingCount, profileLink)
+                                            completed(document.documentID, fullName, username, dpUID, notifID, bio, data, userFollowing, usersBlocking, postCount, followerCount, followingCount)
                                         }
                                     }
                                 }

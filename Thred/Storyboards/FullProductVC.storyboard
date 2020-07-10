@@ -138,16 +138,16 @@
                     <toolbarItems/>
                     <navigationItem key="navigationItem" id="ImL-Gh-i3O">
                         <rightBarButtonItems>
-                            <barButtonItem image="cart" id="O5f-Gv-QiG">
-                                <color key="tintColor" name="LoadingColor"/>
-                                <connections>
-                                    <action selector="toCart:" destination="TTd-by-I1I" id="5hh-4n-F35"/>
-                                </connections>
-                            </barButtonItem>
                             <barButtonItem image="cash" id="YFD-Pg-SKD">
                                 <color key="tintColor" name="LoadingColor"/>
                                 <connections>
                                     <action selector="toSales:" destination="TTd-by-I1I" id="TwE-gI-cah"/>
+                                </connections>
+                            </barButtonItem>
+                            <barButtonItem image="cart" id="O5f-Gv-QiG">
+                                <color key="tintColor" name="LoadingColor"/>
+                                <connections>
+                                    <action selector="toCart:" destination="TTd-by-I1I" id="5hh-4n-F35"/>
                                 </connections>
                             </barButtonItem>
                         </rightBarButtonItems>

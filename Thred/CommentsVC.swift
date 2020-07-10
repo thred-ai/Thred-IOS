@@ -136,7 +136,7 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
         bottomBarInnerView.clipsToBounds = true
         bottomBarInnerView.layer.borderColor = UIColor(named: "ProfileMask")?.cgColor
         bottomBarInnerView.layer.borderWidth = 1.5
-        setPlaceholder(textView: textView, textColor: ColorCompatibility.tertiaryLabel)
+        setPlaceholder(textView: textView, textColor: .tertiaryLabel)
         view.addSubview(taggingTableView)
         taggingTableView.isHidden = true
         
@@ -177,17 +177,29 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
     }
     
     var isLoading = false
-    
-    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        
-        if tableView.contentOffset.y >= (tableView.contentSize.height - tableView.frame.size.height){
+
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        if tableView.contentOffset.y >= (tableView.contentSize.height - tableView.frame.size.height) / 2{
             print("fromScroll")
-            if !self.isLoading{
-                self.isLoading = true
-                self.getComments(isRefreshing: false){
+            if !isLoading, canLoadMore{
+                isLoading = true
+                getComments(isRefreshing: false){
                     self.isLoading = false
                 }
             }
+        }
+    }
+    
+    var canLoadMore = false
+    
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        let translation = scrollView.panGestureRecognizer.translation(in: scrollView.superview)
+        if translation.y > 0 {
+            canLoadMore = false
+            // swipes from top to bottom of screen -> down
+        } else {
+            canLoadMore = true
+            // swipes from bottom to top of screen -> up
         }
     }
     
@@ -261,7 +273,7 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
         
         if tableView == self.tableView{
             let cell = tableView.dequeueReusableCell(withIdentifier: "CommentCell", for: indexPath) as? CommentCell
-            cell?.backgroundColor = ColorCompatibility.systemBackground
+            cell?.backgroundColor = .systemBackground
             let comment = comments[indexPath.row]
             cell?.comment = comment
             cell?.fullNameLbl.text = nil
@@ -324,7 +336,7 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
                 default:
                     if !downloadingProfiles.contains(uid){
                         downloadingProfiles.append(uid)
-                        self.downloadUserInfo(uid: uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: false, userInfoToUse: comment.userInfo, queryOnUsername: false, completed: { uid, fullName, username, dpUID, notifID, bio, img, userFollowing, usersBlocking, postCount, followersCount, followingCount, profileLink  in
+                        self.downloadUserInfo(uid: uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: false, userInfoToUse: comment.userInfo, queryOnUsername: false, completed: { uid, fullName, username, dpUID, notifID, bio, img, userFollowing, usersBlocking, postCount, followersCount, followingCount  in
                             self.downloadingProfiles.removeAll(where: {$0 == uid})
                             
                             if usersBlocking.contains(userUID){
@@ -339,7 +351,6 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
                             comment.userInfo.postCount = postCount
                             comment.userInfo.followerCount = followersCount
                             comment.userInfo.followingCount = followingCount
-                            comment.userInfo.profileLink = profileLink
 
                             cell?.fullNameLbl.text = fullName ?? "null"
                             cell?.usernameLbl.text = "@\(username ?? "null")"
@@ -405,7 +416,7 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
         if selectedComment != nil{
             if let cell = self.tableView.cellForRow(at: IndexPath(row: 0, section: 0)){
                 UIView.animate(withDuration: 0.25, animations: {
-                    cell.backgroundColor = ColorCompatibility.tertiarySystemGroupedBackground
+                    cell.backgroundColor = .tertiarySystemGroupedBackground
                 })
             }
         }
@@ -567,13 +578,12 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
                                 let followingCount = document["Following_Count"] as? Int
                                 let postCount = document["Posts_Count"] as? Int
                                 let usersBlocking = document["Users_Blocking"] as? [String]
-                                let profileLink = URL(string: (document["ProfileLink"] as? String) ?? "")
 
                                 if usersBlocking?.contains(userUID) ?? false{
                                     continue
                                 }
                                 
-                                let user = UserInfo(uid: uid, dp: nil, dpID: dpLink, username: username, fullName: fullname, bio: bio, notifID: nil, userFollowing: userFollowing ?? [], userLiked: [], followerCount: followerCount ?? 0, postCount: postCount ?? 0, followingCount: followingCount ?? 0, usersBlocking: usersBlocking ?? [], profileLink: profileLink)
+                                let user = UserInfo(uid: uid, dp: nil, dpID: dpLink, username: username, fullName: fullname, bio: bio, notifID: nil, userFollowing: userFollowing ?? [], userLiked: [], followerCount: followerCount ?? 0, postCount: postCount ?? 0, followingCount: followingCount ?? 0, usersBlocking: usersBlocking ?? [], profileLink: nil)
 
                                 self.loadedUsers.append(user)
                                 self.taggingTableView.reloadData()
@@ -642,7 +652,7 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
         let tableView = UITableView.init(frame: CGRect(x: 0, y: bottomBar.frame.origin.y, width: view.frame.width, height: 100))
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.backgroundColor = ColorCompatibility.systemBackground.withAlphaComponent(0.95)
+        tableView.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.95)
         tableView.register(UINib(nibName: "SearchUserTableViewCell", bundle: nil), forCellReuseIdentifier: "search")
         tableView.separatorStyle = .none
         

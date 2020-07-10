@@ -58,7 +58,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
     func getFeaturedPost(){
         
         guard let userUID = userInfo.uid else{return}
-        Firestore.firestore().collectionGroup("Products").whereField("Timestamp", isGreaterThan: Timestamp(date: Date().adding(hours: -120))).order(by: "Timestamp").whereField("Blurred", isEqualTo: false).whereField("Has_Picture", isEqualTo: true).whereField("Available", isEqualTo: true).order(by: "Likes", descending: true).limit(to: 5).getDocuments(completion: { docs, error in
+        Firestore.firestore().collectionGroup("Products").whereField("Public", isEqualTo: true).whereField("Timestamp", isGreaterThan: Timestamp(date: Date().adding(hours: -120))).order(by: "Timestamp").whereField("Blurred", isEqualTo: false).whereField("Has_Picture", isEqualTo: true).whereField("Available", isEqualTo: true).order(by: "Likes", descending: true).limit(to: 5).getDocuments(completion: { docs, error in
             
             if let err = error{
                 print(err.localizedDescription)
@@ -102,7 +102,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                             }
                         }
                         
-                        let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: nil, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil, isAvailable: true)
+                        let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: nil, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil, isAvailable: true, isPublic: true)
                         
                         self.featuredHeader.featuredProducts.append(product)
                         
@@ -197,12 +197,27 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
         selectedUser = nil
         if let indexPath = searchUsersTable?.indexPathForSelectedRow{
             searchUsersTable?.deselectRow(at: indexPath, animated: true)
+            searchUsersTable.performBatchUpdates({
+                searchUsersTable.reloadRows(at: [indexPath], with: .none)
+            }, completion: nil)
         }
         if let indexPath = searchProductsTable?.indexPathForSelectedRow{
             searchProductsTable?.deselectRow(at: indexPath, animated: true)
+            searchProductsTable.performBatchUpdates({
+                searchProductsTable.reloadRows(at: [indexPath], with: .none)
+            }, completion: nil)
         }
         if let indexPath = tableView.indexPathForSelectedRow{
             tableView.deselectRow(at: indexPath, animated: true)
+            tableView.performBatchUpdates({
+                tableView.reloadRows(at: [indexPath], with: .none)
+            }, completion: nil)
+        }
+        if let indexPath = featuredHeader.collectionView?.indexPathsForSelectedItems?.first{
+            featuredHeader.collectionView?.deselectItem(at: indexPath, animated: true)
+            featuredHeader.collectionView?.performBatchUpdates({
+                featuredHeader.collectionView?.reloadItems(at: [indexPath])
+            }, completion: nil)
         }
         
         
@@ -398,7 +413,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
             cell?.priceLbl.text = nil
             cell?.likesLbl.text = nil
             cell?.productNameLbl.text = nil
-            cell?.productImageView.backgroundColor = ColorCompatibility.secondarySystemBackground
+            cell?.productImageView.backgroundColor = .secondarySystemBackground
             cell?.quantityView.isHidden = true
             cell?.sizingLbl.isHidden = true
             cell?.likesView.isHidden = false
@@ -422,6 +437,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
+    
    
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -437,13 +453,13 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         let insets = self.view.safeAreaInsets
         let view = UIView.init(frame: CGRect(x: 0, y: insets.top, width: self.view.frame.width, height: self.view.frame.height - (insets.top + insets.bottom)))
-        view.backgroundColor = ColorCompatibility.secondarySystemBackground.withAlphaComponent(1)
+        view.backgroundColor = UIColor.secondarySystemBackground.withAlphaComponent(1)
 
         topTab = UISegmentedControl.init(frame: CGRect(x: 5, y: 5, width: view.frame.width - 10, height: 30))
         topTab.setTitleFont(UIFont(name: "NexaW01-Heavy", size: 14)!)
         topTab.setTitleColor(.white)
         topTab.selectedSegmentTintColor = UIColor(named: "LoadingColor")
-        topTab.backgroundColor = ColorCompatibility.systemGroupedBackground
+        topTab.backgroundColor = .systemGroupedBackground
         topTab.insertSegment(withTitle: "Users", at: 0, animated: false)
         
         topTab.insertSegment(withTitle: "Threds", at: 1, animated: false)
@@ -556,13 +572,12 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                                 let followingCount = document["Following_Count"] as? Int
                                 let postCount = document["Posts_Count"] as? Int
                                 let usersBlocking = document["Users_Blocking"] as? [String]
-                                let profileLink = URL(string: (document["ProfileLink"] as? String) ?? "")
 
                                 if userInfo.usersBlocking.contains(uid){
                                     continue
                                 }
                                 
-                                let user = UserInfo(uid: uid, dp: nil, dpID: dpLink, username: username, fullName: fullname, bio: bio, notifID: nil, userFollowing: userFollowing ?? [], userLiked: [], followerCount: followerCount ?? 0, postCount: postCount ?? 0, followingCount: followingCount ?? 0, usersBlocking: usersBlocking ?? [], profileLink: profileLink)
+                                let user = UserInfo(uid: uid, dp: nil, dpID: dpLink, username: username, fullName: fullname, bio: bio, notifID: nil, userFollowing: userFollowing ?? [], userLiked: [], followerCount: followerCount ?? 0, postCount: postCount ?? 0, followingCount: followingCount ?? 0, usersBlocking: usersBlocking ?? [], profileLink: nil)
 
                                 if uid == userInfo.uid{
                                     user.dp = userInfo.dp
@@ -610,6 +625,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     
     func searchProducts(searchText: String){
+        guard let userUID = userInfo.uid else{return}
         if searchText == ""{
             searchedProducts.removeAll()
             searchProductsTable.reloadData()
@@ -618,7 +634,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
         else{
             //searchBar.isLoading = true
             Firestore.firestore().collectionGroup("Products")
-                .whereField("Search_Name", isGreaterThanOrEqualTo: searchText).whereField("Search_Name", isLessThanOrEqualTo: searchText + "\u{f8ff}").whereField("Available", isEqualTo: true).limit(to: 8).getDocuments(completion: { query, error in
+                .whereField("Search_Name", isGreaterThanOrEqualTo: searchText).whereField("Search_Name", isLessThanOrEqualTo: searchText + "\u{f8ff}").whereField("Public", isEqualTo: true).whereField("Available", isEqualTo: true).limit(to: 8).getDocuments(completion: { query, error in
                 
                 //searchBar.isLoading = false
                 if error != nil{
@@ -650,38 +666,61 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                                 let comments = ((document["Comments"]) as? Int) ?? 0
                                 let productID = document.documentID
                                 
-                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: productID, description: description, productID: productID, timestamp: timestamp, index: 0, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(productID), designImage: nil, comments: comments, link: nil, isAvailable: true)
+                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: productID, description: description, productID: productID, timestamp: timestamp, index: 0, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(productID), designImage: nil, comments: comments, link: nil, isAvailable: true, isPublic: true)
 
-                                self.searchedProducts.append(product)
-                                self.searchedProducts.sort(by: {$0.likes > $1.likes})
-                                self.searchProductsTable.reloadData()
+                                Firestore.firestore().collection("Users").document(uid).collection("Products").document(productID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userUID).getDocuments(completion: { snapLikes, error in
                                 
-                                let ref = Storage.storage().reference().child("Users/" + uid + "/" + "Products/" + productID + "/" + "thumbnail_\(productID)" + ".png")
-                                ref.downloadURL(completion: { url, error in
                                     if error != nil{
                                         print(error?.localizedDescription ?? "")
                                     }
                                     else{
-                                        var dub: CGFloat = 0
-                                        downloader.requestImage(with: url, options: [.highPriority, .continueInBackground, .scaleDownLargeImages], context: nil, progress: { (receivedSize: Int, expectedSize: Int, link) -> Void in
-                                            dub = CGFloat(receivedSize) / CGFloat(expectedSize)
-                                            print("Progress \(dub)")
-                                        }, completed: { (image, data, error, finished) in
-                                            if error != nil{
-                                                print(error?.localizedDescription ?? "")
+                                        userInfo.userLiked.removeAll(where: {$0 == productID})
+                                        if let likeDocs = snapLikes?.documents{
+                                            if likeDocs.isEmpty{
+                                                product.liked = false
                                             }
                                             else{
-                                                if let image = image{
-                                                    cache.storeImage(toMemory: image, forKey: "thumbnail_\(productID)")
-                                                    if let index = self.searchedProducts.firstIndex(where: {$0.productID == document.documentID}){
-                                                        self.searchProductsTable.performBatchUpdates({
-                                                            self.searchProductsTable.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
-                                                        }, completion: nil)
-                                                    }
+                                                product.liked = true
+                                                if !(userInfo.userLiked.contains(productID)){
+                                                    userInfo.userLiked.append(productID)
                                                 }
                                             }
-                                        })
+                                        }
+                                        else{
+                                            product.liked = false
+                                        }
                                     }
+                                    self.searchedProducts.append(product)
+                                    self.searchedProducts.sort(by: {$0.likes > $1.likes})
+                                    self.searchProductsTable.reloadData()
+                                    
+                                    let ref = Storage.storage().reference().child("Users/" + uid + "/" + "Products/" + productID + "/" + "thumbnail_\(productID)" + ".png")
+                                    ref.downloadURL(completion: { url, error in
+                                        if error != nil{
+                                            print(error?.localizedDescription ?? "")
+                                        }
+                                        else{
+                                            var dub: CGFloat = 0
+                                            downloader.requestImage(with: url, options: [.highPriority, .continueInBackground, .scaleDownLargeImages], context: nil, progress: { (receivedSize: Int, expectedSize: Int, link) -> Void in
+                                                dub = CGFloat(receivedSize) / CGFloat(expectedSize)
+                                                print("Progress \(dub)")
+                                            }, completed: { (image, data, error, finished) in
+                                                if error != nil{
+                                                    print(error?.localizedDescription ?? "")
+                                                }
+                                                else{
+                                                    if let image = image{
+                                                        cache.storeImage(toMemory: image, forKey: "thumbnail_\(productID)")
+                                                        if let index = self.searchedProducts.firstIndex(where: {$0.productID == document.documentID}){
+                                                            self.searchProductsTable.performBatchUpdates({
+                                                                self.searchProductsTable.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
+                                                            }, completion: nil)
+                                                        }
+                                                    }
+                                                }
+                                            })
+                                        }
+                                    })
                                 })
                             }
                         }

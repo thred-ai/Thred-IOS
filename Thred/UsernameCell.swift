@@ -16,7 +16,7 @@ class UsernameCell: UITableViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
-        usernameField.backgroundColor = ColorCompatibility.secondarySystemBackground
+        usernameField.backgroundColor = .secondarySystemBackground
     }
     
     override func layoutSubviews() {
@@ -26,7 +26,7 @@ class UsernameCell: UITableViewCell {
     
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
-        self.backgroundColor = ColorCompatibility.systemBackground
+        self.backgroundColor = .systemBackground
         // Configure the view for the selected state
     }
 

@@ -46,16 +46,17 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
     func getProducts(completed: @escaping ()->()){
         
         if postArray == nil{
-            
+            guard let userUID = userInfo.uid else{completed(); return}
             postArray = [Product]()
             
             let color = templateColor
-            Firestore.firestore().collectionGroup("Products").whereField("Template_Color", isEqualTo: templateColor ?? "").whereField("Has_Picture", isEqualTo: true).whereField("Blurred", isEqualTo: false).whereField("Available", isEqualTo: true).order(by: "Likes", descending: true).limit(to: 8).getDocuments(completion: { snaps, err in
+            Firestore.firestore().collectionGroup("Products").whereField("Template_Color", isEqualTo: templateColor ?? "").whereField("Has_Picture", isEqualTo: true).whereField("Blurred", isEqualTo: false).whereField("Public", isEqualTo: true).whereField("Available", isEqualTo: true).order(by: "Likes", descending: true).limit(to: 8).getDocuments(completion: { snaps, err in
                 if err != nil{
                     completed()
                     print(err?.localizedDescription ?? "")
                 }
                 else{
+                    
                     for (index, snap) in (snaps?.documents ?? []).enumerated(){ // LOADED DOCUMENTS FROM \(snapDocuments)
                         let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
                         let uid = snap["UID"] as! String
@@ -69,17 +70,44 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
                         if userInfo.usersBlocking.contains(uid){
                             continue
                         }
-                        if self.templateColor == color{
-                            self.postArray?.append(Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: true))
-                        }
+                        let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: true, isPublic: true)
+                        
+                        Firestore.firestore().collection("Users").document(uid).collection("Products").document(product.productID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userUID).getDocuments(completion: { snapLikes, error in
+                        
+                            if error != nil{
+                                print(error?.localizedDescription ?? "")
+                            }
+                            else{
+                                userInfo.userLiked.removeAll(where: {$0 == product.productID})
+                                if let likeDocs = snapLikes?.documents{
+                                    if likeDocs.isEmpty{
+                                        product.liked = false
+                                    }
+                                    else{
+                                        product.liked = true
+                                        if !(userInfo.userLiked.contains(product.productID)){
+                                            userInfo.userLiked.append(product.productID)
+                                        }
+                                    }
+                                }
+                                else{
+                                    product.liked = false
+                                }
+                            }
+                            if self.templateColor == color{
+                                self.postArray?.append(product)
+                                if self.postArray.count == snaps?.documents.count ?? 0{
+                                    self.postArray?.sort(by: {$0.likes > $1.likes})
+                                    if let colorIndex = self.exploreVC?.colorSections.firstIndex(where: {$0["ID"] as? String == self.templateColor}){
+                                        var downloading = self.exploreVC?.colorSections[colorIndex]["Color_Downloading"] as? [String]
+                                        downloading?.removeAll(where: {$0 == color})
+                                        self.exploreVC?.colorSections[colorIndex]["Array"] = self.postArray
+                                    }
+                                    completed()
+                                }
+                            }
+                        })
                     }
-                    self.postArray?.sort(by: {$0.likes > $1.likes})
-                    if let colorIndex = self.exploreVC?.colorSections.firstIndex(where: {$0["ID"] as? String == self.templateColor}){
-                        var downloading = self.exploreVC?.colorSections[colorIndex]["Color_Downloading"] as? [String]
-                        downloading?.removeAll(where: {$0 == color})
-                        self.exploreVC?.colorSections[colorIndex]["Array"] = self.postArray
-                    }
-                    completed()
                 }
             })
         }

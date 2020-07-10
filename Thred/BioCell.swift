@@ -18,7 +18,7 @@ class BioCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
-        bioView.superview?.backgroundColor = ColorCompatibility.secondarySystemBackground.withAlphaComponent(0.5)
+        bioView.superview?.backgroundColor = UIColor.secondarySystemBackground.withAlphaComponent(0.5)
     }
     
     

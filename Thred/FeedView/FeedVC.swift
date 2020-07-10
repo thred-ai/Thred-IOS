@@ -55,9 +55,10 @@ class Product: Codable, Equatable{
         let blurCon = lhs.blurred == rhs.blurred
         let likesCon = lhs.likes == rhs.likes
         let commentCon = lhs.comments == rhs.comments
-    
+        let pubCon = lhs.isPublic == rhs.isPublic
+        
 
-        return nameCon && descriptionCon && productIDCon && priceCon && picIDCon && timeCon && blurCon && likesCon && commentCon
+        return nameCon && descriptionCon && productIDCon && priceCon && picIDCon && timeCon && blurCon && likesCon && commentCon && pubCon
         
     }
     
@@ -78,9 +79,9 @@ class Product: Codable, Equatable{
     var comments = Int()
     var link: URL!
     var isAvailable: Bool!
-
+    var isPublic: Bool!
     
-    init(userInfo: UserInfo, picID: String?, description: String?, productID: String, timestamp: Date?, index: Int?, timestampDiff: String?, blurred: Bool?, price: Double?, name: String?, templateColor: String?, likes: Int?, liked: Bool?, designImage: Data?, comments: Int?, link: URL?, isAvailable: Bool!) {
+    init(userInfo: UserInfo, picID: String?, description: String?, productID: String, timestamp: Date?, index: Int?, timestampDiff: String?, blurred: Bool?, price: Double?, name: String?, templateColor: String?, likes: Int?, liked: Bool?, designImage: Data?, comments: Int?, link: URL?, isAvailable: Bool?, isPublic: Bool?) {
         
         self.userInfo = userInfo
         self.picID = picID
@@ -99,10 +100,11 @@ class Product: Codable, Equatable{
         self.comments = comments ?? 0
         self.link = link
         self.isAvailable = isAvailable
+        self.isPublic = isPublic
     }
     
     convenience init() {
-        self.init(userInfo: UserInfo(), picID: nil, description: nil, productID: "", timestamp: nil,  index: nil, timestampDiff: nil, blurred: false, price: nil, name: nil, templateColor: nil, likes: 0, liked: false, designImage: nil, comments: 0, link: nil, isAvailable: nil)
+        self.init(userInfo: UserInfo(), picID: nil, description: nil, productID: "", timestamp: nil,  index: nil, timestampDiff: nil, blurred: false, price: nil, name: nil, templateColor: nil, likes: 0, liked: false, designImage: nil, comments: 0, link: nil, isAvailable: nil, isPublic: nil)
     }
     
 }
@@ -303,11 +305,12 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         }
     }
 
-    override func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+    override func scrollViewDidScroll(_ scrollView: UIScrollView) {
         
-        if tableView.contentOffset.y >= (tableView.contentSize.height - tableView.frame.size.height){
+        if tableView.contentOffset.y >= (tableView.contentSize.height - tableView.frame.size.height) / 2{
+            
             print("fromScroll")
-            if !isLoading{
+            if !isLoading, canLoadMore{
                 isLoading = true
                 getProducts(refresh: false){_ in
                     self.isLoading = false
@@ -316,6 +319,19 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                     }
                 }
             }
+        }
+    }
+    
+    var canLoadMore = false
+    
+    override func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        let translation = scrollView.panGestureRecognizer.translation(in: scrollView.superview)
+        if translation.y > 0 {
+            canLoadMore = false
+            // swipes from top to bottom of screen -> down
+        } else {
+            canLoadMore = true
+            // swipes from bottom to top of screen -> up
         }
     }
     
@@ -347,7 +363,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         if arrays.indices.contains(lastIndex){
             let array = arrays[lastIndex]
             lastIndex = (arrays.firstIndex(of: array) ?? 0) + 1
-            query = Firestore.firestore().collectionGroup("Products").whereField("UID", in: array).whereField("Has_Picture", isEqualTo: true).whereField("Available", isEqualTo: true).limit(to: docLimit).order(by: "Timestamp", descending: true)
+            query = Firestore.firestore().collectionGroup("Products").whereField("Public", isEqualTo: true).whereField("UID", in: array).whereField("Has_Picture", isEqualTo: true).whereField("Available", isEqualTo: true).limit(to: docLimit).order(by: "Timestamp", descending: true)
             
             query.getDocuments(completion: { (snapDocuments, err) in
                 if let err = err {
@@ -381,7 +397,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                                 let likes = snap["Likes"] as? Int
                                 guard let priceCents = (snap["Price_Cents"] as? Double) else{continue}
                                 let comments = ((snap["Comments"]) as? Int) ?? 0
-                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: true)
+                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: true, isPublic: true)
                                 localLoaded.append(product)
                             }
                         }
@@ -558,7 +574,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         }
         else if let designVC = (segue.destination as? UINavigationController)?.viewControllers.first as? DesignViewController{
             if let img = cache.imageFromCache(forKey: productToOpen.productID){
-                designVC.product = ProductInProgress(templateColor: productToOpen.templateColor, design: img, uid: productToOpen.userInfo.uid, caption: productToOpen.description, name: productToOpen.name, price: productToOpen.price, productID: productToOpen.productID, display: productToOpen.designImage)
+                designVC.product = ProductInProgress(templateColor: productToOpen.templateColor, design: img, uid: productToOpen.userInfo.uid, caption: productToOpen.description, name: productToOpen.name, price: productToOpen.price, productID: productToOpen.productID, display: productToOpen.designImage, isPublic: productToOpen.isPublic)
             }
         }
         else if let reportVC = (segue.destination as? UINavigationController)?.viewControllers.first as? ReportVC{

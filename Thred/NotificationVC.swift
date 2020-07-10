@@ -59,6 +59,11 @@ class Order{
     var intents: [[String : String]]!
     var shippingIntent: String?
     var shippingCost: Double?
+    var totalCost: Double?
+    var tax: Double?
+    var subtotal: Double?
+    var address: Address!
+
     
     var canCancel: Bool{
         get{
@@ -67,7 +72,7 @@ class Order{
         }
     }
     
-    init(orderID: String?, timestamp: Date?, products: [ProductInCart], status: String!, intents: [[String : String]], shippingIntent: String?, shippingCost: Double?) {
+    init(orderID: String?, timestamp: Date?, products: [ProductInCart], status: String!, intents: [[String : String]], shippingIntent: String?, shippingCost: Double?, subtotal: Double?, tax: Double?, totalCost: Double?, address: Address?) {
         self.orderID = orderID
         self.timestamp = timestamp
         self.products = products
@@ -75,10 +80,14 @@ class Order{
         self.shippingCost = shippingCost
         self.intents = intents
         self.shippingIntent = shippingIntent
+        self.subtotal = subtotal
+        self.tax = tax
+        self.totalCost = totalCost
+        self.address = address
     }
     
     convenience init(){
-        self.init(orderID: nil, timestamp: nil, products: [], status: nil, intents: [], shippingIntent: nil, shippingCost: nil)
+        self.init(orderID: nil, timestamp: nil, products: [], status: nil, intents: [], shippingIntent: nil, shippingCost: nil, subtotal: nil, tax: nil, totalCost: nil, address: nil)
     }
 }
 
@@ -92,7 +101,7 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         let tableView = UITableView.init(frame: self.tableView.frame)
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.backgroundColor = ColorCompatibility.systemBackground
+        tableView.backgroundColor = .systemBackground
         tableView.separatorStyle = .none
         return tableView
     }()
@@ -150,6 +159,7 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
             
             if let err = error{
                 print(err.localizedDescription)
+                completed()
             }
             else{
                                 
@@ -161,14 +171,32 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                 var downloaded = 0
 
                 self.lastDoc = docs.last
+                var docCount = docs.count
                 for doc in docs{
                     let timestamp = (doc["timestamp"] as? Timestamp)?.dateValue()
                     let status = doc["status"] as? String ?? "cancelled"
                     let intents = doc["order_intents"] as? [[String : String]] ?? [[:]]
                     let shippingIntent = doc["shipping_intent"] as? String
-                    let shippingCost = doc["shipping_cost"] as? Double
+                    let shippingCost = (doc["shipping_cost"] as? Double ?? 0.00) / 100
+                    let tax = doc["tax"] as? Double ?? 1.0
+                    var subtotal = 0.0
                     
-                    let order = Order(orderID: doc.documentID, timestamp: timestamp, products: [], status: status, intents: intents, shippingIntent: shippingIntent, shippingCost: (shippingCost ?? 0.00) / 100.0)
+                    guard
+                        let address = doc["delivery_address"] as? [String : Any],
+                        let street = address["street_address"] as? String,
+                        let city = address["city"] as? String,
+                        let country = address["country"] as? String,
+                        let postalCode = address["postal_code"] as? String,
+                        let area = address["admin_area"] as? String
+                    else{
+                        
+                        return}
+                    
+                    let unitNum = address["unit_number"] as? String
+                    
+                    let orderAddress = Address(postalCode: postalCode, streetAddress: street, unitNumber: unitNum, city: city, adminArea: area, country: country)
+                    
+                    let order = Order(orderID: doc.documentID, timestamp: timestamp, products: [], status: status, intents: intents, shippingIntent: shippingIntent, shippingCost: shippingCost, subtotal: 0, tax: 0, totalCost: 0, address: orderAddress)
                     
                     localLoaded.append(order)
                     doc.reference.collection("Purchases").getDocuments(completion: { pSnaps, error in
@@ -176,37 +204,41 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                             print(err.localizedDescription)
                         }
                         else{
-                            guard let pDocs = pSnaps?.documents else{return}
+                            guard let pDocs = pSnaps?.documents, !pDocs.isEmpty
+                                else{
+                                    docCount -= 1
+                                    self.addOrderRows(localLoaded: localLoaded)
+                                return}
                             for pDoc in pDocs{
                                 
                                 guard
                                     let productID = pDoc["productID"] as? String,
                                     let quantity = pDoc["quantity"] as? Int,
                                     let size = pDoc["size"] as? String
-                                else{continue}
+                                else{
+                                    docCount -= 1
+                                    continue}
                                 let status = pDoc["status"] as? String
+                                let price = (pDoc["amount"] as? Double ?? 0) / 100
 
                                 self.getPostBackgroundInfo(postID: productID, completed: { product in
                                     
-                                    let orderProduct = ProductInCart(product: product, size: size, quantity: quantity, isDeleted: status == "cancelled-print", timestamp: timestamp, timestampDiff: nil, saleID: pDoc.documentID)
+                                    product?.price = price / Double(quantity)
+                                    
+                                    subtotal += product?.price ?? 0
+                                    
+                                    let orderProduct = ProductInCart(product: product, size: size, quantity: quantity, isDeleted: status == "cancelled-print", timestamp: timestamp, timestampDiff: nil, saleID: pDoc.documentID, inBank: nil)
                                     
                                     order.products.append(orderProduct)
                                     if order.products.count == pDocs.count{
                                         order.products.sort(by: {$0.product.productID > $1.product.productID})
+                                        order.subtotal = subtotal
+                                        order.tax = tax * subtotal
+                                        order.totalCost = (order.tax ?? 0.0) + (order.subtotal ?? 0.0) + (order.shippingCost ?? 0.0)
                                         downloaded += 1
                                     }
-                                    if downloaded == docs.count{
-                                        for loaded in localLoaded{
-                                            self.orders.append(loaded)
-                                            if self.orders.count == 1{
-                                                self.ordersTableView.reloadData()
-                                            }
-                                            else{
-                                                self.ordersTableView.performBatchUpdates({
-                                                    self.ordersTableView.insertSections(IndexSet(integer: self.orders.count - 1), with: .none)
-                                                }, completion: nil)
-                                            }
-                                        }
+                                    if downloaded == docCount{
+                                        self.addOrderRows(localLoaded: localLoaded)
                                         completed()
                                     }
                                 })
@@ -216,6 +248,20 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                 }
             }
         })
+    }
+    
+    func addOrderRows(localLoaded: [Order]){
+        for loaded in localLoaded{
+            self.orders.append(loaded)
+            if self.orders.count == 1{
+                self.ordersTableView.reloadData()
+            }
+            else{
+                self.ordersTableView.performBatchUpdates({
+                    self.ordersTableView.insertSections(IndexSet(integer: self.orders.count - 1), with: .none)
+                }, completion: nil)
+            }
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -254,7 +300,7 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
             cell?.vc = self
             cell?.notifLbl.text = nil
             cell?.notifPic.image = nil
-            cell?.notifPic.backgroundColor = ColorCompatibility.secondarySystemBackground
+            cell?.notifPic.backgroundColor = .secondarySystemBackground
             cell?.notifPic.clipsToBounds = true
             cell?.nameBtn.titleLabel?.text = nil
             cell?.nameBtn.setTitle(nil, for: .normal)
@@ -263,6 +309,7 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
             cell?.removedNotifView.isHidden = true
             cell?.isUserInteractionEnabled = false
             cell?.notifPic.alpha = 1.0
+            cell?.dpBtn.superview?.isHidden = true
             cell?.notif = notif
             self.tableView.checkNotifTimes(notif: notif, timestampLbl: cell?.timestampLbl)
 
@@ -274,7 +321,7 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
             isMentionBreak:
             if notif.username == nil{
                 
-                downloadUserInfo(uid: notif.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: false, userInfoToUse: nil, queryOnUsername: false, completed: { userUID, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followerCount, followingCount, profileLink  in
+                downloadUserInfo(uid: notif.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: false, userInfoToUse: nil, queryOnUsername: false, completed: { userUID, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followerCount, followingCount  in
                     
                     if username == nil{
                         for sameNotif in self.notifications.filter({$0.uid == notif.uid}){
@@ -305,7 +352,6 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                     notif.userInfo.notifID = notifID
                     notif.userInfo.usersBlocking = usersBlocking
                     notif.userInfo.dp = imgData
-                    notif.userInfo.profileLink = profileLink
 
                     if let img = imgData, notif.shouldShowDP{
                         DispatchQueue(label: "cache").async {
@@ -445,7 +491,7 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
             cell?.savedProduct = nil
             cell?.quantityField.isEnabled = false
             cell?.quantityView.isHidden = true
-            cell?.productImageView.backgroundColor = ColorCompatibility.secondarySystemBackground
+            cell?.productImageView.backgroundColor = .secondarySystemBackground
             cell?.sizingLbl.isHidden = false
             cell?.isDeleted = false
             cell?.productImageView.alpha = 1.0
@@ -645,8 +691,8 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         orderRefresher.addTarget(self, action: #selector(refresh(_:)), for: UIControl.Event.valueChanged)
         ordersTableView.addSubview(orderRefresher)
         
-        tableView.adjustForCenterBtn(footerColor: ColorCompatibility.systemBackground, offset: nil, vc: self)
-        ordersTableView.adjustForCenterBtn(footerColor: ColorCompatibility.systemBackground, offset: nil, vc: self)
+        tableView.adjustForCenterBtn(footerColor: .systemBackground, offset: nil, vc: self)
+        ordersTableView.adjustForCenterBtn(footerColor: .systemBackground, offset: nil, vc: self)
      
         segmentedControl.setTitleFont(UIFont(name: "NexaW01-Heavy", size: 14)!)
         segmentedControl.setTitleColor(.white)
@@ -794,7 +840,10 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 85
+        if tableView == ordersTableView{
+            return 85
+        }
+        return UITableView.automaticDimension
     }
     
     lazy var headerView: UIView? = {
@@ -859,6 +908,8 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
             color = UIColor.systemGreen
             string = "COMPLETED"
         default:
+            color = UIColor.red
+            string = "ERROR"
             break
         }
         
@@ -914,14 +965,14 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         
         let attributes = [
             NSAttributedString.Key.font : font,
-            NSAttributedString.Key.foregroundColor : ColorCompatibility.tertiaryLabel
+            NSAttributedString.Key.foregroundColor : UIColor.tertiaryLabel
         ] as [NSAttributedString.Key : Any]
         
         guard let orderFont = UIFont(name: "NexaW01-Heavy", size: 12) else{return}
         
         let orderAttributes = [
             NSAttributedString.Key.font : orderFont,
-            NSAttributedString.Key.foregroundColor : ColorCompatibility.secondaryLabel
+            NSAttributedString.Key.foregroundColor : UIColor.secondaryLabel
         ] as [NSAttributedString.Key : Any]
         
         attrString.addAttributes(attributes, range: matchRange)
@@ -932,18 +983,30 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
 
     }
     
-    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
         if scrollView == ordersTableView{
-            if scrollView.contentOffset.y >= (scrollView.contentSize.height - scrollView.frame.size.height){
+            if scrollView.contentOffset.y >= (scrollView.contentSize.height - scrollView.frame.size.height) / 2{
                 print("fromScroll")
-                if !isLoadingOrders{
+                if !isLoadingOrders, canLoadMore{
                     isLoadingOrders = true
                     getOrders {
                         self.isLoadingOrders = false
                     }
                 }
             }
+        }
+    }
+    
+    var canLoadMore = false
+    
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        let translation = scrollView.panGestureRecognizer.translation(in: scrollView.superview)
+        if translation.y > 0 {
+            canLoadMore = false
+            // swipes from top to bottom of screen -> down
+        } else {
+            canLoadMore = true
+            // swipes from bottom to top of screen -> up
         }
     }
     
@@ -1046,6 +1109,7 @@ extension UINavigationController{
 
 extension UIViewController{
     func getPostBackgroundInfo(postID: String, completed: @escaping (Product?) -> ()){
+        guard let userUID = userInfo.uid else{return}
         Firestore.firestore().collectionGroup("Products").whereField("Product_ID", isEqualTo: postID).getDocuments(completion: { snaps, error in
             if error != nil{
                 print(error?.localizedDescription ?? "")
@@ -1065,9 +1129,34 @@ extension UIViewController{
                 let likes = snap["Likes"] as? Int
                 guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                 let comments = ((snap["Comments"]) as? Int) ?? 0
-
-                completed(Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: 0, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: isAvailable))
-                return
+                let isPublic = snap["Public"] as? Bool ?? true
+                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: 0, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: isAvailable, isPublic: isPublic)
+                
+                Firestore.firestore().collection("Users").document(uid).collection("Products").document(product.productID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userUID).getDocuments(completion: { snapLikes, error in
+                
+                    if error != nil{
+                        print(error?.localizedDescription ?? "")
+                    }
+                    else{
+                        userInfo.userLiked.removeAll(where: {$0 == product.productID})
+                        if let likeDocs = snapLikes?.documents{
+                            if likeDocs.isEmpty{
+                                product.liked = false
+                            }
+                            else{
+                                product.liked = true
+                                if !(userInfo.userLiked.contains(product.productID)){
+                                    userInfo.userLiked.append(product.productID)
+                                }
+                            }
+                        }
+                        else{
+                            product.liked = false
+                        }
+                    }
+                    completed(product)
+                    return
+                })
             }
         })
     }

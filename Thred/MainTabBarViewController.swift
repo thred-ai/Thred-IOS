@@ -103,9 +103,9 @@ class MainTabBarViewController: UITabBarController, UITabBarControllerDelegate {
         let y = view.frame.maxY - tabHeight - (height / 2)
         
         let button = UIButton.init(frame: CGRect(x: x, y: y, width: width, height: height))
-        button.backgroundColor = ColorCompatibility.systemBackground
+        button.backgroundColor = .systemBackground
             //UIColor.init(red: 0.976, green: 0.976, blue: 0.976, alpha: 1.0)
-        button.tintColor = ColorCompatibility.label
+        button.tintColor = .label
         button.layer.borderColor = UIColor(named: "LoadingColor")?.cgColor 
         button.layer.borderWidth = 6.5
         button.layer.cornerRadius = button.frame.height / 2
@@ -177,11 +177,15 @@ extension UITableView{
             index = matchingIndex
             products[index].description = post.caption
             products[index].name = post.name
+            products[index].price = (post.price ?? 2000) / 100
+            products[index].isPublic = post.isPublic ?? true
         }
         else{
             guard let product = (vc as? FullProductVC)?.fullProduct else{return}
             product.description = post.caption
             product.name = post.name
+            product.price = (post.price ?? 2000) / 100
+            product.isPublic = post.isPublic ?? true
         }
         let indexPath = IndexPath(row: index, section: 0)
         (vc as? FullProductVC)?.editedPost = true
@@ -201,6 +205,8 @@ extension UITableView{
             "Name": post.name!,
             "Search_Name" : post.name.lowercased(),
             "Description" : post.caption ?? "",
+            "Price_Cents" : post.price ?? "2000",
+            "Public" : post.isPublic ?? true
         ] as [String : Any]
         
         doc.updateData(data, completion: { error in

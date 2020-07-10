@@ -97,20 +97,12 @@ class ProfileHeaderView: UIView, UITextViewDelegate{
         })
     }
     
-    func uploadLink(link: URL?, uid: String?){
-        guard let link = link else{return}
-        guard let uid = uid, uid == userInfo.uid else{return}
-        UserDefaults.standard.set(link, forKey: "PROFILE_LINK")
-        Firestore.firestore().collection("Users").document(uid).updateData(["ProfileLink" : link.absoluteString])
-    }
-    
     func getLink(completed: @escaping (URL?) -> ()){
         self.animateProgressBar(value: 0.4)
         let info = (vc as? FriendVC)?.friendInfo ?? userInfo
         if info.profileLink == nil{
             generateLink(userInfo: info, completed: { link in
                 info.profileLink = link
-                self.uploadLink(link: link, uid: info.uid)
                 self.animateProgressBar(value: 0.8)
                 completed(link)
             })
@@ -220,9 +212,9 @@ class ProfileHeaderView: UIView, UITextViewDelegate{
         }
         else{
             headerActionBtnTitle = "Follow"
-            actionBtn.setTitleColor(ColorCompatibility.label, for: .normal)
+            actionBtn.setTitleColor(.label, for: .normal)
             UIView.animate(withDuration: animationDuration, animations: {
-                self.actionBtn.backgroundColor = ColorCompatibility.quaternarySystemFill
+                self.actionBtn.backgroundColor = .quaternarySystemFill
             })
         }
         actionBtn.titleLabel?.text = headerActionBtnTitle

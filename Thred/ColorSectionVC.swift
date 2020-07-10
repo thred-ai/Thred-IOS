@@ -49,10 +49,10 @@ class ColorSectionVC: UICollectionViewController {
     func getProducts(fromInterval: Int?, completed: @escaping ()->()){
         
         if fromInterval == nil{
-            query = Firestore.firestore().collectionGroup("Products").whereField("Template_Color", isEqualTo: templateColor).whereField("Blurred", isEqualTo: false).whereField("Has_Picture", isEqualTo: true).whereField("Available", isEqualTo: true).order(by: "Likes", descending: true).limit(to: 36)
+            query = Firestore.firestore().collectionGroup("Products").whereField("Template_Color", isEqualTo: templateColor).whereField("Blurred", isEqualTo: false).whereField("Has_Picture", isEqualTo: true).whereField("Public", isEqualTo: true).whereField("Available", isEqualTo: true).order(by: "Likes", descending: true).limit(to: 36)
         }
         else if last != nil{
-            query = Firestore.firestore().collectionGroup("Products").whereField("Template_Color", isEqualTo: templateColor).whereField("Blurred", isEqualTo: false).whereField("Has_Picture", isEqualTo: true).whereField("Available", isEqualTo: true).order(by: "Likes", descending: true).start(afterDocument: last).limit(to: 36)
+            query = Firestore.firestore().collectionGroup("Products").whereField("Template_Color", isEqualTo: templateColor).whereField("Blurred", isEqualTo: false).whereField("Has_Picture", isEqualTo: true).whereField("Public", isEqualTo: true).whereField("Available", isEqualTo: true).order(by: "Likes", descending: true).start(afterDocument: last).limit(to: 36)
         }
         
         guard let userUID = userInfo.uid else{return}
@@ -65,6 +65,7 @@ class ColorSectionVC: UICollectionViewController {
                     }
                     else{
                         if let docs = snaps?.documents, !docs.isEmpty{
+                            var counter = 0
                             for (index, snap) in docs.enumerated(){ // LOADED DOCUMENTS FROM \(snapDocuments)
                                 let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
                                 let uid = snap["UID"] as! String
@@ -80,19 +81,38 @@ class ColorSectionVC: UICollectionViewController {
                                 guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                                 let likes = snap["Likes"] as? Int
                                 let comments = ((snap["Comments"]) as? Int) ?? 0
-                                
-                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: true)
 
-                                self.loadedProducts.append(product)
+                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: true, isPublic: true)
+
+                                Firestore.firestore().collection("Users").document(uid).collection("Products").document(product.productID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userUID).getDocuments(completion: { snapLikes, error in
                                 
-                                self.collectionView.performBatchUpdates({
-                                    self.collectionView.insertItems(at: [IndexPath(item: self.loadedProducts.count - 1, section: 0)])
-                                }, completion: { finished in
-                                    if finished{
-                                        if snap == docs.last{
-                                            self.last = docs.last
-                                            completed()
+                                    if error != nil{
+                                        print(error?.localizedDescription ?? "")
+                                    }
+                                    else{
+                                        userInfo.userLiked.removeAll(where: {$0 == product.productID})
+                                        if let likeDocs = snapLikes?.documents{
+                                            if likeDocs.isEmpty{
+                                                product.liked = false
+                                            }
+                                            else{
+                                                product.liked = true
+                                                if !(userInfo.userLiked.contains(product.productID)){
+                                                    userInfo.userLiked.append(product.productID)
+                                                }
+                                            }
                                         }
+                                        else{
+                                            product.liked = false
+                                        }
+                                    }
+                                    
+                                    self.loadedProducts.append(product)
+                                    counter += 1
+                                    if counter == docs.count{
+                                        self.last = docs.last
+                                        self.collectionView.reloadData()
+                                        completed()
                                     }
                                 })
                             }
@@ -106,19 +126,31 @@ class ColorSectionVC: UICollectionViewController {
         }
     }
     
-    override func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        
-        if scrollView.contentOffset.y >= (scrollView.contentSize.height - scrollView.frame.size.height){
+    override func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        if scrollView.contentOffset.y >= (scrollView.contentSize.height - scrollView.frame.size.height) / 2{
             print("fromScroll")
             if let last = loadedProducts.last{
                 let interval = last.likes
-                if !isLoading{
+                if !isLoading, canLoadMore{
                     isLoading = true
                     getProducts(fromInterval: interval){
                         self.isLoading = false
                     }
                 }
             }
+        }
+    }
+    
+    var canLoadMore = false
+    
+    override func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        let translation = scrollView.panGestureRecognizer.translation(in: scrollView.superview)
+        if translation.y > 0 {
+            canLoadMore = false
+            // swipes from top to bottom of screen -> down
+        } else {
+            canLoadMore = true
+            // swipes from bottom to top of screen -> up
         }
     }
     
@@ -180,27 +212,41 @@ class ColorSectionVC: UICollectionViewController {
         cell?.circularProgress.isHidden = false
         cell?.contentView.backgroundColor = .clear
         cell?.contentView.backgroundColor = UIColor(named: self.loadedProducts[indexPath.item].templateColor)
+        guard self.loadedProducts.indices.contains(indexPath.item) else {
+            
+            return cell!}
+        let product = self.loadedProducts[indexPath.item]
 
-        if let image = cache.imageFromCache(forKey: "thumbnail_\(self.loadedProducts[indexPath.item].picID ?? "")"){
-            cell?.imageView.image = image
-            cell?.circularProgress.isHidden = true
-            print(image.size.height / image.size.width)
+        if let image = cache.imageFromCache(forKey: "thumbnail_\(product.picID ?? "")"){
+            if let index = self.loadedProducts.firstIndex(where: {$0.productID == product.productID}), let cell = collectionView.cellForItem(at: IndexPath(item: index, section: 0)) as? ExploreProductCell{
+                cell.imageView.image = image
+                cell.circularProgress.isHidden = true
+                print(image.size.height / image.size.width)
+            }
+            else{
+                cell?.imageView.image = image
+                cell?.circularProgress.isHidden = true
+            }
         }
         else{
                 
-            if !(tokens.contains(loadedProducts[indexPath.item].picID ?? "null")){
+            if !(tokens.contains(product.picID ?? "null")){
                     cell?.circularProgress.isHidden = false
-                    tokens.append(loadedProducts[indexPath.item].picID ?? "null")
-                self.collectionView.downloadExploreProductImage(circularProgress: cell?.circularProgress, followingUID: self.loadedProducts[indexPath.item].userInfo.uid ?? "", picID: self.loadedProducts[indexPath.item].picID ?? "", index: indexPath.item, product: self.loadedProducts[indexPath.item], isThumbnail: true){ image in
+                    tokens.append(product.picID ?? "null")
+                self.collectionView.downloadExploreProductImage(circularProgress: cell?.circularProgress, followingUID: product.userInfo.uid ?? "", picID: product.picID ?? "", index: indexPath.item, product: product, isThumbnail: true){ image in
                         
-                        self.tokens.removeAll(where: {$0 == self.loadedProducts[indexPath.item].picID})
+                    self.tokens.removeAll(where: {$0 == self.loadedProducts[indexPath.item].picID})
                         
-                        if self.loadedProducts.indices.contains(indexPath.item){
-                            cell?.imageView.image = image
-                            cell?.circularProgress.isHidden = true
-                        }
+                    if let index = self.loadedProducts.firstIndex(where: {$0.productID == product.productID}), let cell = collectionView.cellForItem(at: IndexPath(item: index, section: 0)) as? ExploreProductCell{
+                        cell.imageView.image = image
+                        cell.circularProgress.isHidden = true
+                    }
+                    else{
+                        cell?.imageView.image = image
+                        cell?.circularProgress.isHidden = true
                     }
                 }
+            }
             
         }
         return cell!

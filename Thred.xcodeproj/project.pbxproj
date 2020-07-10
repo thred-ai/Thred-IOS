@@ -35,6 +35,8 @@
 		AA25B19724A7AD9800C090CA /* ChangePasswordVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA25B19624A7AD9800C090CA /* ChangePasswordVC.storyboard */; };
 		AA25B19924A7ADEC00C090CA /* AddressVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA25B19824A7ADEC00C090CA /* AddressVC.storyboard */; };
 		AA3151D123EC081E003BF268 /* akaDora.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA3151D023EC0800003BF268 /* akaDora.ttf */; };
+		AA33212024B81072006F3F58 /* CommissionCalcVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA33211F24B81072006F3F58 /* CommissionCalcVC.swift */; };
+		AA33212224B8388E006F3F58 /* CommissionCalcVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA33212124B8388E006F3F58 /* CommissionCalcVC.storyboard */; };
 		AA44090A23EDFB75009F5774 /* TemplateCarousel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA44090923EDFB75009F5774 /* TemplateCarousel.swift */; };
 		AA44090E23F3DFC5009F5774 /* ProductInProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA44090D23F3DFC5009F5774 /* ProductInProgress.swift */; };
 		AA44091023F3E00D009F5774 /* Template.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA44090F23F3E00D009F5774 /* Template.swift */; };
@@ -263,6 +265,8 @@
 		AA25B19624A7AD9800C090CA /* ChangePasswordVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = ChangePasswordVC.storyboard; sourceTree = "<group>"; };
 		AA25B19824A7ADEC00C090CA /* AddressVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = AddressVC.storyboard; sourceTree = "<group>"; };
 		AA3151D023EC0800003BF268 /* akaDora.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = akaDora.ttf; sourceTree = "<group>"; };
+		AA33211F24B81072006F3F58 /* CommissionCalcVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommissionCalcVC.swift; sourceTree = "<group>"; };
+		AA33212124B8388E006F3F58 /* CommissionCalcVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = CommissionCalcVC.storyboard; sourceTree = "<group>"; };
 		AA44090923EDFB75009F5774 /* TemplateCarousel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateCarousel.swift; sourceTree = "<group>"; };
 		AA44090D23F3DFC5009F5774 /* ProductInProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductInProgress.swift; sourceTree = "<group>"; };
 		AA44090F23F3E00D009F5774 /* Template.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Template.swift; sourceTree = "<group>"; };
@@ -617,6 +621,7 @@
 				AA45931B243464BE00C9D5DC /* countries.json */,
 				AA477CA72443BE1E00B06619 /* AuthFiles */,
 				AA5FDBA4243776DA0008EE2E /* SettingsVC.swift */,
+				AA33211F24B81072006F3F58 /* CommissionCalcVC.swift */,
 				AA192837243449D000C16F28 /* FirstViewController.swift */,
 				AAA4B0462426AE89007BC407 /* CommentsVC.swift */,
 				AA453A852436752C00BA2B12 /* ShoppingCartVC.swift */,
@@ -689,16 +694,17 @@
 				AAA4B0322426972C007BC407 /* FullProductVC.storyboard */,
 				AAA4B02E24269694007BC407 /* UserVC.storyboard */,
 				AA25B18E24A6B03A00C090CA /* SettingsVC.storyboard */,
+				AA25B19224A6B0E400C090CA /* BankVC.storyboard */,
 				AA25B19824A7ADEC00C090CA /* AddressVC.storyboard */,
 				AA25B19624A7AD9800C090CA /* ChangePasswordVC.storyboard */,
 				AA25B19424A7978F00C090CA /* CardVC.storyboard */,
-				AA25B19224A6B0E400C090CA /* BankVC.storyboard */,
 				AA25B19024A6B0CD00C090CA /* ChangeEmailVC.storyboard */,
 				AA05AFE6244A222E0009F5F1 /* UserListVC.storyboard */,
 				AAA4B02C24269676007BC407 /* NotificationVC.storyboard */,
 				AAA4B02A24269635007BC407 /* ExploreVC.storyboard */,
 				AAA4B028242695CF007BC407 /* FeedVC.storyboard */,
 				AAA4B026242693AA007BC407 /* DesignVC.storyboard */,
+				AA33212124B8388E006F3F58 /* CommissionCalcVC.storyboard */,
 				AAA4B0422426ABC7007BC407 /* CommentsVC.storyboard */,
 				AA2067C3243264F900459478 /* ReportScreen.storyboard */,
 			);
@@ -1142,6 +1148,7 @@
 				AA25B19924A7ADEC00C090CA /* AddressVC.storyboard in Resources */,
 				AAD3F3D12418ABE300F8FF8F /* gray3.png in Resources */,
 				AAD3F3C72418ABE300F8FF8F /* blue3.png in Resources */,
+				AA33212224B8388E006F3F58 /* CommissionCalcVC.storyboard in Resources */,
 				AAD3F3D72418ABE300F8FF8F /* white.png in Resources */,
 				AAA4B031242696DB007BC407 /* ColorSectionVC.storyboard in Resources */,
 				AAABC0B423C9432700E48987 /* ProductCell.xib in Resources */,
@@ -1395,6 +1402,7 @@
 				AA44091623F3E28D009F5774 /* DrawCanvas.swift in Sources */,
 				AAD3F417241AE52D00F8FF8F /* ColorSectionFlowLayout.swift in Sources */,
 				AA8E68ED240B2B5C00C651A1 /* CarouselCollectionViewCell.swift in Sources */,
+				AA33212024B81072006F3F58 /* CommissionCalcVC.swift in Sources */,
 				AAABC0BD23C9435C00E48987 /* UserInfo.swift in Sources */,
 				AAABC09B23C9432700E48987 /* UIViewMasking.swift in Sources */,
 				AA44091223F3E084009F5774 /* DesignCanvas.swift in Sources */,

@@ -26,7 +26,7 @@ class PhotosView: UIView{
         control.setTitleFont(UIFont(name: "NexaW01-Heavy", size: 14)!)
         control.setTitleColor(.white)
         control.selectedSegmentTintColor = UIColor(named: "LoadingColor")
-        control.backgroundColor =                                                                                                                                                                                                                ColorCompatibility.systemGroupedBackground
+        control.backgroundColor = .systemGroupedBackground
         control.layer.cornerRadius = 0
         control.selectedSegmentIndex = 0
         control.clipsToBounds = true
@@ -91,7 +91,7 @@ class PhotosView: UIView{
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        backgroundColor = ColorCompatibility.systemBackground
+        backgroundColor = .systemBackground
         addSubview(topTab)
         addSubview(cameraRollCollectionView)
         addSubview(thredListView)
@@ -107,7 +107,7 @@ class PhotosView: UIView{
     lazy var sendPicBtn: UIButton = {
         
         let button = UIButton.init(frame: CGRect(x: 0, y: 0, width: 60, height: 60))
-        button.backgroundColor = ColorCompatibility.systemBackground
+        button.backgroundColor = .systemBackground
         button.layer.cornerRadius = button.frame.height / 2
         button.clipsToBounds = true
         button.setImage(UIImage.init(named: "SendIcon"), for: .normal)
@@ -245,7 +245,7 @@ class CameraRollView: UICollectionView, UICollectionViewDelegate, UICollectionVi
         self.alwaysBounceVertical = true
         self.delegate = self
         self.dataSource = self
-        self.backgroundColor = ColorCompatibility.systemBackground
+        self.backgroundColor = .systemBackground
         backgroundView = UIView.init(frame: frame)
            
     }
@@ -430,13 +430,13 @@ class ThredListView: UICollectionView, UICollectionViewDelegate, UICollectionVie
     }
     
     
-    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
         
-        if scrollView.contentOffset.y >= (scrollView.contentSize.height - scrollView.frame.size.height){
+        if scrollView.contentOffset.y >= (scrollView.contentSize.height - scrollView.frame.size.height) / 2{
             print("fromScroll")
             if let last = images.last{
                 if let interval = last["Timestamp"] as? Date{
-                    if !isLoading{
+                    if !isLoading, canLoadMore{
                         isLoading = true
                         getProducts(fromInterval: interval){
                             self.isLoading = false
@@ -444,6 +444,19 @@ class ThredListView: UICollectionView, UICollectionViewDelegate, UICollectionVie
                     }
                 }
             }
+        }
+    }
+    
+    var canLoadMore = false
+    
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        let translation = scrollView.panGestureRecognizer.translation(in: scrollView.superview)
+        if translation.y > 0 {
+            canLoadMore = false
+            // swipes from top to bottom of screen -> down
+        } else {
+            canLoadMore = true
+            // swipes from bottom to top of screen -> up
         }
     }
     
@@ -468,10 +481,10 @@ class ThredListView: UICollectionView, UICollectionViewDelegate, UICollectionVie
             if let view = self.backgroundView{
                 view.addViewSpinner(centerX: view.center.x, centerY: (visibleSize.height / 2), width: 40, height: 40)
             }
-            query = Firestore.firestore().collection("Users").document(uid).collection("Products").whereField("Timestamp", isLessThanOrEqualTo: Timestamp(date: Date())).whereField("Available", isEqualTo: true).limit(to: 15).order(by: "Timestamp", descending: true)
+            query = Firestore.firestore().collection("Users").document(uid).collection("Products").whereField("Public", isEqualTo: true).whereField("Timestamp", isLessThanOrEqualTo: Timestamp(date: Date())).whereField("Available", isEqualTo: true).limit(to: 15).order(by: "Timestamp", descending: true)
         }
         else if let last = fromInterval{
-            query = Firestore.firestore().collection("Users").document(uid).collection("Products").whereField("Timestamp", isLessThan: Timestamp(date: last)).whereField("Available", isEqualTo: true).limit(to: 15).order(by: "Timestamp", descending: true)
+            query = Firestore.firestore().collection("Users").document(uid).collection("Products").whereField("Public", isEqualTo: true).whereField("Timestamp", isLessThan: Timestamp(date: last)).whereField("Available", isEqualTo: true).limit(to: 15).order(by: "Timestamp", descending: true)
         }
         query.getDocuments(completion: { (snapDocuments, err) in
             if let err = err {
@@ -514,7 +527,7 @@ class ThredListView: UICollectionView, UICollectionViewDelegate, UICollectionVie
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotosCell", for: indexPath) as? PhotosCell
         cell?.photoImageView.clipsToBounds = true
-        cell?.photoImageView.backgroundColor = ColorCompatibility.tertiarySystemGroupedBackground
+        cell?.photoImageView.backgroundColor = .tertiarySystemGroupedBackground
         cell?.photo = nil
         let design = self.images[indexPath.item]
         guard let color = design["Color"] as? String else{return cell!}
@@ -612,7 +625,7 @@ class ThredListView: UICollectionView, UICollectionViewDelegate, UICollectionVie
         self.alwaysBounceVertical = true
         self.delegate = self
         self.dataSource = self
-        self.backgroundColor = ColorCompatibility.systemBackground
+        self.backgroundColor = .systemBackground
         backgroundView = UIView.init(frame: frame)
     }
     

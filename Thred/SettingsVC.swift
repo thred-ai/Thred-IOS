@@ -41,13 +41,13 @@ class SettingsVC: UITableViewController {
                     "Title": "Change email address",
                     "Function" : self.toEmailChange,
                     "Background Color" : UIColor.clear,
-                    "Text Color" : ColorCompatibility.label
+                    "Text Color" : UIColor.label
                 ], at: 0)
                 self.itemsArray.insert([
                     "Title": "Change password",
                     "Function" : self.toPasswordChange,
                     "Background Color" : UIColor.clear,
-                    "Text Color" : ColorCompatibility.label
+                    "Text Color" : UIColor.label
                 ], at: 1)
             }
         }
@@ -79,14 +79,14 @@ class SettingsVC: UITableViewController {
             "Title": "Community Guidelines",
             "Function" : toCommunityGuidelines,
             "Background Color" : UIColor.clear,
-            "Text Color" : ColorCompatibility.label
+            "Text Color" : UIColor.label
         ],
         
         [
             "Title": "Privacy Policy",
             "Function" : toPrivacyPolicy,
             "Background Color" : UIColor.clear,
-            "Text Color" : ColorCompatibility.label
+            "Text Color" : UIColor.label
         ],
         
         [
@@ -114,7 +114,7 @@ class SettingsVC: UITableViewController {
             "Title": "Sign out",
             "Function" : logOut,
             "Background Color" : UIColor.clear,
-            "Text Color" : ColorCompatibility.label
+            "Text Color" : UIColor.label
         ]
         
     ] as [[String : Any]]

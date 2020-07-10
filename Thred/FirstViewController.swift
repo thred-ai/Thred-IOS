@@ -40,7 +40,7 @@ class FirstViewController: UIViewController {
         
         if textToSet == nil{
             textView.text = "Sign up to buy and design threds."
-            textView.textColor = ColorCompatibility.secondaryLabel
+            textView.textColor = .secondaryLabel
         }
         else{
             textView.text = textToSet
@@ -51,7 +51,7 @@ class FirstViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         thredBackgroundView.layer.cornerRadius = thredBackgroundView.frame.height / 2
         thredBackgroundView.clipsToBounds = true
-        thredBackgroundView.layer.borderColor = ColorCompatibility.systemBackground.cgColor
+        thredBackgroundView.layer.borderColor = UIColor.systemBackground.cgColor
         thredBackgroundView.layer.borderColor = UIColor(named: "ProfileMask")?.cgColor
         thredBackgroundView.layer.borderWidth = thredBackgroundView.frame.height / 17.75
         

@@ -36,7 +36,7 @@
                                     </collectionViewFlowLayout>
                                 </collectionView>
                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="GkF-7H-Xlp">
-                                    <rect key="frame" x="123" y="5" width="110" height="25"/>
+                                    <rect key="frame" x="123" y="0.0" width="110" height="25"/>
                                     <subviews>
                                         <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="&quot;TITLE&quot;" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="Lcr-wj-QfF">
                                             <rect key="frame" x="10" y="0.0" width="90" height="25"/>
@@ -45,7 +45,7 @@
                                             <nil key="highlightedColor"/>
                                         </label>
                                     </subviews>
-                                    <color key="backgroundColor" name="ProfileMask"/>
+                                    <color key="backgroundColor" name="DefaultProductBackground"/>
                                     <constraints>
                                         <constraint firstAttribute="trailing" secondItem="Lcr-wj-QfF" secondAttribute="trailing" constant="10" id="CAz-QC-v9E"/>
                                         <constraint firstItem="Lcr-wj-QfF" firstAttribute="centerX" secondItem="GkF-7H-Xlp" secondAttribute="centerX" id="U87-iS-gpF"/>
@@ -69,7 +69,7 @@
                                 <constraint firstItem="rcy-QC-ocE" firstAttribute="centerY" secondItem="ebm-c3-bBt" secondAttribute="centerY" id="qoH-TX-gur"/>
                                 <constraint firstAttribute="bottom" secondItem="rcy-QC-ocE" secondAttribute="bottom" id="rQ4-jJ-1nF"/>
                                 <constraint firstAttribute="bottom" secondItem="rcy-QC-ocE" secondAttribute="bottom" id="ujA-nv-yQv"/>
-                                <constraint firstItem="GkF-7H-Xlp" firstAttribute="top" secondItem="ebm-c3-bBt" secondAttribute="top" constant="5" id="yAS-gp-Vhd"/>
+                                <constraint firstItem="GkF-7H-Xlp" firstAttribute="top" secondItem="ebm-c3-bBt" secondAttribute="top" id="yAS-gp-Vhd"/>
                             </constraints>
                         </view>
                     </subviews>
@@ -118,9 +118,6 @@
         </namedColor>
         <namedColor name="LoadingColor">
             <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
-        <namedColor name="ProfileMask">
-            <color red="0.85900002717971802" green="0.86699998378753662" blue="0.86699998378753662" alpha="0.5" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

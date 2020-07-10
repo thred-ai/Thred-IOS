@@ -23,7 +23,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         // Override point for customization after application launch.
         FirebaseApp.configure()
         
-
             
         DispatchQueue(label: "Info").async {
             if let stripeKey = Bundle.main.object(forInfoDictionaryKey: "StripeKeyLive") as? String{
@@ -168,14 +167,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             guard let productID = postID else{return}
             let fullSB: UIStoryboard = UIStoryboard(name: "FullProductVC", bundle: nil)
             if let fullVC: FullProductVC = fullSB.instantiateViewController(withIdentifier: "FullVC") as? FullProductVC{
-                fullVC.fullProduct = Product(userInfo: userInfo, picID: nil, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil, isAvailable: true)
+                fullVC.fullProduct = Product(userInfo: userInfo, picID: nil, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil, isAvailable: true, isPublic: nil)
                 vcToPush = fullVC
             }
         case "Buy":
             guard let productID = postID else{return}
             let fullSB: UIStoryboard = UIStoryboard(name: "FullProductVC", bundle: nil)
             if let fullVC: FullProductVC = fullSB.instantiateViewController(withIdentifier: "FullVC") as? FullProductVC{
-                fullVC.fullProduct = Product(userInfo: userInfo, picID: nil, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil, isAvailable: true)
+                fullVC.fullProduct = Product(userInfo: userInfo, picID: nil, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil, isAvailable: true, isPublic: nil)
                 vcToPush = fullVC
             }
         case "Bio_Mention":
@@ -188,7 +187,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             guard let productID = postID else{return}
             let fullSB: UIStoryboard = UIStoryboard(name: "FullProductVC", bundle: nil)
             if let fullVC: FullProductVC = fullSB.instantiateViewController(withIdentifier: "FullVC") as? FullProductVC{
-                fullVC.fullProduct = Product(userInfo: UserInfo(), picID: productID, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil, isAvailable: true)
+                fullVC.fullProduct = Product(userInfo: UserInfo(), picID: productID, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil, isAvailable: true, isPublic: nil)
                 vcToPush = fullVC
             }
         case "Comment":
@@ -200,7 +199,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             let fullSB: UIStoryboard = UIStoryboard(name: "FullProductVC", bundle: nil)
             if let fullVC: FullProductVC = fullSB.instantiateViewController(withIdentifier: "FullVC") as? FullProductVC{
                 ///Fix uid for mention
-                fullVC.fullProduct = Product(userInfo: UserInfo(), picID: productID, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil, isAvailable: true)
+                fullVC.fullProduct = Product(userInfo: UserInfo(), picID: productID, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil, isAvailable: true, isPublic: nil)
                 fullVC.selectedComment = Comment(timestamp: timestamp, message: commentMsg, commentID: commentID, userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil))
                 vcToPush = fullVC
             }
@@ -226,7 +225,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             let fullSB: UIStoryboard = UIStoryboard(name: "FullProductVC", bundle: nil)
             if let fullVC: FullProductVC = fullSB.instantiateViewController(withIdentifier: "FullVC") as? FullProductVC{
                 guard let productID = productID else{return}
-                fullVC.fullProduct = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: productID, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil, isAvailable: true)
+                fullVC.fullProduct = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: productID, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil, isAvailable: true, isPublic: nil)
                 vcToPush = fullVC
             }
         default:
@@ -453,6 +452,7 @@ extension UIApplication{
                         cache.clearDisk(onCompletion: {
                             let domain = Bundle.main.bundleIdentifier!
                             UserDefaults.standard.removePersistentDomain(forName: domain)
+                            
                             UserDefaults.standard.set(true, forKey: "Already_Opened")
                             userInfo = UserInfo()
                             self.deleteAllCachedProducts()

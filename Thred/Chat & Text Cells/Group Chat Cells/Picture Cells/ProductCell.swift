@@ -19,6 +19,11 @@ var likeQueue = [String: Bool]()
 class ProductCell: UITableViewCell, UITextViewDelegate, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
     @IBOutlet weak var pageControl: UIPageControl!
+    @IBOutlet weak var privateBanner: UIView!
+    
+    @IBAction func privateBannerTapped(_ sender: UIButton) {
+        
+    }
     
     var collectionViewOffset: CGFloat {
         get {
@@ -53,7 +58,7 @@ class ProductCell: UITableViewCell, UITextViewDelegate, UICollectionViewDelegate
         let tableView = friendVC?.tableView ?? userVC?.tableView ?? feedVC?.tableView ?? fullVC?.tableView
         
         cell?.imageView.image = nil
-        cell?.imageView.backgroundColor = ColorCompatibility.tertiarySystemGroupedBackground
+        cell?.imageView.backgroundColor = .tertiarySystemGroupedBackground
         
         if let username = product.userInfo.username{
             cell?.usernameLbl.text = "@\(username)"
@@ -494,7 +499,7 @@ class ProductCell: UITableViewCell, UITextViewDelegate, UICollectionViewDelegate
             return
         }
         
-        let productToOpen = Product(userInfo: product.userInfo, picID: product.picID, description: product.description, productID: product.productID, timestamp: product.timestamp, index: product.index, timestampDiff: product.timestampDiff, blurred: product.blurred, price: product.price, name: product.name, templateColor: product.templateColor, likes: product.likes, liked: product.liked, designImage: product.designImage, comments: product.comments, link: nil, isAvailable: product.isAvailable)
+        let productToOpen = Product(userInfo: product.userInfo, picID: product.picID, description: product.description, productID: product.productID, timestamp: product.timestamp, index: product.index, timestampDiff: product.timestampDiff, blurred: product.blurred, price: product.price, name: product.name, templateColor: product.templateColor, likes: product.likes, liked: product.liked, designImage: product.designImage, comments: product.comments, link: nil, isAvailable: product.isAvailable, isPublic: product.isPublic)
         
         switch vc{
             
@@ -517,7 +522,8 @@ class ProductCell: UITableViewCell, UITextViewDelegate, UICollectionViewDelegate
     
     @IBAction func likeDesign(_ sender: UIButton) {
         
-        if uploadingPosts.contains(product.productID){
+        
+        if uploadingPosts.contains(product.productID) || !(product.isPublic ?? true) {
             return
         }
         
@@ -673,7 +679,7 @@ class ProductCell: UITableViewCell, UITextViewDelegate, UICollectionViewDelegate
         likeBtn.imageView?.animationDuration = 0.5
         likeBtn.imageView?.animationRepeatCount = 1
         likeBtn.setRadiusWithShadow()
-        uploadView.backgroundColor = ColorCompatibility.systemBackground.withAlphaComponent(0.5)
+        uploadView.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.5)
 
         
         likeBtn.setImage(unlikedImage, for: .normal)
@@ -694,7 +700,7 @@ class ProductCell: UITableViewCell, UITextViewDelegate, UICollectionViewDelegate
         
         
         
-        optionMenu.backgroundColor = ColorCompatibility.systemBackground.withAlphaComponent(0.9)
+        optionMenu.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.9)
         let gesture = UITapGestureRecognizer.init(target: self, action: #selector(openOptionMenu(_:)))
         optionMenu.addGestureRecognizer(gesture)
 
@@ -823,19 +829,22 @@ class ProductCell: UITableViewCell, UITextViewDelegate, UICollectionViewDelegate
         super.layoutSubviews()
         spinner.animate()
 
-        self.userImage.layer.cornerRadius = self.userImage.frame.height / 2
-        self.userImage.clipsToBounds = true
-        self.userImage.layer.borderColor = UIColor(named: "ProfileMask")?.cgColor
-        self.userImage.layer.borderWidth = self.userImage.frame.height / 17.75
+        userImage.layer.cornerRadius = userImage.frame.height / 2
+        userImage.clipsToBounds = true
+        userImage.layer.borderColor = UIColor(named: "ProfileMask")?.cgColor
+        userImage.layer.borderWidth = userImage.frame.height / 17.75
+        
+        privateBanner.layer.cornerRadius = privateBanner.frame.height / 4
+        privateBanner.clipsToBounds = true
         
         if let superView1 = optionMenuActionBtn1.superview, let superView2 = optionMenuCancelBtn.superview{
             superView1.layer.cornerRadius = superView1.frame.height / 2
             superView1.clipsToBounds = true
-            superView1.backgroundColor = ColorCompatibility.tertiarySystemFill
+            superView1.backgroundColor = .tertiarySystemFill
             
             superView2.layer.cornerRadius = superView2.frame.height / 2
             superView2.clipsToBounds = true
-            superView2.backgroundColor = ColorCompatibility.tertiarySystemFill
+            superView2.backgroundColor = .tertiarySystemFill
         }
     }
     

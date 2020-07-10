@@ -60,16 +60,16 @@
                     <navigationItem key="navigationItem" id="sMD-LP-3Ri">
                         <nil key="title"/>
                         <rightBarButtonItems>
-                            <barButtonItem image="cart" id="FIa-rd-HO2">
-                                <color key="tintColor" name="LoadingColor"/>
-                                <connections>
-                                    <action selector="toCart:" destination="b26-ny-SLm" id="B3L-ni-3of"/>
-                                </connections>
-                            </barButtonItem>
                             <barButtonItem image="cash" id="agr-0f-dMy">
                                 <color key="tintColor" name="LoadingColor"/>
                                 <connections>
                                     <action selector="toSales:" destination="b26-ny-SLm" id="XRg-o5-DJy"/>
+                                </connections>
+                            </barButtonItem>
+                            <barButtonItem image="cart" id="FIa-rd-HO2">
+                                <color key="tintColor" name="LoadingColor"/>
+                                <connections>
+                                    <action selector="toCart:" destination="b26-ny-SLm" id="B3L-ni-3of"/>
                                 </connections>
                             </barButtonItem>
                         </rightBarButtonItems>
@@ -177,11 +177,11 @@
             </objects>
             <point key="canvasLocation" x="3528.985507246377" y="265.84821428571428"/>
         </scene>
-        <!--Notifications-->
+        <!--Inbox-->
         <scene sceneID="OPt-qg-wgf">
             <objects>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="7QI-eE-7ei" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="Notifications" image="tag" id="ICw-1t-TqU"/>
+                    <tabBarItem key="tabBarItem" title="Inbox" image="captions.bubble" id="ICw-1t-TqU"/>
                     <toolbarItems/>
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO"/>
                     <simulatedTabBarMetrics key="simulatedBottomBarMetrics" translucent="NO"/>
@@ -197,7 +197,7 @@
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="biu-PO-lAD" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2493.5999999999999" y="-449.26108374384239"/>
+            <point key="canvasLocation" x="2492" y="-469"/>
         </scene>
         <!--ShoppingCartVC-->
         <scene sceneID="1c3-LD-rqh">
@@ -247,9 +247,9 @@
         </scene>
     </scenes>
     <resources>
+        <image name="captions.bubble" width="33.333332061767578" height="33.333332061767578"/>
         <image name="cart" width="33.333332061767578" height="33.333332061767578"/>
         <image name="cash" width="30" height="30"/>
-        <image name="tag" width="33.333332061767578" height="33.333332061767578"/>
         <namedColor name="LoadingColor">
             <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

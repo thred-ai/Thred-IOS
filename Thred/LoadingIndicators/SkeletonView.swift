@@ -15,8 +15,8 @@ class SkeletonView: UIView {
     let startLocations : [NSNumber] = [-1.0,-0.5, 0.0]
     let endLocations : [NSNumber] = [1.0,1.5, 2.0]
     
-    let gradientBackgroundColor : UIColor = ColorCompatibility.quaternarySystemFill
-    let gradientMovingColor : UIColor = ColorCompatibility.systemFill
+    let gradientBackgroundColor : UIColor = .quaternarySystemFill
+    let gradientMovingColor : UIColor = .systemFill
         
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         

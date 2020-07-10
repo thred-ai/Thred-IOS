@@ -49,14 +49,14 @@ class FeaturedPostView: UIView, UICollectionViewDelegate, UICollectionViewDataSo
         
         let attributes = [
             NSAttributedString.Key.font : font,
-            NSAttributedString.Key.foregroundColor : ColorCompatibility.tertiaryLabel
+            NSAttributedString.Key.foregroundColor : UIColor.tertiaryLabel
         ] as [NSAttributedString.Key : Any]
         
         guard let orderFont = UIFont(name: "NexaW01-Heavy", size: 12) else{return}
         
         let orderAttributes = [
             NSAttributedString.Key.font : orderFont,
-            NSAttributedString.Key.foregroundColor : ColorCompatibility.secondaryLabel
+            NSAttributedString.Key.foregroundColor : UIColor.secondaryLabel
         ] as [NSAttributedString.Key : Any]
         
         attrString.addAttributes(attributes, range: matchRange)
@@ -215,7 +215,7 @@ class FeaturedPostView: UIView, UICollectionViewDelegate, UICollectionViewDataSo
         super.layoutSubviews()
         collectionView.superview?.roundCorners([.bottomLeft, .bottomRight], radius: collectionView.frame.height / 40)
         if let trendingBack = trendingLbl.superview{
-            trendingBack.layer.cornerRadius = trendingBack.frame.height / 2
+            trendingBack.roundCorners([.bottomLeft, .bottomRight], radius: trendingBack.frame.height / 3)
             trendingBack.clipsToBounds = true
         }
     }

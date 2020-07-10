@@ -25,7 +25,6 @@ class NotificationCell: UITableViewCell{
     }
     var salesProduct: ProductInCart!{
         didSet{
-            
             if notifLbl.text.isEmpty || notifLbl.text == nil{
                 guard let quantity = salesProduct.quantity else{return}
                 guard let price = salesProduct.product.price else{return}
@@ -38,6 +37,7 @@ class NotificationCell: UITableViewCell{
     @IBOutlet weak var notifLbl: UITextView!
     @IBOutlet weak var timestampLbl: UILabel!
     weak var vc: UIViewController!
+    @IBOutlet weak var dpBtn: UIButton!
     
     @IBAction func toUser(_ sender: UIButton){
         let user = notif?.userInfo ?? salesProduct?.product?.userInfo
@@ -62,11 +62,11 @@ class NotificationCell: UITableViewCell{
         
         if notif.notifType == "Follow"{
             notifLbl.text = "started following you"
-            notifLbl.textColor = ColorCompatibility.secondaryLabel
+            notifLbl.textColor = .secondaryLabel
         }
         else if notif.notifType == "Like"{
             notifLbl.text = "liked your post"
-            notifLbl.textColor = ColorCompatibility.secondaryLabel
+            notifLbl.textColor = .secondaryLabel
         }
         else if notif.notifType == "Buy"{
             notifLbl.text = "purchased your t-shirt"
@@ -74,19 +74,19 @@ class NotificationCell: UITableViewCell{
         }
         else if notif.notifType == "Comment"{
             notifLbl.text = "commented on your post: \(notif.commentMessage ?? "This comment cannot be displayed")"
-            notifLbl.textColor = ColorCompatibility.secondaryLabel
+            notifLbl.textColor = .secondaryLabel
         }
         else if notif.notifType == "Mention"{
             notifLbl.text = "mentioned you in a comment: \(notif.commentMessage ?? "This comment cannot be displayed")"
-            notifLbl.textColor = ColorCompatibility.secondaryLabel
+            notifLbl.textColor = .secondaryLabel
         }
         else if notif.notifType == "Bio_Mention"{
             notifLbl.text = "mentioned you in their bio"
-            notifLbl.textColor = ColorCompatibility.secondaryLabel
+            notifLbl.textColor = .secondaryLabel
         }
         else if notif.notifType == "Post_Mention"{
             notifLbl.text = "mentioned you in their post"
-            notifLbl.textColor = ColorCompatibility.secondaryLabel
+            notifLbl.textColor = .secondaryLabel
         }
         else if notif.notifType.contains("Report"){
             if notif.notifType == "Report:Post"{
@@ -121,8 +121,19 @@ class NotificationCell: UITableViewCell{
         notifPic.layer.borderColor = UIColor(named: "ProfileMask")?.cgColor
     }
     
+    @IBAction func tappedDPBtn(_ sender: UIButton) {
+        (vc as? SalesVC)?.showBankMessage(product: salesProduct, completed: {
+            
+        })
+    }
+    
+    
     override func awakeFromNib() {
         super.awakeFromNib()
+        dpBtn.superview?.layer.cornerRadius = (dpBtn.superview?.frame.height ?? 0) / 2
+        dpBtn.superview?.clipsToBounds = true
+        dpBtn.superview?.layer.borderColor = UIColor(named: "ProfileMask")?.cgColor
+        dpBtn.superview?.layer.borderWidth = (dpBtn.superview?.frame.height ?? 0) / 17.75
         // Initialization code
     }
 

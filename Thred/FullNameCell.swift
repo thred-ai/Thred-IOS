@@ -18,7 +18,7 @@ class FullNameCell: UITableViewCell{
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
-        fullNameField.backgroundColor = ColorCompatibility.secondarySystemBackground
+        fullNameField.backgroundColor = .secondarySystemBackground
     }
     
     override func layoutSubviews() {
@@ -29,7 +29,7 @@ class FullNameCell: UITableViewCell{
 
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
-        self.backgroundColor = ColorCompatibility.systemBackground
+        self.backgroundColor = .systemBackground
 
         // Configure the view for the selected state
     }

@@ -85,8 +85,7 @@ class UserListVC: UITableViewController {
                             let followingCount = document["Following_Count"] as? Int
                             let postCount = document["Posts_Count"] as? Int
                             let usersBlocking = document["Users_Blocking"] as? [String]
-                            let profileLink = URL(string: (document["ProfileLink"] as? String) ?? "")
-                            let user = UserInfo(uid: uid, dp: nil, dpID: dpLink, username: username, fullName: fullname, bio: bio, notifID: nil, userFollowing: userFollowing ?? [], userLiked: [], followerCount: followerCount ?? 0, postCount: postCount ?? 0, followingCount: followingCount ?? 0, usersBlocking: usersBlocking ?? [], profileLink: profileLink)
+                            let user = UserInfo(uid: uid, dp: nil, dpID: dpLink, username: username, fullName: fullname, bio: bio, notifID: nil, userFollowing: userFollowing ?? [], userLiked: [], followerCount: followerCount ?? 0, postCount: postCount ?? 0, followingCount: followingCount ?? 0, usersBlocking: usersBlocking ?? [], profileLink: nil)
                             self.listUsers.append(user)
                             self.tableView.performBatchUpdates({
                                 self.tableView.insertRows(at: [IndexPath(row: self.listUsers.count - 1, section: 0)], with: .none)
@@ -165,16 +164,29 @@ class UserListVC: UITableViewController {
         })
     }
     
-    override func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+    override func scrollViewDidScroll(_ scrollView: UIScrollView) {
         
-        if tableView.contentOffset.y >= (tableView.contentSize.height - tableView.frame.size.height){
+        if tableView.contentOffset.y >= (tableView.contentSize.height - tableView.frame.size.height) / 2{
             print("fromScroll")
-            if !isLoading{
+            if !isLoading, canLoadMore{
                 isLoading = true
                 getUsers(fromInterval: lastDoc, completed: {
                     self.isLoading = false
                 })
             }
+        }
+    }
+    
+    var canLoadMore = false
+    
+    override func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        let translation = scrollView.panGestureRecognizer.translation(in: scrollView.superview)
+        if translation.y > 0 {
+            canLoadMore = false
+            // swipes from top to bottom of screen -> down
+        } else {
+            canLoadMore = true
+            // swipes from bottom to top of screen -> up
         }
     }
 

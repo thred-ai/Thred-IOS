@@ -11,6 +11,7 @@ import Firebase
 import FirebaseFirestore
 import WebKit
 import ColorCompatibility
+import PopupDialog
 
 
 class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITableViewDataSource {
@@ -27,18 +28,18 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
     
     lazy var webViewBack: UIView = {
         let back = UIView(frame: CGRect(x: 0, y: view.frame.height, width: view.frame.width, height: view.frame.height))
-        back.backgroundColor = ColorCompatibility.systemBackground
+        back.backgroundColor = .systemBackground
         let stackView = UIStackView(frame: back.bounds)
         stackView.axis = .vertical
         stackView.spacing = 10
         
         let viewBehind = UIView(frame: CGRect(x: 0, y: 0, width: back.frame.width, height: view.frame.height))
-        viewSpinner = MapSpinnerView.init(frame: CGRect(x: 0, y: 0, width: 60, height: 60))
+        viewSpinner = MapSpinnerView.init(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
         viewSpinner.center = viewBehind.center
         viewBehind.addSubview(viewSpinner)
         
         let button = UIButton(frame: CGRect(x: 0, y: 0, width: back.frame.width, height: 30))
-        button.backgroundColor = ColorCompatibility.systemBackground
+        button.backgroundColor = .systemBackground
         button.setImage(UIImage.init(nameOrSystemName: "chevron.down", systemPointSize: 22, iconSize: 9), for: .normal)
         button.tintColor = UIColor(named: "LoadingColor")
         button.addTarget(self, action: #selector(hideStripeView(_:)), for: .touchUpInside)
@@ -92,25 +93,51 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
                         let timestamp = (doc["timestamp"] as? Timestamp)?.dateValue()
                     else{ continue }
                     let price = (doc["amount"] as? Double ?? 0) / 100
+                    let toBank = doc["toBank"] as? Bool ?? false
 
                     let productUserInfo = UserInfo(uid: customer_uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil)
                     
-                    let product = Product(userInfo: productUserInfo, picID: nil, description: nil, productID: product_id, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: price / Double(quantity), name: nil, templateColor: nil, likes: nil, liked: userInfo.userLiked.contains(doc.documentID), designImage: nil, comments: nil, link: nil, isAvailable: true)
+                    let product = Product(userInfo: productUserInfo, picID: nil, description: nil, productID: product_id, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: price / Double(quantity), name: nil, templateColor: nil, likes: nil, liked: userInfo.userLiked.contains(doc.documentID), designImage: nil, comments: nil, link: nil, isAvailable: true, isPublic: nil)
                     
-                    self.salesProducts.append(ProductInCart(product: product, size: size, quantity: quantity, isDeleted: false, timestamp: timestamp, timestampDiff: nil, saleID: doc.documentID))
+                    self.salesProducts.append(ProductInCart(product: product, size: size, quantity: quantity, isDeleted: false, timestamp: timestamp, timestampDiff: nil, saleID: doc.documentID, inBank: toBank))
                    
                     self.tableView.performBatchUpdates({
-                        self.tableView.insertRows(at: [IndexPath(row: self.salesProducts.count - 1, section: 0)], with: .none)
+                        self.tableView.insertRows(at: [IndexPath(row: self.salesProducts.count - 1, section: 0)], with: .fade)
                     }, completion: { finished in
                         if finished{
                             if doc == docs.last{
-                                completed(true)
+                                return
                             }
                         }
                     })
                 }
+                completed(true)
             }
         })
+    }
+    
+    func showBankMessage(product: ProductInCart, completed: @escaping () -> ()){
+        
+        var title = String()
+        var titleColor = UIColor()
+        let fullname = userInfo.fullName ?? "<null>"
+        let moneyMade = ((((product.product.price ?? 0) - 20.00) * Double(product.quantity)) * 0.90).formatPrice()
+        let description = "\(fullname) earned \(moneyMade) from this sale."
+
+        switch product.inBank{
+        case true:
+            titleColor = UIColor.systemGreen
+            title = "COMMISSION EARNED"
+        default:
+            titleColor = UIColor.red
+            title = "NO COMMISSION EARNED"
+        }
+        
+        let yesBtn = DefaultButton(title: "OK", dismissOnTap: true) {
+            completed()
+        }
+        
+        showPopUp(title: title, message: description, image: nil, buttons: [yesBtn], titleColor: titleColor)
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -124,7 +151,7 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
         cell?.vc = self
         cell?.notifLbl.text = nil
         cell?.notifPic.image = nil
-        cell?.notifPic.backgroundColor = ColorCompatibility.secondarySystemBackground
+        cell?.notifPic.backgroundColor = .secondarySystemBackground
         cell?.notifPic.clipsToBounds = true
         cell?.nameBtn.titleLabel?.text = nil
         cell?.nameBtn.setTitle(nil, for: .normal)
@@ -133,14 +160,26 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
         cell?.removedNotifView.isHidden = true
         cell?.isUserInteractionEnabled = false
         cell?.notifPic.alpha = 1.0
+        cell?.dpBtn.imageView?.image = nil
+        cell?.dpBtn.setImage(nil, for: .normal)
+        
+        if sale.inBank ?? false, let data = userInfo.dp, let image = UIImage(data: data){
+            cell?.dpBtn.imageView?.image = image
+            cell?.dpBtn.setImage(image, for: .normal)
+        }
+        else{
+            cell?.dpBtn.imageView?.image = UIImage(named: "thred.logo.light")
+            cell?.dpBtn.setImage(UIImage(named: "thred.logo.light"), for: .normal)
+        }
+        
         cell?.salesProduct = sale
-        self.tableView.checkSalesTimes(sale: sale, timestampLbl: cell?.timestampLbl)
+        tableView.checkSalesTimes(sale: sale, timestampLbl: cell?.timestampLbl)
 
         cell?.isDP = false
 
         if sale.product.userInfo.username == nil{
             
-            downloadUserInfo(uid: sale.product.userInfo.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: false, userInfoToUse: nil, queryOnUsername: false, completed: { userUID, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followerCount, followingCount, profileLink  in
+            downloadUserInfo(uid: sale.product.userInfo.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: false, userInfoToUse: nil, queryOnUsername: false, completed: { userUID, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followerCount, followingCount in
                 
                 if username == nil{
                     for sameNotif in self.salesProducts.filter({$0.product.userInfo.uid == sale.product.userInfo.uid}){
@@ -168,7 +207,6 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
                 sale.product.userInfo.notifID = notifID
                 sale.product.userInfo.usersBlocking = usersBlocking
                 sale.product.userInfo.dp = imgData
-                sale.product.userInfo.profileLink = profileLink
 
                 cell?.isUserInteractionEnabled = true
                 guard let index = self.salesProducts.firstIndex(where: {$0.saleID == sale.saleID}) else{return}
@@ -260,6 +298,11 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
         return cell!
     }
     
+    @IBAction func toPricingGuide(_ sender: UIButton) {
+        self.performSegue(withIdentifier: "toCommissionCalc", sender: nil)
+    }
+    
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         let sale = salesProducts[indexPath.row]
@@ -323,13 +366,11 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
     var isLoading = false
     
     
-    
-    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        
-        if tableView.contentOffset.y >= (tableView.contentSize.height - tableView.frame.size.height){
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        if tableView.contentOffset.y >= (tableView.contentSize.height - tableView.frame.size.height) / 2{
             print("fromScroll")
             
-            if !self.isLoading{
+            if !self.isLoading, canLoadMore{
                 self.isLoading = true
                 self.getSales(completed: { finished in
                     self.isLoading = false
@@ -340,6 +381,21 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
             }
         }
     }
+    
+    var canLoadMore = false
+    
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        let translation = scrollView.panGestureRecognizer.translation(in: scrollView.superview)
+        if translation.y > 0 {
+            canLoadMore = false
+            // swipes from top to bottom of screen -> down
+        } else {
+            canLoadMore = true
+            // swipes from bottom to top of screen -> up
+        }
+    }
+
+    
     
     func showStripeView(completed: @escaping () -> ()){
         webView.isHidden = true

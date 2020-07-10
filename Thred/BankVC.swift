@@ -124,14 +124,14 @@ class BankVC: UIViewController, WKNavigationDelegate {
 
     lazy var webViewBack: UIView = {
         let back = UIView(frame: CGRect(x: 0, y: view.frame.height, width: view.frame.width, height: view.frame.height))
-        back.backgroundColor = ColorCompatibility.systemBackground
+        back.backgroundColor = .systemBackground
 
         let stackView = UIStackView(frame: back.bounds)
         stackView.axis = .vertical
         stackView.spacing = 10
         
         let button = UIButton(frame: CGRect(x: 0, y: 0, width: back.frame.width, height: 30))
-        button.backgroundColor = ColorCompatibility.systemBackground
+        button.backgroundColor = .systemBackground
 
         button.setImage(UIImage.init(nameOrSystemName: "chevron.down", systemPointSize: 22, iconSize: 9), for: .normal)
         button.tintColor = UIColor(named: "LoadingColor")

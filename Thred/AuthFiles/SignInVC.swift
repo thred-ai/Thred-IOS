@@ -138,7 +138,7 @@ class SignInVC: UIViewController {
     }
     
     func loadUser(userUID: String, completed: @escaping (Bool) -> ()){
-        self.downloadUserInfo(uid: userUID, userVC: nil, feedVC: nil, downloadingPersonalDP: true, doNotDownloadDP: false, userInfoToUse: nil, queryOnUsername: false, completed: { uid, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followersCount, followingCount, profileLink  in
+        self.downloadUserInfo(uid: userUID, userVC: nil, feedVC: nil, downloadingPersonalDP: true, doNotDownloadDP: false, userInfoToUse: nil, queryOnUsername: false, completed: { uid, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followersCount, followingCount  in
             
             if username == nil{
                 DispatchQueue.main.asyncAfter(deadline: .now() + 3.5){
@@ -152,7 +152,7 @@ class SignInVC: UIViewController {
                             if let appdelegate: AppDelegate = UIApplication.shared.delegate as? AppDelegate{
                                 appdelegate.registerNotifs(application: UIApplication.shared)
                             }
-                            self.setUserInfo(username: username, fullname: fullName, image: imgData, bio: bio, notifID: notifID, dpUID: dpUID, userFollowing: userFollowing, followerCount: followersCount, postCount: postCount, followingCount: followingCount, usersBlocking: usersBlocking, profileLink: profileLink)
+                            self.setUserInfo(username: username, fullname: fullName, image: imgData, bio: bio, notifID: notifID, dpUID: dpUID, userFollowing: userFollowing, followerCount: followersCount, postCount: postCount, followingCount: followingCount, usersBlocking: usersBlocking)
                             completed(true)
                         })
                     }
@@ -248,12 +248,12 @@ class SignInVC: UIViewController {
     
     lazy var toolBar: UIView = {
         let bar = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 45))
-        bar.backgroundColor = ColorCompatibility.systemBackground.withAlphaComponent(0.8)
+        bar.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.8)
         let stackView = UIStackView(frame: bar.frame)
         bar.addSubview(stackView)
         let button = UIButton(frame: CGRect(x: 0, y: 0, width: 45, height: 45))
         button.setTitle("Done", for: .normal)
-        button.setTitleColor(ColorCompatibility.label, for: .normal)
+        button.setTitleColor(.label, for: .normal)
         button.addTarget(self, action: #selector(doneEditing(_:)), for: .touchUpInside)
         stackView.addArrangedSubview(button)
         

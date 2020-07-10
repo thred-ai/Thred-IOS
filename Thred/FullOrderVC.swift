@@ -10,6 +10,39 @@ import UIKit
 import PopupDialog
 import Firebase
 
+class Address{
+    
+    
+    required init(instance: Address) {
+        self.postalCode = instance.postalCode
+        self.streetAddress = instance.streetAddress
+        self.unitNumber = instance.unitNumber
+        self.city = instance.city
+        self.adminArea = instance.adminArea
+        self.country = instance.country
+    }
+        
+    var postalCode: String!
+    var streetAddress: String!
+    var unitNumber: String?
+    var city: String!
+    var adminArea: String!
+    var country: String!
+    
+    init(postalCode: String?, streetAddress: String?, unitNumber: String?, city: String?, adminArea: String?, country: String?) {
+        self.postalCode = postalCode
+        self.streetAddress = streetAddress
+        self.unitNumber = unitNumber
+        self.city = city
+        self.adminArea = adminArea
+        self.country = country
+    }
+    
+    convenience init(){
+        self.init(postalCode: nil, streetAddress: nil, unitNumber: nil, city: nil, adminArea: nil, country: nil)
+    }
+}
+
 class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UINavigationControllerDelegate {
 
     @IBOutlet weak var tableView: UITableView!
@@ -24,7 +57,6 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
 
         navigationController?.delegate = self
         
-        print(order.products.first!.product.name!)
         
         tableView.delegate = self
         tableView.dataSource = self
@@ -58,7 +90,7 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 3
+        return 7
     }
     
     lazy var loadingView: UIView = {
@@ -82,7 +114,7 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        if indexPath.row == 2{
+        if indexPath.row == 6{
             let cell = UITableViewCell(style: .default, reuseIdentifier: "DefaultCell")
             cell.textLabel?.textAlignment = .center
             var color: UIColor!
@@ -98,6 +130,7 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
             case "completed":
                 color = UIColor.systemFill
             default:
+                color = UIColor.systemFill
                 break
             }
             cell.textLabel?.text = string
@@ -139,11 +172,24 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
                     color = UIColor.systemGreen
                     string = "COMPLETED"
                 default:
+                    color = UIColor.systemGreen
+                    string = "ERROR"
                     break
                 }
                 cell.detailTextLabel?.text = string
                 cell.detailTextLabel?.textColor = color
             case 1:
+                cell.textLabel?.text = "Delivery Address:"
+                cell.detailTextLabel?.text = "VIEW"
+            case 2:
+                cell.textLabel?.text = "Subtotal:"
+                if let cost = order.subtotal, cost != 0.00{
+                    cell.detailTextLabel?.text = "\((order.subtotal ?? 0.00).formatPrice())"
+                }
+                else{
+                    cell.detailTextLabel?.text = "FREE"
+                }
+            case 3:
                 cell.textLabel?.text = "Shipping:"
                 if let cost = order.shippingCost, cost != 0.00{
                     cell.detailTextLabel?.text = "\((order.shippingCost ?? 0.00).formatPrice())"
@@ -151,10 +197,25 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
                 else{
                     cell.detailTextLabel?.text = "FREE"
                 }
+            case 4:
+                cell.textLabel?.text = "Tax:"
+                if let cost = order.tax, cost != 0.00{
+                    cell.detailTextLabel?.text = "\((order.tax ?? 0.00).formatPrice())"
+                }
+                else{
+                    cell.detailTextLabel?.text = "N/A"
+                }
+            case 5:
+                cell.textLabel?.text = "Total:"
+                if let cost = order.totalCost, cost != 0.00{
+                    cell.detailTextLabel?.text = "\((order.totalCost ?? 0.00).formatPrice())"
+                }
+                else{
+                    cell.detailTextLabel?.text = "FREE"
+                }
             default:
                 break
             }
-            
             return cell
         }
     }
@@ -168,9 +229,12 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
             tableView.deselectRow(at: indexPath, animated: true)
             showStatusMessage {}
         case 1:
+            showAddressMessage {}
+            tableView.deselectRow(at: indexPath, animated: true)
+        case 6:
+            confirmCancellation {}
             tableView.deselectRow(at: indexPath, animated: true)
         default:
-            confirmCancellation {}
             tableView.deselectRow(at: indexPath, animated: true)
         }
     }
@@ -200,6 +264,9 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
             title = "COMPLETED"
             description = "Your order is completed and may take 1-2 business days to ship. Orders in this stage cannot be cancelled."
         default:
+            titleColor = UIColor.red
+            title = "ERROR"
+            description = "There was an error completing this order, please contact Thred support."
             break
         }
         
@@ -208,6 +275,21 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
         }
         
         showPopUp(title: title, message: description, image: nil, buttons: [yesBtn], titleColor: titleColor)
+    }
+    
+    func showAddressMessage(completed: @escaping () -> ()){
+        
+        var description = "\(order.address.streetAddress ?? "").\n\(order.address.city ?? "").\n\(order.address.adminArea ?? "").\n\(order.address.postalCode ?? "")."
+        
+        if let unit = order.address.unitNumber{
+            description += "\nUnit: \(unit)"
+        }
+        
+        let yesBtn = DefaultButton(title: "OK", dismissOnTap: true) {
+            completed()
+        }
+        
+        showPopUp(title: nil, message: description, image: nil, buttons: [yesBtn], titleColor: .label)
     }
     
     func showCancelConfirmationMessage(completed: @escaping () -> ()){

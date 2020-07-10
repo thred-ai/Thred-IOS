@@ -83,15 +83,13 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
     var friendInfo: UserInfo! = UserInfo()
     
     @IBAction func toCart(_ sender: UIBarButtonItem) {
-           navigationController?.segueToCart()
-       }
+        
+        navigationController?.segueToCart()
+    }
        
-       @IBAction func toSales(_ sender: UIBarButtonItem) {
+    @IBAction func toSales(_ sender: UIBarButtonItem) {
            navigationController?.segueToSales()
-           
-           
-    
-       }
+    }
 
     @IBOutlet weak var tableView: UITableView!
 
@@ -161,7 +159,14 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
                     let likes = snap["Likes"] as? Int
                     guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                     let comments = ((snap["Comments"]) as? Int) ?? 0
+                    let isPublic = snap["Public"] as? Bool ?? true
 
+                    guard !(!isPublic && uid != userInfo.uid) else{
+                        self.navigationController?.popViewController(animated: true)
+                        return
+                    }
+                    
+                    
                     Firestore.firestore().collection("Users").document(uid).collection("Products").document(snap.documentID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userUID).getDocuments(completion: { snapLikes, error in
                     
                         var liked: Bool!
@@ -186,10 +191,8 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
                                 liked = false
                             }
                         }
-                        if isAvailable == false{
-                            
-                        }
-                        self.fullProduct = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: nil, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil, isAvailable: isAvailable)
+                        
+                        self.fullProduct = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: nil, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil, isAvailable: isAvailable, isPublic: isPublic)
                         if let cell = self.tableView.cellForRow(at: IndexPath(row: 0, section: 0)) as? ProductCell{
                             self.tableView.setPictureCell(cell: cell, indexPath: IndexPath(row: 0, section: 0), product: self.fullProduct, productLocation: self, shouldDownloadPic: false)
                         }
@@ -251,9 +254,12 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
         if let products = ((viewController as? FeedVC)?.loadedProducts ?? (viewController as? FriendVC)?.loadedProducts ?? (viewController as? UserVC)?.loadedProducts){
             
             guard let index = products.firstIndex(where: {$0.productID == fullProduct.productID}) else{
-                
                 return}
-
+            products[index].name = fullProduct.name
+            products[index].description = fullProduct.description
+            products[index].price = fullProduct.price
+            products[index].isPublic = fullProduct.isPublic
+                
             let tableView = (viewController as? UserVC)?.tableView ?? (viewController as? FriendVC)?.tableView ?? (viewController as? FeedVC)?.tableView
             
             tableView?.performBatchUpdates({
@@ -437,7 +443,7 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
         }
         else if let designVC = (segue.destination as? UINavigationController)?.viewControllers.first as? DesignViewController{
             if let img = cache.imageFromCache(forKey: fullProduct.productID){
-                designVC.product = ProductInProgress(templateColor: fullProduct.templateColor, design: img, uid: fullProduct.userInfo.uid, caption: fullProduct.description, name: fullProduct.name, price: fullProduct.price, productID: fullProduct.productID, display: fullProduct.designImage)
+                designVC.product = ProductInProgress(templateColor: fullProduct.templateColor, design: img, uid: fullProduct.userInfo.uid, caption: fullProduct.description, name: fullProduct.name, price: fullProduct.price, productID: fullProduct.productID, display: fullProduct.designImage, isPublic: fullProduct.isPublic)
             }
         }
         else if let reportVC = (segue.destination as? UINavigationController)?.viewControllers.first as? ReportVC{

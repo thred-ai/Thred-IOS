@@ -146,7 +146,7 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
         
         let label = UILabel()
         label.font = UIFont(name: "NexaW01-Heavy", size: 16)
-        label.textColor = ColorCompatibility.tertiaryLabel
+        label.textColor = .tertiaryLabel
         label.textAlignment = .center
         var title = String()
         if section == 0{
@@ -290,7 +290,7 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
         spinner.animate()
         save {
             spinner.removeFromSuperview()
-            self.setUserInfo(username: self.editUserInfo.username, fullname: self.editUserInfo.fullName, image: self.editUserInfo.dp, bio: self.editUserInfo.bio, notifID: self.editUserInfo.notifID, dpUID: self.editUserInfo.dpID, userFollowing: userInfo.userFollowing, followerCount: userInfo.followerCount, postCount: userInfo.postCount, followingCount: userInfo.followingCount, usersBlocking: userInfo.usersBlocking, profileLink: userInfo.profileLink)
+            self.setUserInfo(username: self.editUserInfo.username, fullname: self.editUserInfo.fullName, image: self.editUserInfo.dp, bio: self.editUserInfo.bio, notifID: self.editUserInfo.notifID, dpUID: self.editUserInfo.dpID, userFollowing: userInfo.userFollowing, followerCount: userInfo.followerCount, postCount: userInfo.postCount, followingCount: userInfo.followingCount, usersBlocking: userInfo.usersBlocking)
             self.performSegue(withIdentifier: "backToProfile", sender: nil)
         }
  
@@ -495,7 +495,7 @@ class OptionMenu: UIView{
     
     override init(frame: CGRect){
         super.init(frame: frame)
-        self.backgroundColor = ColorCompatibility.secondarySystemBackground
+        self.backgroundColor = .secondarySystemBackground
         self.addSubview(stackView)
         roundCorners([.topLeft, .topRight], radius: frame.height / 8)
     }
@@ -520,29 +520,29 @@ class OptionMenu: UIView{
         
         cameraBtn = UIButton.init(frame: CGRect(x: 0, y:0, width: stackView.frame.width, height: 45))
         cameraBtn.setTitle("Camera", for: .normal)
-        cameraBtn.backgroundColor = ColorCompatibility.tertiarySystemFill
+        cameraBtn.backgroundColor = .tertiarySystemFill
         cameraBtn.setTitleColor(UIColor(named: "LoadingColor"), for: .normal)
         cameraBtn.layer.cornerRadius = cameraBtn.frame.height / 4
         cameraBtn.clipsToBounds = true
         
         photosBtn = UIButton.init(frame: CGRect(x: 0, y:0, width: stackView.frame.width, height: 45))
         photosBtn.setTitle("Photos", for: .normal)
-        photosBtn.backgroundColor = ColorCompatibility.tertiarySystemFill
+        photosBtn.backgroundColor = .tertiarySystemFill
         photosBtn.setTitleColor(UIColor(named: "LoadingColor"), for: .normal)
         photosBtn.layer.cornerRadius = photosBtn.frame.height / 4
         photosBtn.clipsToBounds = true
         
         removeBtn = UIButton.init(frame: CGRect(x: 0, y:0, width: stackView.frame.width, height: 45))
         removeBtn.setTitle("Remove Photo", for: .normal)
-        removeBtn.backgroundColor = ColorCompatibility.tertiarySystemFill
+        removeBtn.backgroundColor = .tertiarySystemFill
         removeBtn.setTitleColor(.red, for: .normal)
         removeBtn.layer.cornerRadius = removeBtn.frame.height / 4
         removeBtn.clipsToBounds = true
         
         cancelBtn = UIButton.init(frame: CGRect(x: 0, y:0, width: stackView.frame.width, height: 45))
         cancelBtn.setTitle("Cancel", for: .normal)
-        cancelBtn.backgroundColor = ColorCompatibility.tertiarySystemFill
-        cancelBtn.setTitleColor(ColorCompatibility.label, for: .normal)
+        cancelBtn.backgroundColor = .tertiarySystemFill
+        cancelBtn.setTitleColor(.label, for: .normal)
         cancelBtn.layer.cornerRadius = cancelBtn.frame.height / 4
         cancelBtn.clipsToBounds = true
         

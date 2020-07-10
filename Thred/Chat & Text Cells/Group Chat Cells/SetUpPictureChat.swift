@@ -33,7 +33,10 @@ extension UITableView{
             cell?.productDescription.attributedText = attr
         }
         cell?.productDescription.text = nil
-        
+        cell?.privateBanner.isHidden = true
+        cell?.imageStackBar.isHidden = false
+        cell?.commentBtn.isHidden = false
+
         if shouldDownloadPic{
             cell?.collectionView.reloadData()
             cell?.pageControl.currentPage = 0
@@ -48,9 +51,16 @@ extension UITableView{
         cell?.product = product
         cell?.vc = productLocation
         cell?.progressView.progress = 0.0
-        cell?.title.titleLabel?.textColor = ColorCompatibility.label
-        cell?.title.setTitleColor(ColorCompatibility.label, for: .normal)
+        cell?.title.titleLabel?.textColor = .label
+        cell?.title.setTitleColor(.label, for: .normal)
 
+        
+        if !(product.isPublic ?? true){
+            cell?.privateBanner.isHidden = false
+            cell?.imageStackBar.isHidden = true
+            cell?.commentBtn.isHidden = true
+        }
+        
         if let uploadView = cell?.uploadView{
             if uploadingPosts.contains(product.productID){
                 uploadView.isHidden = false

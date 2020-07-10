@@ -58,6 +58,8 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         payBtn.setTitleColor(UIColor.white.withAlphaComponent(0.5), for: .disabled)
         payBtn.isEnabled = false
 
+        validateCosts()
+        
         if let street = UserDefaults.standard.string(forKey: "street"), let city = UserDefaults.standard.string(forKey: "city"), let adminArea = UserDefaults.standard.string(forKey: "admin_area"), let country = UserDefaults.standard.string(forKey: "country"), UserDefaults.standard.string(forKey: "postal_code") != nil{
             let unitNum = UserDefaults.standard.string(forKey: "unit_number")
             getAddress(street: street, city: city, adminArea: adminArea, country: country, unitNum: unitNum)
@@ -67,20 +69,15 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         }
     }
     
-    func getAddress(street: String, city: String, adminArea: String, country: String, unitNum: String?){
-        showAddressSpinner()
-        showPriceSpinner()
-        
+    func validateCosts(){
         if let postalCode = UserDefaults.standard.string(forKey: "CARD_POSTAL_CODE"){
+            showPriceSpinner()
             self.validateAddress(address: postalCode, completed: { country, adminArea, _, _, postalCode, isValid in
-                
                 self.province = adminArea
-                self.setAddress()
                 if country == "Canada", adminArea != "BC"{
                     self.hideAddressSpinner()
                     self.calculateCosts(province: adminArea){
                         self.hidePriceSpinner()
-                        self.payBtn.isEnabled = true
                     }
                 }
                 else{
@@ -88,10 +85,15 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
                 }
             })
         }
-        
+    }
+    
+    func getAddress(street: String, city: String, adminArea: String, country: String, unitNum: String?){
+        showAddressSpinner()
+                
         let address = "\(street), \(city), \(adminArea), \(country)"
         validateAddress(address: address, completed: { country, adminArea, city, street, postalCode, isValid in
-            if isValid{
+            switch isValid{
+            case true:
                 if country == "Canada", adminArea != "BC"{
                     self.address["Area"] = adminArea
                     self.address["Country"] = country
@@ -105,13 +107,15 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
                     else{
                         self.address.removeValue(forKey: "Unit")
                     }
-
+                    self.setAddress()
+                    self.hideAddressSpinner()
+                    self.payBtn.isEnabled = true
                 }
                 else{
-                    self.showCountryErrorView()
+                    fallthrough
                 }
-            }
-            else{
+                
+            default:
                 self.showCountryErrorView()
             }
             DispatchQueue.main.async {
@@ -230,19 +234,43 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         shippingAndTaxLbl.attributedText = attrString
     }
     
-    func calculateCosts(province: String?, completed: @escaping () -> ()){
-        
-        
-        guard let province = province else{showErrorView(); return}
-        
+    func calculateSubtotal() -> Double{
         var subtotal = 0.00
         
         for product in savedProducts{
             guard let price = product.product.price, let quantity = product.quantity else{continue}
             subtotal += price * Double(quantity)
         }
+        return subtotal
+    }
+    
+    func calculateShipping() -> Double{
+        var shipping = 0.00
+        if savedProducts.compactMap({$0.quantity}).reduce(0, +) < 5{
+            shipping = 12.00
+            salesInfo["Shipping"] = 1200
+        }
+        else{
+            strikethroughShipping()
+            salesInfo["Shipping"] = 0.00
+        }
+        return shipping
+    }
+    
+    func setPriceLabels(subtotal: Double, shipping: Double, tax: Double){
+        subtotalField.text = "\((subtotal).formatPrice())"
+        taxShippingField.text = "\((tax + shipping).formatPrice())"
+        totalField.text = "\((subtotal + tax + shipping).formatPrice())"
+    }
+
+    func calculateCosts(province: String?, completed: @escaping () -> ()){
         
-        //let subtotal = savedProducts.compactMap({$0.product.price}).reduce(0, +)
+        
+        guard let province = province else{showErrorView(); return}
+        
+        let subtotal = calculateSubtotal()
+        let shipping = calculateShipping()
+        
         
         Firestore.firestore().collection("Canada_Tax_Docs").document(province).getDocument(completion: { doc, error in
             if let err = error{
@@ -264,22 +292,15 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
                 }
                 self.salesInfo["SalesTax"] = salesTax
                 let tax = salesTax * subtotal
-                var shipping = 0.00
-                if self.savedProducts.compactMap({$0.quantity}).reduce(0, +) < 5{
-                    shipping = 12.00
-                    self.salesInfo["Shipping"] = 1200
-                }
-                else{
-                    self.strikethroughShipping()
-                    self.salesInfo["Shipping"] = 0.00
-                }
-                self.subtotalField.text = "\((subtotal).formatPrice())"
-                self.taxShippingField.text = "\((tax + shipping).formatPrice())"
-                self.totalField.text = "\((subtotal + tax + shipping).formatPrice())"
+                
+                self.setPriceLabels(subtotal: subtotal, shipping: shipping, tax: tax)
+                
                 completed()
             }
         })
     }
+    
+    
     
     override func viewWillLayoutSubviews() {
         payBtn.layer.cornerRadius = payBtn.frame.height / 8
@@ -313,7 +334,7 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         cell?.quantityField.isEnabled = false
         cell?.isDeleted = false
         
-        cell?.productImageView.backgroundColor = ColorCompatibility.secondarySystemBackground
+        cell?.productImageView.backgroundColor = .secondarySystemBackground
         cell?.quantityView.isHidden = false
         cell?.sizingLbl.isHidden = false
         
@@ -445,7 +466,12 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         Functions.functions().httpsCallable("createIntent").call(data, completion: { result, error in
             if let err = error{
                 print(err.localizedDescription)
-                self.navigationController?.popViewController(animated: true)
+                self.navigationItem.hidesBackButton = false
+                self.hidePriceSpinner()
+                sender.isEnabled = true
+                self.showPaymentErrorMessage(message: err.localizedDescription, completed: {
+                    self.navigationController?.popViewController(animated: true)
+                })
             }
             else{
                 if let orderNumber = result?.data as? String{
@@ -456,7 +482,13 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         })
     }
     
-    
+    func showPaymentErrorMessage(message: String, completed: @escaping () -> ()){
+        let title = "Error Processing Payment!"
+        let okBtn = DefaultButton(title: "OK", dismissOnTap: true) {
+            completed()
+        }
+        showPopUp(title: title, message: message, image: nil, buttons: [okBtn], titleColor: .red)
+    }
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation

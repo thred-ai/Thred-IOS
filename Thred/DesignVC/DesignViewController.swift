@@ -61,6 +61,49 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         performSegue(withIdentifier: "DoneDesigning", sender: nil)
     }
     
+    @IBOutlet weak var publicLbl: UILabel!
+    
+    var isPublic = true
+    
+    
+    @IBAction func changeVisibility(_ sender: UIButton) {
+        if isPublic{
+            showVisibilityMessage(makePublic: false, completed: {
+                self.publicLbl.text = "Private"
+                self.isPublic = false
+            })
+        }
+        else{
+            showVisibilityMessage(makePublic: true, completed: {
+                self.publicLbl.text = "Public"
+                self.isPublic = true
+            })
+        }
+        if !cannotPost(){
+            nextBtn.isEnabled = true
+        }
+        else{
+            nextBtn.isEnabled = false
+        }
+    }
+    
+    func showVisibilityMessage(makePublic: Bool, completed: @escaping () -> ()){
+        var postStatus = "private"
+        var message = "Only you will be able to view/buy this post"
+        if makePublic{
+            postStatus = "public"
+            message = "Anyone on Thred will be able to view/buy this post"
+        }
+        let title = "Are you sure you want to make your product \(postStatus)?"
+
+        let yesBtn = DefaultButton(title: "YES", dismissOnTap: true) {
+            completed()
+        }
+        let cancelBtn = DefaultButton(title: "NEVER MIND", dismissOnTap: true) {
+        }
+        
+        showPopUp(title: title, message: message, image: nil, buttons: [yesBtn, cancelBtn], titleColor: .label)
+    }
     
     
     @IBAction func doneDesigning(_ sender: UIBarButtonItem) {
@@ -72,6 +115,16 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
                 product.caption = descriptionView.text
                 product.uid = userInfo.uid
                 product.name = titleView.text
+                product.isPublic = isPublic
+                guard let price = priceView.text else{
+                    sender.isEnabled = true
+                    return
+                }
+                guard let decimalPrice = Double(price) else{
+                    sender.isEnabled = true
+                    return
+                }
+                product.price = decimalPrice * 100
                 performSegue(withIdentifier: "DoneDesigning", sender: nil)
             }
             else{
@@ -92,6 +145,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
                             product.caption = descriptionView.text
                             product.uid = userInfo.uid
                             product.name = titleView.text
+                            product.isPublic = isPublic
                             product.display = displayView.makeSnapshot(clear: true, subviewsToIgnore: [zoomBtn, cell.colorDisplayLabel, thredWatermark])?.withBackground(color: UIColor(red: 0.949, green: 0.949, blue: 0.969, alpha: 1.0))?.jpegData(compressionQuality: 0.5)
                             product.templateColor = tees[indexPath.item].templateID
                             product.price = decimalPrice * 100
@@ -154,13 +208,12 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         
         stack.axis = .horizontal
         stack.distribution = .fill
-        stack.backgroundColor =
-            ColorCompatibility.systemBackground
+        stack.backgroundColor = .systemBackground
         stack.spacing = 10
         
         
         toolCollectionView = UICollectionView.init(frame: CGRect(x: 5, y: 0, width: stack.frame.width - stack.frame.height, height: stack.frame.height), collectionViewLayout: DrawToolsLayout())
-        toolCollectionView.backgroundColor = ColorCompatibility.systemBackground
+        toolCollectionView.backgroundColor = .systemBackground
         toolCollectionView.showsHorizontalScrollIndicator = false
         toolCollectionView.alwaysBounceHorizontal = true
         toolCollectionView.alwaysBounceVertical = false
@@ -175,7 +228,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         done = UIButton(frame: CGRect(x: 0, y: 0, width: stack.frame.height, height: stack.frame.height))
         done.addTarget(self, action: #selector(closeDrawCanvas(_:)), for: .touchUpInside)
         done.setTitle("Done", for: .normal)
-        done.setTitleColor(ColorCompatibility.secondaryLabel, for: .normal)
+        done.setTitleColor(.secondaryLabel, for: .normal)
         done.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
         stack.addArrangedSubview(toolCollectionView)
         stack.addArrangedSubview(done)
@@ -220,12 +273,12 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
 
     lazy var toolBar: UIView = {
         let bar = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 45))
-        bar.backgroundColor = ColorCompatibility.systemBackground.withAlphaComponent(0.8)
+        bar.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.8)
         let stackView = UIStackView(frame: bar.frame)
         bar.addSubview(stackView)
         let button = UIButton(frame: CGRect(x: 0, y: 0, width: 45, height: 45))
         button.setTitle("Done", for: .normal)
-        button.setTitleColor(ColorCompatibility.label, for: .normal)
+        button.setTitleColor(.label, for: .normal)
         button.addTarget(self, action: #selector(doneEditing(_:)), for: .touchUpInside)
         stackView.addArrangedSubview(button)
         
@@ -616,7 +669,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         view.backgroundColor = .white
         view.layer.cornerRadius = view.frame.height / 2
         view.clipsToBounds = true
-        view.layer.borderColor = ColorCompatibility.systemFill.cgColor
+        view.layer.borderColor = UIColor.systemFill.cgColor
         view.layer.borderWidth = 1.5
         view.setRadiusWithShadow()
 
@@ -654,7 +707,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     lazy var bottomBar: UIView = {
         
         let view = UIView.init(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: 45))
-        view.backgroundColor = ColorCompatibility.secondarySystemBackground
+        view.backgroundColor = .secondarySystemBackground
         
         let stackView = UIStackView.init(frame: view.frame)
         stackView.axis = .horizontal
@@ -964,7 +1017,6 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         saveToPhotosLbl.clipsToBounds = true
         saveToPhotosLbl.isHidden = true
         
-        scrollview.alwaysBounceVertical = false
         navigationController?.navigationBar.setBackgroundImage(UIImage.init(), for: UIBarMetrics.default)
         navigationController?.navigationBar.shadowImage = UIImage.init()
         descriptionView.delegate = self
@@ -980,8 +1032,9 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         setCarouselConstraints()
         textFieldDidChange(titleView)
         titleView.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        priceView.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
         setLeftNavigationItem(image: UIImage(nameOrSystemName: "xmark", systemPointSize: 18, iconSize: 9), style: .plain, target: self, action: #selector(cancelDesigning(_:)))
-        setPlaceholder(textView: descriptionView, textColor: ColorCompatibility.secondaryLabel)
+        setPlaceholder(textView: descriptionView, textColor: .secondaryLabel)
         setKeyBoardNotifs()
         
         if product != nil{
@@ -991,12 +1044,15 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
             carousel.displayImage = product.design
             carousel.setCarouselTemplates(templates: tees)
             carousel.collectionView.isUserInteractionEnabled = false
-            priceView.isEnabled = false
             guard let price = product.price else{return}
             priceView.text = "\(price)"
             textFieldDidEndEditing(priceView, reason: .committed)
             descriptionView.text = product.caption
             titleView.text = product.name
+            if !(product.isPublic ?? true){
+                publicLbl.text = "Private"
+                isPublic = false
+            }
             nextBtn.title = "Update"
             textViewDidChange(descriptionView)
             
@@ -1048,12 +1104,15 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
             
         }
     }
+    @IBAction func viewPricingGuide(_ sender: UIButton) {
+        self.performSegue(withIdentifier: "toCommissionCalc", sender: nil)
+    }
     
     func showBankConfirmationMessage(completed: @escaping () -> ()){
         
 
         let title = "Merchant Account"
-        let message = "In order to earn money from Thred, a bank account must be set linked in account settings. Any sales made without this will not be deposited into your bank account."
+        let message = "In order to earn money from Thred, a bank account must be added in your account settings. Any sales made without this will not be deposited into your bank account."
         let titleColor = UIColor.label
         
         let yesBtn = DefaultButton(title: "I UNDERSTAND", dismissOnTap: true) {
@@ -1064,13 +1123,19 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     }
     
     @objc func textFieldDidChange(_ textField: UITextField){
-        if textField.text?.replacingOccurrences(of: " ", with: "").isEmpty ?? false{
+        if cannotPost(){
             nextBtn.isEnabled = false
         }
         else{
             nextBtn.isEnabled = true
         }
     }
+    
+    func cannotPost() -> Bool{
+        guard let indexPath = carousel.collectionView.indexPathsForVisibleItems.first, let cell = carousel.collectionView.cellForItem(at: indexPath) as? CarouselCollectionViewCell else {return true}
+        return titleView.text?.replacingOccurrences(of: " ", with: "").isEmpty ?? false || priceView.text?.isEmpty ?? false || cell.canvasDisplayView.image == nil
+    }
+    
     
     func showCancelMessage(completed: @escaping () -> ()){
         
@@ -1319,12 +1384,12 @@ extension UIViewController{
 
         let popup = PopupDialog(title: title, message: message, image: image)
         let dialogAppearance = PopupDialogDefaultView.appearance()
-        dialogAppearance.backgroundColor      = ColorCompatibility.secondarySystemBackground
+        dialogAppearance.backgroundColor      = .secondarySystemBackground
         dialogAppearance.titleFont            = UIFont(name: "NexaW01-Heavy", size: 18)!
         dialogAppearance.titleColor           = titleColor
         dialogAppearance.titleTextAlignment   = .center
         dialogAppearance.messageFont          = UIFont(name: "NexaW01-Regular", size: 16)!
-        dialogAppearance.messageColor         = ColorCompatibility.secondaryLabel
+        dialogAppearance.messageColor         = .secondaryLabel
         dialogAppearance.messageTextAlignment = .center
         // Create buttons
         
@@ -1332,7 +1397,7 @@ extension UIViewController{
         
         for button in buttons{
             button.titleFont = UIFont(name: "NexaW01-Heavy", size: 16)
-            button.backgroundColor = ColorCompatibility.tertiarySystemBackground
+            button.backgroundColor = .tertiarySystemBackground
             button.setTitleColor(UIColor(named: "LoadingColor"), for: .normal)
         }
         
