@@ -42,7 +42,12 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
 
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var checkoutBtn: UIButton!
-
+    @IBOutlet weak var priceBackgroundView: UIView!
+    
+    @IBOutlet weak var priceLoadingView: UIView!
+    @IBOutlet weak var spinner: MapSpinnerView!
+    @IBOutlet weak var freeShippingLbl: UILabel!
+    @IBOutlet weak var subtotalLbl: UILabel!
     
     override func viewWillAppear(_ animated: Bool) {
         navigationController?.setNavigationBarHidden(false, animated: true)
@@ -52,6 +57,10 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         tableView.deselectRow(at: selectedIndexPath, animated: true)
     }
     
+    override func viewWillLayoutSubviews() {
+        priceBackgroundView.layer.cornerRadius = priceBackgroundView.frame.height / 8
+        priceBackgroundView.clipsToBounds = true
+    }
     
     override func viewWillDisappear(_ animated: Bool) {
         NotificationCenter.default.removeObserver(self)
@@ -110,10 +119,51 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         tableView.addSubview(refresher)
         checkoutBtn.isEnabled = false
         checkoutBtn.setTitleColor(UIColor.white.withAlphaComponent(0.5), for: .disabled)
+        showPriceSpinner()
         downloadCart {
+            self.hidePriceSpinner()
+            self.setSubtotal()
         }
     }
     
+    func showPriceSpinner(){
+        priceLoadingView.isHidden = false
+        spinner.animate()
+    }
+    
+    func hidePriceSpinner(){
+        priceLoadingView.isHidden = true
+    }
+    
+    func calculateSubtotal() -> Double{
+        var subtotal = 0.00
+        
+        for product in savedProducts{
+            guard let price = product.product.price, let quantity = product.quantity else{continue}
+            subtotal += price * Double(quantity)
+        }
+        return subtotal
+    }
+    
+    func setSubtotal(){
+        subtotalLbl.text = calculateSubtotal().formatPrice()
+        
+        if isFreeShipping(){
+            freeShippingLbl.text = "Your order qualifies for free shipping!"
+        }
+        else{
+            let remaining = 5 - savedProducts.compactMap({$0.quantity}).reduce(0, +)
+            var grammar = "s"
+            if remaining == 1{
+                grammar = ""
+            }
+            freeShippingLbl.text = "Order \(remaining) more product\(grammar) and you'll qualify for free shipping!"
+        }
+    }
+    
+    func isFreeShipping() -> Bool{
+        return (5 - savedProducts.compactMap({$0.quantity}).reduce(0, +)) <= 0
+    }
     
     func navigationController(_ navigationController: UINavigationController, willShow viewController: UIViewController, animated: Bool) {
         
@@ -238,8 +288,11 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     @objc func refresh(_ sender: BouncingTitleRefreshControl?){
                 
+        showPriceSpinner()
         guard checkInternetConnection() else{
             sender?.endRefreshing()
+            hidePriceSpinner()
+            setSubtotal()
             return
         }
         
@@ -250,13 +303,17 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                 self.savedProducts.removeAll()
                 self.downloadCart {
                     self.isLoading = false
+                    self.hidePriceSpinner()
+                    self.setSubtotal()
                     DispatchQueue.main.async {
                         sender?.endRefreshing()
                     }
                 }
             }
         }
-        
+        else{
+            sender?.endRefreshing()
+        }
     }
     
     func downloadCart(completed: @escaping () -> ()){
@@ -518,10 +575,9 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     func uploadToFirestore(){
         guard let uid = userInfo.uid else{
-            
             return}
         checkoutBtn.isEnabled = false
-
+        showPriceSpinner()
         let ref = Firestore.firestore().collection("Users/\(uid)/Cart_Info/").document("Cart_List")
         
         var finalData = [[String : Any]]()
@@ -548,12 +604,16 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                 self.refresh(nil)
                 if !self.savedProducts.filter({$0.product.isAvailable ?? false}).isEmpty{
                     self.checkoutBtn.isEnabled = true
+                    self.hidePriceSpinner()
+                    self.setSubtotal()
                 }
             }
             else{
                 if !self.savedProducts.filter({$0.product.isAvailable ?? false}).isEmpty{
                     self.checkoutBtn.isEnabled = true
                 }
+                self.hidePriceSpinner()
+                self.setSubtotal()
             }
         })
     }

@@ -121,15 +121,18 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
         var title = String()
         var titleColor = UIColor()
         let fullname = userInfo.fullName ?? "<null>"
-        let moneyMade = ((((product.product.price ?? 0) - 20.00) * Double(product.quantity)) * 0.90).formatPrice()
+        var moneyMade = "$0.00"
+        
         let description = "\(fullname) earned \(moneyMade) from this sale."
 
         switch product.inBank{
         case true:
             titleColor = UIColor.systemGreen
+            moneyMade = ((((product.product.price ?? 20.00) - 20.00) * Double(product.quantity)) * 0.90).formatPrice()
             title = "COMMISSION EARNED"
         default:
             titleColor = UIColor.red
+            moneyMade = "$0.00"
             title = "NO COMMISSION EARNED"
         }
         
@@ -479,6 +482,9 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
                 })
             }
         }
+        else{
+            sender?.endRefreshing()
+        }
     }
     
     override func viewWillLayoutSubviews() {
@@ -496,7 +502,11 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
                 print(error?.localizedDescription ?? "")
             }
             else{
-                let salesNum = (snap?["Sales"] as? Int) ?? 0
+                var salesNum = (snap?["Sales"] as? Int) ?? 0
+                if salesNum < 0{
+                    salesNum = 0
+                    snap?.reference.updateData(["Sales" : 0])
+                }
                 self.salesLbl.text = "\(salesNum)"
             }
         })

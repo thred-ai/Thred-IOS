@@ -37,14 +37,16 @@ extension UITextView {
             default:
                 
                 if isNotification && word != words.first{break}
-                let matchRange:NSRange = nsText.range(of: word as String)
-                let stringifiedWord = word.replacingOccurrences(of: "@", with: "")
-                guard let font = UIFont(name: "NexaW01-Heavy", size: self.font?.pointSize ?? 16) else{return}
-                let attributes = [
-                    NSAttributedString.Key.link : "mention:\(stringifiedWord)",
-                    NSAttributedString.Key.font : font
-                ] as [NSAttributedString.Key : Any]
-                attrString.addAttributes(attributes, range: matchRange)
+                for range in text.ranges(of: word){
+                    let matchRange = range.nsRange(in: text)
+                    let stringifiedWord = word.replacingOccurrences(of: "@", with: "")
+                    guard let font = UIFont(name: "NexaW01-Heavy", size: self.font?.pointSize ?? 16) else{return}
+                    let attributes = [
+                        NSAttributedString.Key.link : "mention:\(stringifiedWord)",
+                        NSAttributedString.Key.font : font
+                    ] as [NSAttributedString.Key : Any]
+                    attrString.addAttributes(attributes, range: matchRange)
+                }
             }
         }
 
@@ -57,4 +59,18 @@ extension UITextView {
             NSAttributedString.Key.foregroundColor : UIColor(named: "LoadingColor")!
         ]
     }
+}
+
+extension String {
+    func ranges(of substring: String, options: CompareOptions = [], locale: Locale? = nil) -> [Range<Index>] {
+        var ranges: [Range<Index>] = []
+        while let range = range(of: substring, options: options, range: (ranges.last?.upperBound ?? self.startIndex)..<self.endIndex, locale: locale) {
+            ranges.append(range)
+        }
+        return ranges
+    }
+}
+
+extension RangeExpression where Bound == String.Index  {
+    func nsRange<S: StringProtocol>(in string: S) -> NSRange { .init(self, in: string) }
 }

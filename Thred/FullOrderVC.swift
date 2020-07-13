@@ -60,7 +60,6 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
         
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.reloadData()
         
         featuredHeader = tableView.loadFeaturedHeaderFromNib()
         featuredHeader.order = order
@@ -70,6 +69,8 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
         
         view.addSubview(loadingView)
         loadingView.isHidden = true
+
+        tableView.reloadData()
 
         // Do any additional setup after loading the view.
     }
@@ -83,6 +84,7 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
     }
     
     override func viewDidAppear(_ animated: Bool) {
+        tableView.reloadData()
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -90,7 +92,7 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 7
+        return 8
     }
     
     lazy var loadingView: UIView = {
@@ -114,7 +116,7 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        if indexPath.row == 6{
+        if indexPath.row == 7{
             let cell = UITableViewCell(style: .default, reuseIdentifier: "DefaultCell")
             cell.textLabel?.textAlignment = .center
             var color: UIColor!
@@ -128,6 +130,8 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
             case "cancelled-print":
                 color = UIColor.systemFill
             case "completed":
+                color = UIColor.systemFill
+            case "shipped":
                 color = UIColor.systemFill
             default:
                 color = UIColor.systemFill
@@ -169,19 +173,30 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
                     color = UIColor.red
                     string = "CANCELLED"
                 case "completed":
-                    color = UIColor.systemGreen
+                    color = UIColor(named: "LoadingColor")
                     string = "COMPLETED"
+                case "shipped":
+                    color = UIColor(named: "LoadingColor")
+                    string = "SHIPPED"
                 default:
-                    color = UIColor.systemGreen
+                    color = UIColor.red
                     string = "ERROR"
                     break
                 }
                 cell.detailTextLabel?.text = string
                 cell.detailTextLabel?.textColor = color
             case 1:
+                cell.textLabel?.text = "Tracking #:"
+                if let num = order.trackingNumber{
+                    cell.detailTextLabel?.text = num
+                }
+                else{
+                    cell.detailTextLabel?.text = "UNAVAILABLE"
+                }
+            case 2:
                 cell.textLabel?.text = "Delivery Address:"
                 cell.detailTextLabel?.text = "VIEW"
-            case 2:
+            case 3:
                 cell.textLabel?.text = "Subtotal:"
                 if let cost = order.subtotal, cost != 0.00{
                     cell.detailTextLabel?.text = "\((order.subtotal ?? 0.00).formatPrice())"
@@ -189,7 +204,7 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
                 else{
                     cell.detailTextLabel?.text = "FREE"
                 }
-            case 3:
+            case 4:
                 cell.textLabel?.text = "Shipping:"
                 if let cost = order.shippingCost, cost != 0.00{
                     cell.detailTextLabel?.text = "\((order.shippingCost ?? 0.00).formatPrice())"
@@ -197,7 +212,7 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
                 else{
                     cell.detailTextLabel?.text = "FREE"
                 }
-            case 4:
+            case 5:
                 cell.textLabel?.text = "Tax:"
                 if let cost = order.tax, cost != 0.00{
                     cell.detailTextLabel?.text = "\((order.tax ?? 0.00).formatPrice())"
@@ -205,7 +220,7 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
                 else{
                     cell.detailTextLabel?.text = "N/A"
                 }
-            case 5:
+            case 6:
                 cell.textLabel?.text = "Total:"
                 if let cost = order.totalCost, cost != 0.00{
                     cell.detailTextLabel?.text = "\((order.totalCost ?? 0.00).formatPrice())"
@@ -229,9 +244,12 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
             tableView.deselectRow(at: indexPath, animated: true)
             showStatusMessage {}
         case 1:
+            showTracking {}
+            tableView.deselectRow(at: indexPath, animated: true)
+        case 2:
             showAddressMessage {}
             tableView.deselectRow(at: indexPath, animated: true)
-        case 6:
+        case 7:
             confirmCancellation {}
             tableView.deselectRow(at: indexPath, animated: true)
         default:
@@ -260,9 +278,13 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
             title = "CANCELLED"
             description = "Your order has been cancelled and a full refund has been issued to your card."
         case "completed":
-            titleColor = UIColor.systemGreen
+            titleColor = UIColor(named: "LoadingColor")!
             title = "COMPLETED"
             description = "Your order is completed and may take 1-2 business days to ship. Orders in this stage cannot be cancelled."
+        case "shipped":
+            titleColor = UIColor(named: "LoadingColor")!
+            title = "SHIPPED"
+            description = "Your order has shipped and may take around 7 business days to deliver. Orders in this stage cannot be cancelled."
         default:
             titleColor = UIColor.red
             title = "ERROR"
@@ -275,6 +297,31 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
         }
         
         showPopUp(title: title, message: description, image: nil, buttons: [yesBtn], titleColor: titleColor)
+    }
+    
+    func showTracking(completed: @escaping () -> ()){
+        
+        switch order.trackingNumber{
+        case .some:
+            if let num = order.trackingNumber{
+                if let url = URL(string: "https://www.purolator.com/purolator/ship-track/tracking-details.page?pin=\(num)"){
+                    UIApplication.shared.open(url)
+                }
+                else{
+                    fallthrough
+                }
+            }
+        default:
+            let title = "UNAVAILABLE"
+            let description = "The tracking number for this order is currently unavailable."
+            let titleColor = UIColor.red
+            
+            let yesBtn = DefaultButton(title: "OK", dismissOnTap: true) {
+                completed()
+            }
+            
+            showPopUp(title: title, message: description, image: nil, buttons: [yesBtn], titleColor: titleColor)
+        }
     }
     
     func showAddressMessage(completed: @escaping () -> ()){

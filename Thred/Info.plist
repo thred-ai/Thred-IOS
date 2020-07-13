@@ -4,43 +4,22 @@
 <dict>
 	<key></key>
 	<string></string>
-	<key>CFBundleName</key>
-	<string>$(PRODUCT_NAME)</string>
-	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
-	<key>CFBundleVersion</key>
-	<string>$(CURRENT_PROJECT_VERSION)</string>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>fetch</string>
-		<string>remote-notification</string>
-	</array>
-	<key>NSCameraUsageDescription</key>
-	<string>Use your camera to take pictures for designs and share them, Change your profile picture, and more.</string>
+	<key>CFBundleDisplayName</key>
+	<string></string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
 	<key>CFBundlePackageType</key>
 	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)</string>
-	<key>StripeIdentifierLive</key>
-	<string>ca_GNV7X6fdJLCkbYFbnuyXRcbr3ZoNiS33</string>
-	<key>StripeKeyLive</key>
-	<string>pk_live_m7nEWhyTHoxGspcxtJAci6pu002LUiOnJK</string>
-	<key>UIMainStoryboardFile</key>
-	<string>Main</string>
-	<key>CFBundleInfoDictionaryVersion</key>
-	<string>6.0</string>
-	<key>CFBundleExecutable</key>
-	<string>$(EXECUTABLE_NAME)</string>
-	<key>UIRequiredDeviceCapabilities</key>
-	<array>
-		<string>armv7</string>
-	</array>
-	<key>FirebaseDynamicLinksCustomDomains</key>
-	<array>
-		<string>https://thred.thredapps.com</string>
-	</array>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -54,10 +33,24 @@
 			</array>
 		</dict>
 	</array>
-	<key>CFBundleIdentifier</key>
-	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>FirebaseDynamicLinksCustomDomains</key>
+	<array>
+		<string>https://thred.thredapps.com</string>
+	</array>
 	<key>LSApplicationCategoryType</key>
 	<string></string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Use your camera to take pictures for designs and share them, Change your profile picture, and more.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This allows Thred to save designs you create to your camera roll, Change your profile picture, and more.</string>
+	<key>StripeIdentifierLive</key>
+	<string>ca_GNV7X6fdJLCkbYFbnuyXRcbr3ZoNiS33</string>
+	<key>StripeKeyLive</key>
+	<string>pk_live_m7nEWhyTHoxGspcxtJAci6pu002LUiOnJK</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>HOPE-HYPE.ttf</string>
@@ -66,6 +59,23 @@
 		<string>AguafinaScript-Regular.ttf</string>
 		<string>Whoa2-1GP7j.ttf</string>
 	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIMainStoryboardFile</key>
+	<string>Main</string>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>armv7</string>
+	</array>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
@@ -73,15 +83,5 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>LSRequiresIPhoneOS</key>
-	<true/>
-	<key>CFBundleDisplayName</key>
-	<string></string>
-	<key>UISupportedInterfaceOrientations</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-	</array>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>This allows Thred to save designs you create to your camera roll, Change your profile picture, and more.</string>
 </dict>
 </plist>

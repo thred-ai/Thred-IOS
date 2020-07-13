@@ -245,6 +245,9 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
                 }
             }
         }
+        else{
+            sender.endRefreshing()
+        }
     }
     
     func showBlocked(){

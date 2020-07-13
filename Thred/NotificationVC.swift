@@ -63,7 +63,8 @@ class Order{
     var tax: Double?
     var subtotal: Double?
     var address: Address!
-
+    var trackingNumber: String?
+    
     
     var canCancel: Bool{
         get{
@@ -72,7 +73,7 @@ class Order{
         }
     }
     
-    init(orderID: String?, timestamp: Date?, products: [ProductInCart], status: String!, intents: [[String : String]], shippingIntent: String?, shippingCost: Double?, subtotal: Double?, tax: Double?, totalCost: Double?, address: Address?) {
+    init(orderID: String?, timestamp: Date?, products: [ProductInCart], status: String!, intents: [[String : String]], shippingIntent: String?, shippingCost: Double?, subtotal: Double?, tax: Double?, totalCost: Double?, address: Address?, trackingNumber: String?) {
         self.orderID = orderID
         self.timestamp = timestamp
         self.products = products
@@ -84,10 +85,11 @@ class Order{
         self.tax = tax
         self.totalCost = totalCost
         self.address = address
+        self.trackingNumber = trackingNumber
     }
     
     convenience init(){
-        self.init(orderID: nil, timestamp: nil, products: [], status: nil, intents: [], shippingIntent: nil, shippingCost: nil, subtotal: nil, tax: nil, totalCost: nil, address: nil)
+        self.init(orderID: nil, timestamp: nil, products: [], status: nil, intents: [], shippingIntent: nil, shippingCost: nil, subtotal: nil, tax: nil, totalCost: nil, address: nil, trackingNumber: nil)
     }
 }
 
@@ -103,6 +105,7 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         tableView.dataSource = self
         tableView.backgroundColor = .systemBackground
         tableView.separatorStyle = .none
+        tableView.showsVerticalScrollIndicator = false
         return tableView
     }()
     
@@ -177,6 +180,7 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                     let status = doc["status"] as? String ?? "cancelled"
                     let intents = doc["order_intents"] as? [[String : String]] ?? [[:]]
                     let shippingIntent = doc["shipping_intent"] as? String
+                    let trackingNumber = doc["tracking_id"] as? String
                     let shippingCost = (doc["shipping_cost"] as? Double ?? 0.00) / 100
                     let tax = doc["tax"] as? Double ?? 1.0
                     var subtotal = 0.0
@@ -196,7 +200,7 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                     
                     let orderAddress = Address(postalCode: postalCode, streetAddress: street, unitNumber: unitNum, city: city, adminArea: area, country: country)
                     
-                    let order = Order(orderID: doc.documentID, timestamp: timestamp, products: [], status: status, intents: intents, shippingIntent: shippingIntent, shippingCost: shippingCost, subtotal: 0, tax: 0, totalCost: 0, address: orderAddress)
+                    let order = Order(orderID: doc.documentID, timestamp: timestamp, products: [], status: status, intents: intents, shippingIntent: shippingIntent, shippingCost: shippingCost, subtotal: 0, tax: 0, totalCost: 0, address: orderAddress, trackingNumber: trackingNumber)
                     
                     localLoaded.append(order)
                     doc.reference.collection("Purchases").getDocuments(completion: { pSnaps, error in
@@ -441,7 +445,6 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                                             DispatchQueue(label: "cache").async {
                                                 cache.storeImageData(toDisk: img?.pngData(), forKey: "thumbnail_\(imgID ?? "")")
                                             }
-                                            notif.picID = imgID
                                             guard let index = self.notifications.firstIndex(where: {$0.notifID == notif.notifID}) else{return}
                                             if let cell = tableView.cellForRow(at: IndexPath(row: index, section: 0)) as? NotificationCell{
                                                 cell.notifPic.image = img
@@ -742,6 +745,9 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                     }
                 }
             }
+            else{
+                sender?.endRefreshing()
+            }
         }
         else{
             if !isLoadingOrders{
@@ -758,6 +764,9 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                         sender?.endRefreshing()
                     }
                 }
+            }
+            else{
+                sender?.endRefreshing()
             }
         }
     }
@@ -905,8 +914,11 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
             color = UIColor.red
             string = "CANCELLED"
         case "completed":
-            color = UIColor.systemGreen
+            color = UIColor(named: "LoadingColor")
             string = "COMPLETED"
+        case "shipped":
+            color = UIColor(named: "LoadingColor")
+            string = "SHIPPED"
         default:
             color = UIColor.red
             string = "ERROR"

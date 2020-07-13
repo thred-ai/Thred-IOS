@@ -84,6 +84,9 @@ class UserVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
                 }
             }
         }
+        else{
+            sender.endRefreshing()
+        }
     }
     
     func clearTableView(){

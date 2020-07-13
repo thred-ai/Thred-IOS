@@ -272,6 +272,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
             }
         }
         else{
+            sender.endRefreshing()
         }
     }
     

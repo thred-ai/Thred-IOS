@@ -172,6 +172,9 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                 self.loadedProducts.saveAllObjects(type: "FeedProducts")
             }
         }
+        else{
+            sender.endRefreshing()
+        }
     }
     
 
