@@ -15,6 +15,7 @@ import AVFoundation
 import SDWebImage
 import ColorCompatibility
 import BRYXBanner
+import FirebaseFirestore
 
 var userInfo = UserInfo()
 var uploadingPosts = [String]()
@@ -57,18 +58,19 @@ class UserVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
             }
             guard let uid = userInfo.uid else{return}
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                self.downloadUserInfo(uid: uid, userVC: self, feedVC: nil, downloadingPersonalDP: true, doNotDownloadDP: false, userInfoToUse: userInfo, queryOnUsername: false, completed: {uid, fullName, username, dpID, notifID, bio, image, userFollowing, usersBlocking, postCount, followerCount, followingCount  in
+                self.downloadUserInfo(uid: uid, userVC: self, feedVC: nil, downloadingPersonalDP: true, doNotDownloadDP: false, userInfoToUse: userInfo, queryOnUsername: false, completed: {uid, fullName, username, dpID, notifID, bio, image, userFollowing, usersBlocking, postCount, followerCount, followingCount, verified in
                     
                     if username != nil{
                         
-                        self.header?.setUpInfo(username: username, fullname: fullName, bio: bio, notifID: notifID, dpUID: dpID, image: image, actionBtnTitle: "Edit Profile", followerCount: followerCount, followingCount: followingCount, postCount: postCount)
-                        self.setUserInfo(username: username, fullname: fullName, image: image, bio: bio, notifID: notifID, dpUID: dpID, userFollowing: userFollowing, followerCount: followerCount, postCount: postCount, followingCount: followingCount, usersBlocking: usersBlocking)
+                        self.header?.setUpInfo(username: username, fullname: fullName, bio: bio, notifID: notifID, dpUID: dpID, image: image, actionBtnTitle: "Edit Profile", followerCount: followerCount, followingCount: followingCount, postCount: postCount, verified: verified ?? false)
+                        self.setUserInfo(username: username, fullname: fullName, image: image, bio: bio, notifID: notifID, dpUID: dpID, userFollowing: userFollowing, followerCount: followerCount, postCount: postCount, followingCount: followingCount, usersBlocking: usersBlocking, verified: verified ?? false)
                         
                         for product in self.loadedProducts{
                             if product.userInfo.uid == userInfo.uid{
                                 product.userInfo.username = userInfo.username
                                 product.userInfo.fullName = userInfo.fullName
                                 product.userInfo.dpID = dpID
+                                product.userInfo.verified = verified ?? false
                             }
                         }
                         self.tableView?.performBatchUpdates({
@@ -146,7 +148,7 @@ class UserVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         header?.optionBtn.setImage(UIImage(named: "gear"), for: .normal)
         header?.optionBtn.addTarget(self, action: #selector(toSettings(_:)), for: .touchUpInside)
         if let image = userInfo.dp{
-            header?.setUpInfo(username: userInfo.username, fullname: userInfo.fullName, bio: userInfo.bio, notifID: userInfo.notifID, dpUID: userInfo.dpID, image: image, actionBtnTitle: "Edit Profile", followerCount: userInfo.followerCount, followingCount: userInfo.followingCount, postCount: userInfo.postCount)
+            header?.setUpInfo(username: userInfo.username, fullname: userInfo.fullName, bio: userInfo.bio, notifID: userInfo.notifID, dpUID: userInfo.dpID, image: image, actionBtnTitle: "Edit Profile", followerCount: userInfo.followerCount, followingCount: userInfo.followingCount, postCount: userInfo.postCount, verified: userInfo.verified)
         }
         tableView.addSubview(refresher)
 
@@ -179,7 +181,7 @@ class UserVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
                             }
                             return}
                         
-                        self.uploadPost(post: ProductInProgress(templateColor: color, design: design, uid: post.userInfo.uid, caption: post.description, name: post.name, price: (post.price ?? 20) * 100, productID: postID, display: designImage, isPublic: post.isPublic), isRetryingWithID: postID)
+                        self.uploadPost(post: ProductInProgress(templateColor: color, design: design, uid: post.userInfo.uid, caption: post.description, name: post.name, price: (post.price ?? 20) * 100, productID: postID, display: designImage, isPublic: post.isPublic, productType: post.productType), isRetryingWithID: postID)
                     }
                 }
             }
@@ -199,7 +201,7 @@ class UserVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     @IBAction func unwindToUser(segue:  UIStoryboardSegue) {
         if let image = userInfo.dp{
             
-            self.header?.setUpInfo(username: userInfo.username, fullname: userInfo.fullName, bio: userInfo.bio, notifID: userInfo.notifID, dpUID: userInfo.dpID, image: image, actionBtnTitle: "Edit Profile", followerCount: userInfo.followerCount, followingCount: userInfo.followingCount, postCount: userInfo.postCount)
+            self.header?.setUpInfo(username: userInfo.username, fullname: userInfo.fullName, bio: userInfo.bio, notifID: userInfo.notifID, dpUID: userInfo.dpID, image: image, actionBtnTitle: "Edit Profile", followerCount: userInfo.followerCount, followingCount: userInfo.followingCount, postCount: userInfo.postCount, verified: userInfo.verified)
             DispatchQueue.main.async {
                 self.tableView.reloadData()
             }
@@ -296,7 +298,7 @@ class UserVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
             uploadingPosts.append(doc.documentID)
             UserDefaults.standard.set(uploadingPosts, forKey: "UploadingPosts")
 
-            let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: doc.documentID, description: post.caption, productID: doc.documentID, timestamp: date, index: nil, timestampDiff: "1 second", blurred: false, price: (post.price ?? 2000) / 100, name: post.name, templateColor: post.templateColor, likes: 0, liked: false, designImage: post.display, comments: 0, link: nil, isAvailable: true, isPublic: post.isPublic ?? true)
+            let product = Product(userInfo: userInfo, picID: doc.documentID, description: post.caption, productID: doc.documentID, timestamp: date, index: nil, timestampDiff: "1 second", blurred: false, price: (post.price ?? 2000) / 100, name: post.name, templateColor: post.templateColor, likes: 0, liked: false, designImage: post.display, comments: 0, link: nil, isAvailable: true, isPublic: post.isPublic ?? true, productType: post.productType)
             
             cache.storeImageData(toDisk: designData, forKey: doc.documentID)
             self.loadedProducts.insert(product, at: 0)
@@ -391,9 +393,12 @@ class UserVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
             else{
                 if snapDocuments?.isEmpty ?? true{
                     if refresh{
-                        completed(true)
+                        self.loadedProducts.removeAll()
+                        self.cellHeights.removeAll()
+                        self.offsets.removeAll()
                         self.loadedProducts.removeOldFeedPosts(newPosts: nil)
                         self.loadedProducts.removeAllObjects(type: "Products")
+                        completed(false)
                     }
                     else{
                         completed(false)
@@ -423,7 +428,9 @@ class UserVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
                             guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                             let comments = ((snap["Comments"]) as? Int) ?? 0
                             let isPublic = snap["Public"] as? Bool ?? true
-                            localLoaded.append(Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description,  productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: true, isPublic: isPublic))
+                            let productType = snap["Type"] as? String ?? defaultProductType
+
+                            localLoaded.append(Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil), picID: snap.documentID, description: description,  productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: true, isPublic: isPublic, productType: productType))
                         }
                     }
                     if fromInterval == nil{
@@ -618,7 +625,7 @@ class UserVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         }
         else if let designVC = (segue.destination as? UINavigationController)?.viewControllers.first as? DesignViewController{
             if let img = cache.imageFromCache(forKey: productToOpen.productID){
-                designVC.product = ProductInProgress(templateColor: productToOpen.templateColor, design: img, uid: productToOpen.userInfo.uid, caption: productToOpen.description, name: productToOpen.name, price: productToOpen.price, productID: productToOpen.productID, display: productToOpen.designImage, isPublic: productToOpen.isPublic)
+                designVC.product = ProductInProgress(templateColor: productToOpen.templateColor, design: img, uid: productToOpen.userInfo.uid, caption: productToOpen.description, name: productToOpen.name, price: productToOpen.price, productID: productToOpen.productID, display: productToOpen.designImage, isPublic: productToOpen.isPublic, productType: productToOpen.productType)
             }
         }
     }
@@ -628,7 +635,7 @@ class UserVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
 extension UIViewController{
     
-    func setUserInfo(username: String?, fullname: String?, image: Data?, bio: String?, notifID: String?, dpUID: String?, userFollowing: [String]?, followerCount: Int?, postCount: Int?, followingCount: Int?, usersBlocking: [String]?){
+    func setUserInfo(username: String?, fullname: String?, image: Data?, bio: String?, notifID: String?, dpUID: String?, userFollowing: [String]?, followerCount: Int?, postCount: Int?, followingCount: Int?, usersBlocking: [String]?, verified: Bool){
         
         UserDefaults.standard.set(username, forKey: "USERNAME")
         userInfo.username = username
@@ -656,6 +663,9 @@ extension UIViewController{
         
         UserDefaults.standard.set(followingCount, forKey: "BLOCKING")
         userInfo.usersBlocking = usersBlocking ?? []
+        
+        UserDefaults.standard.set(verified, forKey: "VERIFIED")
+        userInfo.verified = verified
         
         UserDefaults.standard.set(dpUID, forKey: "DP_ID")
         userInfo.dpID = dpUID

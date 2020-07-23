@@ -95,9 +95,9 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
                     let price = (doc["amount"] as? Double ?? 0) / 100
                     let toBank = doc["toBank"] as? Bool ?? false
 
-                    let productUserInfo = UserInfo(uid: customer_uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil)
+                    let productUserInfo = UserInfo(uid: customer_uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil)
                     
-                    let product = Product(userInfo: productUserInfo, picID: nil, description: nil, productID: product_id, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: price / Double(quantity), name: nil, templateColor: nil, likes: nil, liked: userInfo.userLiked.contains(doc.documentID), designImage: nil, comments: nil, link: nil, isAvailable: true, isPublic: nil)
+                    let product = Product(userInfo: productUserInfo, picID: nil, description: nil, productID: product_id, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: price / Double(quantity), name: nil, templateColor: nil, likes: nil, liked: userInfo.userLiked.contains(doc.documentID), designImage: nil, comments: nil, link: nil, isAvailable: true, isPublic: nil, productType: nil)
                     
                     self.salesProducts.append(ProductInCart(product: product, size: size, quantity: quantity, isDeleted: false, timestamp: timestamp, timestampDiff: nil, saleID: doc.documentID, inBank: toBank))
                    
@@ -123,19 +123,20 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
         let fullname = userInfo.fullName ?? "<null>"
         var moneyMade = "$0.00"
         
-        let description = "\(fullname) earned \(moneyMade) from this sale."
 
         switch product.inBank{
         case true:
             titleColor = UIColor.systemGreen
-            moneyMade = ((((product.product.price ?? 20.00) - 20.00) * Double(product.quantity)) * 0.90).formatPrice()
+            let price = product.product.price ?? 20.00
+            moneyMade = (((price - 20.00) * Double(product.quantity)) * 0.90).formatPrice()
             title = "COMMISSION EARNED"
         default:
             titleColor = UIColor.red
             moneyMade = "$0.00"
             title = "NO COMMISSION EARNED"
         }
-        
+        let description = "\(fullname) earned \(moneyMade) from this sale."
+
         let yesBtn = DefaultButton(title: "OK", dismissOnTap: true) {
             completed()
         }
@@ -182,7 +183,7 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
 
         if sale.product.userInfo.username == nil{
             
-            downloadUserInfo(uid: sale.product.userInfo.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: false, userInfoToUse: nil, queryOnUsername: false, completed: { userUID, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followerCount, followingCount in
+            downloadUserInfo(uid: sale.product.userInfo.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: false, userInfoToUse: nil, queryOnUsername: false, completed: { userUID, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followerCount, followingCount, verified in
                 
                 if username == nil{
                     for sameNotif in self.salesProducts.filter({$0.product.userInfo.uid == sale.product.userInfo.uid}){
@@ -210,6 +211,7 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
                 sale.product.userInfo.notifID = notifID
                 sale.product.userInfo.usersBlocking = usersBlocking
                 sale.product.userInfo.dp = imgData
+                sale.product.userInfo.verified = verified ?? false
 
                 cell?.isUserInteractionEnabled = true
                 guard let index = self.salesProducts.firstIndex(where: {$0.saleID == sale.saleID}) else{return}

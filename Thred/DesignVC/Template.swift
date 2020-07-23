@@ -12,14 +12,16 @@ class Template: Codable{
     
     var templateID: String!
     var templateDisplayName: String!
+    var hasFemale: Bool!
     
-    init(templateID: String!, templateDisplayName: String!){
+    init(templateID: String!, templateDisplayName: String!, hasFemale: Bool!){
         self.templateID = templateID
         self.templateDisplayName = templateDisplayName
+        self.hasFemale = hasFemale
     }
     
     convenience init() {
-        self.init(templateID: nil, templateDisplayName: nil)
+        self.init(templateID: nil, templateDisplayName: nil, hasFemale: nil)
     }
     
     static func == (lhs: Template, rhs: Template) -> Bool {

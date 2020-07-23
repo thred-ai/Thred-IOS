@@ -40,7 +40,6 @@ extension DesignViewController{
         zoomableView.alpha = 1.0
         self.navigationController?.setNavigationBarHidden(false, animated: false)
         self.navigationItem.leftBarButtonItem?.isEnabled = true
-        self.navigationItem.rightBarButtonItem?.isEnabled = true
         UIView.animate(withDuration: 0.2, animations: {
             self.zoomableView.alpha = 0.0
         }, completion: { finished in

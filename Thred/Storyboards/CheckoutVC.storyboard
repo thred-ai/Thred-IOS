@@ -57,32 +57,32 @@
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="495"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                 <view key="tableHeaderView" contentMode="scaleToFill" id="xtK-pp-LS6">
-                                    <rect key="frame" x="0.0" y="0.0" width="375" height="137"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="197"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     <subviews>
                                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="eet-cY-mif">
-                                            <rect key="frame" x="10" y="10" width="355" height="117"/>
+                                            <rect key="frame" x="10" y="10" width="355" height="177"/>
                                             <subviews>
                                                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="2ao-sp-w6B">
-                                                    <rect key="frame" x="10" y="10" width="335" height="97"/>
+                                                    <rect key="frame" x="10" y="10" width="335" height="157"/>
                                                     <subviews>
                                                         <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="PLj-UC-7B2">
-                                                            <rect key="frame" x="0.0" y="0.0" width="335" height="97"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="335" height="157"/>
                                                             <subviews>
                                                                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="hoP-Ae-x36">
-                                                                    <rect key="frame" x="0.0" y="0.0" width="335" height="97"/>
+                                                                    <rect key="frame" x="0.0" y="0.0" width="335" height="157"/>
                                                                     <subviews>
                                                                         <stackView opaque="NO" contentMode="scaleToFill" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="ce1-kw-TCc">
-                                                                            <rect key="frame" x="0.0" y="0.0" width="335" height="41"/>
+                                                                            <rect key="frame" x="0.0" y="0.0" width="335" height="46.666666666666664"/>
                                                                             <subviews>
                                                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Delivery Address:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Bkm-6T-bxr">
-                                                                                    <rect key="frame" x="0.0" y="0.0" width="93.666666666666671" height="41"/>
+                                                                                    <rect key="frame" x="0.0" y="0.0" width="93.666666666666671" height="46.666666666666664"/>
                                                                                     <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
                                                                                     <nil key="textColor"/>
                                                                                     <nil key="highlightedColor"/>
                                                                                 </label>
                                                                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="leading" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ayz-e6-E71">
-                                                                                    <rect key="frame" x="98.666666666666686" y="0.0" width="65" height="41"/>
+                                                                                    <rect key="frame" x="98.666666666666686" y="0.0" width="65" height="46.666666666666664"/>
                                                                                     <constraints>
                                                                                         <constraint firstAttribute="width" constant="65" id="Njq-v0-egd"/>
                                                                                     </constraints>
@@ -95,27 +95,39 @@
                                                                                     </connections>
                                                                                 </button>
                                                                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Fx3-pa-z8N">
-                                                                                    <rect key="frame" x="168.66666666666663" y="0.0" width="166.33333333333337" height="41"/>
+                                                                                    <rect key="frame" x="168.66666666666663" y="0.0" width="166.33333333333337" height="46.666666666666664"/>
                                                                                 </view>
                                                                             </subviews>
                                                                         </stackView>
                                                                         <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="20l-pL-qcN">
-                                                                            <rect key="frame" x="0.0" y="46" width="335" height="51"/>
+                                                                            <rect key="frame" x="0.0" y="51.666666666666679" width="335" height="105.33333333333331"/>
                                                                             <subviews>
+                                                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Arta Kouroshnia" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="L4c-lb-Go8">
+                                                                                    <rect key="frame" x="0.0" y="0.0" width="335" height="17"/>
+                                                                                    <fontDescription key="fontDescription" name="NexaW01-Regular" family="NexaW01-Regular" pointSize="15"/>
+                                                                                    <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                                    <nil key="highlightedColor"/>
+                                                                                </label>
+                                                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="226-974-1793" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="wd6-Zm-F9H">
+                                                                                    <rect key="frame" x="0.0" y="22" width="335" height="17"/>
+                                                                                    <fontDescription key="fontDescription" name="NexaW01-Regular" family="NexaW01-Regular" pointSize="15"/>
+                                                                                    <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                                    <nil key="highlightedColor"/>
+                                                                                </label>
                                                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="620 4th Avenue West" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bB4-ny-jvF">
-                                                                                    <rect key="frame" x="0.0" y="0.0" width="335" height="13.666666666666666"/>
+                                                                                    <rect key="frame" x="0.0" y="44" width="335" height="17.333333333333329"/>
                                                                                     <fontDescription key="fontDescription" name="NexaW01-Regular" family="NexaW01-Regular" pointSize="15"/>
                                                                                     <nil key="textColor"/>
                                                                                     <nil key="highlightedColor"/>
                                                                                 </label>
                                                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Owen Sound, ON" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VuM-GS-xyI">
-                                                                                    <rect key="frame" x="0.0" y="18.666666666666671" width="335" height="13.666666666666664"/>
+                                                                                    <rect key="frame" x="0.0" y="66.333333333333329" width="335" height="17"/>
                                                                                     <fontDescription key="fontDescription" name="NexaW01-Regular" family="NexaW01-Regular" pointSize="15"/>
                                                                                     <nil key="textColor"/>
                                                                                     <nil key="highlightedColor"/>
                                                                                 </label>
                                                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="N4K 4V4" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NXV-8D-Hh8">
-                                                                                    <rect key="frame" x="0.0" y="37.333333333333329" width="335" height="13.666666666666664"/>
+                                                                                    <rect key="frame" x="0.0" y="88.333333333333329" width="335" height="17"/>
                                                                                     <fontDescription key="fontDescription" name="NexaW01-Regular" family="NexaW01-Regular" pointSize="15"/>
                                                                                     <nil key="textColor"/>
                                                                                     <nil key="highlightedColor"/>
@@ -129,10 +141,10 @@
                                                     </subviews>
                                                 </stackView>
                                                 <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="YbR-49-AOf">
-                                                    <rect key="frame" x="0.0" y="0.0" width="355" height="117"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="355" height="177"/>
                                                     <subviews>
                                                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="335-3d-cCg" customClass="MapSpinnerView" customModule="Thred" customModuleProvider="target">
-                                                            <rect key="frame" x="157.66666666666666" y="38.666666666666664" width="40" height="39.999999999999993"/>
+                                                            <rect key="frame" x="157.66666666666666" y="68.666666666666671" width="40" height="40"/>
                                                             <constraints>
                                                                 <constraint firstAttribute="width" secondItem="335-3d-cCg" secondAttribute="height" multiplier="1:1" id="YQO-kW-wE0"/>
                                                                 <constraint firstAttribute="width" constant="40" id="dFS-eC-BRD"/>
@@ -180,7 +192,7 @@
                                                         <rect key="frame" x="0.0" y="0.0" width="335" height="100"/>
                                                         <subviews>
                                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="9Zs-cW-3Iy">
-                                                                <rect key="frame" x="0.0" y="0.0" width="335" height="79"/>
+                                                                <rect key="frame" x="0.0" y="0.0" width="335" height="79.333333333333329"/>
                                                                 <subviews>
                                                                     <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9GS-25-UzH">
                                                                         <rect key="frame" x="0.0" y="0.0" width="335" height="26.333333333333332"/>
@@ -203,10 +215,10 @@
                                                                         </subviews>
                                                                     </stackView>
                                                                     <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="PJn-sK-5f4">
-                                                                        <rect key="frame" x="0.0" y="26.333333333333371" width="335" height="26.333333333333329"/>
+                                                                        <rect key="frame" x="0.0" y="26.333333333333371" width="335" height="26.666666666666671"/>
                                                                         <subviews>
                                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Shipping and Tax:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qoK-3Z-jug">
-                                                                                <rect key="frame" x="0.0" y="0.0" width="135" height="26.333333333333332"/>
+                                                                                <rect key="frame" x="0.0" y="0.0" width="135" height="26.666666666666668"/>
                                                                                 <constraints>
                                                                                     <constraint firstAttribute="width" priority="999" constant="135" id="k8c-qO-daL"/>
                                                                                 </constraints>
@@ -215,7 +227,7 @@
                                                                                 <nil key="highlightedColor"/>
                                                                             </label>
                                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="$0.00" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NCi-aK-R0F">
-                                                                                <rect key="frame" x="135" y="0.0" width="200" height="26.333333333333332"/>
+                                                                                <rect key="frame" x="135" y="0.0" width="200" height="26.666666666666668"/>
                                                                                 <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="15"/>
                                                                                 <nil key="textColor"/>
                                                                                 <nil key="highlightedColor"/>
@@ -223,7 +235,7 @@
                                                                         </subviews>
                                                                     </stackView>
                                                                     <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="gKr-RJ-5He">
-                                                                        <rect key="frame" x="0.0" y="52.666666666666636" width="335" height="26.333333333333336"/>
+                                                                        <rect key="frame" x="0.0" y="53.000000000000007" width="335" height="26.333333333333336"/>
                                                                         <subviews>
                                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Total:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Quq-uG-t6Q">
                                                                                 <rect key="frame" x="0.0" y="0.0" width="45" height="26.333333333333332"/>
@@ -245,7 +257,7 @@
                                                                 </subviews>
                                                             </stackView>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="*Please note, all prices listed are in CAD*" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="BVw-6H-gIl">
-                                                                <rect key="frame" x="0.0" y="79" width="335" height="21"/>
+                                                                <rect key="frame" x="0.0" y="79.333333333333371" width="335" height="20.666666666666671"/>
                                                                 <fontDescription key="fontDescription" name="NexaW01-Regular" family="NexaW01-Regular" pointSize="12"/>
                                                                 <nil key="textColor"/>
                                                                 <nil key="highlightedColor"/>
@@ -310,7 +322,9 @@
                         <outlet property="addressSpinnerView" destination="YbR-49-AOf" id="MMp-f1-AEo"/>
                         <outlet property="changeBtn" destination="ayz-e6-E71" id="bj7-nZ-T2x"/>
                         <outlet property="cityField" destination="VuM-GS-xyI" id="Huh-Of-MAd"/>
+                        <outlet property="nameField" destination="L4c-lb-Go8" id="eYo-lW-cSE"/>
                         <outlet property="payBtn" destination="VGI-pD-HqB" id="1iD-Cu-Oe2"/>
+                        <outlet property="phoneNumField" destination="wd6-Zm-F9H" id="gwk-Dk-kRs"/>
                         <outlet property="postalField" destination="NXV-8D-Hh8" id="jwS-KB-2H7"/>
                         <outlet property="priceBackgroundView" destination="MUA-4B-Z9t" id="23y-rU-3qU"/>
                         <outlet property="priceSpinner" destination="P7K-yD-pnQ" id="fwy-RM-zVX"/>

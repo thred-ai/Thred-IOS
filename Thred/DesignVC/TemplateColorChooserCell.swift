@@ -14,19 +14,27 @@ class TemplateColorChooserCell: UICollectionViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
+        
+    }
+    
+    
+    override func prepareForReuse() {
+        
     }
     
     override func layoutSubviews() {
-        self.colorView.layer.cornerRadius = self.colorView.frame.height / 2
-        self.colorView.clipsToBounds = true
-        if isSelected{
-            self.colorView.layer.borderColor = UIColor(named: "LoadingColor")?.withAlphaComponent(0.75).cgColor
-            self.colorView.layer.borderWidth = self.colorView.frame.height / 7.5
+        setShape()
+    }
+    
+    
+    func setShape(){
+        DispatchQueue.main.async {
+            self.colorView.layer.cornerRadius = self.colorView.frame.height / 8
+            self.colorView.clipsToBounds = true
+            self.setNeedsLayout()
+            self.layoutIfNeeded()
         }
-        else{
-            self.colorView.layer.borderColor = UIColor(named: "ProfileMask")?.cgColor
-            self.colorView.layer.borderWidth = self.colorView.frame.height / 17.75
-        }
+        
     }
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -40,16 +48,16 @@ class TemplateColorChooserCell: UICollectionViewCell {
     
     override var isSelected: Bool {
         didSet {
-            if self.isSelected {
-                UIView.animate(withDuration: 0.2, animations: {
+            DispatchQueue.main.async {
+                if self.isSelected {
                     self.colorView.layer.borderColor = UIColor(named: "LoadingColor")?.withAlphaComponent(0.75).cgColor
                     self.colorView.layer.borderWidth = self.colorView.frame.height / 7.5
-                })
-            } else {
-                UIView.animate(withDuration: 0.2, animations: {
+                } else {
                     self.colorView.layer.borderColor = UIColor(named: "ProfileMask")?.cgColor
                     self.colorView.layer.borderWidth = self.colorView.frame.height / 17.75
-                })
+                }
+                self.setNeedsLayout()
+                self.layoutIfNeeded()
             }
         }
     }

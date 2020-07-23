@@ -52,7 +52,7 @@ class CommentCell: UITableViewCell, UITextViewDelegate {
         guard comment != nil else{return}
         let commentUserInfo = comment.userInfo
         guard commentUserInfo.uid != userInfo.uid else{return}
-        vc.selectedUser = UserInfo(uid: commentUserInfo.uid, dp: commentUserInfo.dp, dpID: commentUserInfo.dpID, username: commentUserInfo.username, fullName: commentUserInfo.fullName, bio: commentUserInfo.bio, notifID: commentUserInfo.notifID, userFollowing: commentUserInfo.userFollowing, userLiked: commentUserInfo.userLiked, followerCount: commentUserInfo.followerCount, postCount: commentUserInfo.postCount, followingCount: commentUserInfo.followingCount, usersBlocking: commentUserInfo.usersBlocking, profileLink: commentUserInfo.profileLink)
+        vc.selectedUser = UserInfo(uid: commentUserInfo.uid, dp: commentUserInfo.dp, dpID: commentUserInfo.dpID, username: commentUserInfo.username, fullName: commentUserInfo.fullName, bio: commentUserInfo.bio, notifID: commentUserInfo.notifID, userFollowing: commentUserInfo.userFollowing, userLiked: commentUserInfo.userLiked, followerCount: commentUserInfo.followerCount, postCount: commentUserInfo.postCount, followingCount: commentUserInfo.followingCount, usersBlocking: commentUserInfo.usersBlocking, profileLink: commentUserInfo.profileLink, verified: commentUserInfo.verified)
         vc.performSegue(withIdentifier: "toFriend", sender: nil)
     }
     
@@ -69,7 +69,7 @@ class CommentCell: UITableViewCell, UITextViewDelegate {
                         vc.selectedUser = sameUser
                     }
                     else{
-                        vc.selectedUser = UserInfo(uid: nil, dp: nil, dpID: nil, username: username, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil)
+                        vc.selectedUser = UserInfo(uid: nil, dp: nil, dpID: nil, username: username, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil)
                     }
                     vc.performSegue(withIdentifier: "toFriend", sender: nil)
                 }

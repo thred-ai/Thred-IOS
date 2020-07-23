@@ -50,7 +50,7 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
             postArray = [Product]()
             
             let color = templateColor
-            Firestore.firestore().collectionGroup("Products").whereField("Template_Color", isEqualTo: templateColor ?? "").whereField("Has_Picture", isEqualTo: true).whereField("Blurred", isEqualTo: false).whereField("Public", isEqualTo: true).whereField("Available", isEqualTo: true).order(by: "Likes", descending: true).limit(to: 8).getDocuments(completion: { snaps, err in
+            Firestore.firestore().collectionGroup("Products").whereField("Template_Color", isEqualTo: templateColor ?? "").whereField("Has_Picture", isEqualTo: true).whereField("Blurred", isEqualTo: false).whereField("Public", isEqualTo: true).whereField("Available", isEqualTo: true).order(by: "Timestamp", descending: true).limit(to: 8).getDocuments(completion: { snaps, err in
                 if err != nil{
                     completed()
                     print(err?.localizedDescription ?? "")
@@ -67,10 +67,12 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
                         guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                         let likes = snap["Likes"] as? Int
                         let comments = ((snap["Comments"]) as? Int) ?? 0
+                        let productType = snap["Type"] as? String ?? defaultProductType
+
                         if userInfo.usersBlocking.contains(uid){
                             continue
                         }
-                        let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: true, isPublic: true)
+                        let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: true, isPublic: true, productType: productType)
                         
                         Firestore.firestore().collection("Users").document(uid).collection("Products").document(product.productID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userUID).getDocuments(completion: { snapLikes, error in
                         
@@ -94,11 +96,15 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
                                     product.liked = false
                                 }
                             }
+                            
                             if self.templateColor == color{
+                                
                                 self.postArray?.append(product)
                                 if self.postArray.count == snaps?.documents.count ?? 0{
+                                    
                                     self.postArray?.sort(by: {$0.likes > $1.likes})
                                     if let colorIndex = self.exploreVC?.colorSections.firstIndex(where: {$0["ID"] as? String == self.templateColor}){
+                                        
                                         var downloading = self.exploreVC?.colorSections[colorIndex]["Color_Downloading"] as? [String]
                                         downloading?.removeAll(where: {$0 == color})
                                         self.exploreVC?.colorSections[colorIndex]["Array"] = self.postArray
@@ -170,10 +176,14 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
     
     
     func downloadProductCellImage(indexPath: IndexPath, cell: ExploreProductCell?, product: Product){
+                
+        
         if let colorIndex = self.exploreVC?.colorSections.firstIndex(where: {$0["ID"] as? String == product.templateColor}){
             
             var downloading = self.exploreVC?.colorSections[colorIndex]["Downloading"] as? [String]
+            
             if !(downloading?.contains(product.picID ?? "null") ?? true){
+                
                 cell?.circularProgress.isHidden = false
                 downloading?.append(product.picID ?? "null")
                 self.collectionView.downloadExploreProductImage(circularProgress: cell?.circularProgress, followingUID: product.userInfo.uid ?? "", picID: product.picID ?? "", index: indexPath.item, product: product, isThumbnail: true){ image in
@@ -203,6 +213,9 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
             else{
                 
             }
+        }
+        else{
+            
         }
     }
     

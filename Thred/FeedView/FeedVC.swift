@@ -80,8 +80,9 @@ class Product: Codable, Equatable{
     var link: URL!
     var isAvailable: Bool!
     var isPublic: Bool!
+    var productType: String!
     
-    init(userInfo: UserInfo, picID: String?, description: String?, productID: String, timestamp: Date?, index: Int?, timestampDiff: String?, blurred: Bool?, price: Double?, name: String?, templateColor: String?, likes: Int?, liked: Bool?, designImage: Data?, comments: Int?, link: URL?, isAvailable: Bool?, isPublic: Bool?) {
+    init(userInfo: UserInfo, picID: String?, description: String?, productID: String, timestamp: Date?, index: Int?, timestampDiff: String?, blurred: Bool?, price: Double?, name: String?, templateColor: String?, likes: Int?, liked: Bool?, designImage: Data?, comments: Int?, link: URL?, isAvailable: Bool?, isPublic: Bool?, productType: String?) {
         
         self.userInfo = userInfo
         self.picID = picID
@@ -101,10 +102,11 @@ class Product: Codable, Equatable{
         self.link = link
         self.isAvailable = isAvailable
         self.isPublic = isPublic
+        self.productType = productType
     }
     
     convenience init() {
-        self.init(userInfo: UserInfo(), picID: nil, description: nil, productID: "", timestamp: nil,  index: nil, timestampDiff: nil, blurred: false, price: nil, name: nil, templateColor: nil, likes: 0, liked: false, designImage: nil, comments: 0, link: nil, isAvailable: nil, isPublic: nil)
+        self.init(userInfo: UserInfo(), picID: nil, description: nil, productID: "", timestamp: nil,  index: nil, timestampDiff: nil, blurred: false, price: nil, name: nil, templateColor: nil, likes: 0, liked: false, designImage: nil, comments: 0, link: nil, isAvailable: nil, isPublic: nil, productType: nil)
     }
     
 }
@@ -400,7 +402,9 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                                 let likes = snap["Likes"] as? Int
                                 guard let priceCents = (snap["Price_Cents"] as? Double) else{continue}
                                 let comments = ((snap["Comments"]) as? Int) ?? 0
-                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: true, isPublic: true)
+                                let productType = snap["Type"] as? String ?? defaultProductType
+
+                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: true, isPublic: true, productType: productType)
                                 localLoaded.append(product)
                             }
                         }
@@ -577,7 +581,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         }
         else if let designVC = (segue.destination as? UINavigationController)?.viewControllers.first as? DesignViewController{
             if let img = cache.imageFromCache(forKey: productToOpen.productID){
-                designVC.product = ProductInProgress(templateColor: productToOpen.templateColor, design: img, uid: productToOpen.userInfo.uid, caption: productToOpen.description, name: productToOpen.name, price: productToOpen.price, productID: productToOpen.productID, display: productToOpen.designImage, isPublic: productToOpen.isPublic)
+                designVC.product = ProductInProgress(templateColor: productToOpen.templateColor, design: img, uid: productToOpen.userInfo.uid, caption: productToOpen.description, name: productToOpen.name, price: productToOpen.price, productID: productToOpen.productID, display: productToOpen.designImage, isPublic: productToOpen.isPublic, productType: productToOpen.productType)
             }
         }
         else if let reportVC = (segue.destination as? UINavigationController)?.viewControllers.first as? ReportVC{

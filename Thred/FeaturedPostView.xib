@@ -39,18 +39,17 @@
                                     <rect key="frame" x="123" y="0.0" width="110" height="25"/>
                                     <subviews>
                                         <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="&quot;TITLE&quot;" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="Lcr-wj-QfF">
-                                            <rect key="frame" x="10" y="0.0" width="90" height="25"/>
+                                            <rect key="frame" x="5" y="0.0" width="100" height="25"/>
                                             <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="15"/>
-                                            <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                     </subviews>
                                     <color key="backgroundColor" name="DefaultProductBackground"/>
                                     <constraints>
-                                        <constraint firstAttribute="trailing" secondItem="Lcr-wj-QfF" secondAttribute="trailing" constant="10" id="CAz-QC-v9E"/>
+                                        <constraint firstAttribute="trailing" secondItem="Lcr-wj-QfF" secondAttribute="trailing" constant="5" id="CAz-QC-v9E"/>
                                         <constraint firstItem="Lcr-wj-QfF" firstAttribute="centerX" secondItem="GkF-7H-Xlp" secondAttribute="centerX" id="U87-iS-gpF"/>
                                         <constraint firstAttribute="height" constant="25" id="Xky-rm-ub6"/>
-                                        <constraint firstItem="Lcr-wj-QfF" firstAttribute="leading" secondItem="GkF-7H-Xlp" secondAttribute="leading" constant="10" id="m3U-sG-c7w"/>
+                                        <constraint firstItem="Lcr-wj-QfF" firstAttribute="leading" secondItem="GkF-7H-Xlp" secondAttribute="leading" constant="5" id="m3U-sG-c7w"/>
                                         <constraint firstAttribute="bottom" secondItem="Lcr-wj-QfF" secondAttribute="bottom" id="mzn-kx-hyv"/>
                                         <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="110" id="rbN-4h-SNA"/>
                                         <constraint firstItem="Lcr-wj-QfF" firstAttribute="top" secondItem="GkF-7H-Xlp" secondAttribute="top" id="sl4-Yn-Xdx"/>

@@ -54,6 +54,18 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 40
+    }
+    
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let label = UILabel(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: 40))
+        label.textAlignment = .center
+        label.font = UIFont(name: "NexaW01-Heavy", size: label.font.pointSize)
+        label.text = "Trending on Thred"
+        
+        return label
+    }
     
     func getFeaturedPost(){
         
@@ -76,6 +88,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                     let likes = snap["Likes"] as? Int
                     guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                     let comments = ((snap["Comments"]) as? Int) ?? 0
+                    let productType = snap["Type"] as? String ?? defaultProductType
 
                     Firestore.firestore().collection("Users").document(uid).collection("Products").document(snap.documentID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userUID).getDocuments(completion: { snapLikes, error in
                     
@@ -102,7 +115,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                             }
                         }
                         
-                        let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: nil, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil, isAvailable: true, isPublic: true)
+                        let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: nil, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil, isAvailable: true, isPublic: true, productType: productType)
                         
                         self.featuredHeader.featuredProducts.append(product)
                         
@@ -392,9 +405,14 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
         else if tableView == self.searchUsersTable{
             let cell = tableView.dequeueReusableCell(withIdentifier: "search", for: indexPath) as? SearchUserTableViewCell
+            guard searchedUsers.indices.contains(indexPath.row) else{return cell!}
             let user = self.searchedUsers[indexPath.row]
             cell?.userImageView.image = nil
-
+            cell?.fullnameLbl.text = nil
+            cell?.usernameLbl.text = nil
+            cell?.fullnameLbl.attributedText = nil
+            
+            
             if let dp = user.dp{
                 cell?.spinner.isHidden = true
                 cell?.userImageView.image = UIImage(data: dp)
@@ -405,11 +423,15 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
             }
             cell?.usernameLbl.text = "@" + (user.username ?? "null")
             cell?.fullnameLbl.text = user.fullName
+            if user.verified{
+                cell?.fullnameLbl.setVerified(name: user.fullName ?? "")
+            }
             return cell!
         }
         else{
             let cell = tableView.dequeueReusableCell(withIdentifier: "SearchProductCell", for: indexPath) as? SearchProductTableViewCell
-            let product = self.searchedProducts[indexPath.row]
+            guard searchedProducts.indices.contains(indexPath.row) else{return cell!}
+            let product = searchedProducts[indexPath.row]
             cell?.productImageView.image = nil
             cell?.priceLbl.text = nil
             cell?.likesLbl.text = nil
@@ -573,12 +595,13 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                                 let followingCount = document["Following_Count"] as? Int
                                 let postCount = document["Posts_Count"] as? Int
                                 let usersBlocking = document["Users_Blocking"] as? [String]
+                                let verified = document["Verified"] as? Bool ?? false
 
                                 if userInfo.usersBlocking.contains(uid){
                                     continue
                                 }
                                 
-                                let user = UserInfo(uid: uid, dp: nil, dpID: dpLink, username: username, fullName: fullname, bio: bio, notifID: nil, userFollowing: userFollowing ?? [], userLiked: [], followerCount: followerCount ?? 0, postCount: postCount ?? 0, followingCount: followingCount ?? 0, usersBlocking: usersBlocking ?? [], profileLink: nil)
+                                let user = UserInfo(uid: uid, dp: nil, dpID: dpLink, username: username, fullName: fullname, bio: bio, notifID: nil, userFollowing: userFollowing ?? [], userLiked: [], followerCount: followerCount ?? 0, postCount: postCount ?? 0, followingCount: followingCount ?? 0, usersBlocking: usersBlocking ?? [], profileLink: nil, verified: verified)
 
                                 if uid == userInfo.uid{
                                     user.dp = userInfo.dp
@@ -588,7 +611,9 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                                     continue
                                 }
                                 
-                                self.searchedUsers.append(user)
+                                if !self.searchedUsers.contains(where: {$0.uid == document.documentID}){
+                                    self.searchedUsers.append(user)
+                                }
                                 self.searchUsersTable.reloadData()
                                 let ref = Storage.storage().reference()
                                 ref.child("Users/" + uid + "/" + "profile_pic-" + (dpLink ?? "null") +
@@ -625,6 +650,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     
+    
     func searchProducts(searchText: String){
         guard let userUID = userInfo.uid else{return}
         if searchText == ""{
@@ -643,19 +669,14 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                 }
                 else{
                     
-                    let oldProducts: [Product]! = self.searchedProducts.map({$0})
                     self.searchedProducts.removeAll()
-                    
                     if let documents = query?.documents{
                         if documents.count != 0{
                             print(documents)
                             for document in documents{
+                                
                                 let timestamp = (document["Timestamp"] as? Timestamp)?.dateValue()
-                                if let same = oldProducts.first(where: {$0.productID == document.documentID}){
-                                    self.searchedProducts.append(same)
-                                    self.searchProductsTable.reloadData()
-                                    continue
-                                }
+                                
                                 guard let uid = document["UID"] as? String else{
                                     continue}
                                 let description = document["Description"] as? String
@@ -666,8 +687,9 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                                 guard let priceCents = (document["Price_Cents"] as? Double) else{continue}
                                 let comments = ((document["Comments"]) as? Int) ?? 0
                                 let productID = document.documentID
-                                
-                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: productID, description: description, productID: productID, timestamp: timestamp, index: 0, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(productID), designImage: nil, comments: comments, link: nil, isAvailable: true, isPublic: true)
+                                let productType = document["Type"] as? String ?? defaultProductType
+
+                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil), picID: productID, description: description, productID: productID, timestamp: timestamp, index: 0, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(productID), designImage: nil, comments: comments, link: nil, isAvailable: true, isPublic: true, productType: productType)
 
                                 Firestore.firestore().collection("Users").document(uid).collection("Products").document(productID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userUID).getDocuments(completion: { snapLikes, error in
                                 
@@ -691,7 +713,9 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                                             product.liked = false
                                         }
                                     }
-                                    self.searchedProducts.append(product)
+                                    if !self.searchedProducts.contains(where: {$0.productID == document.documentID}){
+                                        self.searchedProducts.append(product)
+                                    }
                                     self.searchedProducts.sort(by: {$0.likes > $1.likes})
                                     self.searchProductsTable.reloadData()
                                     

@@ -81,8 +81,9 @@ class ColorSectionVC: UICollectionViewController {
                                 guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                                 let likes = snap["Likes"] as? Int
                                 let comments = ((snap["Comments"]) as? Int) ?? 0
+                                let productType = snap["Type"] as? String ?? defaultProductType
 
-                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: true, isPublic: true)
+                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: true, isPublic: true, productType: productType)
 
                                 Firestore.firestore().collection("Users").document(uid).collection("Products").document(product.productID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userUID).getDocuments(completion: { snapLikes, error in
                                 
@@ -111,6 +112,7 @@ class ColorSectionVC: UICollectionViewController {
                                     counter += 1
                                     if counter == docs.count{
                                         self.last = docs.last
+                                        self.loadedProducts.sort(by: {$0.likes > $1.likes})
                                         self.collectionView.reloadData()
                                         completed()
                                     }

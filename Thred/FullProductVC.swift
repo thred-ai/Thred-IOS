@@ -160,12 +160,12 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
                     guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                     let comments = ((snap["Comments"]) as? Int) ?? 0
                     let isPublic = snap["Public"] as? Bool ?? true
+                    let productType = snap["Type"] as? String ?? defaultProductType
 
                     guard !(!isPublic && uid != userInfo.uid) else{
                         self.navigationController?.popViewController(animated: true)
                         return
                     }
-                    
                     
                     Firestore.firestore().collection("Users").document(uid).collection("Products").document(snap.documentID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userUID).getDocuments(completion: { snapLikes, error in
                     
@@ -192,7 +192,7 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
                             }
                         }
                         
-                        self.fullProduct = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: nil, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil, isAvailable: isAvailable, isPublic: isPublic)
+                        self.fullProduct = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: nil, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil, isAvailable: isAvailable, isPublic: isPublic, productType: productType)
                         if let cell = self.tableView.cellForRow(at: IndexPath(row: 0, section: 0)) as? ProductCell{
                             self.tableView.setPictureCell(cell: cell, indexPath: IndexPath(row: 0, section: 0), product: self.fullProduct, productLocation: self, shouldDownloadPic: false)
                         }
@@ -443,7 +443,7 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
         }
         else if let designVC = (segue.destination as? UINavigationController)?.viewControllers.first as? DesignViewController{
             if let img = cache.imageFromCache(forKey: fullProduct.productID){
-                designVC.product = ProductInProgress(templateColor: fullProduct.templateColor, design: img, uid: fullProduct.userInfo.uid, caption: fullProduct.description, name: fullProduct.name, price: fullProduct.price, productID: fullProduct.productID, display: fullProduct.designImage, isPublic: fullProduct.isPublic)
+                designVC.product = ProductInProgress(templateColor: fullProduct.templateColor, design: img, uid: fullProduct.userInfo.uid, caption: fullProduct.description, name: fullProduct.name, price: fullProduct.price, productID: fullProduct.productID, display: fullProduct.designImage, isPublic: fullProduct.isPublic, productType: fullProduct.productType)
             }
         }
         else if let reportVC = (segue.destination as? UINavigationController)?.viewControllers.first as? ReportVC{

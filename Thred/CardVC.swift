@@ -81,6 +81,8 @@ class CardVC: UIViewController, STPAddCardViewControllerDelegate {
         actionBtn.clipsToBounds = true
     }
     
+    
+    
     func setup(){
         
         if let bankInst = UserDefaults.standard.string(forKey: "CARD_BRAND"), let lastFour = UserDefaults.standard.string(forKey: "CARD_LAST_4"), let postalCode = UserDefaults.standard.string(forKey: "CARD_POSTAL_CODE"){

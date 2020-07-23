@@ -11,6 +11,7 @@ import Firebase
 import ColorCompatibility
 import CoreLocation
 import PopupDialog
+import FirebaseFirestore
 
 class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
@@ -27,6 +28,8 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     @IBOutlet weak var priceSpinner: MapSpinnerView!
     @IBOutlet weak var priceSpinnerView: UIView!
     @IBOutlet weak var shippingAndTaxLbl: UILabel!
+    @IBOutlet weak var nameField: UILabel!
+    @IBOutlet weak var phoneNumField: UILabel!
     @IBOutlet weak var streetField: UILabel!
     @IBOutlet weak var cityField: UILabel!
     @IBOutlet weak var postalField: UILabel!
@@ -62,7 +65,12 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         
         if let street = UserDefaults.standard.string(forKey: "street"), let city = UserDefaults.standard.string(forKey: "city"), let adminArea = UserDefaults.standard.string(forKey: "admin_area"), let country = UserDefaults.standard.string(forKey: "country"), UserDefaults.standard.string(forKey: "postal_code") != nil{
             let unitNum = UserDefaults.standard.string(forKey: "unit_number")
-            getAddress(street: street, city: city, adminArea: adminArea, country: country, unitNum: unitNum)
+            let phoneNumber = UserDefaults.standard.string(forKey: "phone_number")
+            var fullName: String?
+            if let firstName = UserDefaults.standard.string(forKey: "first_name"), let lastName = UserDefaults.standard.string(forKey: "last_name"){
+                fullName = "\(firstName) \(lastName)"
+            }
+            getAddress(street: street, city: city, adminArea: adminArea, country: country, unitNum: unitNum, fullName: fullName, phoneNumber: phoneNumber)
         }
         else{
             setAddress()
@@ -87,7 +95,7 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         }
     }
     
-    func getAddress(street: String, city: String, adminArea: String, country: String, unitNum: String?){
+    func getAddress(street: String, city: String, adminArea: String, country: String, unitNum: String?, fullName: String?, phoneNumber: String?){
         showAddressSpinner()
                 
         let address = "\(street), \(city), \(adminArea), \(country)"
@@ -100,6 +108,11 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
                     self.address["City"] = city
                     self.address["Street"] = street
                     self.address["Postal"] = postalCode
+                    
+                    if let fullName = fullName, !fullName.isEmpty, let phoneNumber = phoneNumber, !phoneNumber.isEmpty{
+                        self.address["Name"] = fullName
+                        self.address["Phone"] = phoneNumber
+                    }
                     
                     if let unitNum = unitNum, !unitNum.isEmpty{
                         self.address["Unit"] = unitNum
@@ -142,6 +155,18 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         streetField.text = "\(street)"
         if let unit = self.address["Unit"], !unit.isEmpty{
             streetField.text?.append(", Unit: \(unit)")
+        }
+        if let name = self.address["Name"], !name.isEmpty{
+            nameField.text = name
+        }
+        else{
+            nameField.text = "*"
+        }
+        if let phone = self.address["Phone"], !phone.isEmpty{
+            phoneNumField.text = phone
+        }
+        else{
+            phoneNumField.text = "*"
         }
         
         cityField.text = "\(city), \(adminArea). \(country)"
@@ -414,6 +439,13 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
             sender.isEnabled = true
         return}
         
+        guard let phone = address["Phone"], let name = address["Name"] else{
+            showNameMessage {
+                self.navigationController?.popViewController(animated: true)
+            }
+            sender.isEnabled = true
+            return
+        }
         
         navigationItem.hidesBackButton = true
         
@@ -422,7 +454,9 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
             "country" : country,
             "admin_area" : adminArea,
             "city" : city,
-            "street_address" : street
+            "street_address" : street,
+            "phone_number" : phone,
+            "full_name" : name
         ]
         
         print(shipping)
@@ -489,6 +523,16 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         }
         showPopUp(title: title, message: message, image: nil, buttons: [okBtn], titleColor: .red)
     }
+    
+    func showNameMessage(completed: @escaping () -> ()){
+        let title = "Delivery Information Incomplete"
+        let message = "Please update your delivery info under 'Home Address' in account settings"
+        let okBtn = DefaultButton(title: "OK", dismissOnTap: true) {
+            completed()
+        }
+        
+        showPopUp(title: title, message: message, image: nil, buttons: [okBtn], titleColor: .red)
+    }
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
@@ -505,4 +549,10 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     }
     
 
+}
+
+extension String {
+    public func toPhoneNumber() -> String {
+        return self.replacingOccurrences(of: "(\\d{3})(\\d{3})(\\d+)", with: "$1-$2-$3", options: .regularExpression, range: nil)
+    }
 }

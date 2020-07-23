@@ -57,6 +57,47 @@ extension DesignViewController{
         return true
     }
     
+    func pixel(in image: UIImage, at point: CGPoint) -> (UInt8, UInt8, UInt8, UInt8)? {
+        let width = Int(image.size.width)
+        let height = Int(image.size.height)
+        let x = Int(point.x)
+        let y = Int(point.y)
+        guard x < width && y < height else {
+            return nil
+        }
+        guard let cfData:CFData = image.cgImage?.dataProvider?.data, let pointer = CFDataGetBytePtr(cfData) else {
+            return nil
+        }
+        let bytesPerPixel = 4
+        let offset = (x + y * width) * bytesPerPixel
+        return (pointer[offset], pointer[offset + 1], pointer[offset + 2], pointer[offset + 3])
+    }
+    
+    func getDropper(_ sender: UIButton?){
+        
+        if canvasImageView.isHidden{
+            let image = canvas.makeSnapshot(clear: false, subviewsToIgnore: [])!
+            self.canvasImageView.frame = self.canvas.frame
+            self.canvasImageView.image = image
+            self.canvasImageView.isHidden = false
+            sender?.tintColor = sender?.tintColor?.withAlphaComponent(0.5)
+            activateDropper(image: image)
+        }
+        else{
+            
+        }
+    }
+    
+    func calculateDropper(){
+        
+    }
+    
+    
+    func activateDropper(image: UIImage){
+        if let (r,g,b,a) = pixel(in: image, at: CGPoint(x: 10, y:10)) {
+            print ("Red: \(r), Green: \(g), Blue: \(b), Alpha: \(a)")
+        }
+    }
     
     func swiftyDraw(shouldBeginDrawingIn drawingView: SwiftyDrawView, using touch: UITouch) -> Bool {
         if !drawingView.isHidden && !drawingView.isEnabled{

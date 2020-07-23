@@ -19,7 +19,7 @@ class FeaturedPostView: UIView, UICollectionViewDelegate, UICollectionViewDataSo
     var vc: UIViewController! {
         didSet{
             if vc is ExploreViewController{
-                trendingLbl.text = "Trending"
+                trendingLbl.text = "Featured Five"
             }
             else if vc is FullOrderVC, let orderID = order.orderID{
                 trendingLbl.text = "Order #: \(orderID)"
@@ -56,7 +56,7 @@ class FeaturedPostView: UIView, UICollectionViewDelegate, UICollectionViewDataSo
         
         let orderAttributes = [
             NSAttributedString.Key.font : orderFont,
-            NSAttributedString.Key.foregroundColor : UIColor.secondaryLabel
+            NSAttributedString.Key.foregroundColor : UIColor.label
         ] as [NSAttributedString.Key : Any]
         
         attrString.addAttributes(attributes, range: matchRange)
@@ -117,7 +117,8 @@ class FeaturedPostView: UIView, UICollectionViewDelegate, UICollectionViewDataSo
 
         DispatchQueue(label: "cache").async {
             if let img = cache.imageFromCache(forKey: product.productID){
-                let bundlePath = Bundle.main.path(forResource: product.templateColor, ofType: "png")
+                guard let productType = product.productType?.productType() else{return}
+                let bundlePath = Bundle.main.path(forResource: "\(productType)_\(product.templateColor ?? "")", ofType: "png")
                 let image = UIImage(contentsOfFile: bundlePath!)
                 DispatchQueue.main.async {
                     cell?.isUserInteractionEnabled = true

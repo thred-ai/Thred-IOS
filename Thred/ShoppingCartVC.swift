@@ -11,6 +11,9 @@ import ColorCompatibility
 import SDWebImage
 import Firebase
 import PopupDialog
+import FirebaseFirestore
+
+let defaultProductType = "ATC1000"
 
 class ProductInCart{
     
@@ -385,7 +388,8 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                     guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                     let comments = ((snap["Comments"]) as? Int) ?? 0
                     let isPublic = snap["Public"] as? Bool ?? true
-                    let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: isAvailable, isPublic: isPublic)
+                    let productType = snap["Type"] as? String ?? defaultProductType
+                    let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: isAvailable, isPublic: isPublic, productType: productType)
                     
                     Firestore.firestore().collection("Users").document(uid).collection("Products").document(product.productID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userUID).getDocuments(completion: { snapLikes, error in
                     
@@ -482,7 +486,7 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                         continue
                     }
 
-                    let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: productID, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: userInfo.userLiked.contains(doc.documentID), designImage: nil, comments: nil, link: nil, isAvailable: false, isPublic: nil)
+                    let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil), picID: productID, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: userInfo.userLiked.contains(doc.documentID), designImage: nil, comments: nil, link: nil, isAvailable: false, isPublic: nil, productType: nil)
                     let productInCart = ProductInCart(product: product, size: size, quantity: qty, isDeleted: false, timestamp: timestamp, timestampDiff: nil, saleID: nil, inBank: nil)
                     localLoaded.append(productInCart)
                 }

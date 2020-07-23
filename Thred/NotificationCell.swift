@@ -112,7 +112,8 @@ class NotificationCell: UITableViewCell{
             }
             else{
                 notifPic.layer.cornerRadius = notifPic.frame.height / 8
-                notifPic.layer.borderWidth = 0
+                notifPic.layer.borderColor = UIColor(named: "ProfileMask")?.cgColor
+                notifPic.layer.borderWidth = 1
             }
         }
     }

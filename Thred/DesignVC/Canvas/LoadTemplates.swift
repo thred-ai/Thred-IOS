@@ -13,19 +13,19 @@ import SDWebImage
 
 extension DesignViewController{
     func loadDesigns(completed: @escaping ()->()){
-        if let loadedTees = UserDefaults.standard.object(forKey: "TemplateTeeIDs") as? [[String : String]]{
+        
+        switch UserDefaults.standard.object(forKey: "TemplateTeeIDs"){
+        case let loadedTees as [[String : String]]:
             for id in loadedTees{
                 guard let code = id["Code"] else{continue}
-                print(code)
                 guard let displayName = id["Display"] else{continue}
-                self.tees.append(Template(templateID: code, templateDisplayName: displayName))
+                let hasFemale = (id["hasFemale"] ?? "false").toBool()
+                self.tees.append(Template(templateID: code, templateDisplayName: displayName, hasFemale: hasFemale))
             }
             completed()
-        }
-        else{
-            
+            fallthrough
+        default:
             checkAuthStatus {
-                
                 Firestore.firestore().document("Templates/Tees").getDocument(completion: { snap, error in
                     if error != nil{
                         print(error?.localizedDescription ?? "")
@@ -34,10 +34,13 @@ extension DesignViewController{
                         //for doc in snaps?.documents ?? []{}
                         guard let doc = snap else{return}
                         let ids = doc["IDs"] as? [[String : String]]
+                        self.tees.removeAll()
+                        
                         for id in ids ?? []{
                             guard let code = id["Code"] else{continue}
                             guard let displayName = id["Display"] else{continue}
-                            self.tees?.append(Template(templateID: code, templateDisplayName: displayName))
+                            guard let hasFemale = (id["hasFemale"] ?? "false").toBool() else{continue}
+                            self.tees?.append(Template(templateID: code, templateDisplayName: displayName, hasFemale: hasFemale))
                         }
                         UserDefaults.standard.set(ids, forKey: "TemplateTeeIDs")
                         completed()
@@ -45,5 +48,16 @@ extension DesignViewController{
                 })
             }
         }
+    }
+}
+
+extension String {
+    func toBool() -> Bool?{
+        if self == "false" {
+            return false
+        }else if self == "true"{
+            return true
+        }
+        return nil
     }
 }

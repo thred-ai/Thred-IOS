@@ -28,8 +28,9 @@ class UserInfo: Codable{
     var pendingLiked = [String : Bool]()
     var usersBlocking = [String]()
     var profileLink: URL?
+    var verified = Bool()
     
-    init(uid: String?, dp: Data?, dpID: String?, username: String?, fullName: String?, bio: String?, notifID: String?, userFollowing: [String], userLiked: [String], followerCount: Int, postCount: Int, followingCount: Int, usersBlocking: [String], profileLink: URL?) {
+    init(uid: String?, dp: Data?, dpID: String?, username: String?, fullName: String?, bio: String?, notifID: String?, userFollowing: [String], userLiked: [String], followerCount: Int, postCount: Int, followingCount: Int, usersBlocking: [String], profileLink: URL?, verified: Bool?) {
         
         self.uid = uid
         self.dp = dp
@@ -45,9 +46,10 @@ class UserInfo: Codable{
         self.followingCount = followingCount
         self.usersBlocking = usersBlocking
         self.profileLink = profileLink
+        self.verified = verified ?? false
     }
     
     convenience init() {
-        self.init(uid: nil, dp: nil,  dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil)
+        self.init(uid: nil, dp: nil,  dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil)
     }
 }

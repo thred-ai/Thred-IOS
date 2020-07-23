@@ -239,7 +239,7 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
                         }
                         let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
                         let message = snap["Message"] as? String
-                        let userInfo = UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil)
+                        let userInfo = UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil)
                         
                         self.comments.append(Comment(timestamp: timestamp, message: message, commentID: snap.documentID, userInfo: userInfo))
                         
@@ -277,6 +277,7 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
             let comment = comments[indexPath.row]
             cell?.comment = comment
             cell?.fullNameLbl.text = nil
+            cell?.fullNameLbl.attributedText = nil
             cell?.usernameLbl.text = nil
             cell?.profilePicture.image = nil
             cell?.spinner.isHidden = true
@@ -292,6 +293,7 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
             cell?.vc = self
             cell?.messageView.text = comment.message
             cell?.messageView.addLinks(isNotification: false)
+            
             tableView.checkCommentTimes(comment: comment, timestampLbl: cell?.timestampLbl)
 
             if comment.userInfo.usersBlocking.contains(userUID){
@@ -304,6 +306,9 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
             
             if comment.userInfo.username != nil{
                 cell?.fullNameLbl.text = comment.userInfo.fullName ?? "null"
+                if comment.userInfo.verified{
+                    cell?.fullNameLbl.setVerified(name: comment.userInfo.fullName ?? "")
+                }
                 cell?.usernameLbl.text = "@\(comment.userInfo.username ?? "null")"
                 if let dp = comment.userInfo.dp{
                     cell?.profilePicture.image = UIImage(data: dp)
@@ -320,7 +325,11 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
                             comment.userInfo.bio = same?.bio
                             comment.userInfo.dp = same?.dp
                             comment.userInfo.usersBlocking = same?.usersBlocking ?? []
+                            comment.userInfo.verified = same?.verified ?? false
                             cell?.fullNameLbl.text = comment.userInfo.fullName ?? "null"
+                            if comment.userInfo.verified{
+                                cell?.fullNameLbl.setVerified(name: comment.userInfo.fullName ?? "")
+                            }
                             cell?.usernameLbl.text = "@\(comment.userInfo.username ?? "null")"
                             if let dp = comment.userInfo.dp{
                                 cell?.profilePicture.image = UIImage(data: dp)
@@ -336,7 +345,7 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
                 default:
                     if !downloadingProfiles.contains(uid){
                         downloadingProfiles.append(uid)
-                        self.downloadUserInfo(uid: uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: false, userInfoToUse: comment.userInfo, queryOnUsername: false, completed: { uid, fullName, username, dpUID, notifID, bio, img, userFollowing, usersBlocking, postCount, followersCount, followingCount  in
+                        self.downloadUserInfo(uid: uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: false, userInfoToUse: comment.userInfo, queryOnUsername: false, completed: { uid, fullName, username, dpUID, notifID, bio, img, userFollowing, usersBlocking, postCount, followersCount, followingCount, verified  in
                             self.downloadingProfiles.removeAll(where: {$0 == uid})
                             
                             if usersBlocking.contains(userUID){
@@ -351,7 +360,7 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
                             comment.userInfo.postCount = postCount
                             comment.userInfo.followerCount = followersCount
                             comment.userInfo.followingCount = followingCount
-
+                            comment.userInfo.verified = verified ?? false
                             cell?.fullNameLbl.text = fullName ?? "null"
                             cell?.usernameLbl.text = "@\(username ?? "null")"
                             
@@ -366,6 +375,9 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
                                             switch cell{
                                             case let c as CommentCell:
                                                 c.fullNameLbl.text = fullName
+                                                if comment.userInfo.verified{
+                                                    c.fullNameLbl.setVerified(name: comment.userInfo.fullName ?? "")
+                                                }
                                                 c.usernameLbl.text = "@" + (username ?? "null")
                                                 if let dp = comment.userInfo.dp{
                                                     c.profilePicture.image = UIImage(data: dp)
@@ -385,6 +397,9 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
         }
         else{
             let cell = tableView.dequeueReusableCell(withIdentifier: "search", for: indexPath) as? SearchUserTableViewCell
+            cell?.fullnameLbl.text = nil
+            cell?.fullnameLbl.attributedText = nil
+            cell?.usernameLbl.text = nil
             let user = self.loadedUsers[indexPath.row]
             cell?.userImageView.image = nil
 
@@ -398,6 +413,9 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
             }
             cell?.usernameLbl.text = "@" + (user.username ?? "null")
             cell?.fullnameLbl.text = user.fullName
+            if user.verified{
+                cell?.fullnameLbl.setVerified(name: user.fullName ?? "")
+            }
             return cell!
         }
     }
@@ -578,12 +596,12 @@ class CommentsVC: UIViewController, UITextViewDelegate, UITableViewDelegate, UIT
                                 let followingCount = document["Following_Count"] as? Int
                                 let postCount = document["Posts_Count"] as? Int
                                 let usersBlocking = document["Users_Blocking"] as? [String]
-
+                                let verified = document["Verified"] as? Bool ?? false
                                 if usersBlocking?.contains(userUID) ?? false{
                                     continue
                                 }
                                 
-                                let user = UserInfo(uid: uid, dp: nil, dpID: dpLink, username: username, fullName: fullname, bio: bio, notifID: nil, userFollowing: userFollowing ?? [], userLiked: [], followerCount: followerCount ?? 0, postCount: postCount ?? 0, followingCount: followingCount ?? 0, usersBlocking: usersBlocking ?? [], profileLink: nil)
+                                let user = UserInfo(uid: uid, dp: nil, dpID: dpLink, username: username, fullName: fullname, bio: bio, notifID: nil, userFollowing: userFollowing ?? [], userLiked: [], followerCount: followerCount ?? 0, postCount: postCount ?? 0, followingCount: followingCount ?? 0, usersBlocking: usersBlocking ?? [], profileLink: nil, verified: verified)
 
                                 self.loadedUsers.append(user)
                                 self.taggingTableView.reloadData()

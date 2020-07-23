@@ -9,6 +9,7 @@
 import UIKit
 import Firebase
 import SDWebImage
+import FirebaseFirestore
 
 enum UserListType{
     case followers
@@ -85,7 +86,9 @@ class UserListVC: UITableViewController {
                             let followingCount = document["Following_Count"] as? Int
                             let postCount = document["Posts_Count"] as? Int
                             let usersBlocking = document["Users_Blocking"] as? [String]
-                            let user = UserInfo(uid: uid, dp: nil, dpID: dpLink, username: username, fullName: fullname, bio: bio, notifID: nil, userFollowing: userFollowing ?? [], userLiked: [], followerCount: followerCount ?? 0, postCount: postCount ?? 0, followingCount: followingCount ?? 0, usersBlocking: usersBlocking ?? [], profileLink: nil)
+                            let verified = document["Verified"] as? Bool ?? false
+                            
+                            let user = UserInfo(uid: uid, dp: nil, dpID: dpLink, username: username, fullName: fullname, bio: bio, notifID: nil, userFollowing: userFollowing ?? [], userLiked: [], followerCount: followerCount ?? 0, postCount: postCount ?? 0, followingCount: followingCount ?? 0, usersBlocking: usersBlocking ?? [], profileLink: nil, verified: verified)
                             self.listUsers.append(user)
                             self.tableView.performBatchUpdates({
                                 self.tableView.insertRows(at: [IndexPath(row: self.listUsers.count - 1, section: 0)], with: .none)
@@ -101,10 +104,15 @@ class UserListVC: UITableViewController {
                                 user.dpID = userInfo.dpID
                                 user.username = userInfo.username
                                 user.fullName = userInfo.fullName
+                                user.verified = userInfo.verified
                                 if let index = self.listUsers.firstIndex(where: {$0.uid == uid}){
                                     if let cell = self.tableView.cellForRow(at: IndexPath(row: index, section: 0)) as? SearchUserTableViewCell{
                                         cell.usernameLbl.text = "@\(user.username ?? "null")"
                                         cell.fullnameLbl.text = user.fullName
+                                        if user.verified{
+                                            cell.fullnameLbl.attributedText = nil
+                                            cell.fullnameLbl.setVerified(name: user.fullName ?? "")
+                                        }
                                         guard let imgData = userInfo.dp else{return}
                                         cell.userImageView.image = UIImage(data: imgData)
                                         cell.spinner.isHidden = true
@@ -131,6 +139,10 @@ class UserListVC: UITableViewController {
                                                     
                                                     cell.usernameLbl.text = "@\(user.username ?? "null")"
                                                     cell.fullnameLbl.text = user.fullName
+                                                    if user.verified{
+                                                        cell.fullnameLbl.attributedText = nil
+                                                        cell.fullnameLbl.setVerified(name: user.fullName ?? "")
+                                                    }
                                                     cell.userImageView.image = image
                                                     cell.spinner.isHidden = true
                                                 }
@@ -215,10 +227,15 @@ class UserListVC: UITableViewController {
         let user = listUsers[indexPath.row]
         cell?.usernameLbl.text = nil
         cell?.fullnameLbl.text = nil
+        cell?.fullnameLbl.attributedText = nil
+
         cell?.userImageView.image = nil
         cell?.spinner.isHidden = false
         cell?.usernameLbl.text = "@\(user.username ?? "null")"
         cell?.fullnameLbl.text = user.fullName
+        if user.verified{
+            cell?.fullnameLbl.setVerified(name: user.fullName ?? "")
+        }
         if let imgData = user.dp{
             cell?.userImageView.image = UIImage(data: imgData)
         }

@@ -138,7 +138,7 @@ class SignInVC: UIViewController {
     }
     
     func loadUser(userUID: String, completed: @escaping (Bool) -> ()){
-        self.downloadUserInfo(uid: userUID, userVC: nil, feedVC: nil, downloadingPersonalDP: true, doNotDownloadDP: false, userInfoToUse: nil, queryOnUsername: false, completed: { uid, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followersCount, followingCount  in
+        self.downloadUserInfo(uid: userUID, userVC: nil, feedVC: nil, downloadingPersonalDP: true, doNotDownloadDP: false, userInfoToUse: nil, queryOnUsername: false, completed: { uid, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followersCount, followingCount, verified in
             
             if username == nil{
                 DispatchQueue.main.asyncAfter(deadline: .now() + 3.5){
@@ -152,7 +152,7 @@ class SignInVC: UIViewController {
                             if let appdelegate: AppDelegate = UIApplication.shared.delegate as? AppDelegate{
                                 appdelegate.registerNotifs(application: UIApplication.shared)
                             }
-                            self.setUserInfo(username: username, fullname: fullName, image: imgData, bio: bio, notifID: notifID, dpUID: dpUID, userFollowing: userFollowing, followerCount: followersCount, postCount: postCount, followingCount: followingCount, usersBlocking: usersBlocking)
+                            self.setUserInfo(username: username, fullname: fullName, image: imgData, bio: bio, notifID: notifID, dpUID: dpUID, userFollowing: userFollowing, followerCount: followersCount, postCount: postCount, followingCount: followingCount, usersBlocking: usersBlocking, verified: verified ?? false)
                             completed(true)
                         })
                     }

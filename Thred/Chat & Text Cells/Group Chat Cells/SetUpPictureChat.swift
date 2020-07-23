@@ -16,6 +16,7 @@ import ColorCompatibility
 
 extension UITableView{
     
+    
 
     func setPictureCell(cell: ProductCell?, indexPath: IndexPath, product: Product, productLocation: UIViewController, shouldDownloadPic: Bool){
         
@@ -36,6 +37,7 @@ extension UITableView{
         cell?.privateBanner.isHidden = true
         cell?.imageStackBar.isHidden = false
         cell?.commentBtn.isHidden = false
+        cell?.viewFullProductView.isHidden = false
 
         if shouldDownloadPic{
             cell?.collectionView.reloadData()
@@ -45,7 +47,7 @@ extension UITableView{
         
         (productLocation as? FullProductVC)?.isDeleted = !(product.isAvailable ?? false)
     
-        cell?.commentBtn.setTitle("View comments", for: .normal)
+        cell?.commentBtn.setTitle("Add a comment", for: .normal)
         cell?.likesLbl.text = "\(0)"
         
         cell?.product = product
@@ -95,7 +97,6 @@ extension UITableView{
         
         cell?.likesLbl.text = "\(product.likes)"
         
-        cell?.commentBtn.setTitle("View comments", for: .normal)
         
         checkTimes(user: product, timestampLbl: cell?.timestampLbl)
         if shouldDownloadPic{
@@ -115,6 +116,7 @@ extension UITableView{
             userLbl.text = nil
             dp.image = nil
             fullLbl.text = nil
+            fullLbl.attributedText = nil
         }
         switch productLocation{
         case let feed as FeedVC:
@@ -127,6 +129,7 @@ extension UITableView{
             friendVC.loadedProducts[indexPath.row].index = indexPath.row
             checkAndDownloadUserInfoInProfile(userVC: nil, friendVC: friendVC, user: product, dp: dp, userLbl: userLbl, fullLbl: fullLbl, picCell: cell, userInfo: friendVC.friendInfo)
         case let fullVC as FullProductVC:
+            cell?.viewFullProductView.isHidden = true
             fullVC.fullProduct.index = indexPath.row
             checkAndDownloadUserInfoInFullVC(user: product, dp: dp, userLbl: userLbl, fullLbl: fullLbl, picCell: cell, fullVC: fullVC)
         default:

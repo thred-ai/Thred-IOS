@@ -221,7 +221,7 @@ class ProfileHeaderView: UIView, UITextViewDelegate{
         actionBtn.setTitle(headerActionBtnTitle, for: .normal)
     }
     
-    func setUpInfo(username: String?, fullname: String?, bio: String?, notifID: String?, dpUID: String?, image: Data?, actionBtnTitle: String, followerCount: Int, followingCount : Int, postCount: Int){
+    func setUpInfo(username: String?, fullname: String?, bio: String?, notifID: String?, dpUID: String?, image: Data?, actionBtnTitle: String, followerCount: Int, followingCount : Int, postCount: Int, verified: Bool){
         
         if let attr = bioView.attributedText.mutableCopy() as? NSMutableAttributedString{
             attr.removeAttribute(NSAttributedString.Key.link, range: NSMakeRange(0, attr.length))
@@ -232,6 +232,9 @@ class ProfileHeaderView: UIView, UITextViewDelegate{
         bioView?.text = nil
         usernameLbl.text = "@" + (username ?? "null")
         fullnameLbl.text = fullname ?? "null"
+        if verified{
+            setVerified(name: fullname ?? "null")
+        }
         bioView.text = bio
         bioView.addLinks(isNotification: false)
         bioView.textAlignment = .center
@@ -243,8 +246,17 @@ class ProfileHeaderView: UIView, UITextViewDelegate{
         setNeedsLayout()
         layoutIfNeeded()
         guard let img = image else{
+            
             return}
         profileImgView.image = UIImage(data: img)
+    }
+    
+    func setVerified(name: String){
+        let imageAttachment = NSTextAttachment()
+        imageAttachment.image = UIImage(systemName: "checkmark.seal.fill")?.withTintColor(UIColor(named: "LoadingColor")!)
+        let fullString = NSMutableAttributedString(string: name)
+        fullString.append(NSAttributedString(attachment: imageAttachment))
+        fullnameLbl.attributedText = fullString
     }
     
     func textView(_ textView: UITextView, shouldInteractWith URL: URL, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {
@@ -256,7 +268,7 @@ class ProfileHeaderView: UIView, UITextViewDelegate{
             if scheme.starts(with: "mention"){
                 let username = URL.absoluteString.replacingOccurrences(of: "mention:", with: "")
                 if username != userInfo.username, username != (vc as? FriendVC)?.friendInfo.username{
-                    let user = UserInfo(uid: nil, dp: nil, dpID: nil, username: username, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil)
+                    let user = UserInfo(uid: nil, dp: nil, dpID: nil, username: username, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil)
                     (vc as? FriendVC)?.selectedUser = user
                     (vc as? UserVC)?.selectedUser = user
                     vc?.performSegue(withIdentifier: "toFriend", sender: nil)

@@ -20,8 +20,9 @@ class ProductInProgress{
     var price: Double?
     var display: Data!
     var isPublic: Bool!
+    var productType: String!
     
-    init(templateColor: String!, design: UIImage!, uid: String!, caption: String!, name: String!, price: Double!, productID: String?, display: Data?, isPublic: Bool?) {
+    init(templateColor: String!, design: UIImage!, uid: String!, caption: String!, name: String!, price: Double!, productID: String?, display: Data?, isPublic: Bool?, productType: String?) {
         self.templateColor = templateColor
         self.design = design
         self.uid = uid
@@ -34,6 +35,6 @@ class ProductInProgress{
     }
     
     convenience init() {
-        self.init(templateColor: nil, design: nil, uid: nil, caption: nil, name: nil, price: nil, productID: nil, display: nil, isPublic: nil)
+        self.init(templateColor: nil, design: nil, uid: nil, caption: nil, name: nil, price: nil, productID: nil, display: nil, isPublic: nil, productType: nil)
     }
 }

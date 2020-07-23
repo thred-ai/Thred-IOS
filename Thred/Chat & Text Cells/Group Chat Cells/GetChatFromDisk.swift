@@ -23,7 +23,7 @@ extension Array where Iterator.Element == Product{
             
             for product in diskLoadedProducts!{
                 
-                let post = Product(userInfo: product.userInfo, picID: product.picID, description: product.description, productID: product.productID, timestamp: product.timestamp, index: product.index, timestampDiff: product.timestampDiff, blurred: product.blurred, price: product.price, name: product.name, templateColor: product.templateColor, likes: product.likes, liked: product.liked, designImage: product.designImage, comments: product.comments, link: product.link, isAvailable: product.isAvailable, isPublic: product.isPublic)
+                let post = Product(userInfo: product.userInfo, picID: product.picID, description: product.description, productID: product.productID, timestamp: product.timestamp, index: product.index, timestampDiff: product.timestampDiff, blurred: product.blurred, price: product.price, name: product.name, templateColor: product.templateColor, likes: product.likes, liked: product.liked, designImage: product.designImage, comments: product.comments, link: product.link, isAvailable: product.isAvailable, isPublic: product.isPublic, productType: product.productType)
                 
 
                 self.append(post)

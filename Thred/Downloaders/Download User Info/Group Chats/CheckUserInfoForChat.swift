@@ -23,6 +23,10 @@ extension UITableView{
             user.userInfo.fullName = userInfo.fullName
             user.userInfo.username = userInfo.username
             fullLbl.text = userInfo.fullName
+            if userInfo.verified{
+                fullLbl.setVerified(name: user.userInfo.fullName ?? "")
+                user.userInfo.verified = userInfo.verified
+            }
             userLbl.text = "@" + (userInfo.username ?? "null")
             picCell?.removeLabelLoad()
             picCell?.removeDpLoad()
@@ -32,6 +36,9 @@ extension UITableView{
                 if let imageData = user.userInfo.dp, let imageFromCache = UIImage(data: imageData) ?? cache.imageFromCache(forKey: user.userInfo.dpID){
                     dp.image = imageFromCache
                     fullLbl.text = user.userInfo.fullName
+                    if user.userInfo.verified{
+                        fullLbl.setVerified(name: userInfo.fullName ?? "")
+                    }
                     userLbl.text = "@" + (user.userInfo.username ?? "null")
                     picCell?.removeLabelLoad()
                     picCell?.removeDpLoad()
@@ -55,6 +62,9 @@ extension UITableView{
             user.userInfo.fullName = fullname
             user.userInfo.dpID = userInfo.dpID
             fullLbl.text = fullname
+            if userInfo.verified{
+                fullLbl.setVerified(name: userInfo.fullName ?? "")
+            }
             userLbl.text = "@\(username)"
             picCell?.removeLabelLoad()
             dp.image = UIImage(data: imgData)
@@ -70,6 +80,9 @@ extension UITableView{
                         DispatchQueue.main.async {
                             dp.image = imageFromCache
                             fullLbl.text = user.userInfo.fullName
+                            if user.userInfo.verified{
+                                fullLbl.setVerified(name: user.userInfo.fullName ?? "")
+                            }
                             userLbl.text = "@" + (user.userInfo.username ?? "null")
                             picCell?.removeLabelLoad()
                             picCell?.removeDpLoad()
@@ -80,6 +93,9 @@ extension UITableView{
                             DispatchQueue.main.async {
                                 dp.image = UIImage(data: imgData)
                                 fullLbl.text = userInfo.fullName
+                                if user.userInfo.verified{
+                                    fullLbl.setVerified(name: userInfo.fullName ?? "")
+                                }
                                 userLbl.text = "@" + (userInfo.username ?? "null")
                                 picCell?.removeLabelLoad()
                                 picCell?.removeDpLoad()
@@ -95,10 +111,16 @@ extension UITableView{
                         let cachedUserInfo = feed?.loadedProducts.first(where: {$0.userInfo.uid == user.userInfo.uid && $0.userInfo.username != nil})
                         user.userInfo.username = cachedUserInfo?.userInfo.username
                         user.userInfo.fullName = cachedUserInfo?.userInfo.fullName
+                        if user.userInfo.verified{
+                            fullLbl.setVerified(name: userInfo.fullName ?? "")
+                        }
                         user.userInfo.dpID = cachedUserInfo?.userInfo.dpID
                         if let fullName = cachedUserInfo?.userInfo.fullName{
                             DispatchQueue.main.async {
                                 fullLbl.text = fullName
+                                if user.userInfo.verified{
+                                    fullLbl.setVerified(name: userInfo.fullName ?? "")
+                                }
                                 picCell?.removeLabelLoad()
                             }
                         }
@@ -150,9 +172,14 @@ extension UITableView{
                 dp.image = UIImage(data: imgData)
             }
             user.userInfo.fullName = userInfo.fullName
+            
             user.userInfo.username = userInfo.username
             userLbl.text = "@" + (userInfo.username ?? "null")
             fullLbl.text = userInfo.fullName
+            if userInfo.verified{
+                user.userInfo.verified = true
+                fullLbl.setVerified(name: userInfo.fullName ?? "")
+            }
             picCell?.removeLabelLoad()
             picCell?.removeDpLoad()
         }
@@ -171,6 +198,10 @@ extension UITableView{
                         dp.image = imageFromCache
                         userLbl.text = "@" + (username ?? "null")
                         fullLbl.text = fullname
+                        if userInfo.verified{
+                            user.userInfo.verified = true
+                            fullLbl.setVerified(name: fullname ?? "")
+                        }
                         picCell?.removeLabelLoad()
                         picCell?.removeDpLoad()
                     }

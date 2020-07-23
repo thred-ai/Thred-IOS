@@ -40,6 +40,8 @@ class DrawToolsCell: UICollectionViewCell {
                 vc.showOrHideSlider(sender)
             case "Ruler":
                 vc.activateStraightLine(sender)
+            case "Dropper":
+                vc.getDropper(sender)
             default:
                 return
             }

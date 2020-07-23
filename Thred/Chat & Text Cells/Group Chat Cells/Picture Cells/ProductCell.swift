@@ -24,6 +24,7 @@ class ProductCell: UITableViewCell, UITextViewDelegate, UICollectionViewDelegate
     @IBAction func privateBannerTapped(_ sender: UIButton) {
         
     }
+    @IBOutlet weak var viewFullProductView: UIView!
     
     var collectionViewOffset: CGFloat {
         get {
@@ -91,8 +92,8 @@ class ProductCell: UITableViewCell, UITextViewDelegate, UICollectionViewDelegate
                 }
             }
         }
-        
     }
+    
     
     func checkForPic(cell: ProductPicCell?, indexPath: IndexPath, shouldDownload: Bool){
         
@@ -119,7 +120,8 @@ class ProductCell: UITableViewCell, UITextViewDelegate, UICollectionViewDelegate
         
         DispatchQueue(label: "cache").async {
             let img = cache.imageFromCache(forKey: product.picID)
-            let bundlePath = Bundle.main.path(forResource: product.templateColor, ofType: "png")
+            guard let productType = product.productType?.productType() else{return}
+            let bundlePath = Bundle.main.path(forResource: "\(productType)_\(product.templateColor ?? "")", ofType: "png")
             let image = UIImage(contentsOfFile: bundlePath!)
             
             DispatchQueue.main.async {
@@ -499,7 +501,7 @@ class ProductCell: UITableViewCell, UITextViewDelegate, UICollectionViewDelegate
             return
         }
         
-        let productToOpen = Product(userInfo: product.userInfo, picID: product.picID, description: product.description, productID: product.productID, timestamp: product.timestamp, index: product.index, timestampDiff: product.timestampDiff, blurred: product.blurred, price: product.price, name: product.name, templateColor: product.templateColor, likes: product.likes, liked: product.liked, designImage: product.designImage, comments: product.comments, link: nil, isAvailable: product.isAvailable, isPublic: product.isPublic)
+        let productToOpen = Product(userInfo: product.userInfo, picID: product.picID, description: product.description, productID: product.productID, timestamp: product.timestamp, index: product.index, timestampDiff: product.timestampDiff, blurred: product.blurred, price: product.price, name: product.name, templateColor: product.templateColor, likes: product.likes, liked: product.liked, designImage: product.designImage, comments: product.comments, link: nil, isAvailable: product.isAvailable, isPublic: product.isPublic, productType: product.productType)
         
         switch vc{
             
@@ -712,7 +714,6 @@ class ProductCell: UITableViewCell, UITextViewDelegate, UICollectionViewDelegate
     
     @IBAction @objc func segueToFull(_ sender: Any){
         
-        guard !(self.vc is FullProductVC) else{return}
         (self.vc as? UserVC)?.productToOpen = self.product
         (self.vc as? FriendVC)?.productToOpen = self.product
         (self.vc as? FeedVC)?.productToOpen = self.product
@@ -731,7 +732,7 @@ class ProductCell: UITableViewCell, UITextViewDelegate, UICollectionViewDelegate
             if scheme.starts(with: "mention"){
                 let username = URL.absoluteString.replacingOccurrences(of: "mention:", with: "")
                 if username != userInfo.username, username != (vc as? FriendVC)?.friendInfo.username{
-                    let user = UserInfo(uid: nil, dp: nil, dpID: nil, username: username, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil)
+                    let user = UserInfo(uid: nil, dp: nil, dpID: nil, username: username, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil)
                     (vc as? FriendVC)?.selectedUser = user
                     (vc as? UserVC)?.selectedUser = user
                     (vc as? FeedVC)?.selectedUser = user
@@ -837,6 +838,9 @@ class ProductCell: UITableViewCell, UITextViewDelegate, UICollectionViewDelegate
         privateBanner.layer.cornerRadius = privateBanner.frame.height / 4
         privateBanner.clipsToBounds = true
         
+        viewFullProductView.layer.cornerRadius = viewFullProductView.frame.height / 4
+        viewFullProductView.clipsToBounds = true
+        
         if let superView1 = optionMenuActionBtn1.superview, let superView2 = optionMenuCancelBtn.superview{
             superView1.layer.cornerRadius = superView1.frame.height / 2
             superView1.clipsToBounds = true
@@ -889,4 +893,21 @@ extension UIImage {
     }
 }
 
+extension UILabel{
+    func setVerified(name: String){
+        let imageAttachment = NSTextAttachment()
+        imageAttachment.image = UIImage(systemName: "checkmark.seal.fill")?.withTintColor(UIColor(named: "LoadingColor")!)
+        let sizeSide: CGFloat = 15
+        let iconsSize = CGRect(x: CGFloat(0),
+                               y: (font.capHeight - sizeSide) / 2,
+                               width: sizeSide,
+                               height: sizeSide)
+        imageAttachment.bounds = iconsSize
 
+        let fullString = NSMutableAttributedString(string: name)
+        fullString.append(NSAttributedString(attachment: imageAttachment))
+        self.attributedText = fullString
+        sizeToFit()
+        
+    }
+}

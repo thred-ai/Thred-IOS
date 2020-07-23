@@ -10,6 +10,7 @@ import UIKit
 import Firebase
 import ColorCompatibility
 import FirebaseStorage
+import FirebaseFirestore
 
 class UsernameSetupVC: UIViewController {
 
@@ -330,10 +331,12 @@ extension UIViewController{
         if let bio = UserDefaults.standard.string(forKey: "BIO"){
             userInfo.bio = bio
         }
-        let dpID = UserDefaults.standard.string(forKey: "DP_ID") ?? "default"
-        userInfo.dpID = dpID
-        if let profilePic = cache.imageFromDiskCache(forKey: dpID){
-            userInfo.dp = profilePic.jpegData(compressionQuality: 1.0)
+        if let dpID = UserDefaults.standard.string(forKey: "DP_ID"){
+            print(dpID)
+            userInfo.dpID = dpID
+            if let profilePic = cache.diskImageData(forKey: dpID){
+                userInfo.dp = profilePic
+            }
         }
 
         if let notifID = UserDefaults.standard.string(forKey: "NOTIF_ID"){
@@ -357,6 +360,9 @@ extension UIViewController{
         
         if let followingCount = UserDefaults.standard.object(forKey: "FOLLOWING_COUNT") as? Int{
             userInfo.followingCount = followingCount
+        }
+        if let verified = UserDefaults.standard.object(forKey: "VERIFIED") as? Bool{
+            userInfo.verified = verified
         }
         if let blocking = UserDefaults.standard.stringArray(forKey: "BLOCKING"){
             userInfo.usersBlocking = blocking

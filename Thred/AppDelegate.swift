@@ -29,9 +29,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 STPAPIClient.shared().publishableKey = stripeKey
             }
         }
-        
+                
         Messaging.messaging().delegate = self
-
         if Auth.auth().currentUser != nil{
             if !UserDefaults.standard.bool(forKey: "Already_Opened"){
                 UserDefaults.standard.set(true, forKey: "Already_Opened")
@@ -49,7 +48,45 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
         return true
     }
-    
+
+    /*
+    func fixCounts(){
+        Firestore.firestore().collection("Users").getDocuments(completion: { snaps, error in
+            if let err = error{
+                print(err.localizedDescription)
+            }
+            else{
+                for doc in snaps?.documents ?? []{
+                    var pCount = 0
+                    var fCount = 0
+                    var foCount = 0
+
+                    doc.reference.collection("Products").getDocuments(completion: { pSnaps, error in
+                        for _ in pSnaps?.documents ?? []{
+                            pCount += 1
+                        }
+                        doc.reference.collection("Followers").getDocuments(completion: { pSnaps, error in
+                            for _ in pSnaps?.documents ?? []{
+                                foCount += 1
+                            }
+                            doc.reference.collection("Following").getDocuments(completion: { pSnaps, error in
+                                for _ in pSnaps?.documents ?? []{
+                                    fCount += 1
+                                }
+                                let data = [
+                                    "Posts_Count" : pCount,
+                                    "Following_Count" : fCount,
+                                    "Followers_Count" : foCount
+                                ]
+                                doc.reference.updateData(data)
+                            })
+                        })
+                    })
+                }
+            }
+        })
+    }
+*/
     func beginSignIn(){
         self.registerNotifs(application: UIApplication.shared)
         let mainStoryboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
@@ -160,34 +197,34 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         case "Follow":
             let friendSB: UIStoryboard = UIStoryboard(name: "FriendVC", bundle: nil)
             if let friendVC: FriendVC = friendSB.instantiateViewController(withIdentifier: "FriendVC") as? FriendVC{
-                friendVC.friendInfo = UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil)
+                friendVC.friendInfo = UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil)
                 vcToPush = friendVC
             }
         case "Like":
             guard let productID = postID else{return}
             let fullSB: UIStoryboard = UIStoryboard(name: "FullProductVC", bundle: nil)
             if let fullVC: FullProductVC = fullSB.instantiateViewController(withIdentifier: "FullVC") as? FullProductVC{
-                fullVC.fullProduct = Product(userInfo: userInfo, picID: nil, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil, isAvailable: true, isPublic: nil)
+                fullVC.fullProduct = Product(userInfo: userInfo, picID: nil, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil, isAvailable: true, isPublic: nil, productType: nil)
                 vcToPush = fullVC
             }
         case "Buy":
             guard let productID = postID else{return}
             let fullSB: UIStoryboard = UIStoryboard(name: "FullProductVC", bundle: nil)
             if let fullVC: FullProductVC = fullSB.instantiateViewController(withIdentifier: "FullVC") as? FullProductVC{
-                fullVC.fullProduct = Product(userInfo: userInfo, picID: nil, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil, isAvailable: true, isPublic: nil)
+                fullVC.fullProduct = Product(userInfo: userInfo, picID: nil, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil, isAvailable: true, isPublic: nil, productType: nil)
                 vcToPush = fullVC
             }
         case "Bio_Mention":
             let friendSB: UIStoryboard = UIStoryboard(name: "FriendVC", bundle: nil)
             if let friendVC: FriendVC = friendSB.instantiateViewController(withIdentifier: "FriendVC") as? FriendVC{
-                friendVC.friendInfo = UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil)
+                friendVC.friendInfo = UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil)
                 vcToPush = friendVC
             }
         case "Post_Mention":
             guard let productID = postID else{return}
             let fullSB: UIStoryboard = UIStoryboard(name: "FullProductVC", bundle: nil)
             if let fullVC: FullProductVC = fullSB.instantiateViewController(withIdentifier: "FullVC") as? FullProductVC{
-                fullVC.fullProduct = Product(userInfo: UserInfo(), picID: productID, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil, isAvailable: true, isPublic: nil)
+                fullVC.fullProduct = Product(userInfo: UserInfo(), picID: productID, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil, isAvailable: true, isPublic: nil, productType: nil)
                 vcToPush = fullVC
             }
         case "Comment":
@@ -199,8 +236,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             let fullSB: UIStoryboard = UIStoryboard(name: "FullProductVC", bundle: nil)
             if let fullVC: FullProductVC = fullSB.instantiateViewController(withIdentifier: "FullVC") as? FullProductVC{
                 ///Fix uid for mention
-                fullVC.fullProduct = Product(userInfo: UserInfo(), picID: productID, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil, isAvailable: true, isPublic: nil)
-                fullVC.selectedComment = Comment(timestamp: timestamp, message: commentMsg, commentID: commentID, userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil))
+                fullVC.fullProduct = Product(userInfo: UserInfo(), picID: productID, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil, isAvailable: true, isPublic: nil, productType: nil)
+                fullVC.selectedComment = Comment(timestamp: timestamp, message: commentMsg, commentID: commentID, userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil))
                 vcToPush = fullVC
             }
         default:
@@ -210,6 +247,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             rootViewController.navigationController?.pushViewController(vcToPush, animated: true)
         }
     }
+    
+    
     
     func handleDynamicLink(isProduct: Bool, uid: String?, productID: String?, username: String?){
         
@@ -225,7 +264,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             let fullSB: UIStoryboard = UIStoryboard(name: "FullProductVC", bundle: nil)
             if let fullVC: FullProductVC = fullSB.instantiateViewController(withIdentifier: "FullVC") as? FullProductVC{
                 guard let productID = productID else{return}
-                fullVC.fullProduct = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: productID, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil, isAvailable: true, isPublic: nil)
+                fullVC.fullProduct = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil), picID: productID, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: nil, designImage: nil, comments: nil, link: nil, isAvailable: true, isPublic: nil, productType: nil)
                 vcToPush = fullVC
             }
         default:
@@ -241,7 +280,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             else{
                 let friendSB: UIStoryboard = UIStoryboard(name: "FriendVC", bundle: nil)
                 if let friendVC: FriendVC = friendSB.instantiateViewController(withIdentifier: "FriendVC") as? FriendVC{
-                    friendVC.friendInfo = UserInfo(uid: uid, dp: nil, dpID: nil, username: username, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil)
+                    friendVC.friendInfo = UserInfo(uid: uid, dp: nil, dpID: nil, username: username, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil)
                     vcToPush = friendVC
                 }
             }

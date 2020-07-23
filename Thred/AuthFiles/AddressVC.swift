@@ -10,6 +10,7 @@ import UIKit
 import ColorCompatibility
 import CoreLocation
 import Firebase
+import FirebaseFirestore
 
 class AddressVC: UIViewController, UINavigationControllerDelegate {
     
@@ -22,8 +23,15 @@ class AddressVC: UIViewController, UINavigationControllerDelegate {
     @IBOutlet weak var unitField: UITextField!
     @IBOutlet weak var scrollView: UIScrollView!
     
+    @IBOutlet weak var firstField: UITextField!
+    @IBOutlet weak var lastField: UITextField!
+    @IBOutlet weak var phoneField: UITextField!
+    
+    
     @IBOutlet weak var removeBtn: UIButton!
+    
     @IBOutlet weak var errorView: UITextView!
+    
     var isGiftAddress = false
     @IBOutlet weak var subtitleLbl: UITextView!
     
@@ -40,6 +48,9 @@ class AddressVC: UIViewController, UINavigationControllerDelegate {
         countryField.inputAccessoryView = toolBar
         postalCodeField.inputAccessoryView = toolBar
         unitField.inputAccessoryView = toolBar
+        firstField.inputAccessoryView = toolBar
+        lastField.inputAccessoryView = toolBar
+        phoneField.inputAccessoryView = toolBar
         errorView.text = nil
         
         if isGiftAddress && hasAddress(){
@@ -69,6 +80,10 @@ class AddressVC: UIViewController, UINavigationControllerDelegate {
         UserDefaults.standard.removeObject(forKey: "admin_area")
         UserDefaults.standard.removeObject(forKey: "unit_number")
         UserDefaults.standard.removeObject(forKey: "postal_code")
+        UserDefaults.standard.removeObject(forKey: "first_name")
+        UserDefaults.standard.removeObject(forKey: "last_name")
+        UserDefaults.standard.removeObject(forKey: "phone_number")
+
     }
     
     func hasAddress() -> Bool{
@@ -77,8 +92,11 @@ class AddressVC: UIViewController, UINavigationControllerDelegate {
         let adminArea = UserDefaults.standard.string(forKey: "admin_area")
         let country = UserDefaults.standard.string(forKey: "country")
         let postalCode = UserDefaults.standard.string(forKey: "postal_code")
+        let firstName = UserDefaults.standard.string(forKey: "first_name")
+        let lastName = UserDefaults.standard.string(forKey: "last_name")
+        let phoneNumber = UserDefaults.standard.string(forKey: "phone_number")
         
-        return street != nil && city != nil && adminArea != nil && country != nil && postalCode != nil
+        return street != nil && city != nil && adminArea != nil && country != nil && postalCode != nil && firstName != nil && lastName != nil && phoneNumber != nil
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -101,6 +119,9 @@ class AddressVC: UIViewController, UINavigationControllerDelegate {
         let country = UserDefaults.standard.string(forKey: "country")
         let postalCode = UserDefaults.standard.string(forKey: "postal_code")
         let unitNumber = UserDefaults.standard.string(forKey: "unit_number")
+        let firstName = UserDefaults.standard.string(forKey: "first_name")
+        let lastName = UserDefaults.standard.string(forKey: "last_name")
+        let phoneNumber = UserDefaults.standard.string(forKey: "phone_number")
             
         streetField.text = street
         cityField.text = city
@@ -108,10 +129,13 @@ class AddressVC: UIViewController, UINavigationControllerDelegate {
         countryField.text = country
         postalCodeField.text = postalCode
         unitField.text = unitNumber
+        firstField.text = firstName
+        lastField.text = lastName
+        phoneField.text = phoneNumber
         
     }
     
-    func setInFirestore(street: String, city: String, adminArea: String, country: String, postalCode: String, unitNumber: String?){
+    func setInFirestore(street: String, city: String, adminArea: String, country: String, postalCode: String, unitNumber: String?, firstName: String, lastName: String, phoneNumber: String){
         guard let uid = userInfo.uid else{return}
         
         var data = [
@@ -119,7 +143,10 @@ class AddressVC: UIViewController, UINavigationControllerDelegate {
             "City" : city,
             "Administrative_Area" : adminArea,
             "Country" : country,
-            "Postal_Code" : postalCode
+            "Postal_Code" : postalCode,
+            "First_Name" : firstName,
+            "Last_Name" : lastName,
+            "Phone_Num" : phoneNumber
         ]
         
         if let num = unitNumber{
@@ -132,7 +159,7 @@ class AddressVC: UIViewController, UINavigationControllerDelegate {
                 self.setErrorView("Unable to update information")
             }
             else{
-                self.setNewAddress(street: street, city: city, adminArea: adminArea, country: country, postalCode: postalCode, unitNumber: unitNumber)
+                self.setNewAddress(street: street, city: city, adminArea: adminArea, country: country, postalCode: postalCode, unitNumber: unitNumber, firstName: firstName, lastName: lastName, phoneNumber: phoneNumber)
                 
                 self.navigationController?.popViewController(animated: true)
             }
@@ -162,6 +189,9 @@ class AddressVC: UIViewController, UINavigationControllerDelegate {
         countryField.resignFirstResponder()
         postalCodeField.resignFirstResponder()
         unitField.resignFirstResponder()
+        firstField.resignFirstResponder()
+        lastField.resignFirstResponder()
+        phoneField.resignFirstResponder()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -227,10 +257,12 @@ class AddressVC: UIViewController, UINavigationControllerDelegate {
                 let adminArea = address["Area"],
                 let country = address["Country"],
                 let city = address["City"],
-                let street = address["Street"]
+                let street = address["Street"],
+                let name = address["Name"],
+                let phone = address["Phone"]
             else { return }
             let unit = address["Unit"]
-            vc.getAddress(street: street, city: city, adminArea: adminArea, country: country, unitNum: unit)
+            vc.getAddress(street: street, city: city, adminArea: adminArea, country: country, unitNum: unit, fullName: name, phoneNumber: phone)
         }
     }
     
@@ -239,7 +271,7 @@ class AddressVC: UIViewController, UINavigationControllerDelegate {
         sender.isEnabled = false
         errorView.text = nil
         
-        guard let street = self.streetField.text, let adminArea = self.provinceField.text, let city = self.cityField.text, let country = self.countryField.text, self.postalCodeField.text != nil else {
+        guard let street = self.streetField.text, let adminArea = self.provinceField.text, let city = self.cityField.text, let country = self.countryField.text, let firstName = self.firstField.text, !firstName.isEmpty, let lastName = self.lastField.text, !lastName.isEmpty, let phoneNumber = self.phoneField.text?.toPhoneNumber(), !phoneNumber.isEmpty, self.postalCodeField.text != nil else {
             self.setErrorView("1 or more fields empty")
             sender.isEnabled = true
             return
@@ -263,7 +295,9 @@ class AddressVC: UIViewController, UINavigationControllerDelegate {
                         "City": city,
                         "Area": adminArea,
                         "Postal": postalCode,
-                        "Street": street
+                        "Street": street,
+                        "Name" : "\(firstName) \(lastName)",
+                        "Phone": phoneNumber
                     ]
                     if self.hasAddress(){
                         
@@ -276,7 +310,7 @@ class AddressVC: UIViewController, UINavigationControllerDelegate {
                         fallthrough
                     }
                 default:
-                    self.setInFirestore(street: street, city: city, adminArea: adminArea, country: country, postalCode: postalCode, unitNumber: unitNumber)
+                    self.setInFirestore(street: street, city: city, adminArea: adminArea, country: country, postalCode: postalCode, unitNumber: unitNumber, firstName: firstName, lastName: lastName, phoneNumber: phoneNumber)
                 }
             }
             else{
@@ -286,18 +320,25 @@ class AddressVC: UIViewController, UINavigationControllerDelegate {
     }
     
     override func viewWillLayoutSubviews() {
-        streetField.layer.cornerRadius = streetField.frame.height / 2
+        streetField.layer.cornerRadius = streetField.frame.height / 4
         streetField.clipsToBounds = true
-        cityField.layer.cornerRadius = cityField.frame.height / 2
+        cityField.layer.cornerRadius = cityField.frame.height / 4
         cityField.clipsToBounds = true
-        provinceField.layer.cornerRadius = provinceField.frame.height / 2
+        provinceField.layer.cornerRadius = provinceField.frame.height / 4
         provinceField.clipsToBounds = true
-        countryField.layer.cornerRadius = countryField.frame.height / 2
+        countryField.layer.cornerRadius = countryField.frame.height / 4
         countryField.clipsToBounds = true
-        postalCodeField.layer.cornerRadius = postalCodeField.frame.height / 2
+        postalCodeField.layer.cornerRadius = postalCodeField.frame.height / 4
         postalCodeField.clipsToBounds = true
-        unitField.layer.cornerRadius = unitField.frame.height / 2
+        unitField.layer.cornerRadius = unitField.frame.height / 4
         unitField.clipsToBounds = true
+        firstField.layer.cornerRadius = firstField.frame.height / 4
+        firstField.clipsToBounds = true
+        lastField.layer.cornerRadius = lastField.frame.height / 4
+        lastField.clipsToBounds = true
+        
+        phoneField.layer.cornerRadius = phoneField.frame.height / 4
+        phoneField.clipsToBounds = true
     }
     
 
@@ -323,24 +364,32 @@ extension UIViewController{
                 print(err.localizedDescription)
             }
             else{
-                guard let document = document, document.exists, let street = document["Street"] as? String, let city = document["City"] as? String, let adminArea = document["Administrative_Area"] as? String, let country = document["Country"] as? String, let postalCode = document["Postal_Code"] as? String else{
-                    completed(false)
+                guard let document = document, document.exists, let street = document["Street"] as? String, let city = document["City"] as? String, let adminArea = document["Administrative_Area"] as? String, let country = document["Country"] as? String, let postalCode = document["Postal_Code"] as? String
+                    else{
+                        completed(false)
                     return}
+                let firstName = document["First_Name"] as? String ?? ""
+                let lastName = document["Last_Name"] as? String ?? ""
+                let phoneNumber = document["Phone_Num"] as? String ?? ""
                 let unitNumber = document["Unit_Number"] as? String
-                self.setNewAddress(street: street, city: city, adminArea: adminArea, country: country, postalCode: postalCode, unitNumber: unitNumber)
+                
+                self.setNewAddress(street: street, city: city, adminArea: adminArea, country: country, postalCode: postalCode, unitNumber: unitNumber, firstName: firstName, lastName: lastName, phoneNumber: phoneNumber)
                 completed(true)
             }
         })
     }
     
-    func setNewAddress(street: String, city: String, adminArea: String, country: String, postalCode: String, unitNumber: String?){
+    func setNewAddress(street: String, city: String, adminArea: String, country: String, postalCode: String, unitNumber: String?, firstName: String, lastName: String, phoneNumber: String){
         
         UserDefaults.standard.set(street, forKey: "street")
         UserDefaults.standard.set(city, forKey: "city")
         UserDefaults.standard.set(adminArea, forKey: "admin_area")
         UserDefaults.standard.set(country, forKey: "country")
         UserDefaults.standard.set(postalCode, forKey: "postal_code")
-        
+        UserDefaults.standard.set(firstName, forKey: "first_name")
+        UserDefaults.standard.set(lastName, forKey: "last_name")
+        UserDefaults.standard.set(phoneNumber, forKey: "phone_number")
+
         if let num = unitNumber{
             UserDefaults.standard.set(num, forKey: "unit_number")
         }

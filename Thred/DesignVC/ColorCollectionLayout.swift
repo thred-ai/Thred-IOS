@@ -10,13 +10,20 @@ import UIKit
 
 class ColorCollectionLayout: UICollectionViewFlowLayout {
 
-    let innerSpace: CGFloat = 0.5
-    let numberOfCellsOnRow: CGFloat = 5
+    let innerSpace: CGFloat = 2
+    let numberOfCellsOnRow: CGFloat = 10
+    
+    override func awakeFromNib() {
+        self.minimumLineSpacing = innerSpace
+        self.minimumInteritemSpacing = innerSpace
+        self.scrollDirection = .horizontal
+    }
+    
     override init() {
         super.init()
         self.minimumLineSpacing = innerSpace
         self.minimumInteritemSpacing = innerSpace
-        self.scrollDirection = .vertical
+        self.scrollDirection = .horizontal
     }
     required init?(coder aDecoder: NSCoder) {
         //fatalError("init(coder:) has not been implemented")

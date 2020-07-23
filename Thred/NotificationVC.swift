@@ -325,7 +325,7 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
             isMentionBreak:
             if notif.username == nil{
                 
-                downloadUserInfo(uid: notif.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: false, userInfoToUse: nil, queryOnUsername: false, completed: { userUID, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followerCount, followingCount  in
+                downloadUserInfo(uid: notif.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: false, userInfoToUse: nil, queryOnUsername: false, completed: { userUID, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followerCount, followingCount, verified in
                     
                     if username == nil{
                         for sameNotif in self.notifications.filter({$0.uid == notif.uid}){
@@ -356,6 +356,7 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                     notif.userInfo.notifID = notifID
                     notif.userInfo.usersBlocking = usersBlocking
                     notif.userInfo.dp = imgData
+                    notif.userInfo.verified = verified ?? false
 
                     if let img = imgData, notif.shouldShowDP{
                         DispatchQueue(label: "cache").async {
@@ -611,7 +612,7 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                 selectedObject = notif.product
                 
                 if notif.notifType == "Mention" || notif.notifType == "Comment"{
-                    selectedComment = Comment(timestamp: notif.timestamp, message: notif.commentMessage, commentID: notif.commentID, userInfo: UserInfo(uid: notif.uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil))
+                    selectedComment = Comment(timestamp: notif.timestamp, message: notif.commentMessage, commentID: notif.commentID, userInfo: UserInfo(uid: notif.uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil))
                 }
                 performSegue(withIdentifier: "toFull", sender: nil)
             }
@@ -984,7 +985,7 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         
         let orderAttributes = [
             NSAttributedString.Key.font : orderFont,
-            NSAttributedString.Key.foregroundColor : UIColor.secondaryLabel
+            NSAttributedString.Key.foregroundColor : UIColor.label
         ] as [NSAttributedString.Key : Any]
         
         attrString.addAttributes(attributes, range: matchRange)
@@ -1142,7 +1143,9 @@ extension UIViewController{
                 guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                 let comments = ((snap["Comments"]) as? Int) ?? 0
                 let isPublic = snap["Public"] as? Bool ?? true
-                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: 0, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: isAvailable, isPublic: isPublic)
+                let productType = snap["Type"] as? String ?? defaultProductType
+
+                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: 0, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: isAvailable, isPublic: isPublic, productType: productType)
                 
                 Firestore.firestore().collection("Users").document(uid).collection("Products").document(product.productID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userUID).getDocuments(completion: { snapLikes, error in
                 

@@ -12,18 +12,22 @@ import ColorCompatibility
 class TemplateCarousel: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewDelegate, UICollectionViewDataSource {
     
     public var displayImage: UIImage?
-    
+    var vc: DesignViewController!
+
     var slides: [TemplateCarouselSlide]! = [TemplateCarouselSlide]()
      
+    override class func awakeFromNib() {
+        
+    }
     
     func setCarouselTemplates(templates: [Template]){
+        slides.removeAll()
         for (index, template) in templates.enumerated(){
-            let slide = TemplateCarouselSlide(canvasColor: UIColor(named: templates[index].templateID)?.withAlphaComponent(0.25), canvasName: template.templateDisplayName, canvasID: template.templateID)
+            let slide = TemplateCarouselSlide(canvasColor: UIColor(named: templates[index].templateID)?.withAlphaComponent(0.25), canvasName: template.templateDisplayName, canvasID: template.templateID, isFemale: template.hasFemale)
             slides.append(slide)
-            self.collectionView.performBatchUpdates({
-                self.collectionView.insertItems(at: [IndexPath(item: index, section: 0)])
-            }, completion: nil)
         }
+        self.vc = getViewController() as? DesignViewController
+        self.collectionView.reloadData()
     }
     
     
@@ -72,34 +76,53 @@ class TemplateCarousel: UIView, UICollectionViewDelegateFlowLayout, UICollection
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "slideCell", for: indexPath) as? CarouselCollectionViewCell
         
         cell?.canvasDisplayView.image = nil
+        cell?.canvasDisplayView.isHidden = false
         cell?.backgroundImageView.image = nil
-        
-        
+        cell?.vc = nil
+        cell?.unavailableLabel.isHidden = true
+        cell?.colorDisplayLabel.text = nil
+        cell?.colorDisplayLabel.isHidden = false
+        vc?.thredWatermark.isHidden = false
+        vc?.zoomBtn.isHidden = false
         
         let slide = slides[indexPath.item]
 
+        cell?.colorDisplayLabel.isHidden = vc?.isEditingProduct ?? false
         
-        if displayImage != nil{
-            cell?.canvasDisplayView.image = displayImage
-            cell?.canvasDisplayView.layer.borderWidth = 0
-            cell?.touchHereLabel.isHidden = true
-        }
-        else{
-            cell?.canvasDisplayView.layer.borderWidth = 1
-            cell?.touchHereLabel.isHidden = false
+        switch slide.hasFemale ?? false{
             
-            if slide.canvasColorID == "white"{
-                cell?.canvasDisplayView.layer.borderColor = UIColor.lightGray.cgColor
-                cell?.touchHereLabel.textColor = .lightGray
+        case false:
+            if vc?.selectedProductType == .f_c{
+                cell?.canvasDisplayView.isHidden = true
+                cell?.unavailableLabel.isHidden = false
+                cell?.colorDisplayLabel.isHidden = true
+                vc?.thredWatermark.isHidden = true
+                vc?.zoomBtn.isHidden = true
             }
             else{
-                cell?.canvasDisplayView.layer.borderColor = UIColor.white.cgColor
-                cell?.touchHereLabel.textColor = .white
+                fallthrough
             }
-            
+        default:
+            if displayImage != nil{
+                cell?.canvasDisplayView.image = displayImage
+                cell?.canvasDisplayView.layer.borderWidth = 0
+                cell?.touchHereLabel.isHidden = true
+            }
+            else{
+                cell?.canvasDisplayView.layer.borderWidth = 1
+                cell?.touchHereLabel.isHidden = false
+                if slide.canvasColorID == "white"{
+                    cell?.canvasDisplayView.layer.borderColor = UIColor.lightGray.cgColor
+                    cell?.touchHereLabel.textColor = .lightGray
+                }
+                else{
+                    cell?.canvasDisplayView.layer.borderColor = UIColor.white.cgColor
+                    cell?.touchHereLabel.textColor = .white
+                }
+            }
+            cell?.vc = vc
+            cell?.parseData(forSlide: slide)
         }
-        cell?.parseData(forSlide: slide)
-        
         return cell!
     }
     
@@ -122,16 +145,33 @@ class TemplateCarousel: UIView, UICollectionViewDelegateFlowLayout, UICollection
         let x = scrollView.contentOffset.x
         let w = scrollView.bounds.size.width
         let currentPage = Int(ceil(x/w))
-        guard let colorCollectionView = (getViewController() as? DesignViewController)?.colorCollectionView else{return}
-        colorCollectionView.selectItem(at: IndexPath(item: currentPage, section: 0), animated: true, scrollPosition: .centeredHorizontally)
+        let vc = (getViewController() as? DesignViewController)
+        guard let colorCollectionView = vc?.colorCollectionView else{return}
+        if vc?.tees.indices.contains(currentPage) ?? false{
+            colorCollectionView.selectItem(at: IndexPath(item: currentPage, section: 0), animated: true, scrollPosition: .centeredHorizontally)
+            DispatchQueue.main.async {
+                if let item = colorCollectionView.indexPathsForSelectedItems?.first(where: {$0.item != currentPage}){
+                    colorCollectionView.deselectItem(at: item, animated: false)
+                }
+            }
+        }
     }
     
     func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         let x = scrollView.contentOffset.x
         let w = scrollView.bounds.size.width
         let currentPage = Int(ceil(x/w))
-        guard let colorCollectionView = (getViewController() as? DesignViewController)?.colorCollectionView else{return}
-        colorCollectionView.selectItem(at: IndexPath(item: currentPage, section: 0), animated: true, scrollPosition: .centeredHorizontally)
+        let vc = (getViewController() as? DesignViewController)
+        guard let colorCollectionView = vc?.colorCollectionView else{return}
+        if vc?.tees.indices.contains(currentPage) ?? false{
+            colorCollectionView.selectItem(at: IndexPath(item: currentPage, section: 0), animated: true, scrollPosition: .centeredHorizontally)
+
+            DispatchQueue.main.async {
+                if let item = colorCollectionView.indexPathsForSelectedItems?.first(where: {$0.item != currentPage}){
+                    colorCollectionView.deselectItem(at: item, animated: false)
+                }
+            }
+        }
     }
     
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {

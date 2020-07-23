@@ -9,6 +9,7 @@
 import UIKit
 import Firebase
 import ColorCompatibility
+import FirebaseFirestore
 
 class PasswordVC: UIViewController {
     
@@ -124,7 +125,7 @@ class PasswordVC: UIViewController {
                             "Followers_Count" : 0,
                             "Posts_Count" : 0,
                             ] as [String : Any]
-                        Firestore.firestore().collection("Users").addDocument(data: data, completion: { error in
+                        Firestore.firestore().collection("Users").document(user.uid).setData(data, merge: true, completion: { error in
                             if let err = error{
                                 self.updateErrorView(text: err.localizedDescription)
                             }
@@ -135,9 +136,6 @@ class PasswordVC: UIViewController {
                                     if let err = error{
                                         sender.isEnabled = true
                                         print(err.localizedDescription)
-                                    }
-                                    else{
-                                        
                                     }
                                 })
                                 sender.isEnabled = true

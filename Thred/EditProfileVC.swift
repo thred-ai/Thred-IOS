@@ -11,6 +11,7 @@ import Firebase
 import AVKit
 import FirebaseFunctions
 import ColorCompatibility
+import FirebaseFirestore
 
 
 class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UINavigationControllerDelegate, UIGestureRecognizerDelegate {
@@ -290,7 +291,7 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
         spinner.animate()
         save {
             spinner.removeFromSuperview()
-            self.setUserInfo(username: self.editUserInfo.username, fullname: self.editUserInfo.fullName, image: self.editUserInfo.dp, bio: self.editUserInfo.bio, notifID: self.editUserInfo.notifID, dpUID: self.editUserInfo.dpID, userFollowing: userInfo.userFollowing, followerCount: userInfo.followerCount, postCount: userInfo.postCount, followingCount: userInfo.followingCount, usersBlocking: userInfo.usersBlocking)
+            self.setUserInfo(username: self.editUserInfo.username, fullname: self.editUserInfo.fullName, image: self.editUserInfo.dp, bio: self.editUserInfo.bio, notifID: self.editUserInfo.notifID, dpUID: self.editUserInfo.dpID, userFollowing: userInfo.userFollowing, followerCount: userInfo.followerCount, postCount: userInfo.postCount, followingCount: userInfo.followingCount, usersBlocking: userInfo.usersBlocking, verified: userInfo.verified)
             self.performSegue(withIdentifier: "backToProfile", sender: nil)
         }
  

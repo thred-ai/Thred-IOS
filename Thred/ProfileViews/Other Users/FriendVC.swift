@@ -82,7 +82,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         if updateForBlocking() ?? false{
             return
         }
-        self.header?.setUpInfo(username: friendInfo.username ?? "", fullname: friendInfo.fullName ?? "", bio: friendInfo.bio ?? "", notifID: friendInfo.notifID, dpUID: nil, image: friendInfo.dp, actionBtnTitle: header?.headerActionBtnTitle ?? "null", followerCount: friendInfo.followerCount, followingCount: friendInfo.followingCount, postCount: friendInfo.postCount)
+        self.header?.setUpInfo(username: friendInfo.username ?? "", fullname: friendInfo.fullName ?? "", bio: friendInfo.bio ?? "", notifID: friendInfo.notifID, dpUID: nil, image: friendInfo.dp, actionBtnTitle: header?.headerActionBtnTitle ?? "null", followerCount: friendInfo.followerCount, followingCount: friendInfo.followingCount, postCount: friendInfo.postCount, verified: friendInfo.verified)
 
         if friendInfo.dp != nil{
             switch onlyDownloadProducts{
@@ -212,9 +212,9 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
                 self.checkAuthStatus {
                     self.refreshLists(userUID: userUID){
                         self.downloadUserInfo(uid: self.friendInfo.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: true, doNotDownloadDP: false, userInfoToUse: self.friendInfo, queryOnUsername: self.friendInfo.uid == nil, completed: {
-                            uid, fullName, username, dpID, notifID, bio, image, userFollowing, usersBlocking, postCount, followersCount, followingCount in
+                            uid, fullName, username, dpID, notifID, bio, image, userFollowing, usersBlocking, postCount, followersCount, followingCount, verified in
                             if username != nil{
-                                self.setInfo(username: username, fullname: fullName, dpID: dpID, image: image, notifID: notifID, bio: bio, userFollowing: userFollowing, uid: uid, followerCount: followersCount, postCount: postCount, followingCount: followingCount, usersBlocking: usersBlocking)
+                                self.setInfo(username: username, fullname: fullName, dpID: dpID, image: image, notifID: notifID, bio: bio, userFollowing: userFollowing, uid: uid, followerCount: followersCount, postCount: postCount, followingCount: followingCount, usersBlocking: usersBlocking, verified: verified ?? false)
                                 if self.updateForBlocking() ?? false{
                                     return
                                 }
@@ -222,7 +222,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
                                 let isFollowing = (userInfo.userFollowing.contains(uid))
                                 self.header?.updateFollowBtn(didFollow: isFollowing, animated: false)
                                 self.header?.actionBtn.isUserInteractionEnabled = true
-                                self.header?.setUpInfo(username: username, fullname: fullName, bio: bio, notifID: notifID, dpUID: dpID, image: image, actionBtnTitle: self.header?.headerActionBtnTitle ?? "null", followerCount: followersCount, followingCount: followingCount, postCount: postCount)
+                                self.header?.setUpInfo(username: username, fullname: fullName, bio: bio, notifID: notifID, dpUID: dpID, image: image, actionBtnTitle: self.header?.headerActionBtnTitle ?? "null", followerCount: followersCount, followingCount: followingCount, postCount: postCount, verified: verified ?? false)
 
                                 self.downloadProducts(){[weak self] in
                                     self?.isLoading = false
@@ -260,7 +260,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         self.tableView.reloadData()
     }
     
-    func setInfo(username: String?, fullname: String?, dpID: String?, image: Data?, notifID: String?, bio: String?, userFollowing: [String], uid: String?, followerCount: Int, postCount: Int, followingCount: Int, usersBlocking: [String]){
+    func setInfo(username: String?, fullname: String?, dpID: String?, image: Data?, notifID: String?, bio: String?, userFollowing: [String], uid: String?, followerCount: Int, postCount: Int, followingCount: Int, usersBlocking: [String], verified: Bool){
         
         guard let username = username else{return}
         guard let fullname = fullname else{return}
@@ -269,7 +269,6 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         guard let uid = uid else{
             
             return}
-
         
         friendInfo.username = username
         friendInfo.fullName = fullname
@@ -281,6 +280,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
         friendInfo.followingCount = followingCount
         friendInfo.postCount = postCount
         friendInfo.usersBlocking = usersBlocking
+        friendInfo.verified = verified
         guard let img = image else{return}
         friendInfo.dp = img
     }
@@ -378,6 +378,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
                             let likes = snap["Likes"] as? Int
                             guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                             let comments = ((snap["Comments"]) as? Int) ?? 0
+                            let productType = snap["Type"] as? String ?? defaultProductType
 
                             Firestore.firestore().collection("Users").document(friendUID).collection("Products").document(snap.documentID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userUID).getDocuments(completion: { snapLikes, error in
                             
@@ -404,7 +405,7 @@ class FriendVC: UITableViewController, UINavigationControllerDelegate {
                                     }
                                 }
                                 
-                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil, isAvailable: true, isPublic: true)
+                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil, isAvailable: true, isPublic: true, productType: productType)
                                 
                                 productsToUse.append(product)
                                 

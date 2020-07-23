@@ -28,8 +28,63 @@ public enum LabelStyle {
     case subway
 }
 
+public enum ProductType{
+    case c
+    case f_c
+}
 
-class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDelegate, UIGestureRecognizerDelegate, UITextFieldDelegate, SwiftyDrawViewDelegate, UICollectionViewDelegate, UICollectionViewDataSource {
+class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDelegate, UIGestureRecognizerDelegate, UITextFieldDelegate, SwiftyDrawViewDelegate, UICollectionViewDelegate, UICollectionViewDataSource, UITableViewDelegate, UITableViewDataSource {
+    
+    
+    
+    let productTypes = [
+        [
+        "Name" : "MEN'S T-SHIRT",
+        "Type" : ProductType.c
+        ],
+        [
+        "Name" : "WOMEN'S T-SHIRT",
+        "Type" : ProductType.f_c
+        ],
+    ]
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        
+        return productTypes.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
+        let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "cell")
+        guard productTypes.indices.contains(indexPath.row) else{return cell}
+        let product = productTypes[indexPath.row]
+        cell.textLabel?.text = product["Name"] as? String
+        cell.textLabel?.font = UIFont(name: "NexaW01-Heavy", size: cell.textLabel?.font.pointSize ?? 16)
+        cell.backgroundColor = .clear
+        return cell
+        
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard productTypes.indices.contains(indexPath.row) else{return}
+        let product = productTypes[indexPath.row]
+        guard let type = product["Type"] as? ProductType else{return}
+        selectedProductType = type
+        hideList()
+    }
+    
+    var selectedProductType: ProductType!{
+        didSet{
+            var title = productTypes.first(where: {$0["Type"] as? ProductType == selectedProductType})?["Name"] as? String ?? ""
+            if !isEditingProduct{
+                title += " ▾"
+            }
+            productTypeBtn.titleLabel?.text = title
+            productTypeBtn.setTitle(title, for: .normal)
+            productTypeBtn.sizeToFit()
+            carousel.collectionView.reloadData()
+        }
+    }
     
     var cameraBtn: UIButton!
     var photosBtn: UIButton!
@@ -86,6 +141,57 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
             nextBtn.isEnabled = false
         }
     }
+    @IBOutlet weak var productTypeBtn: UIButton!
+    
+    func hideList(){
+        productTypeBtn.isSelected = false
+        UIView.animate(withDuration: 0.2, animations: {
+            self.productTypesTableView.transform = CGAffineTransform(translationX: 0, y: -(self.view.safeAreaInsets.top))
+        }, completion: { finished in
+            if finished{
+                self.productTypesTableView.transform = CGAffineTransform.identity
+                self.productTypesTableView.isHidden = true
+            }
+        })
+    }
+    
+    func showList(){
+        productTypesTableView.isHidden = false
+        productTypesTableView.transform = CGAffineTransform(translationX: 0, y: -(self.view.safeAreaInsets.top))
+        
+        UIView.animate(withDuration: 0.2, animations: {
+            self.productTypesTableView.transform = CGAffineTransform.identity
+        })
+        productTypesTableView.reloadData()
+        productTypeBtn.isSelected = true
+    }
+    
+    @IBAction func showProductList(_ sender: UIButton) {
+        
+        productTypesTableView.frame = CGRect(x: 0, y: self.view.safeAreaInsets.top, width: self.view.frame.width, height: 80)
+        if sender.isSelected{
+            hideList()
+        }
+        else{
+            showList()
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return productTypesTableView.frame.height / CGFloat(productTypes.count)
+    }
+    
+    lazy var productTypesTableView: UITableView = {
+        let tableView = UITableView.init(frame: CGRect(x: 0, y: self.view.safeAreaInsets.top, width: self.view.frame.width, height: 80))
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.backgroundColor = UIColor.secondarySystemBackground.withAlphaComponent(0.8)
+        tableView.separatorStyle = .none
+        tableView.showsVerticalScrollIndicator = false
+        return tableView
+    }()
+    
+    
     
     func showVisibilityMessage(makePublic: Bool, completed: @escaping () -> ()){
         var postStatus = "private"
@@ -146,6 +252,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
                             product.uid = userInfo.uid
                             product.name = titleView.text
                             product.isPublic = isPublic
+                            product.productType = selectedProductType?.productCode()
                             product.display = displayView.makeSnapshot(clear: true, subviewsToIgnore: [zoomBtn, cell.colorDisplayLabel, thredWatermark])?.withBackground(color: UIColor(red: 0.949, green: 0.949, blue: 0.969, alpha: 1.0))?.jpegData(compressionQuality: 0.5)
                             product.templateColor = tees[indexPath.item].templateID
                             product.price = decimalPrice * 100
@@ -175,6 +282,8 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
             }
         }
     }
+    
+    
     
     func canPostDesign() -> (Bool, String?){
         
@@ -781,7 +890,13 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
             "Icon_Color" : UIColor(named: "LoadingColor")!,
             "Image" : UIImage(nameOrSystemName: "arrow.uturn.left.circle", systemPointSize: 25, iconSize: 9)!,
         ],
-        
+        /*
+        [
+            "Name" : "Dropper",
+            "Icon_Color" : UIColor(named: "LoadingColor")!,
+            "Image" : UIImage(nameOrSystemName: "eyedropper.halffull", systemPointSize: 25, iconSize: 9)!,
+        ],
+        */
         [
             "Name" : "Clear",
             "Icon_Color" : UIColor(named: "LoadingColor")!,
@@ -909,6 +1024,16 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
             let tee = self.tees[indexPath.item]
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "color_icon", for: indexPath) as? TemplateColorChooserCell
             cell?.colorView.backgroundColor = nil
+            cell?.colorView.layer.cornerRadius = 0
+            cell?.isSelected = false
+            
+            if let index = carousel.collectionView.indexPathsForVisibleItems.first, index.item == indexPath.item{
+                cell?.isSelected = true
+            }
+            
+            
+            cell?.setShape()
+
             if let color = UIColor.init(named: tee.templateID){
                 
                 cell?.colorView.backgroundColor = color
@@ -917,19 +1042,11 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
             return cell!
         }
     }
-    
-    func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath) -> Bool {
-        if collectionView.indexPathsForSelectedItems?.contains(indexPath) ?? false{
-            collectionView.deselectItem(at: indexPath, animated: true)
-            return false
-        }
-        else{
-            return true
-        }
-    }
+
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         carousel.collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: false)
+        colorCollectionView.selectItem(at: indexPath, animated: true, scrollPosition: .centeredHorizontally)
     }
     
     
@@ -1017,6 +1134,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         saveToPhotosLbl.clipsToBounds = true
         saveToPhotosLbl.isHidden = true
         
+        productTypeBtn.isHidden = true
         navigationController?.navigationBar.setBackgroundImage(UIImage.init(), for: UIBarMetrics.default)
         navigationController?.navigationBar.shadowImage = UIImage.init()
         descriptionView.delegate = self
@@ -1039,7 +1157,8 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         
         if product != nil{
             isEditingProduct = true
-            tees.append(Template(templateID: product.templateColor, templateDisplayName: ""))
+            tees.append(Template(templateID: product.templateColor, templateDisplayName: "", hasFemale: true))
+            
             colorCollectionView.isHidden = true
             carousel.displayImage = product.design
             carousel.setCarouselTemplates(templates: tees)
@@ -1061,6 +1180,10 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
                 titleView.isEnabled = false
                 nextBtn.isEnabled = false
             }
+            
+            productTypeBtn.isUserInteractionEnabled = false
+            selectedProductType = product.productType?.productType() ?? .c
+            
         }
         else{
             textViewDidChange(descriptionView)
@@ -1070,28 +1193,42 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
             spinner.center.x = view.center.x
             spinner.center.y = displayView.center.y
             spinner.animate()
-            
-            if !UserDefaults.standard.bool(forKey: "bank_confirm"){
+            if !UserDefaults.standard.bool(forKey: "bank_confirm"), !checkIfCardSet(){
                 UserDefaults.standard.set(true, forKey: "bank_confirm")
                 showBankConfirmationMessage {
-                    
                 }
             }
-            
             loadDesigns(){
                 DispatchQueue.main.async {
                     spinner.removeFromSuperview()
                     self.colorCollectionView.reloadData()
-                    self.colorCollectionView.selectItem(at: IndexPath(item: 0, section: 0), animated: false, scrollPosition: .centeredHorizontally)
+                    DispatchQueue.main.async {
+                        self.colorCollectionView.selectItem(at: IndexPath(item: 0, section: 0), animated: false, scrollPosition: .left)
+                    }
                     self.carousel.setCarouselTemplates(templates: self.tees)
-                    self.scrollview.addSubview(self.canvasDisplayView)
-                    self.view.addSubview(self.canvas)
-                    self.canvas.isHidden = true
-                    self.view.addSubview(self.bottomBar)
-                    self.bottomBar.isHidden = true
-                    self.view.addSubview(self.bottomSafeAreaView)
-                    self.bottomSafeAreaView.isHidden = true
-                    self.bottomBar.addSubview(self.drawToolBar)
+                    if !self.scrollview.subviews.contains(self.canvasDisplayView){
+                        self.scrollview.addSubview(self.canvasDisplayView)
+                    }
+                    if !self.view.subviews.contains(self.canvas){
+                        self.view.addSubview(self.canvas)
+                        self.canvas.isHidden = true
+                    }
+                    if !self.view.subviews.contains(self.bottomBar){
+                        self.view.addSubview(self.bottomBar)
+                    }
+                    if !self.view.subviews.contains(self.bottomSafeAreaView){
+                        self.view.addSubview(self.bottomSafeAreaView)
+                    }
+                    if !self.bottomBar.subviews.contains(self.drawToolBar){
+                        self.bottomBar.addSubview(self.drawToolBar)
+                    }
+                    if !self.view.subviews.contains(self.canvasImageView){
+                        self.view.addSubview(self.canvasImageView)
+                    }
+                    if !self.view.subviews.contains(self.productTypesTableView){
+                        self.view.addSubview(self.productTypesTableView)
+                    }
+                    self.productTypesTableView.isHidden = true
                     self.toolCollectionView.reloadData()
                     self.drawToolBar.isHidden = true
                     self.displayView.addSubview(self.zoomBtn)
@@ -1099,13 +1236,24 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
                     self.view.addSubview(self.zoomableView)
                     self.zoomableView.isHidden = true
                     self.nextBtn.isEnabled = false
+                    self.bottomBar.isHidden = true
+                    self.bottomSafeAreaView.isHidden = true
+                    self.canvasImageView.isHidden = true
+                    self.selectedProductType = .c
                 }
             }
-            
         }
     }
     @IBAction func viewPricingGuide(_ sender: UIButton) {
         self.performSegue(withIdentifier: "toCommissionCalc", sender: nil)
+    }
+    
+    func checkIfCardSet() -> Bool{
+                
+        if UserDefaults.standard.string(forKey: "CARD_BRAND") != nil, UserDefaults.standard.string(forKey: "CARD_LAST_4") != nil, UserDefaults.standard.string(forKey: "CARD_POSTAL_CODE") != nil{
+            return true
+        }
+        return false
     }
     
     func showBankConfirmationMessage(completed: @escaping () -> ()){
@@ -1130,6 +1278,11 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
             nextBtn.isEnabled = true
         }
     }
+    
+    lazy var canvasImageView: UIImageView = {
+        let imageView = UIImageView(frame: canvas.frame)
+        return imageView
+    }()
     
     func cannotPost() -> Bool{
         guard let indexPath = carousel.collectionView.indexPathsForVisibleItems.first, let cell = carousel.collectionView.cellForItem(at: indexPath) as? CarouselCollectionViewCell else {return true}
@@ -1202,10 +1355,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         btn.addTarget(self, action: #selector(showZoomableView(_:)), for: .touchUpInside)
         return btn
     }()
-    
-    
-    //lazy var designView:
-    
+
     func setKeyBoardNotifs(){
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
@@ -1422,5 +1572,31 @@ extension UIImage {
             return image
         }
         return nil
+    }
+}
+
+extension ProductType{
+    
+    func productCode() -> String{
+        switch self{
+        case .c:
+            return "ATC1000"
+        case .f_c:
+            return "ATC1000L"
+        }
+    }
+}
+
+extension String{
+    
+    func productType() -> ProductType?{
+        switch self{
+        case "ATC1000":
+            return ProductType.c
+        case "ATC1000L":
+            return ProductType.f_c
+        default:
+            return nil
+        }
     }
 }
