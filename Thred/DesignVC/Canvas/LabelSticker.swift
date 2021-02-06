@@ -9,39 +9,44 @@
 import Foundation
 import UIKit
 
+extension CaseIterable where Self: Equatable {
+    var index: Self.AllCases.Index? {
+        return Self.allCases.firstIndex { self == $0 }
+    }
+}
+
 extension DesignViewController{
     
     @objc func changeTextStyle(_ sender: UIButton){
+        
+        switch fontTable.isHidden {
+        case true:
+            showFontTable(sender: sender)
+        default:
+            hideFontTable()
+        }
+    }
+    
+    func showFontTable(sender: UIButton){
+        if let index = labelFonts.firstIndex(where: {$0.name == sender.title(for: .normal)}){
+            self.fontTable.selectRow(at: IndexPath(row: index, section: 0), animated: false, scrollPosition: .middle)
+        }
+        self.fontTable.isHidden = false
+        for gesture in self.textCoverView.gestureRecognizers ?? []{
+            gesture.isEnabled = false
+        }
         if let textView = self.canvas.subviews.first(where: {$0.isFirstResponder}) as? CanvasTextView{
-            switch textView.labelStyle{
-            case .large:
-                textView.labelStyle = .normal
-                sender.setTitle("Normal", for: .normal)
-            case .normal:
-                textView.labelStyle = .nexa
-                sender.setTitle("Nexa", for: .normal)
-            case .nexa:
-                textView.labelStyle = .fancy
-                sender.setTitle("Fancy", for: .normal)
-            case .fancy:
-                textView.labelStyle = .fill
-                sender.setTitle("Fill", for: .normal)
-            case .fill:
-                textView.labelStyle = .hype
-                sender.setTitle("Hype", for: .normal)
-            case .hype:
-                textView.labelStyle = .thriller
-                sender.setTitle("Thriller", for: .normal)
-            case .thriller:
-                textView.labelStyle = .subway
-                sender.setTitle("Subway", for: .normal)
-            case .subway:
-                textView.labelStyle = .large
-                sender.setTitle("Large", for: .normal)
-            default:
-                break
-            }
-            textViewDidChange(textView)
+            textView.isHidden = true
+        }
+    }
+    
+    func hideFontTable(){
+        self.fontTable.isHidden = true
+        if let textView = self.canvas.subviews.first(where: {$0.isFirstResponder}) as? CanvasTextView{
+            textView.isHidden = false
+        }
+        for gesture in self.textCoverView.gestureRecognizers ?? []{
+            gesture.isEnabled = true
         }
     }
     
@@ -53,22 +58,8 @@ extension DesignViewController{
         shadowBtn.isSelected = !textView.hasShadow
         configureTextShadow(shadowBtn)
         
-        switch textView.labelStyle{
-        case .normal:
-            sender.setTitle("Normal", for: .normal)
-        case .nexa:
-            sender.setTitle("Nexa", for: .normal)
-        case .fancy:
-            sender.setTitle("Fancy", for: .normal)
-        case .fill:
-            sender.setTitle("Fill", for: .normal)
-        case .hype:
-            sender.setTitle("Hype", for: .normal)
-        case .large:
-            sender.setTitle("Large", for: .normal)
-        default:
-            break
-        }
+        sender.setTitle("\(textView.labelFont.name ?? "Large")".capitalizingFirstLetter(), for: .normal)
+
     }
     
     @objc func addLabel(_ sender: Any){
@@ -89,9 +80,9 @@ extension DesignViewController{
                 label.currentFontSize = fontSize
             }
             if lastTextView?.hasShadow ?? false{
-                label.setRadiusWithShadow()
+                label.setRadiusWithShadowDesign()
             }
-            label.labelStyle = lastTextView?.labelStyle ?? .large
+            label.labelFont = lastTextView?.labelFont ?? labelFonts.first(where: {$0.name == "Large"})
             
             label.autoresizesSubviews = true
             label.showsVerticalScrollIndicator = false
@@ -107,6 +98,7 @@ extension DesignViewController{
             labelPreview.isUserInteractionEnabled = false
             labelPreview.backgroundColor = .clear
             label.addSubview(labelPreview)
+            
         }
     }
     
@@ -119,7 +111,7 @@ extension DesignViewController{
             }
             else{
                 shadowBtn.setImage(UIImage(nameOrSystemName: "rectangle.fill.on.rectangle.fill", systemPointSize: 22, iconSize: 7), for: .normal)
-                textView.setRadiusWithShadow()
+                textView.setRadiusWithShadowDesign()
                 sender.isSelected = true
             }
         }
@@ -127,6 +119,11 @@ extension DesignViewController{
     
     @objc func doneLabelTyping(_ sender: Any){
         textDoneBtn.isEnabled = false
+        hideFontTable()
+        
+        for gesture in self.canvas.gestureRecognizers?.filter({$0 != exitTapper}) ?? []{
+            gesture.isEnabled = true
+        }
         if let textView = self.canvas.subviews.first(where: {$0.isFirstResponder}) as? CanvasTextView{
             lastTextView = textView
             textView.resignFirstResponder()
@@ -139,7 +136,7 @@ extension DesignViewController{
             if let imageView = textView.subviews.first(where: {$0.isKind(of: UIImageView.self)}) as? UIImageView{
                 let size = textView.sizeThatFits(CGSize(width: self.canvas.frame.width, height: CGFloat.greatestFiniteMagnitude))
                 DispatchQueue.main.async {
-                    let resizedY = (self.view.frame.height - self.keyboardHeight - size.height) - self.view.safeAreaInsets.top
+                    let resizedY = (self.view.frame.height - (self.keyboardHeight ?? 0) - size.height) - self.view.safeAreaInsets.top
                     textView.frame.origin.y = resizedY
                     imageView.frame.origin = CGPoint.zero
                     textView.frame.size = size

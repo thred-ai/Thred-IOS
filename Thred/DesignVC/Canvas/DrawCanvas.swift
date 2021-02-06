@@ -30,8 +30,9 @@ extension DesignViewController{
         drawCanvas.isEnabled = true
         drawCanvas.isUserInteractionEnabled = true
         sender.isSelected = true
-        
     }
+    
+    
     
     @objc func closeDrawCanvas(_ sender: UIButton){
         for label in canvas.subviews.filter({$0.isKind(of: UITextView.self)}){
@@ -45,6 +46,7 @@ extension DesignViewController{
         drawBtn.superview?.isHidden = false
         drawCanvas.isEnabled = false
         drawBtn.isSelected = false
+
     }
     
     func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
@@ -103,9 +105,10 @@ extension DesignViewController{
         if !drawingView.isHidden && !drawingView.isEnabled{
             return false
         }
-        if drawingView.lines.isEmpty && drawingView.brush.blendMode == .clear{
+        if drawingView.drawItems.isEmpty && drawingView.brush.blendMode == .clear{
             return false
         }
+        
         drawingView.brush.adjustWidth(for: touch)
         return true
     }
@@ -128,7 +131,7 @@ extension DesignViewController{
     
     @objc func undoColors(_ sender: UIButton){
         drawCanvas.undo()
-        if drawCanvas.lines.isEmpty{
+        if drawCanvas.drawItems.isEmpty{
             if drawCanvas.brush.blendMode == .clear{
                 drawCanvas.isEnabled = false
             }
@@ -146,13 +149,13 @@ extension DesignViewController{
         else{
             sender.setImage(UIImage(named: "eraser"), for: .normal)
             drawCanvas.brush.blendMode = .clear
-            if drawCanvas.lines.isEmpty{
+            if drawCanvas.drawItems.isEmpty{
                 drawCanvas.isEnabled = false
             }
         }
     }
     
-    @objc func activateStraightLine(_ sender: UIButton){
+    @objc func activateNewLine(_ sender: UIButton){
         if let lineImageView = lineTypeView.subviews.first(where: {$0.isKind(of: UIImageView.self)}) as? UIImageView{
             lineTypeView.center = drawCanvas.center
             lineTypeView.center.y = drawCanvas.center.y - self.view.safeAreaInsets.top
@@ -160,17 +163,26 @@ extension DesignViewController{
             lineTypeView.tintColor = slider.color
             lineTypeView.isHidden = false
             AudioServicesPlaySystemSound(1519)
-            if drawCanvas.shouldDrawStraight{
-                drawCanvas.shouldDrawStraight = false
-                lineImageView.image = UIImage(named: "scribble.mode")
-                sender.setImage(UIImage(named: "scribble.mode"), for: .normal)
-
-            }
-            else{
-                drawCanvas.shouldDrawStraight = true
+            
+            switch drawCanvas.drawMode{
+            case .draw:
+                drawCanvas.drawMode = .line
                 lineImageView.image = UIImage(named: "straight.mode")
                 sender.setImage(UIImage(named: "straight.mode"), for: .normal)
+            case .line:
+                drawCanvas.drawMode = .ellipse
+                lineImageView.image = UIImage(systemName: "circle")
+                sender.setImage(UIImage(systemName: "circle"), for: .normal)
+            case .ellipse:
+                drawCanvas.drawMode = .rect
+                lineImageView.image = UIImage(systemName: "rectangle")
+                sender.setImage(UIImage(systemName: "rectangle"), for: .normal)
+            case .rect:
+                drawCanvas.drawMode = .draw
+                lineImageView.image = UIImage(named: "scribble.mode")
+                sender.setImage(UIImage(named: "scribble.mode"), for: .normal)
             }
+            
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5){
                 UIView.animate(withDuration: 0.2, animations: {
                     self.lineTypeView.alpha = 0.0
@@ -202,7 +214,7 @@ extension DesignViewController{
     @objc func changeBrushSize(_ sender: UIPinchGestureRecognizer){
         switch sender.state {
         case .began:
-            if !drawCanvas.lines.isEmpty{
+            if !drawCanvas.drawItems.isEmpty{
                 drawCanvas.undo()
             }
         case .changed:
@@ -247,4 +259,10 @@ extension DesignViewController{
     }
     
     
+}
+
+extension SwiftyDraw.SwiftyDrawView.DrawItem {
+    func copy() -> SwiftyDraw.SwiftyDrawView.DrawItem {
+        return SwiftyDraw.SwiftyDrawView.DrawItem(path: self.path, brush: self.brush, isFillPath: self.isFillPath)
+    }
 }

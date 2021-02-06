@@ -8,8 +8,10 @@
 
 import UIKit
 
-class EmptyProfileProductsView: UIView {
+class EmptyProfileProductsView: UICollectionReusableView {
 
+    @IBOutlet weak var spinner: MapSpinnerView!
+    @IBOutlet weak var loadingView: UIView!
     /*
     // Only override draw() if you perform custom drawing.
     // An empty implementation adversely affects performance during animation.

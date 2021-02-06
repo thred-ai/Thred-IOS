@@ -14,6 +14,7 @@ import PopupDialog
 class SettingsVC: UITableViewController {
 
     var checkingAuthStatus = true
+
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -36,7 +37,7 @@ class SettingsVC: UITableViewController {
                     "Text Color" : UIColor.white
                 ], at: 0)
             }
-            else{
+            else if user.email != nil{
                 self.itemsArray.insert([
                     "Title": "Change email address",
                     "Function" : self.toEmailChange,
@@ -50,6 +51,7 @@ class SettingsVC: UITableViewController {
                     "Text Color" : UIColor.label
                 ], at: 1)
             }
+
         }
     }
     
@@ -90,21 +92,21 @@ class SettingsVC: UITableViewController {
         ],
         
         [
-            "Title": "Bank Account",
+            "Title": "My Bank Account",
             "Function" : configureMerchantAcct,
             "Background Color" : UIColor.clear,
             "Text Color" : UIColor(named: "LoadingColor")!
         ],
         
         [
-            "Title": "Home Address",
+            "Title": "My Home Address",
             "Function" : configureAddress,
             "Background Color" : UIColor.clear,
             "Text Color" : UIColor(named: "LoadingColor")!
         ],
         
         [
-            "Title": "Credit Card",
+            "Title": "My Payment Method",
             "Function": addCard,
             "Background Color" : UIColor.clear,
             "Text Color" : UIColor(named: "LoadingColor")!
@@ -244,7 +246,7 @@ extension UIViewController{
         let okBtn = DefaultButton(title: "OK", dismissOnTap: true) {
             completed()
         }
-        showPopUp(title: title, message: message, image: image, buttons: [okBtn], titleColor: .label)
+        showPopUp(title: title, message: message, image: image, buttons: [okBtn], titleColor: .label, blurBack: true)
     }
     
     func showAuthMessage(completed: @escaping () -> ()){
@@ -260,7 +262,7 @@ extension UIViewController{
         let laterBtn = DefaultButton(title: "Later", dismissOnTap: true) {
             completed()
         }
-        showPopUp(title: title, message: message, image: nil, buttons: [updateBtn, laterBtn], titleColor: .label)
+        showPopUp(title: title, message: message, image: nil, buttons: [updateBtn, laterBtn], titleColor: .label, blurBack: true)
     }
     
     

@@ -18,6 +18,60 @@ import UIKit
 
 class SearchUserTableViewCell: UITableViewCell {
     
+    @IBOutlet weak var followBtn: UIButton!
+    
+    var friendInfo: UserInfo!
+    
+    @IBAction func followUser(_ sender: UIButton?) {
+        guard let listVC = getViewController() as? UserListVC else{return}
+        let following = pUserInfo.userFollowing
+        guard let uid = friendInfo.uid else{
+            return}
+        let didFollow = !following.contains(uid)
+        updateFollowBtn(didFollow: didFollow, animated: true)
+        listVC.updateFollowInDatabase(friendInfo: friendInfo, didFollow: didFollow)
+    }
+    
+    func checkFollow(){
+        guard let uid = friendInfo.uid else{
+            return}
+        if pUserInfo.uid == uid{
+            followBtn.isHidden = true
+            return
+        }
+        let following = pUserInfo.userFollowing
+        let didFollow = following.contains(uid)
+        updateFollowBtn(didFollow: didFollow, animated: false)
+    }
+    
+    var headerActionBtnTitle: String = "Loading"
+
+    
+    func updateFollowBtn(didFollow: Bool, animated: Bool){
+        var animationDuration = 0.0
+        
+        if animated{
+            animationDuration = 0.2
+        }
+        if didFollow{
+            headerActionBtnTitle = "Following"
+            followBtn?.setTitleColor(.white, for: .normal)
+            UIView.animate(withDuration: animationDuration, animations: {
+                self.followBtn?.backgroundColor = UIColor(named: "LoadingColor")
+            })
+        }
+        else{
+            headerActionBtnTitle = "Follow"
+            followBtn?.setTitleColor(.label, for: .normal)
+            UIView.animate(withDuration: animationDuration, animations: {
+                self.followBtn?.backgroundColor = .quaternarySystemFill
+            })
+        }
+        followBtn?.titleLabel?.text = headerActionBtnTitle
+        followBtn?.setTitle(headerActionBtnTitle, for: .normal)
+    }
+    
+    
     @IBOutlet weak var userImageView: UIImageView!
     @IBOutlet weak var fullnameLbl: UILabel!
     @IBOutlet weak var usernameLbl: UILabel!
@@ -39,6 +93,8 @@ class SearchUserTableViewCell: UITableViewCell {
         userImageView.clipsToBounds = true
         userImageView.layer.borderColor = UIColor(named: "ProfileMask")?.cgColor
         userImageView.layer.borderWidth = userImageView.frame.height / 17.75
+        followBtn.layer.cornerRadius = followBtn.frame.height / 8
+        followBtn.clipsToBounds = true
     }
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {

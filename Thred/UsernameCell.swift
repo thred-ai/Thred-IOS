@@ -20,8 +20,6 @@ class UsernameCell: UITableViewCell {
     }
     
     override func layoutSubviews() {
-        usernameField.layer.cornerRadius = usernameField.frame.height / 2
-        usernameField.clipsToBounds = true
     }
     
     override func setSelected(_ selected: Bool, animated: Bool) {

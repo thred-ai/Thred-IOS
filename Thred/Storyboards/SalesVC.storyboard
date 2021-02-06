@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="bYg-6i-wgL">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="bYg-6i-wgL">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17505"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
@@ -26,7 +28,7 @@
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" showsVerticalScrollIndicator="NO" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="v70-6G-FHL">
                                 <rect key="frame" x="0.0" y="0.0" width="414" height="774"/>
-                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <view key="tableHeaderView" contentMode="scaleToFill" id="zRf-GQ-aNm">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="293"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -41,41 +43,41 @@
                                                             <rect key="frame" x="10" y="0.0" width="374" height="242.5"/>
                                                             <subviews>
                                                                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="G8n-aB-veF">
-                                                                    <rect key="frame" x="0.0" y="0.0" width="374" height="144.5"/>
+                                                                    <rect key="frame" x="0.0" y="0.0" width="374" height="143.5"/>
                                                                     <subviews>
                                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zuM-gW-SLh">
-                                                                            <rect key="frame" x="0.0" y="0.0" width="374" height="70.5"/>
+                                                                            <rect key="frame" x="0.0" y="0.0" width="374" height="70"/>
                                                                             <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="60"/>
                                                                             <nil key="textColor"/>
                                                                             <nil key="highlightedColor"/>
                                                                         </label>
                                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Total Sales" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0DC-H0-dU9">
-                                                                            <rect key="frame" x="0.0" y="70.5" width="374" height="24"/>
+                                                                            <rect key="frame" x="0.0" y="70" width="374" height="23.5"/>
                                                                             <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="20"/>
-                                                                            <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                            <color key="textColor" systemColor="secondaryLabelColor"/>
                                                                             <nil key="highlightedColor"/>
                                                                         </label>
                                                                         <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" editable="NO" text="Sales may take up to 7 business days to appear in your bank account." textAlignment="center" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="wRz-C9-ZgV">
-                                                                            <rect key="frame" x="0.0" y="94.5" width="374" height="50"/>
-                                                                            <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                                                            <rect key="frame" x="0.0" y="93.5" width="374" height="50"/>
+                                                                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                                                             <constraints>
                                                                                 <constraint firstAttribute="height" constant="50" id="IHj-tD-HRh"/>
                                                                             </constraints>
-                                                                            <color key="textColor" systemColor="tertiaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.29999999999999999" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                            <color key="textColor" systemColor="tertiaryLabelColor"/>
                                                                             <fontDescription key="fontDescription" name="NexaW01-Regular" family="NexaW01-Regular" pointSize="11"/>
                                                                             <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                                         </textView>
                                                                     </subviews>
                                                                 </stackView>
                                                                 <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="4yO-JL-bUO">
-                                                                    <rect key="frame" x="0.0" y="164.5" width="374" height="3"/>
+                                                                    <rect key="frame" x="0.0" y="163.5" width="374" height="4"/>
                                                                     <color key="progressTintColor" name="LoadingColor"/>
                                                                     <color key="trackTintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 </progressView>
                                                                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="E5V-tE-cZL">
                                                                     <rect key="frame" x="0.0" y="187.5" width="374" height="55"/>
                                                                     <subviews>
-                                                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Gp0-m9-CvJ">
+                                                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Gp0-m9-CvJ">
                                                                             <rect key="frame" x="0.0" y="0.0" width="374" height="55"/>
                                                                             <color key="backgroundColor" name="LoadingColor"/>
                                                                             <constraints>
@@ -94,7 +96,7 @@
                                                             </subviews>
                                                         </stackView>
                                                     </subviews>
-                                                    <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                                     <constraints>
                                                         <constraint firstAttribute="bottom" secondItem="Eev-aE-siB" secondAttribute="bottom" id="HYm-zx-jzp"/>
                                                         <constraint firstItem="Eev-aE-siB" firstAttribute="top" secondItem="XS3-QD-wHz" secondAttribute="top" id="ZCW-J5-dz5"/>
@@ -124,10 +126,10 @@
                                                                     <nil key="highlightedColor"/>
                                                                 </label>
                                                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="0v6-YZ-GJr">
-                                                                    <rect key="frame" x="49" y="0.0" width="220" height="25"/>
+                                                                    <rect key="frame" x="49" y="0.0" width="345" height="25"/>
                                                                 </view>
-                                                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uFb-0Y-6nv">
-                                                                    <rect key="frame" x="269" y="0.0" width="125" height="25"/>
+                                                                <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uFb-0Y-6nv">
+                                                                    <rect key="frame" x="394" y="0.0" width="0.0" height="25"/>
                                                                     <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="14"/>
                                                                     <state key="normal" title="View pricing guide">
                                                                         <color key="titleColor" name="LoadingColor"/>
@@ -143,7 +145,7 @@
                                             </subviews>
                                         </stackView>
                                     </subviews>
-                                    <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                     <constraints>
                                         <constraint firstAttribute="trailing" secondItem="OlJ-FP-ybO" secondAttribute="trailing" constant="10" id="CEY-Jr-J6d"/>
                                         <constraint firstAttribute="bottom" secondItem="OlJ-FP-ybO" secondAttribute="bottom" id="QUW-7S-8wb"/>
@@ -153,14 +155,14 @@
                                 </view>
                             </tableView>
                         </subviews>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <viewLayoutGuide key="safeArea" id="WQF-7a-egL"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="v70-6G-FHL" firstAttribute="top" secondItem="WQF-7a-egL" secondAttribute="top" id="0v5-AO-ANS"/>
                             <constraint firstItem="WQF-7a-egL" firstAttribute="bottom" secondItem="v70-6G-FHL" secondAttribute="bottom" id="5wP-mY-wwL"/>
                             <constraint firstItem="v70-6G-FHL" firstAttribute="leading" secondItem="WQF-7a-egL" secondAttribute="leading" id="EVB-0J-8mT"/>
                             <constraint firstItem="WQF-7a-egL" firstAttribute="trailing" secondItem="v70-6G-FHL" secondAttribute="trailing" id="XLg-aA-aFj"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="WQF-7a-egL"/>
                     </view>
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO"/>
                     <connections>
@@ -210,5 +212,14 @@
         <namedColor name="LoadingColor">
             <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
+        <systemColor name="secondaryLabelColor">
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="tertiaryLabelColor">
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.29999999999999999" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
     </resources>
 </document>

@@ -16,7 +16,15 @@ import AVFoundation
 import SDWebImage
 import ColorCompatibility
 import BRYXBanner
+import PopupDialog
+import SwiftKeychainWrapper
 
+enum DisplaySide{
+    case front
+    case back
+    case left
+    case right
+}
 
 func checkInternetConnection() -> Bool{
     if Reachability.isConnectedToNetwork(){
@@ -38,8 +46,10 @@ func checkInternetConnection() -> Bool{
 }
 
 public let dateUnits = ["year", "month", "week", "day", "hour", "minute", "second"]
-public let userCalendar = Calendar.current
 
+public let shortDateUnits = ["y", "mo", "w", "d", "h", "m", "s"]
+
+public let userCalendar = Calendar.current
 
 class Product: Codable, Equatable{
     
@@ -81,8 +91,10 @@ class Product: Codable, Equatable{
     var isAvailable: Bool!
     var isPublic: Bool!
     var productType: String!
+    var displaySide: String!
+    var supportedSides = [String]()
     
-    init(userInfo: UserInfo, picID: String?, description: String?, productID: String, timestamp: Date?, index: Int?, timestampDiff: String?, blurred: Bool?, price: Double?, name: String?, templateColor: String?, likes: Int?, liked: Bool?, designImage: Data?, comments: Int?, link: URL?, isAvailable: Bool?, isPublic: Bool?, productType: String?) {
+    init(userInfo: UserInfo, picID: String?, description: String?, productID: String, timestamp: Date?, index: Int?, timestampDiff: String?, blurred: Bool?, price: Double?, name: String?, templateColor: String?, likes: Int?, liked: Bool?, designImage: Data?, comments: Int?, link: URL?, isAvailable: Bool?, isPublic: Bool?, productType: String?, displaySide: String?, supportedSides: [String]) {
         
         self.userInfo = userInfo
         self.picID = picID
@@ -103,10 +115,14 @@ class Product: Codable, Equatable{
         self.isAvailable = isAvailable
         self.isPublic = isPublic
         self.productType = productType
+        self.displaySide = displaySide
+        self.supportedSides = supportedSides
     }
     
+    
+    
     convenience init() {
-        self.init(userInfo: UserInfo(), picID: nil, description: nil, productID: "", timestamp: nil,  index: nil, timestampDiff: nil, blurred: false, price: nil, name: nil, templateColor: nil, likes: 0, liked: false, designImage: nil, comments: 0, link: nil, isAvailable: nil, isPublic: nil, productType: nil)
+        self.init(userInfo: UserInfo(), picID: nil, description: nil, productID: "", timestamp: nil,  index: nil, timestampDiff: nil, blurred: false, price: nil, name: nil, templateColor: nil, likes: 0, liked: false, designImage: nil, comments: 0, link: nil, isAvailable: nil, isPublic: nil, productType: nil, displaySide: nil, supportedSides: [])
     }
     
 }
@@ -120,6 +136,8 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
     var downloadCount = 0
     var downloadingProfiles = [String]()
     var selectedUser: UserInfo?
+    var productToOpen: Product!
+    var hashtagToOpen: Hashtag?
     var initialLoad = true
     var offsets = [CGFloat]()
 
@@ -145,9 +163,11 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let user = self.loadedProducts[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: "PictureProduct", for: indexPath) as? ProductCell
+        guard self.loadedProducts.indices.contains(indexPath.row) else{return cell!}
+        let user = self.loadedProducts[indexPath.row]
         tableView.setPictureCell(cell: cell, indexPath: indexPath, product: user, productLocation: self, shouldDownloadPic: true)
+        
         return cell!
         
     }
@@ -224,29 +244,31 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
     }
     
     func downloadProducts(completed: @escaping () -> ()){
-        guard let uid = userInfo.uid else{completed(); return}
-        checkAuthStatus {
-            self.refreshLists(userUID: uid){
-                self.getProducts(refresh: true) { hasDiffproducts in
-                    if hasDiffproducts ?? false{
-                        if !self.loadedProducts.isEmpty{
-                            self.clearTableView()
-                        }
-                        DispatchQueue.main.async {
-                            completed()
-                        }
-                    }
-                    else{
-                        
-                        for i in 0..<(self.loadedProducts.count){
-                            if self.loadedProducts[i].userInfo.uid == userInfo.uid{
-                                continue
+        guard let uid = pUserInfo.uid else{completed(); return}
+        self.loadDesigns {
+            self.checkAuthStatus {
+                self.refreshLists(userUID: uid){
+                    self.getProducts(refresh: true) { hasDiffproducts in
+                        if hasDiffproducts ?? false{
+                            if !self.loadedProducts.isEmpty{
+                                self.clearTableView()
                             }
-                            self.loadedProducts[i].userInfo.dpID = nil
+                            DispatchQueue.main.async {
+                                completed()
+                            }
                         }
-                        DispatchQueue.main.async {
-                            self.tableView.reloadData()
-                            completed()
+                        else{
+                            
+                            for i in 0..<(self.loadedProducts.count){
+                                if self.loadedProducts[i].userInfo.uid == pUserInfo.uid{
+                                    continue
+                                }
+                                self.loadedProducts[i].userInfo.dpID = nil
+                            }
+                            DispatchQueue.main.async {
+                                self.tableView.reloadData()
+                                completed()
+                            }
                         }
                     }
                 }
@@ -279,14 +301,9 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         tableView.addSubview(bouncingControl)
         tableView.allowsSelection = false
 
-        
-
         navigationController?.navigationBar.setBackgroundImage(UIImage.init(), for: UIBarMetrics.default)
         navigationController?.navigationBar.shadowImage = UIImage.init()
 
-        tableView.setContentOffset(CGPoint(x: 0, y: tableView.contentOffset.y - (bouncingControl.frame.size.height)), animated: true)
-                
-        bouncingControl.beginRefreshing()
 
         loadedProducts.checkAndLoadProducts(vc: self, type: "FeedProducts") { count in
             DispatchQueue.main.async{
@@ -349,13 +366,13 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         var clone = [String]()
         
         if initialLoad{
-            clone = userInfo.userFollowing.shuffled()
-            userInfo.userFollowing = clone
+            clone = pUserInfo.userFollowing.shuffled()
+            pUserInfo.userFollowing = clone
             UserDefaults.standard.set(clone, forKey: "FOLLOWING")
             initialLoad = false
         }
         else{
-            clone = userInfo.userFollowing
+            clone = pUserInfo.userFollowing
         }
         
         query = nil
@@ -392,7 +409,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                                 totalDocs.append(snap)
                                 let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
                                 let uid = snap["UID"] as! String
-                                if userInfo.usersBlocking.contains(uid){
+                                if pUserInfo.usersBlocking.contains(uid){
                                     continue
                                 }
                                 let description = snap["Description"] as? String
@@ -403,8 +420,11 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                                 guard let priceCents = (snap["Price_Cents"] as? Double) else{continue}
                                 let comments = ((snap["Comments"]) as? Int) ?? 0
                                 let productType = snap["Type"] as? String ?? defaultProductType
-
-                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: true, isPublic: true, productType: productType)
+                                let displaySide = snap["Side"] as? String ?? "front"
+                                
+                                let sides = snap["Sides"] as? [String] ?? ["Front"]
+                                
+                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: pUserInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: true, isPublic: true, productType: productType, displaySide: displaySide, supportedSides: sides)
                                 localLoaded.append(product)
                             }
                         }
@@ -462,7 +482,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
             guard let uid = product.userInfo.uid else{continue}
             if !loadedProducts.contains(where: {$0.productID == product.productID}){
                 
-                guard let userUID = userInfo.uid else{return}
+                guard let userUID = pUserInfo.uid else{return}
                 Firestore.firestore().collection("Users").document(uid).collection("Products").document(product.productID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userUID).getDocuments(completion: { snapLikes, error in
                 
                     
@@ -470,15 +490,15 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
                         print(error?.localizedDescription ?? "")
                     }
                     else{
-                        userInfo.userLiked.removeAll(where: {$0 == product.productID})
+                        pUserInfo.userLiked.removeAll(where: {$0 == product.productID})
                         if let likeDocs = snapLikes?.documents{
                             if likeDocs.isEmpty{
                                 product.liked = false
                             }
                             else{
                                 product.liked = true
-                                if !(userInfo.userLiked.contains(product.productID)){
-                                    userInfo.userLiked.append(product.productID)
+                                if !(pUserInfo.userLiked.contains(product.productID)){
+                                    pUserInfo.userLiked.append(product.productID)
                                 }
                             }
                         }
@@ -491,7 +511,7 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
            
                     if productsToUse.count == products.count{
                         
-                        UserDefaults.standard.set(userInfo.userLiked, forKey: "LikedPosts")
+                        UserDefaults.standard.set(pUserInfo.userLiked, forKey: "LikedPosts")
                         let sorted = productsToUse.sorted(by: {$0.timestamp > $1.timestamp})
                         for product in sorted{
                             self.loadedProducts.append(product)
@@ -551,8 +571,6 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
     
     
     
-    var productToOpen: Product!
-
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(true)
@@ -560,7 +578,6 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         
         tableView.syncPostLikes(loadedProducts: loadedProducts, vc: self)
         loadedProducts.saveAllObjects(type: "FeedProducts")
-        
         
     }
    
@@ -579,20 +596,69 @@ class FeedVC: UITableViewController, UISearchBarDelegate {
         else if let friend = segue.destination as? FriendVC{
             friend.friendInfo = selectedUser!
         }
-        else if let designVC = (segue.destination as? UINavigationController)?.viewControllers.first as? DesignViewController{
-            if let img = cache.imageFromCache(forKey: productToOpen.productID){
-                designVC.product = ProductInProgress(templateColor: productToOpen.templateColor, design: img, uid: productToOpen.userInfo.uid, caption: productToOpen.description, name: productToOpen.name, price: productToOpen.price, productID: productToOpen.productID, display: productToOpen.designImage, isPublic: productToOpen.isPublic, productType: productToOpen.productType)
+        else if let designVC = (segue.destination as? UINavigationController)?.viewControllers.first as? DesignInfoViewController{
+            
+            var designs = [Design]()
+            guard let sameTemplate = all.tees.first(where: {$0.productCode == productToOpen.productType}) else{return}
+            for side in productToOpen.supportedSides{
+                
+                var design: Design!
+                if side == "Front"{
+                    guard let img = cache.imageFromCache(forKey: productToOpen.productID)?.pngData(), let side = sameTemplate.supportedSides.first(where: {$0.name == side}) else{return}
+                    design = Design(img: img, side: side)
+                }
+                else{
+                    guard let img = cache.imageFromCache(forKey: "\(side)_\(productToOpen.productID)")?.pngData(), let side = sameTemplate.supportedSides.first(where: {$0.name == side}) else{return}
+                    design = Design(img: img, side: side)
+                }
+                designs.append(design)
             }
+            
+            designVC.product = ProductInProgress(templateColor: productToOpen.templateColor, designs: designs, uid: productToOpen.userInfo.uid, caption: productToOpen.description, name: productToOpen.name, price: productToOpen.price, productID: productToOpen.productID, display: productToOpen.designImage, isPublic: productToOpen.isPublic, productType: productToOpen.productType, displaySide: productToOpen.displaySide)
+            designVC.isEditingProduct = true
+            
         }
         else if let reportVC = (segue.destination as? UINavigationController)?.viewControllers.first as? ReportVC{
             reportVC.reportLevel = .post
             reportVC.reportUID = selectedReportUID
             reportVC.reportPostID = selectedReportID
         }
+        else if let colorSectionVC = segue.destination as? ColorSectionVC{
+            colorSectionVC.hashtag = hashtagToOpen
+        }
+    }
+
+}
+
+extension UICollectionView{
+    func loadUserHeaderFromNib() -> ProfileHeaderView?{
+        let profileHeaderView = UINib(
+            nibName: "ProfileHeaderView",
+            bundle: nil
+        ).instantiate(withOwner: nil, options: nil)[0] as? ProfileHeaderView
+        return profileHeaderView
     }
 }
 
-
+extension UIView{
+    func loadFeaturedHeaderFromNib() -> FeaturedPostView?{
+        let featuredPostView = UINib(
+            nibName: "FeaturedPostView",
+            bundle: nil
+        ).instantiate(withOwner: nil, options: nil)[0] as? FeaturedPostView
+        (self as? UITableView)?.tableHeaderView = featuredPostView
+        return featuredPostView
+    }
+    
+    func loadNewsSectionFromNib() -> NewsSection?{
+        let featuredPostView = UINib(
+            nibName: "NewsSection",
+            bundle: nil
+        ).instantiate(withOwner: nil, options: nil)[0] as? NewsSection
+        (self as? UITableView)?.tableHeaderView = featuredPostView
+        return featuredPostView
+    }
+}
 
 extension UITableView{
     func loadUserHeaderFromNib() -> ProfileHeaderView?{
@@ -603,12 +669,12 @@ extension UITableView{
         tableHeaderView = profileHeaderView
         return profileHeaderView
     }
-    
-    func loadFeaturedHeaderFromNib() -> FeaturedPostView?{
+
+    func loadExploreTopHeaderFromNib() -> ExploreTopView?{
         let featuredPostView = UINib(
-            nibName: "FeaturedPostView",
+            nibName: "ExploreTopView",
             bundle: nil
-        ).instantiate(withOwner: nil, options: nil)[0] as? FeaturedPostView
+        ).instantiate(withOwner: nil, options: nil)[0] as? ExploreTopView
         tableHeaderView = featuredPostView
         return featuredPostView
     }
@@ -617,14 +683,18 @@ extension UITableView{
 
 extension UIViewController{
     
-    func refreshLists(userUID: String, completed: @escaping () -> ()){
+    func refreshLists(userUID: String, onlyBlocking: Bool = false, completed: @escaping () -> ()){
         Firestore.firestore().collection("Users").document(userUID).getDocument(completion: { doc, error in
             if let err = error{
                 print(err.localizedDescription)
             }
             else{
-                userInfo.usersBlocking = (doc?["Users_Blocking"] as? [String]) ?? []
-                userInfo.userFollowing = (doc?["Following_List"] as? [String]) ?? []
+                pUserInfo.usersBlocking = (doc?["Users_Blocking"] as? [String]) ?? []
+                if onlyBlocking{
+                    completed()
+                    return
+                }
+                pUserInfo.userFollowing = (doc?["Following_List"] as? [String]) ?? []
             }
             completed()
         })
@@ -635,6 +705,16 @@ extension UIViewController{
             bundle: nil
         ).instantiate(withOwner: nil, options: nil)[0] as? EmptyProductsView
         return productsHeaderView
+    }
+    
+    
+    
+    func loadChatPostHeaderFromNib() -> EmptyChatsView?{
+        let chatsHeaderView = UINib(
+            nibName: "EmptyChatsView",
+            bundle: nil
+        ).instantiate(withOwner: nil, options: nil)[0] as? EmptyChatsView
+        return chatsHeaderView
     }
     
     func loadProfilePostHeaderFromNib() -> EmptyProfileProductsView?{
@@ -691,6 +771,23 @@ extension Array {
     func chunked(into size: Int) -> [[Element]] {
         return stride(from: 0, to: count, by: size).map {
             Array(self[$0 ..< Swift.min($0 + size, count)])
+        }
+    }
+}
+
+extension String{
+    func evaluateDisplaySide() -> DisplaySide{
+        switch self{
+        case "front":
+            return .front
+        case "back":
+            return .back
+        case "left":
+            return .left
+        case "right":
+            return .right
+        default:
+            return .front
         }
     }
 }

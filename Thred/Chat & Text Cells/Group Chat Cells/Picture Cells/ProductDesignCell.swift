@@ -21,7 +21,7 @@ class ProductDesignCell: UICollectionViewCell, UIGestureRecognizerDelegate {
         
         if !self.imageView.subviews.contains(circularProgress){
             circularProgress.isHidden = true
-            circularProgress.progressColor = (UIColor(named: "loadingColor") ?? UIColor(red: 0.4235, green: 0.7863, blue: 0.9882, alpha: 1)) /* #e0e0e0 */
+            circularProgress.progressColor = (UIColor(named: "LoadingColor") ?? UIColor(red: 0.4235, green: 0.7863, blue: 0.9882, alpha: 1)) /* #e0e0e0 */
             circularProgress.trackColor = .systemFill
             circularProgress.translatesAutoresizingMaskIntoConstraints = false
             self.imageView.addSubview(circularProgress)
@@ -61,6 +61,10 @@ class ProductDesignCell: UICollectionViewCell, UIGestureRecognizerDelegate {
         case .began, .changed:
             cell?.likeBtn.isHidden = true
             cell?.likesLbl.isHidden = true
+            cell?.viewFullProductView.isHidden = true
+            cell?.pageControl.isHidden = true
+            usernameLbl.isHidden = false
+
             if gesture.scale >= 1 {
                 let scale = gesture.scale
                 cell?.collectionView.transform = CGAffineTransform(scaleX: scale, y: scale)
@@ -72,14 +76,22 @@ class ProductDesignCell: UICollectionViewCell, UIGestureRecognizerDelegate {
             }) { completed in
                 if completed{
                     DispatchQueue.main.async {
-                        self.cell?.likeBtn.isHidden = false
-                        self.cell?.likesLbl.isHidden = false
+                        if self.cell?.product.isPublic ?? false{
+                            self.cell?.likeBtn.isHidden = false
+                            self.cell?.likesLbl.isHidden = false
+                            self.cell?.pageControl.isHidden = false
+                        }
+                        if !(self.cell?.vc is FullProductVC){
+                            self.cell?.viewFullProductView.isHidden = false
+                        }
+                        self.usernameLbl.isHidden = self.vc is FeedVC
                     }
                 }
             }
             cell?.collectionView.isScrollEnabled = true
-            let tableView = (vc as? UITableViewController)?.tableView ?? (vc as? UserVC)?.tableView ?? (vc as? FullProductVC)?.tableView
+            let tableView = (vc as? UITableViewController)?.tableView ?? (vc as? FullProductVC)?.tableView
             tableView?.isScrollEnabled = true
+
         }
     }
     
@@ -90,8 +102,12 @@ class ProductDesignCell: UICollectionViewCell, UIGestureRecognizerDelegate {
         case .began, .changed:
             cell?.likeBtn.isHidden = true
             cell?.likesLbl.isHidden = true
+            cell?.viewFullProductView.isHidden = true
+            cell?.pageControl.isHidden = true
+            usernameLbl.isHidden = false
+
             cell?.collectionView.isScrollEnabled = false
-            let tableView = (vc as? UITableViewController)?.tableView ?? (vc as? UserVC)?.tableView ?? (vc as? FullProductVC)?.tableView
+            let tableView = (vc as? UITableViewController)?.tableView ?? (vc as? FullProductVC)?.tableView
             tableView?.isScrollEnabled = false
             let translation = gesture.translation(in: cell.collectionView)
             cell?.collectionView.center = CGPoint(x: cell.collectionView.center.x + translation.x, y: cell.collectionView.center.y + translation.y)
@@ -106,7 +122,7 @@ class ProductDesignCell: UICollectionViewCell, UIGestureRecognizerDelegate {
                    
                 }
             }
-            let tableView = (vc as? UITableViewController)?.tableView ?? (vc as? UserVC)?.tableView ?? (vc as? FullProductVC)?.tableView
+            let tableView = (vc as? UITableViewController)?.tableView ?? (vc as? FullProductVC)?.tableView
             tableView?.isScrollEnabled = true
             cell?.collectionView.isScrollEnabled = true
             break

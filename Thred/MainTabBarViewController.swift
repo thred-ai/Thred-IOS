@@ -25,6 +25,7 @@ class MainTabBarViewController: UITabBarController, UITabBarControllerDelegate {
         delegate = self
         tabBar.isTranslucent = false
         
+        selectedIndex = 1
        // if let userVC = viewControllers?.last as? UserVC{
             //userVC.setPageInfo()
        // }
@@ -32,11 +33,22 @@ class MainTabBarViewController: UITabBarController, UITabBarControllerDelegate {
         // Do any additional setup after loading the view.
     }
     
-    
+    func checktoHideBubble(){
+        speechBubble.isHidden = !(selectedIndex == 4 && pUserInfo.postCount == 0)
+        
+        DispatchQueue.main.async {
+            if !self.speechBubble.isHidden{
+                UIView.animate(withDuration: 0.8, delay: 0, options: [.autoreverse, .repeat], animations: {
+                    self.speechBubble.transform = CGAffineTransform(translationX: 0, y: -5)
+                }, completion: nil)
+            }
+        }
+    }
+        
     func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
         
-        
-        
+
+        checktoHideBubble()
     }
     
     func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
@@ -47,13 +59,15 @@ class MainTabBarViewController: UITabBarController, UITabBarControllerDelegate {
 
         if let vc = (viewController as? UINavigationController)?.viewControllers.first{
             if selectedViewController == viewController{
-                let tableView = (vc as? UITableViewController)?.tableView ??
-                (vc as? NotificationVC)?.tableView ?? (vc as? ExploreViewController)?.tableView ?? (vc as? UserVC)?.tableView
+
                 var y: CGFloat = 0
-                if vc is UITableViewController{
+                if vc is UITableViewController || vc is UICollectionViewController{
                     y = -(vc.view.safeAreaInsets.top)
                 }
-                tableView?.setContentOffset(CGPoint(x: 0, y: y), animated: true)
+                (vc as? UITableViewController)?.tableView?.setContentOffset(CGPoint(x: 0, y: y), animated: true)
+                (vc as? NotificationVC)?.tableView?.setContentOffset(CGPoint(x: 0, y: y), animated: true)
+                (vc as? ExploreViewController)?.tableView?.setContentOffset(CGPoint(x: 0, y: y), animated: true)
+                (vc as? UserVC)?.collectionView?.setContentOffset(CGPoint(x: 0, y: y), animated: true)
             }
         }
         return true
@@ -72,7 +86,7 @@ class MainTabBarViewController: UITabBarController, UITabBarControllerDelegate {
             if product != nil{
                 if let vc = (selectedViewController as? UINavigationController)?.viewControllers.last{
                     vc.checkAuthStatus {
-                        if let tableView = (vc as? UITableViewController)?.tableView ?? (vc as? FullProductVC)?.tableView ?? (vc as? UserVC)?.tableView{
+                        if let tableView = (vc as? UITableViewController)?.tableView ?? (vc as? FullProductVC)?.tableView{
                             if self.deletingPost{
                                 tableView.deletingPost(post: self.product, vc: vc){
                                     self.product = nil
@@ -95,26 +109,40 @@ class MainTabBarViewController: UITabBarController, UITabBarControllerDelegate {
     
     let notificationCenter = NotificationCenter.default
 
+    var spinner: MapSpinnerView!
+    
     lazy var button: UIButton = {
         let tabHeight = tabBar.frame.size.height
-        let width = (view.frame.width / 3) - 45
+        let width = (view.frame.width / 3) - 65
         let height = width
-        let x = (view.frame.width / 3) + 22.5
-        let y = view.frame.maxY - tabHeight - (height / 2)
+        let x = (view.frame.width / 3) + 32.5
+        let y = view.frame.maxY - tabHeight - (height / 3)
         
-        let button = UIButton.init(frame: CGRect(x: x, y: y, width: width, height: height))
+        let button = UIButton.init(type: .custom)
+        button.frame = CGRect(x: x, y: y, width: width, height: height)
         button.backgroundColor = .systemBackground
             //UIColor.init(red: 0.976, green: 0.976, blue: 0.976, alpha: 1.0)
         button.tintColor = .label
+        button.imageView?.contentMode = .scaleAspectFill
         button.layer.borderColor = UIColor(named: "LoadingColor")?.cgColor 
         button.layer.borderWidth = 6.5
         button.layer.cornerRadius = button.frame.height / 2
         button.clipsToBounds = true
         button.addTarget(self, action: #selector(segueToCreationScreen(_:)), for: .touchUpInside)
-        let img = UIImage(named: "like")?.sd_resizedImage(with: CGSize(width: width / 2, height: height / 2), scaleMode: .aspectFill)?.withRenderingMode(.alwaysTemplate)
+        print(view.frame.width)
+        let ratio = CGFloat(20.0/375.0)
         
+        let size = self.view.frame.width * ratio
+        print(size)
+        let img = UIImage(nameOrSystemName: "paintbrush.fill", systemPointSize: size, iconSize: 9)!
         button.setImage(img, for: .normal)
         button.setRadiusWithShadow()
+        
+        spinner = MapSpinnerView(frame: CGRect(x: button.frame.minX - 3, y: button.frame.minY - 3, width: button.frame.width + 6, height: button.frame.height + 6))
+        view.addSubview(spinner)
+        spinner.isHidden = true
+        
+        
         return button
     }()
     
@@ -147,9 +175,27 @@ class MainTabBarViewController: UITabBarController, UITabBarControllerDelegate {
         button.layer.add(bothAnimations, forKey: "color/width")
     }
     
+    var speechBubble: SpeechBubble!
+    
     override func viewDidLayoutSubviews() {
-        view.insertSubview(button, aboveSubview: tabBar)
+        
+        if !view.subviews.contains(button){
+            view.insertSubview(button, aboveSubview: tabBar)
+            speechBubble = SpeechBubble(baseView: button, text: "Tap to create", subtitle: "a new design", fontSize: 16)
+            speechBubble.borderWidth = 0
+            view.addSubview(speechBubble)
+        }
+        view.bringSubviewToFront(button)
+        view.bringSubviewToFront(spinner)
+        view.bringSubviewToFront(speechBubble)
+        
+        checktoHideBubble()
+
+        //let bubbleView = SpeechBubble(baseView: button, text: "Yay! Bark!", fontSize: 16.0)
+    
     }
+    
+    
 
     /*
     // MARK: - Navigation
@@ -170,7 +216,7 @@ extension UITableView{
         var index = 0
         
         guard let productID = post.productID else{return}
-        uploadingPosts.append(productID)
+        uploadingPosts.append(post)
         
         if let products = (vc as? FeedVC)?.loadedProducts ?? (vc as? UserVC)?.loadedProducts{
             guard let matchingIndex = products.firstIndex(where: {$0.productID == productID}) else{return}
@@ -190,16 +236,13 @@ extension UITableView{
         let indexPath = IndexPath(row: index, section: 0)
         (vc as? FullProductVC)?.editedPost = true
 
-        if let cell = cellForRow(at: indexPath) as? ProductCell{
-            cell.optionMenu.isHidden = true
-            performBatchUpdates({
-                reloadRows(at: [indexPath], with: .none)
-            }, completion: { finished in
-                if finished{
-                    self.scrollToRow(at: IndexPath(row: index, section: 0), at: .top, animated: true)
-                }
-            })
-        }
+        performBatchUpdates({
+            reloadRows(at: [indexPath], with: .none)
+        }, completion: { finished in
+            if finished{
+                self.scrollToRow(at: IndexPath(row: index, section: 0), at: .top, animated: true)
+            }
+        })
         let doc = Firestore.firestore().collection("Users").document(post.uid).collection("Products").document(productID)
         let data = [
             "Name": post.name!,
@@ -212,11 +255,11 @@ extension UITableView{
         doc.updateData(data, completion: { error in
             completed()
             if let err = error{
-                uploadingPosts.removeAll(where: {$0 == productID})
+                uploadingPosts.removeAll(where: {$0.productID == productID})
                 print(err.localizedDescription)
             }
             else{
-                uploadingPosts.removeAll(where: {$0 == productID})
+                uploadingPosts.removeAll(where: {$0.productID == productID})
                 self.performBatchUpdates({
                     self.reloadRows(at: [indexPath], with: .none)
                 }, completion: { finished in
@@ -234,35 +277,24 @@ extension UITableView{
             
             return}
         let topVC = vc?.navigationController?.viewControllers.first
-        let products = ((vc as? FeedVC)?.loadedProducts ?? (vc as? UserVC)?.loadedProducts) ?? ((topVC as? FeedVC)?.loadedProducts ?? (topVC as? UserVC)?.loadedProducts)
-        
-        let index = products?.firstIndex(where: {$0.productID == productID}) ?? 0
-        
+                
         (vc as? FeedVC)?.loadedProducts.removeAll(where: {$0.productID == productID})
-        (vc as? UserVC)?.loadedProducts.removeAll(where: {$0.productID == productID})
-        (vc as? FeedVC)?.loadedProducts.saveAllObjects(type: "FeedProducts")
-        (vc as? UserVC)?.loadedProducts.saveAllObjects(type: "Products")
         
+        (vc as? FeedVC)?.loadedProducts.saveAllObjects(type: "FeedProducts")
         (topVC as? FeedVC)?.loadedProducts.removeAll(where: {$0.productID == productID})
         (topVC as? UserVC)?.loadedProducts.removeAll(where: {$0.productID == productID})
         (topVC as? FeedVC)?.loadedProducts.saveAllObjects(type: "FeedProducts")
         (topVC as? UserVC)?.loadedProducts.saveAllObjects(type: "Products")
-        
 
-        if vc is FeedVC || vc is UserVC{
-            
-            let indexPath = IndexPath(row: index, section: 0)
-            if let cell = cellForRow(at: indexPath) as? ProductCell{
-                cell.optionMenu.isHidden = true
-                DispatchQueue.main.async {
-                    self.reloadData()
-                }
+        if vc is FeedVC{
+            DispatchQueue.main.async {
+                self.reloadData()
             }
         }
         else{
-            if let tableView = (topVC as? UserVC)?.tableView ?? (topVC as? UserVC)?.tableView{
+            if let collectionView = (topVC as? UserVC)?.collectionView{
                 DispatchQueue.main.async {
-                    tableView.reloadData()
+                    collectionView.reloadData()
                 }
             }
             vc?.navigationController?.popViewController(animated: true)
@@ -287,7 +319,6 @@ extension UINavigationController{
     
     func segueToCart(){
         
-        
         let cartStoryboard: UIStoryboard = UIStoryboard(name: "ShoppingCartVC", bundle: nil)
         if let cart: ShoppingCartVC = cartStoryboard.instantiateViewController(withIdentifier: "CartVC") as? ShoppingCartVC{
             pushViewController(cart, animated: true)
@@ -295,17 +326,22 @@ extension UINavigationController{
     }
     
     func segueToSales(){
-        //showErrorMessage {
-            
-        //}
         
-        ///Later On
-        
-         let salesVC: UIStoryboard = UIStoryboard(name: "SalesVC", bundle: nil)
+        let salesVC: UIStoryboard = UIStoryboard(name: "SalesVC", bundle: nil)
 
         if let sales: SalesVC = salesVC.instantiateViewController(withIdentifier: "SalesVC") as? SalesVC{
             pushViewController(sales, animated: true)
         }
  
+    }
+    
+    func segueToDMs(){
+           
+        let allChatVC: UIStoryboard = UIStoryboard(name: "AllChatsVC", bundle: nil)
+
+        if let allChats: AllChatsVC = allChatVC.instantiateViewController(withIdentifier: "Chats") as? AllChatsVC{
+            pushViewController(allChats, animated: true)
+        }
+    
     }
 }

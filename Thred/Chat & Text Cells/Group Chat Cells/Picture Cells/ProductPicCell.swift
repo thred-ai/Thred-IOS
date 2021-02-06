@@ -16,25 +16,78 @@ class ProductPicCell: UICollectionViewCell, UIGestureRecognizerDelegate {
     var imageCenter: CGPoint!
     weak var vc: UIViewController!
     weak var cell: ProductCell!
-
+    
+    
     override func awakeFromNib() {
         super.awakeFromNib()
         imageCenter = imageView.center
-        imageView.addSubview(canvasDisplayView)
 
-
-        NSLayoutConstraint(item: canvasDisplayView, attribute: .centerX, relatedBy: .equal, toItem: imageView, attribute: .centerX, multiplier: 1.0, constant: 0).isActive = true
-        NSLayoutConstraint(item: canvasDisplayView, attribute: .centerY, relatedBy: .equal, toItem: imageView, attribute: .centerY, multiplier: 1.0, constant: -20).isActive = true
-        NSLayoutConstraint(item: canvasDisplayView, attribute: .width, relatedBy: .equal, toItem: imageView, attribute: .width, multiplier: 0.25, constant: 0).isActive = true
-        NSLayoutConstraint(item: canvasDisplayView, attribute: .height, relatedBy: .equal, toItem: canvasDisplayView, attribute: .width, multiplier: canvasInfo.aspectRatio, constant: 0).isActive = true
         setUpCircularProgress()
+    }
+    
+    var topCanvasConstraints = [NSLayoutConstraint]()
+    var canvasDisplayViews = [CanvasDisplayView]()
+
+    
+    func addConstraints(template: Template!, displaySide: DisplaySide){
+        
+        switch topCanvasConstraints.isEmpty{
+        case false:
+            for constraint in topCanvasConstraints{
+                constraint.isActive = false
+            }
+            topCanvasConstraints.removeAll()
+        case true:
+            break
+        }
+        
+        for canvas in canvasDisplayViews{
+            canvas.removeFromSuperview()
+        }
+        canvasDisplayViews.removeAll()
+        
+        let sideString = "\(displaySide)".capitalizingFirstLetter()
+        if let side = template?.supportedSides.first(where: {$0.name == sideString}) ?? template?.supportedSides.first(where: {$0.name == "Front"}){
+            
+            guard let name = side.name, let canvas = canvasDisplayView(for: name) else{return}
+
+            imageView.addSubview(canvas)
+            canvasDisplayViews.append(canvas)
+            setConstraints(side: side, canvasDisplayView: canvas)
+        }
+    }
+    
+    func setConstraints(side: TemplateSide, canvasDisplayView: UIButton){
+        
+        switch topCanvasConstraints.isEmpty{
+        case false:
+            fallthrough
+        default:
+            guard self.imageView.subviews.contains(canvasDisplayView) else{return}
+
+            let centerX = NSLayoutConstraint(item: canvasDisplayView, attribute: .centerX, relatedBy: .equal, toItem: imageView, attribute: .centerX, multiplier: 1.0, constant: 0)
+            let centerY = NSLayoutConstraint(item: canvasDisplayView, attribute: .centerY, relatedBy: .equal, toItem: imageView, attribute: .centerY, multiplier: 1.0, constant: CGFloat(side.centerYConst ?? 0))
+            
+            let width = NSLayoutConstraint(item: canvasDisplayView, attribute: .width, relatedBy: .equal, toItem: imageView, attribute: .width, multiplier: CGFloat(side.widthMultiplier ?? 0), constant: 0)
+            
+            let height = NSLayoutConstraint(item: canvasDisplayView, attribute: .height, relatedBy: .equal, toItem: canvasDisplayView, attribute: .width, multiplier: side.regularAspectRatio, constant: 0)
+            
+            topCanvasConstraints.append(centerX)
+            topCanvasConstraints.append(centerY)
+            topCanvasConstraints.append(width)
+            topCanvasConstraints.append(height)
+            
+            for constraint in topCanvasConstraints{
+                constraint.isActive = true
+            }
+        }
     }
     
     func setUpCircularProgress(){
         
         if !self.imageView.subviews.contains(circularProgress){
             circularProgress.isHidden = true
-            circularProgress.progressColor = (UIColor(named: "loadingColor") ?? UIColor(red: 0.4235, green: 0.7863, blue: 0.9882, alpha: 1)) /* #e0e0e0 */
+            circularProgress.progressColor = (UIColor(named: "LoadingColor") ?? UIColor(red: 0.4235, green: 0.7863, blue: 0.9882, alpha: 1)) /* #e0e0e0 */
             circularProgress.trackColor = .systemFill
             circularProgress.translatesAutoresizingMaskIntoConstraints = false
             self.imageView.addSubview(circularProgress)
@@ -47,14 +100,6 @@ class ProductPicCell: UICollectionViewCell, UIGestureRecognizerDelegate {
             ])
         }
     }
-    
-    lazy var canvasDisplayView: UIImageView = {
-        let view = UIImageView(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
-        view.isUserInteractionEnabled = false
-        view.backgroundColor = .clear
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
-    }()
     
     func setGestureRecognizers(){
         imageView.gestureRecognizers?.removeAll()
@@ -81,8 +126,10 @@ class ProductPicCell: UICollectionViewCell, UIGestureRecognizerDelegate {
         switch gesture.state {
         case .began, .changed:
             cell?.likeBtn.isHidden = true
+            cell?.viewFullProductView.isHidden = true
             cell?.likesLbl.isHidden = true
-            let tableView = (vc as? UITableViewController)?.tableView ?? (vc as? UserVC)?.tableView ?? (vc as? FullProductVC)?.tableView
+            cell?.pageControl.isHidden = true
+            let tableView = (vc as? UITableViewController)?.tableView ?? (vc as? FullProductVC)?.tableView
             tableView?.isScrollEnabled = false
             if gesture.scale >= 1 {
                 let scale = gesture.scale
@@ -95,13 +142,19 @@ class ProductPicCell: UICollectionViewCell, UIGestureRecognizerDelegate {
             }) { completed in
                 if completed{
                     DispatchQueue.main.async {
-                        self.cell?.likeBtn.isHidden = false
-                        self.cell?.likesLbl.isHidden = false
+                        if self.cell?.product.isPublic ?? false{
+                            self.cell?.likeBtn.isHidden = false
+                            self.cell?.likesLbl.isHidden = false
+                            self.cell?.pageControl.isHidden = false
+                        }
+                        if !(self.cell?.vc is FullProductVC){
+                            self.cell?.viewFullProductView.isHidden = false
+                        }
                     }
                 }
             }
             cell?.collectionView.isScrollEnabled = true
-            let tableView = (vc as? UITableViewController)?.tableView ?? (vc as? UserVC)?.tableView ?? (vc as? FullProductVC)?.tableView
+            let tableView = (vc as? UITableViewController)?.tableView ?? (vc as? FullProductVC)?.tableView
             tableView?.isScrollEnabled = true
         }
     }
@@ -113,8 +166,10 @@ class ProductPicCell: UICollectionViewCell, UIGestureRecognizerDelegate {
         case .began, .changed:
             cell?.likeBtn.isHidden = true
             cell?.likesLbl.isHidden = true
+            cell?.viewFullProductView.isHidden = true
+            cell?.pageControl.isHidden = true
             cell?.collectionView.isScrollEnabled = false
-            let tableView = (vc as? UITableViewController)?.tableView ?? (vc as? UserVC)?.tableView ?? (vc as? FullProductVC)?.tableView
+            let tableView = (vc as? UITableViewController)?.tableView ?? (vc as? FullProductVC)?.tableView
             tableView?.isScrollEnabled = false
             let translation = gesture.translation(in: cell.collectionView)
             cell?.collectionView.center = CGPoint(x: cell.collectionView.center.x + translation.x, y: cell.collectionView.center.y + translation.y)
@@ -129,7 +184,7 @@ class ProductPicCell: UICollectionViewCell, UIGestureRecognizerDelegate {
                    
                 }
             }
-            let tableView = (vc as? UITableViewController)?.tableView ?? (vc as? UserVC)?.tableView ?? (vc as? FullProductVC)?.tableView
+            let tableView = (vc as? UITableViewController)?.tableView  ?? (vc as? FullProductVC)?.tableView
             tableView?.isScrollEnabled = true
             cell?.collectionView.isScrollEnabled = true
             break

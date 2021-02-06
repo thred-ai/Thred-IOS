@@ -136,7 +136,7 @@ class AddressVC: UIViewController, UINavigationControllerDelegate {
     }
     
     func setInFirestore(street: String, city: String, adminArea: String, country: String, postalCode: String, unitNumber: String?, firstName: String, lastName: String, phoneNumber: String){
-        guard let uid = userInfo.uid else{return}
+        guard let uid = pUserInfo.uid else{return}
         
         var data = [
             "Street" : street,
@@ -233,7 +233,7 @@ class AddressVC: UIViewController, UINavigationControllerDelegate {
     }
     @IBAction func removeAddress(_ sender: UIButton) {
         sender.isEnabled = false
-        guard let uid = userInfo.uid else{return}
+        guard let uid = pUserInfo.uid else{return}
         Firestore.firestore().collection("Users/\(uid)/Payment_Info").document("Delivery_Address").delete(completion: { error in
             if let err = error{
                 print(err.localizedDescription)
@@ -280,7 +280,7 @@ class AddressVC: UIViewController, UINavigationControllerDelegate {
         let address = "\(street), \(city), \(adminArea), \(country)"
         let unitNumber = self.unitField.text
         
-        self.validateAddress(address: address, completed: { country, adminArea, city, street, postalCode, isValid in
+        self.validateAddress(address: address, completed: { country, adminArea, city, street, postalCode, countryCode, isValid in
             sender.isEnabled = true
             if isValid{
                 guard let street = street, let country = country, let adminArea = adminArea, let postalCode = postalCode, let city = city else{return}
@@ -356,7 +356,7 @@ class AddressVC: UIViewController, UINavigationControllerDelegate {
 
 extension UIViewController{
     func getFromFirestore(completed: @escaping (Bool) -> ()){
-        guard let uid = userInfo.uid else{return}
+        guard let uid = pUserInfo.uid else{return}
 
         Firestore.firestore().collection("Users/\(uid)/Payment_Info").document("Delivery_Address").getDocument(completion: { document, error in
             
@@ -398,32 +398,32 @@ extension UIViewController{
         }
     }
     
-    func validateAddress(address: String, completed: @escaping (String?, String?, String?, String?, String?, Bool) -> ()){
+    func validateAddress(address: String, completed: @escaping (String?, String?, String?, String?, String?, String?, Bool) -> ()){
         CLGeocoder().geocodeAddressString(address) { (placemarks, error) in
             if let error = error{
                 print("Unable to get the location: (\(error))")
-                completed(nil, nil, nil, nil, nil, false)
+                completed(nil, nil, nil, nil, nil, nil, false)
             }
             else{
                 if let placemarks = placemarks{
 
-                    if let country = placemarks.first?.country, let province = placemarks.first?.administrativeArea, let number = placemarks.first?.subThoroughfare, let streetName = placemarks.first?.thoroughfare, let city = placemarks.first?.locality, let postalCode = placemarks.first?.postalCode{
+                    if let country = placemarks.first?.country, let province = placemarks.first?.administrativeArea, let number = placemarks.first?.subThoroughfare, let streetName = placemarks.first?.thoroughfare, let city = placemarks.first?.locality, let postalCode = placemarks.first?.postalCode, let countryCode = placemarks.first?.isoCountryCode{
                         print("country: -> \(country)")
                         print("administrative area: -> \(province)")
                         let street = "\(number) \(streetName)"
-                        completed(country, province, city, street, postalCode, true)
+                        completed(country, province, city, street, postalCode, countryCode, true)
                     }
                     else{
-                        if let province = placemarks.first?.administrativeArea, let country = placemarks.first?.country, let postalCode = placemarks.first?.postalCode{
-                            completed(country, province, nil, nil, postalCode, true)
+                        if let province = placemarks.first?.administrativeArea, let country = placemarks.first?.country, let postalCode = placemarks.first?.postalCode, let countryCode = placemarks.first?.isoCountryCode{
+                            completed(country, province, nil, nil, postalCode, countryCode, true)
                         }
                         else{
-                            completed(nil, nil, nil, nil, nil, false)
+                            completed(nil, nil, nil, nil, nil, nil, false)
                         }
                     }
                 }
                 else{
-                    completed(nil, nil, nil, nil, nil, false)
+                    completed(nil, nil, nil, nil, nil, nil, false)
                 }
             }
         }

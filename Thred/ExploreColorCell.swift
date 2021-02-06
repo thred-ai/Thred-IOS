@@ -16,6 +16,7 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
     @IBOutlet weak var collectionView: UICollectionView!
     @IBOutlet weak var colorIcon: UIView!
     @IBOutlet weak var colorNameLbl: UILabel!
+    @IBOutlet weak var numPostsLbl: UILabel!
     
     var collectionViewOffset: CGFloat {
         get {
@@ -46,17 +47,17 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
     func getProducts(completed: @escaping ()->()){
         
         if postArray == nil{
-            guard let userUID = userInfo.uid else{completed(); return}
+            guard let userUID = pUserInfo.uid else{completed(); return}
             postArray = [Product]()
+            let tag = templateColor ?? ""
             
-            let color = templateColor
-            Firestore.firestore().collectionGroup("Products").whereField("Template_Color", isEqualTo: templateColor ?? "").whereField("Has_Picture", isEqualTo: true).whereField("Blurred", isEqualTo: false).whereField("Public", isEqualTo: true).whereField("Available", isEqualTo: true).order(by: "Timestamp", descending: true).limit(to: 8).getDocuments(completion: { snaps, err in
+            Firestore.firestore().collectionGroup("Products").whereField("Tags", arrayContains: templateColor ?? "").whereField("Has_Picture", isEqualTo: true).whereField("Blurred", isEqualTo: false).whereField("Public", isEqualTo: true).whereField("Available", isEqualTo: true).order(by: "Timestamp", descending: true).limit(to: 8).getDocuments(completion: { snaps, err in
                 if err != nil{
                     completed()
                     print(err?.localizedDescription ?? "")
                 }
                 else{
-                    
+                    var removed = 0
                     for (index, snap) in (snaps?.documents ?? []).enumerated(){ // LOADED DOCUMENTS FROM \(snapDocuments)
                         let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
                         let uid = snap["UID"] as! String
@@ -64,15 +65,23 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
                         let name = snap["Name"] as? String
                         let blurred = snap["Blurred"] as? Bool
                         let templateColor = snap["Template_Color"] as? String
-                        guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
+                        guard let priceCents = (snap["Price_Cents"] as? Double)
+                        else{
+                            removed += 1
+                            continue
+                        }
                         let likes = snap["Likes"] as? Int
                         let comments = ((snap["Comments"]) as? Int) ?? 0
                         let productType = snap["Type"] as? String ?? defaultProductType
+                        let displaySide = snap["Side"] as? String ?? "front"
+                        let matchTag = (snap["Tags"] as? [String])?.first(where: {$0 == tag})
+                        let sides = snap["Sides"] as? [String] ?? ["Front"]
 
-                        if userInfo.usersBlocking.contains(uid){
+                        if pUserInfo.usersBlocking.contains(uid){
+                            removed += 1
                             continue
                         }
-                        let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: true, isPublic: true, productType: productType)
+                        let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: pUserInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: true, isPublic: true, productType: productType, displaySide: displaySide, supportedSides: sides)
                         
                         Firestore.firestore().collection("Users").document(uid).collection("Products").document(product.productID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userUID).getDocuments(completion: { snapLikes, error in
                         
@@ -80,15 +89,15 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
                                 print(error?.localizedDescription ?? "")
                             }
                             else{
-                                userInfo.userLiked.removeAll(where: {$0 == product.productID})
+                                pUserInfo.userLiked.removeAll(where: {$0 == product.productID})
                                 if let likeDocs = snapLikes?.documents{
                                     if likeDocs.isEmpty{
                                         product.liked = false
                                     }
                                     else{
                                         product.liked = true
-                                        if !(userInfo.userLiked.contains(product.productID)){
-                                            userInfo.userLiked.append(product.productID)
+                                        if !(pUserInfo.userLiked.contains(product.productID)){
+                                            pUserInfo.userLiked.append(product.productID)
                                         }
                                     }
                                 }
@@ -97,17 +106,17 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
                                 }
                             }
                             
-                            if self.templateColor == color{
+                            if self.templateColor == tag{
                                 
                                 self.postArray?.append(product)
-                                if self.postArray.count == snaps?.documents.count ?? 0{
+                                if self.postArray.count == (snaps?.documents.count ?? 0) - removed{
                                     
                                     self.postArray?.sort(by: {$0.likes > $1.likes})
-                                    if let colorIndex = self.exploreVC?.colorSections.firstIndex(where: {$0["ID"] as? String == self.templateColor}){
+                                    if let colorIndex = self.exploreVC?.hashTags.firstIndex(where: {$0.display == matchTag}){
                                         
-                                        var downloading = self.exploreVC?.colorSections[colorIndex]["Color_Downloading"] as? [String]
-                                        downloading?.removeAll(where: {$0 == color})
-                                        self.exploreVC?.colorSections[colorIndex]["Array"] = self.postArray
+                                        var downloading = self.exploreVC?.hashTags[colorIndex].tagDownloading
+                                        downloading?.removeAll(where: {$0 == tag})
+                                        self.exploreVC?.hashTags[colorIndex].array = self.postArray
                                     }
                                     completed()
                                 }
@@ -140,32 +149,49 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
         
         cell?.imageView.image = nil
         cell?.circularProgress.isHidden = false
+        guard postArray.indices.contains(indexPath.item) else{return cell!}
+        let product = postArray[indexPath.item]
+        cell?.product = product
+        guard let array = postArray else{return cell!}
+        guard let temp = templateColor else{return cell!}
         
-        guard postArray?.indices.contains(indexPath.item) ?? false, let product = postArray?[indexPath.item] else{return cell!}
+        cell?.contentView.backgroundColor = UIColor(named: "ProductColor")
+
         
-        cell?.contentView.backgroundColor = UIColor(named: product.templateColor)
+        let type = all.tees.first(where: {$0.productCode == product.productType})
+        cell?.addConstraints(template: type)
+        
+        var prefix = ""
+        if product.displaySide == "back" || product.displaySide == "Back"{
+            prefix = "BACK_"
+        }
 
         DispatchQueue(label: "cache").sync {
-            if let image = cache.imageFromCache(forKey: "thumbnail_\(product.picID ?? "")"){
+            if let image = cache.imageFromCache(forKey: "thumbnail_\(prefix)\(product.picID ?? "")"), let color = all.tees.first(where: {$0.productCode == product.productType})?.colors?.first(where: {$0.code == product.templateColor}){
                 DispatchQueue.main.async {
-                    if let index = self.postArray?.firstIndex(where: {$0.productID == product.productID}){
+                    if let index = array.firstIndex(where: {$0.productID == product.productID}){
                         print(index)
-                        print(product.templateColor!)
-                        if let cell = collectionView.cellForItem(at: IndexPath(item: index, section: 0)) as? ExploreProductCell{
-                            cell.imageView.image = image
-                            cell.circularProgress.isHidden = true
+                        var data: Data!
+                        
+                        if product.displaySide == "back" || product.displaySide == "Back"{
+                            data = color.imgBack
                         }
                         else{
-                            collectionView.performBatchUpdates({
-                                collectionView.reloadItems(at: [indexPath])
-                            }, completion: nil)
+                            data = color.img
                         }
+                        let img = UIImage(data: data)
+                        for view in cell?.canvasDisplayViews ?? []{
+                            view.imageView?.image = image
+                            view.setImage(image, for: .normal)
+                        }
+                        cell?.imageView.image = img
+                        cell?.circularProgress.isHidden = true
                     }
                 }
             }
             else{
                 DispatchQueue.main.async {
-                    self.downloadProductCellImage(indexPath: indexPath, cell: cell, product: product)
+                    self.downloadProductCellImage(indexPath: indexPath, cell: cell, product: product, temp: temp, array: array, collectionView: collectionView)
                 }
             }
         }
@@ -175,47 +201,39 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
     
     
     
-    func downloadProductCellImage(indexPath: IndexPath, cell: ExploreProductCell?, product: Product){
+    func downloadProductCellImage(indexPath: IndexPath, cell: ExploreProductCell?, product: Product, temp: String, array: [Product], collectionView: UICollectionView?){
                 
-        
-        if let colorIndex = self.exploreVC?.colorSections.firstIndex(where: {$0["ID"] as? String == product.templateColor}){
+        guard let vc = exploreVC else{return}
+        if let colorIndex = vc.hashTags.firstIndex(where: {($0.array?.contains(where: {$0.productID == product.productID}) ?? true) as Bool}){
             
-            var downloading = self.exploreVC?.colorSections[colorIndex]["Downloading"] as? [String]
+            var downloading = vc.hashTags[colorIndex].downloading
             
             if !(downloading?.contains(product.picID ?? "null") ?? true){
                 
                 cell?.circularProgress.isHidden = false
                 downloading?.append(product.picID ?? "null")
-                self.collectionView.downloadExploreProductImage(circularProgress: cell?.circularProgress, followingUID: product.userInfo.uid ?? "", picID: product.picID ?? "", index: indexPath.item, product: product, isThumbnail: true){ image in
+                
+                UIApplication.shared.downloadExploreProductImage(circularProgress: cell?.circularProgress, followingUID: product.userInfo.uid ?? "", picID: product.picID ?? "", index: indexPath.item, product: product, isThumbnail: true){ image in
                     
-                    guard let products = self.exploreVC?.colorSections else{
-                        return}
-                        if let index = products.firstIndex(where: {$0["ID"] as? String == product.templateColor}){
-                            if products.indices.contains(index){
-                                
-                                if var downloading = self.exploreVC?.colorSections[index]["Downloading"] as? [String]{
-                                    if let postIndex = downloading.firstIndex(of: product.productID){
-                                        downloading.remove(at: postIndex)
-                                        
-                                    }
+                    let products = vc.hashTags
+                    if let index = vc.hashTags.firstIndex(where: {($0.array?.contains(where: {$0.productID == product.productID}) ?? true) as Bool}){
+                        if products.indices.contains(index){
+                            if var downloading = vc.hashTags[index].downloading{
+                                if let postIndex = downloading.firstIndex(of: product.productID){
+                                    downloading.remove(at: postIndex)
                                 }
-                                if self.templateColor == (products[index]["ID"] as? String){
-                                    if let index = self.postArray?.firstIndex(where: {$0.productID == product.productID}), let cell = self.collectionView.cellForItem(at: IndexPath(item: index, section: 0)) as? ExploreProductCell{
-                                        cell.imageView.image = image
-                                        cell.circularProgress.isHidden = true
-                                    }
+                            }
+                            if let index = self.postArray?.firstIndex(where: {$0.productID == product.productID}){
+                                if collectionView?.numberOfItems(inSection: 0) == array.count{
+                                    collectionView?.performBatchUpdates({
+                                        collectionView?.reloadItems(at: [IndexPath(item: index, section: 0)])
+                                    }, completion: nil)
                                 }
                             }
                         }
-                    
+                    }
                 }
             }
-            else{
-                
-            }
-        }
-        else{
-            
         }
     }
     
@@ -232,8 +250,9 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
         colorIcon.clipsToBounds = true
         colorIcon.layer.borderColor = UIColor(named: "ProfileMask")?.cgColor
         colorIcon.layer.borderWidth = colorIcon.frame.height / 17.75
-        colorIcon.setRadiusWithShadow()
         
+        numPostsLbl.superview?.layer.cornerRadius = 2
+        numPostsLbl.superview?.clipsToBounds = true
     }
     
 
@@ -245,15 +264,23 @@ class ExploreColorCell: UITableViewCell, UICollectionViewDelegate, UICollectionV
     
 }
 
-extension UICollectionView{
+extension UIApplication{
     func downloadExploreProductImage(circularProgress: CircularProgress?, followingUID: String, picID: String, index: Int, product: Product?, isThumbnail: Bool, completed: @escaping (UIImage?) -> ()){
         circularProgress?.isHidden = false
-        var pic_id = picID
             
-        if isThumbnail{
-            pic_id = "thumbnail_\(picID)"
+        var prefix = ""
+        if product?.displaySide == "back" || product?.displaySide == "Back"{
+            prefix = "BACK_"
         }
-        let ref = Storage.storage().reference().child("Users/" + followingUID + "/" + "Products/" + picID + "/" + pic_id + ".png")
+        
+        var thumbnail = ""
+        if isThumbnail{
+            thumbnail = "thumbnail_"
+        }
+        
+        let picString = "\(thumbnail)\(prefix)\(picID)"
+        
+        let ref = Storage.storage().reference().child("Users/" + followingUID + "/" + "Products/" + picID + "/" + picString + ".png")
         
         ref.downloadURL(completion: { url, error in
             if error != nil{
@@ -278,59 +305,57 @@ extension UICollectionView{
                         completed(nil)
                     }
                     else{
-                        if isThumbnail{
-                            cache.storeImage(toMemory: image, forKey: "thumbnail_\(picID)")
-                        }
-                        else{
-                            cache.storeImage(toMemory: image, forKey: "\(picID)")
-                        }
+                        
+                        cache.storeImage(toMemory: image, forKey: picString)
                         completed(image)
                     }
                 })
             }
         })
     }
-    
-    
-    func downloadThredListImage(isThumbnail: Bool, cell: PhotosCell?, followingUID: String, picID: String, completed: @escaping (UIImage?) -> ()){
+}
+
+extension UICollectionView{
+    func downloadThredListImage(isThumbnail: Bool, cell: PhotosCell?, followingUID: String, picID: String, displaySide: String, completed: @escaping (UIImage?) -> ()){
+
+        var prefix = ""
+        if displaySide == "back" || displaySide == "Back"{
+            prefix = "BACK_"
+        }
         
-            //cell?.circularProgress.isHidden = false
-            //let cp = pictureProduct?.circularProgress
-            var pic_id = picID
-            //if product?.blurred ?? false{
-               // pic_id = "blur_\(pic_id)"
-            //}
-            
-            if isThumbnail{
-                pic_id = "thumbnail_\(picID)"
+        var thumbnail = ""
+        if isThumbnail{
+            thumbnail = "thumbnail_"
+        }
+        
+        let picString = "\(thumbnail)\(prefix)\(picID)"
+
+        let ref = Storage.storage().reference().child("Users/" + followingUID + "/" + "Products/" + picID + "/" + picString + ".png")
+        ref.downloadURL(completion: { url, error in
+            if error != nil{
+                print(error?.localizedDescription ?? "")
+                completed(nil)
             }
-            
-            let ref = Storage.storage().reference().child("Users/" + followingUID + "/" + "Products/" + picID + "/" + pic_id + ".png")
-            ref.downloadURL(completion: { url, error in
-                if error != nil{
-                    print(error?.localizedDescription ?? "")
-                    completed(nil)
-                }
-                else{
-                    //var dub: CGFloat = 0
-                    //var oldDub: CGFloat = 0
-                    downloader.requestImage(with: url, options: [.highPriority, .continueInBackground, .scaleDownLargeImages, .avoidDecodeImage], context: nil, progress: { (receivedSize: Int, expectedSize: Int, link) -> Void in
-                        //dub = CGFloat(receivedSize) / CGFloat(expectedSize)
-                       // DispatchQueue.main.async {
-                            //cp?.setProgressWithAnimation(duration: 0.0, value: dub, from: oldDub, finished: true){
-                                //oldDub = dub
-                            //}
+            else{
+                //var dub: CGFloat = 0
+                //var oldDub: CGFloat = 0
+                downloader.requestImage(with: url, options: [.highPriority, .continueInBackground, .scaleDownLargeImages, .avoidDecodeImage], context: nil, progress: { (receivedSize: Int, expectedSize: Int, link) -> Void in
+                    //dub = CGFloat(receivedSize) / CGFloat(expectedSize)
+                   // DispatchQueue.main.async {
+                        //cp?.setProgressWithAnimation(duration: 0.0, value: dub, from: oldDub, finished: true){
+                            //oldDub = dub
                         //}
-                    }, completed: { (image, data, error, finished) in
-                        if error != nil{
-                            print(error?.localizedDescription ?? "")
-                            completed(nil)
-                        }
-                        else{
-                            completed(image)
-                        }
-                    })
-                }
-            })
+                    //}
+                }, completed: { (image, data, error, finished) in
+                    if error != nil{
+                        print(error?.localizedDescription ?? "")
+                        completed(nil)
+                    }
+                    else{
+                        completed(image)
+                    }
+                })
+            }
+        })
     }
 }

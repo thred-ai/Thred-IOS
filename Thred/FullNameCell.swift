@@ -22,8 +22,6 @@ class FullNameCell: UITableViewCell{
     }
     
     override func layoutSubviews() {
-        fullNameField.layer.cornerRadius = fullNameField.frame.height / 2
-        fullNameField.clipsToBounds = true
     }
     
 

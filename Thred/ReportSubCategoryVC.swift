@@ -63,7 +63,7 @@ class ReportSubCategoryVC: UIViewController, UITableViewDelegate, UITableViewDat
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        guard let uid = userInfo.uid else{return}
+        guard let uid = pUserInfo.uid else{return}
         if reportCategory == .impersonation{
             if indexPath.row == 0{
                 uploadReport(uid: uid, reportUID: reportUID, reportType: .me, reportLevel: .profile, postID: nil){

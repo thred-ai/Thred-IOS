@@ -10,7 +10,7 @@ import UIKit
 
 extension UITextView {
 
-    func addLinks(isNotification: Bool) {
+    func addLinks(isNotification: Bool, prefix: String) {
 
         // turn string in to NSString
         let nsText = NSString(string: text)
@@ -31,20 +31,31 @@ extension UITextView {
             switch isNotification{
                 
             case false:
-                if word.hasPrefix("@"){
+                if word.hasPrefix(prefix){
                     fallthrough
                 }
             default:
                 
                 if isNotification && word != words.first{break}
+                var tagType = String()
+                
+                switch prefix {
+                case "@":
+                    tagType = "mention"
+                default:
+                    tagType = "hashtag"
+                }
+                
                 for range in text.ranges(of: word){
                     let matchRange = range.nsRange(in: text)
-                    let stringifiedWord = word.replacingOccurrences(of: "@", with: "")
+                    let stringifiedWord = word.replacingOccurrences(of: prefix, with: "")
                     guard let font = UIFont(name: "NexaW01-Heavy", size: self.font?.pointSize ?? 16) else{return}
                     let attributes = [
-                        NSAttributedString.Key.link : "mention:\(stringifiedWord)",
+                        NSAttributedString.Key.link : "\(tagType):\(stringifiedWord)",
+                        
                         NSAttributedString.Key.font : font
                     ] as [NSAttributedString.Key : Any]
+                    
                     attrString.addAttributes(attributes, range: matchRange)
                 }
             }

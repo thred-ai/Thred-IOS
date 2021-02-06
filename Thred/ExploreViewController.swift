@@ -14,19 +14,66 @@ import SDWebImage
 import ColorCompatibility
 
 var factor: CGFloat{
-    let factor = CGFloat(220.0 / 729.0)
+    let factor = CGFloat(0.35)
     print(factor)
     return factor
 }
 
+class Hashtag{
+    
+    var postsCount: Int?
+    var array: [Product]?
+    var display: String?
+    var offset: CGFloat?
+    var downloading: [String]?
+    var tagDownloading: [String]?
+    var blurred: Bool?
+    var topPost: Product?
+    
+    init(postsCount: Int?, array: [Product]?, display: String?, offset: CGFloat?, downloading: [String]?, tagDownloading: [String]?, blurred: Bool?, topPost: Product?) {
+        self.postsCount = postsCount
+        self.array = array
+        self.display = display
+        self.offset = offset
+        self.downloading = downloading
+        self.tagDownloading = tagDownloading
+        self.blurred = blurred
+        self.topPost = topPost
+    }
+    
+    convenience init() {
+        self.init(postsCount: nil, array: nil, display: nil, offset: nil, downloading: nil, tagDownloading: nil, blurred: nil, topPost: nil)
+    }
+}
+
+class Announcement{
+    var timestamp: Date?
+    var title: String?
+    var info: String?
+    var image: UIImage?
+    var link: URL?
+    
+    init(timestamp: Date?, title: String?, info: String?, image: UIImage?, link: String?) {
+        self.timestamp = timestamp
+        self.info = info
+        self.title = title
+        self.image = image
+        self.link = URL(string: link ?? "")
+    }
+    
+    convenience init() {
+        self.init(timestamp: nil, title: nil, info: nil, image: nil, link: nil)
+    }
+}
+
 class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate{
 
-    var colorSections = [[String : Any?]]()
+    var hashTags = [Hashtag]()
     @IBOutlet var tableView: UITableView!
     
     
     var productToOpen: Product!
-    var featuredHeader: FeaturedPostView!
+    var featuredHeader: ExploreTopView!
     var featuredProduct: Product!
 
     override func viewDidLoad() {
@@ -35,7 +82,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
         tableView.dataSource = self
 
         tableView.register(UINib(nibName: "ExploreColorCell", bundle: nil), forCellReuseIdentifier: "ExploreColorCell")
-        featuredHeader = tableView.loadFeaturedHeaderFromNib()
+        featuredHeader = tableView.loadExploreTopHeaderFromNib()
         featuredHeader.vc = self
         searchBar.delegate = self
         
@@ -45,32 +92,55 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
        
         tableView.addSubview(refresher)
         
+        tableView.setContentOffset(CGPoint(x: 0, y: tableView.contentOffset.y - (refresher.frame.size.height)), animated: true)
+                
+        refresher.beginRefreshing()
+        refresher.animateRefresh()
+        
         tableView.adjustForCenterBtn(footerColor: nil, offset: 5, vc: self)
         
         
         getTemplates{_ in
             self.isLoading = false
+            refresher.endRefreshing()
         }
+        
+    
     }
+    
     
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 40
+        
+        if tableView == self.tableView{
+            return 1
+        }
+        return 0
     }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let label = UILabel(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: 40))
+        
+        if tableView == self.tableView{
+            return trendingLbl
+        }
+        else{
+            return nil
+        }
+    }
+    
+    lazy var trendingLbl: UILabel = {
+        let label = UILabel(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: 20))
         label.textAlignment = .center
         label.font = UIFont(name: "NexaW01-Heavy", size: label.font.pointSize)
-        label.text = "Trending on Thred"
-        
+        label.text = ""
+        label.backgroundColor = .tertiarySystemBackground
         return label
-    }
+    }()
     
     func getFeaturedPost(){
         
-        guard let userUID = userInfo.uid else{return}
-        Firestore.firestore().collectionGroup("Products").whereField("Public", isEqualTo: true).whereField("Timestamp", isGreaterThan: Timestamp(date: Date().adding(hours: -120))).order(by: "Timestamp").whereField("Blurred", isEqualTo: false).whereField("Has_Picture", isEqualTo: true).whereField("Available", isEqualTo: true).order(by: "Likes", descending: true).limit(to: 5).getDocuments(completion: { docs, error in
+        guard let userUID = pUserInfo.uid else{return}
+        Firestore.firestore().collectionGroup("Products").whereField("Public", isEqualTo: true).whereField("Timestamp", isGreaterThan: Timestamp(date: Date().adding(hours: -120))).order(by: "Timestamp").whereField("Blurred", isEqualTo: false).whereField("Has_Picture", isEqualTo: true).whereField("Available", isEqualTo: true).order(by: "Likes", descending: true).limit(to: 13).getDocuments(completion: { docs, error in
             
             if let err = error{
                 print(err.localizedDescription)
@@ -89,6 +159,8 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                     guard let priceCents = (snap["Price_Cents"] as? Double) else{return}
                     let comments = ((snap["Comments"]) as? Int) ?? 0
                     let productType = snap["Type"] as? String ?? defaultProductType
+                    let displaySide = snap["Side"] as? String ?? "front"
+                    let sides = snap["Sides"] as? [String] ?? ["Front"]
 
                     Firestore.firestore().collection("Users").document(uid).collection("Products").document(snap.documentID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userUID).getDocuments(completion: { snapLikes, error in
                     
@@ -98,15 +170,15 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                             print(error?.localizedDescription ?? "")
                         }
                         else{
-                            userInfo.userLiked.removeAll(where: {$0 == snap.documentID})
+                            pUserInfo.userLiked.removeAll(where: {$0 == snap.documentID})
                             if let likeDocs = snapLikes?.documents{
                                 if likeDocs.isEmpty{
                                     liked = false
                                 }
                                 else{
                                     liked = true
-                                    if !(userInfo.userLiked.contains(snap.documentID)){
-                                        userInfo.userLiked.append(snap.documentID)
+                                    if !(pUserInfo.userLiked.contains(snap.documentID)){
+                                        pUserInfo.userLiked.append(snap.documentID)
                                     }
                                 }
                             }
@@ -115,15 +187,15 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                             }
                         }
                         
-                        let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: nil, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil, isAvailable: true, isPublic: true, productType: productType)
+                        let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: nil, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil, isAvailable: true, isPublic: true, productType: productType, displaySide: displaySide, supportedSides: sides)
                         
-                        self.featuredHeader.featuredProducts.append(product)
+                        self.featuredHeader.featuredView.featuredProducts.append(product)
                         
-                        if self.featuredHeader.featuredProducts.count == 5{
-                            self.featuredHeader.numberOfItems = 5
-                            self.featuredHeader.featuredProducts.sort(by: {$0.likes > $1.likes})
+                        if self.featuredHeader.featuredView.featuredProducts.count == snaps.count{
+                            self.featuredHeader.featuredView.numberOfItems = snaps.count
+                            self.featuredHeader.featuredView.featuredProducts.sort(by: {$0.likes > $1.likes})
                             DispatchQueue.main.async {
-                                self.featuredHeader.collectionView.reloadData()
+                                self.featuredHeader.featuredView.collectionView.reloadData()
                             }
                         }
                     })
@@ -141,7 +213,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
         search.searchBarStyle = .default
         search.keyboardType = .alphabet
         search.tintColor = UIColor(named: "LoadingColor")
-        search.placeholder = "Search users and threds"
+        search.placeholder = "Search on thred"
         search.showsCancelButton = false
         
         search.searchTextField.font = UIFont(name: "NexaW01-Heavy", size: 14)
@@ -196,8 +268,61 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
             view.bringSubviewToFront(searchView)
             searchView.isHidden = true
         }
-        featuredHeader.frame.size.height = view.frame.width
+        
     }
+    
+    override func viewWillLayoutSubviews() {
+        
+        
+        
+        
+        featuredHeader.frame.size.height = view.frame.width + 100
+        featuredHeader.setFeaturedHeightConstraints(height: view.frame.width)
+        featuredHeader.setNewsSectionHeightConstraints(height: 100)
+        
+    }
+    
+    func getAnnouncements(){
+        Firestore.firestore().collection("Announcements").whereField("Active", isEqualTo: true).order(by: "Timestamp", descending: true).limit(to: 1).getDocuments(completion: { snaps, error in
+            
+            if let err = error{
+                print(err.localizedDescription)
+            }
+            else{
+                self.announcements.removeAll()
+                
+                for doc in snaps?.documents ?? []{
+                    let timestamp = (doc["Timestamp"] as? Timestamp)?.dateValue()
+                    let title = doc["Title"] as? String
+                    let info = (doc["Info"] as? String)?.replacingOccurrences(of: "\\n", with: "\n")
+                    let link = doc["Link"] as? String
+                    let announcement = Announcement(timestamp: timestamp, title: title, info: info, image: nil, link: link)
+                    self.announcements.append(announcement)
+                }
+            }
+            DispatchQueue.main.async {
+                self.animateNewsSection()
+            }
+        })
+    }
+    
+    func animateNewsSection(){
+        
+        featuredHeader.newsSection.titleView.isHidden = false
+
+        if let announcement = announcements.first{
+            featuredHeader.newsSection.titleLbl.text = announcement.title
+            featuredHeader.newsSection.button.superview?.superview?.isHidden = false
+            featuredHeader.newsSection.button.setTitle("View Details", for: .normal)
+        }
+        else{
+            featuredHeader.newsSection.titleLbl.text = "Follow"
+            featuredHeader.newsSection.button.superview?.superview?.isHidden = true
+        }
+
+    }
+    
+    var announcements = [Announcement]()
     
     override func viewWillDisappear(_ animated: Bool) {
     }
@@ -210,14 +335,14 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
         selectedUser = nil
         if let indexPath = searchUsersTable?.indexPathForSelectedRow{
             searchUsersTable?.deselectRow(at: indexPath, animated: true)
-            searchUsersTable.performBatchUpdates({
-                searchUsersTable.reloadRows(at: [indexPath], with: .none)
+            searchUsersTable?.performBatchUpdates({
+                searchUsersTable?.reloadRows(at: [indexPath], with: .none)
             }, completion: nil)
         }
         if let indexPath = searchProductsTable?.indexPathForSelectedRow{
             searchProductsTable?.deselectRow(at: indexPath, animated: true)
-            searchProductsTable.performBatchUpdates({
-                searchProductsTable.reloadRows(at: [indexPath], with: .none)
+            searchProductsTable?.performBatchUpdates({
+                searchProductsTable?.reloadRows(at: [indexPath], with: .none)
             }, completion: nil)
         }
         if let indexPath = tableView.indexPathForSelectedRow{
@@ -226,10 +351,16 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                 tableView.reloadRows(at: [indexPath], with: .none)
             }, completion: nil)
         }
-        if let indexPath = featuredHeader.collectionView?.indexPathsForSelectedItems?.first{
-            featuredHeader.collectionView?.deselectItem(at: indexPath, animated: true)
-            featuredHeader.collectionView?.performBatchUpdates({
-                featuredHeader.collectionView?.reloadItems(at: [indexPath])
+        if let indexPath = searchHashtagsTable?.indexPathForSelectedRow{
+            searchHashtagsTable?.deselectRow(at: indexPath, animated: true)
+            searchHashtagsTable?.performBatchUpdates({
+                searchHashtagsTable?.reloadRows(at: [indexPath], with: .none)
+            }, completion: nil)
+        }
+        if let indexPath = featuredHeader.featuredView.collectionView?.indexPathsForSelectedItems?.first{
+            featuredHeader.featuredView.collectionView?.deselectItem(at: indexPath, animated: true)
+            featuredHeader.featuredView.collectionView?.performBatchUpdates({
+                featuredHeader.featuredView.collectionView?.reloadItems(at: [indexPath])
             }, completion: nil)
         }
         
@@ -244,11 +375,11 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         
         guard productToOpen != nil else{return}
-        for section in colorSections{
-            tableView.syncPostLikes(loadedProducts: section["Array"] as? [Product] ?? [], vc: self)
+        for hashtag in hashTags{
+            tableView.syncPostLikes(loadedProducts: hashtag.array ?? [], vc: self)
         }
-        guard let colorSection = colorSections.first(where: {$0["ID"] as? String == productToOpen.templateColor}) else{return}
-        guard let postArray = colorSection["Array"] as? [Product] else{return}
+        guard let colorSection = hashTags.first(where: {$0.display == productToOpen.templateColor}) else{return}
+        guard let postArray = colorSection.array else{return}
         guard let post = postArray.first(where: {$0.productID == productToOpen.productID}) else{return}
         post.liked = productToOpen.liked
         post.likes = productToOpen.likes
@@ -273,10 +404,11 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
             DispatchQueue(label: "background").async {
                 cache.clearMemory()
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                    self.featuredHeader.featuredProducts.removeAll()
+                    self.featuredHeader.featuredView.featuredProducts.removeAll()
                     self.getTemplates{ error in
                         if error == nil{
-                            self.colorSections.removeAll()
+                            self.hashTags.removeAll()
+                            self.tableView.reloadData()
                         }
                         self.isLoading = false
                         sender.endRefreshing()
@@ -288,24 +420,12 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
             sender.endRefreshing()
         }
     }
-    
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        
-        if scrollView == searchUsersTable || scrollView == searchProductsTable{
-            if searchUsersTable.numberOfRows(inSection: 0) != 0{
-                searchBar.resignFirstResponder()
-            }
-            if searchProductsTable.numberOfRows(inSection: 0) != 0{
-                searchBar.resignFirstResponder()
-            }
-        }
-    }
-    
+
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
         if tableView == self.tableView{
-            return colorSections.count
+            return hashTags.count
         }
         else if tableView == self.searchUsersTable{
             return searchedUsers.count
@@ -313,48 +433,103 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
         else if tableView == self.searchProductsTable{
             return searchedProducts.count
         }
+        else if tableView == self.searchHashtagsTable{
+            return searchedHashtags.count
+        }
         return 0
     }
     
     func getTemplates(completed: @escaping (Error?) -> ()){
         
-        guard let uid = userInfo.uid else{return}
+        guard let uid = pUserInfo.uid else{return}
         checkAuthStatus {
             self.refreshLists(userUID: uid){
-                self.getFeaturedPost()
-                Firestore.firestore().document("Templates/Tees").getDocument(completion: { snap, error in
-                    if error != nil{
+                self.loadDesigns {
+                    self.getFeaturedPost()
+                    self.getAnnouncements()
+                    self.loadHashtags(loadMore: false, completed: { error in
                         completed(error)
-                        print(error?.localizedDescription ?? "")
-                    }
-                    else{
-                        guard let doc = snap else{return}
-                        completed(nil)
-                        let ids = doc["IDs"] as? [[String : String]]
-                        for id in ids ?? []{
-                            guard let code = id["Code"] else{continue}
-                            guard let displayName = id["Display"] else{continue}
-
-                            self.colorSections.append([
-                                "Array": nil,
-                                "ID": code,
-                                "Display" : displayName,
-                                "Offset": 0,
-                                "Downloading" : [],
-                                "Color_Downloading" : []
-                            ])
-                        }
-                        self.tableView.reloadData()
-                    }
+                    })
+                }
+            }
+        }
+    }
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        
+        if scrollView == searchUsersTable || scrollView == searchProductsTable || scrollView == searchHashtagsTable{
+            if searchUsersTable.numberOfRows(inSection: 0) != 0{
+                searchBar.resignFirstResponder()
+            }
+            if searchProductsTable.numberOfRows(inSection: 0) != 0{
+                searchBar.resignFirstResponder()
+            }
+            if searchHashtagsTable.numberOfRows(inSection: 0) != 0{
+                searchBar.resignFirstResponder()
+            }
+        }
+        
+        if tableView.contentOffset.y >= (tableView.contentSize.height - tableView.frame.size.height) / 2{
+            
+            print("fromScroll")
+            if !isLoading, canLoadMore{
+                isLoading = true
+                self.loadHashtags(loadMore: true, completed: {_ in
+                    self.isLoading = false
                 })
             }
         }
     }
     
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        let translation = scrollView.panGestureRecognizer.translation(in: scrollView.superview)
+        if translation.y > 0 {
+            canLoadMore = false
+            // swipes from top to bottom of screen -> down
+        } else {
+            canLoadMore = true
+            // swipes from bottom to top of screen -> up
+        }
+    }
+    
+    var canLoadMore = false
+    var lastDoc: DocumentSnapshot?
+    
+    func loadHashtags(loadMore: Bool, completed: @escaping (Error?) -> ()){
+        
+        var query: Query?
+        
+        if loadMore, let doc = lastDoc{
+            query = Firestore.firestore().collection("Tags").whereField("Blurred", isEqualTo: false).whereField("Posts_Count", isGreaterThan: 400).order(by: "Posts_Count", descending: true).limit(to: 8).start(afterDocument: doc)
+        }
+        else{
+            query = Firestore.firestore().collection("Tags").whereField("Blurred", isEqualTo: false).whereField("Posts_Count", isGreaterThan: 400).order(by: "Posts_Count", descending: true).limit(to: 8)
+        }
+        query?.getDocuments(completion: { snaps, error in
+            if error != nil{
+                completed(error)
+                print(error?.localizedDescription ?? "")
+            }
+            else{
+                guard let docs = snaps?.documents, !docs.isEmpty
+                    else{completed(Error.self as? Error); return}
+                completed(nil)
+                self.lastDoc = docs.last
+                for doc in docs{
+                    guard let postCount = doc["Posts_Count"] as? Int else{continue}
+                    self.hashTags.append(Hashtag(postsCount: postCount, array: nil, display: doc.documentID, offset: 0, downloading: [], tagDownloading: [], blurred: false, topPost: nil))
+                    self.tableView.performBatchUpdates({
+                        self.tableView.insertRows(at: [IndexPath(row: self.hashTags.count - 1, section: 0)], with: .none)
+                    }, completion: nil)
+                }
+            }
+        })
+    }
+    
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         
         if let cell = cell as? ExploreColorCell{
-            cell.collectionViewOffset = colorSections[indexPath.row]["Offset"] as? CGFloat ?? 0
+            cell.collectionViewOffset = hashTags[indexPath.row].offset ?? 0
            
         }
     }
@@ -363,8 +538,8 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
         if let cell = cell as? ExploreColorCell{
             cell.postArray.removeAll()
             cell.collectionView.reloadData()
-            if colorSections.indices.contains(indexPath.row){
-                colorSections[indexPath.row]["Offset"] = cell.collectionViewOffset
+            if hashTags.indices.contains(indexPath.row){
+                hashTags[indexPath.row].offset = cell.collectionViewOffset
             }
             
         }
@@ -375,26 +550,30 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
         if tableView == self.tableView{
             let cell = tableView.dequeueReusableCell(withIdentifier: "ExploreColorCell", for: indexPath) as? ExploreColorCell
             
-            let postSection = colorSections[indexPath.row]
-            guard let sectionID = postSection["ID"] as? String else{return cell!}
-            let displayName = postSection["Display"] as? String
+            let postSection = hashTags[indexPath.row]
+            guard let sectionID = postSection.display else{return cell!}
             cell?.colorIcon.backgroundColor = nil
             cell?.exploreVC = nil
             cell?.templateColor = nil
             cell?.colorNameLbl.text = nil
+            cell?.numPostsLbl.text = nil
+            cell?.numPostsLbl.attributedText = nil
             cell?.postArray = nil
-
             
-            cell?.colorIcon.backgroundColor = UIColor(named: postSection["ID"] as? String ?? "null")
-            cell?.colorNameLbl.text = displayName ?? "null"
+            //cell?.colorIcon.backgroundColor = UIColor(named: postSection["ID"] as? String ?? "null")
+            cell?.colorNameLbl.text = sectionID
             cell?.exploreVC = self
             cell?.templateColor = sectionID //problem
-
-            if let postArray = postSection["Array"] as? [Product]{
+            
+            if let postCount = postSection.postsCount{
+                cell?.numPostsLbl.setArrow(name: "\(postCount.kmFormatted)")
+            }
+            
+            if let postArray = postSection.array{
                 cell?.postArray = postArray
             }
             
-            var downloading = postSection["Color_Downloading"] as? [String]
+            var downloading = postSection.tagDownloading
             if !(downloading?.contains(sectionID) ?? false){
                 downloading?.append(sectionID)
             }
@@ -428,6 +607,30 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
             }
             return cell!
         }
+        else if tableView == self.searchHashtagsTable{
+            
+            let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "hashtagCell")
+            guard searchedHashtags.indices.contains(indexPath.row) else{return cell}
+            let hashtag = self.searchedHashtags[indexPath.row]
+            guard let tag = hashtag.display, let numPosts = hashtag.postsCount else{return cell}
+            cell.backgroundColor = .clear
+            
+            var grammar = ""
+            var numString = "\(numPosts.kmFormatted)"
+            
+            if numPosts != 1{
+                grammar = "s"
+                if numPosts == 0{
+                    numString = "No"
+                }
+            }
+            
+            cell.textLabel?.font = UIFont(name: "NexaW01-Heavy", size: cell.textLabel?.font.pointSize ?? 16)
+            cell.detailTextLabel?.font = UIFont(name: "NexaW01-Regular", size: cell.detailTextLabel?.font.pointSize ?? 14)
+            cell.textLabel?.text = "#\(tag)"
+            cell.detailTextLabel?.text = "\(numString) Post\(grammar)"
+            return cell
+        }
         else{
             let cell = tableView.dequeueReusableCell(withIdentifier: "SearchProductCell", for: indexPath) as? SearchProductTableViewCell
             guard searchedProducts.indices.contains(indexPath.row) else{return cell!}
@@ -443,19 +646,29 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
 
             
             DispatchQueue(label: "explore").async {
-                if let dp = cache.imageFromMemoryCache(forKey: "thumbnail_\(product.productID)"){
+                var prefix = ""
+                if product.displaySide == "back" || product.displaySide == "Back"{
+                    prefix = "BACK_"
+                }
+                
+                let thumbnail = "thumbnail_"
+                
+                let picString = "\(thumbnail)\(prefix)\(product.productID)"
+                if let dp = cache.imageFromMemoryCache(forKey: picString){
                     DispatchQueue.main.async {
                         cell?.productImageView.image = dp
                     }
                 }
             }
-            cell?.productImageView.backgroundColor = UIColor(named: product.templateColor)
+            let color = all.tees.first(where: {$0.productCode == product.productType})?.colors.first(where: {$0.code == product.templateColor})?.getColor()
+
+            cell?.productImageView.backgroundColor = color
             cell?.productNameLbl.text = product.name
             
             cell?.priceLbl.text = product.price?.formatPrice()
 
-            cell?.likesLbl.text = "\(product.likes)"
-                        
+            cell?.likesLbl.text = all.tees.first(where: {$0.productCode == product.productType})?.info
+
             return cell!
         }
     }
@@ -471,6 +684,8 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
     var topTab: UISegmentedControl!
     var searchUsersTable: UITableView!
     var searchProductsTable: UITableView!
+    var searchHashtagsTable: UITableView!
+
            
     lazy var searchView: UIView = {
         
@@ -484,8 +699,9 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
         topTab.selectedSegmentTintColor = UIColor(named: "LoadingColor")
         topTab.backgroundColor = .systemGroupedBackground
         topTab.insertSegment(withTitle: "Users", at: 0, animated: false)
-        
-        topTab.insertSegment(withTitle: "Threds", at: 1, animated: false)
+        topTab.insertSegment(withTitle: "Hashtags", at: 1, animated: false)
+        topTab.insertSegment(withTitle: "Threds", at: 2, animated: false)
+
         topTab.layer.cornerRadius = 0
         topTab.selectedSegmentIndex = 0
         topTab.clipsToBounds = true
@@ -497,42 +713,65 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
         searchUsersTable.delegate = self
         searchUsersTable.dataSource = self
         searchUsersTable.backgroundColor = .clear
-
+        
+        searchHashtagsTable = UITableView(frame: CGRect(x: 0, y: topTab.frame.maxY + 5, width: view.frame.width, height: view.frame.height - topTab.frame.maxY - 5))
+        searchHashtagsTable.separatorStyle = .none
+        searchHashtagsTable.delegate = self
+        searchHashtagsTable.dataSource = self
+        searchHashtagsTable.backgroundColor = .clear
+        
         searchProductsTable = UITableView(frame: CGRect(x: 0, y: topTab.frame.maxY + 5, width: view.frame.width, height: view.frame.height - topTab.frame.maxY - 5))
         searchProductsTable.separatorStyle = .none
         searchProductsTable.register(UINib(nibName: "SearchProductTableViewCell", bundle: nil), forCellReuseIdentifier: "SearchProductCell")
         searchProductsTable.delegate = self
         searchProductsTable.dataSource = self
         searchProductsTable.backgroundColor = .clear
-
         
         view.addSubview(topTab)
         view.addSubview(searchUsersTable)
+        view.addSubview(searchHashtagsTable)
         view.addSubview(searchProductsTable)
+        
+        searchHashtagsTable.isHidden = true
         searchProductsTable.isHidden = true
 
         return view
     }()
     
+    var searchedHashtags = [Hashtag]()
+    
     @objc func switchedSegment(_ sender: UISegmentedControl){
         
         if sender.selectedSegmentIndex == 0{
             searchProductsTable.isHidden = true
+            searchHashtagsTable.isHidden = true
             searchUsersTable.isHidden = false
             searchedUsers.removeAll()
             searchUsersTable.reloadData()
             
-            if let text = searchBar.text, !text.isEmpty{
+            if let text = searchBar.text?.lowercased(), !text.isEmpty{
                 searchUsers(searchText: text)
+            }
+        }
+        else if sender.selectedSegmentIndex == 1{
+            searchProductsTable.isHidden = true
+            searchUsersTable.isHidden = true
+            searchHashtagsTable.isHidden = false
+            searchedHashtags.removeAll()
+            searchHashtagsTable.reloadData()
+            
+            if let text = searchBar.text, !text.isEmpty{
+                searchHashtags(searchText: text)
             }
         }
         else{
             searchUsersTable.isHidden = true
+            searchHashtagsTable.isHidden = true
             searchProductsTable.isHidden = false
             searchedProducts.removeAll()
             searchProductsTable.reloadData()
             
-            if let text = searchBar.text, !text.isEmpty{
+            if let text = searchBar.text?.lowercased(), !text.isEmpty{
                 searchProducts(searchText: text)
             }
         }
@@ -564,7 +803,6 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
     var selectedUser: UserInfo? = UserInfo()
     
     
-    
     func searchUsers(searchText: String){
         if searchText == ""{
             searchedUsers.removeAll()
@@ -580,7 +818,6 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                     print(error?.localizedDescription ?? "null")
                 }
                 else{
-                    self.searchedUsers.removeAll()
                     if let documents = query?.documents{
                         if documents.count != 0{
                             print(documents)
@@ -597,15 +834,23 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                                 let usersBlocking = document["Users_Blocking"] as? [String]
                                 let verified = document["Verified"] as? Bool ?? false
 
-                                if userInfo.usersBlocking.contains(uid){
+                                if pUserInfo.usersBlocking.contains(uid){
+                                    if document == documents.first, documents.count < 1{
+                                        self.searchedUsers.removeAll()
+                                    }
                                     continue
+                                }
+                                else{
+                                    if document == documents.first{
+                                        self.searchedUsers.removeAll()
+                                    }
                                 }
                                 
                                 let user = UserInfo(uid: uid, dp: nil, dpID: dpLink, username: username, fullName: fullname, bio: bio, notifID: nil, userFollowing: userFollowing ?? [], userLiked: [], followerCount: followerCount ?? 0, postCount: postCount ?? 0, followingCount: followingCount ?? 0, usersBlocking: usersBlocking ?? [], profileLink: nil, verified: verified)
 
-                                if uid == userInfo.uid{
-                                    user.dp = userInfo.dp
-                                    user.dpID = userInfo.dpID
+                                if uid == pUserInfo.uid{
+                                    user.dp = pUserInfo.dp
+                                    user.dpID = pUserInfo.dpID
                                     self.searchedUsers.append(user)
                                     self.searchUsersTable.reloadData()
                                     continue
@@ -649,10 +894,46 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
+    func searchHashtags(searchText: String){
+        if searchText == ""{
+            searchedHashtags.removeAll()
+            searchHashtagsTable.reloadData()
+            searchHashtagsTable.separatorStyle = .none
+            //self.getFollowers()
+        }
+        else{
+            //searchBar.isLoading = true
+            Firestore.firestore().collection("Tags").whereField(FieldPath.documentID(), isGreaterThanOrEqualTo: searchText).whereField(FieldPath.documentID(), isLessThanOrEqualTo: searchText + "\u{f8ff}").limit(to: 8).getDocuments(completion: { query, error in
+                
+                //searchBar.isLoading = false
+                if error != nil{
+                    print(error?.localizedDescription ?? "null")
+                }
+                else{
+                    self.searchedHashtags.removeAll()
+                    if let documents = query?.documents{
+                        if documents.count != 0{
+                            self.searchHashtagsTable.separatorStyle = .singleLine
+                            for doc in documents{
+                                guard let postCount = doc["Posts_Count"] as? Int else{continue}
+                                let blurred = doc["Blurred"] as? Bool ?? false
+                                self.searchedHashtags.append(Hashtag(postsCount: postCount, array: nil, display: doc.documentID, offset: 0, downloading: [], tagDownloading: [], blurred: blurred, topPost: nil))
+                            }
+                            self.searchHashtagsTable.reloadData()
+                        }
+                        else{
+                            self.searchHashtagsTable.separatorStyle = .none
+                            self.searchHashtagsTable.reloadData()
+                        }
+                    }
+                }
+            })
+        }
+    }
     
     
     func searchProducts(searchText: String){
-        guard let userUID = userInfo.uid else{return}
+        guard let userUID = pUserInfo.uid else{return}
         if searchText == ""{
             searchedProducts.removeAll()
             searchProductsTable.reloadData()
@@ -661,7 +942,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
         else{
             //searchBar.isLoading = true
             Firestore.firestore().collectionGroup("Products")
-                .whereField("Search_Name", isGreaterThanOrEqualTo: searchText).whereField("Search_Name", isLessThanOrEqualTo: searchText + "\u{f8ff}").whereField("Public", isEqualTo: true).whereField("Available", isEqualTo: true).limit(to: 8).getDocuments(completion: { query, error in
+                .whereField("Search_Name", isGreaterThanOrEqualTo: searchText).whereField("Search_Name", isLessThanOrEqualTo: searchText + "\u{f8ff}").whereField("Has_Picture", isEqualTo: true).whereField("Public", isEqualTo: true).whereField("Available", isEqualTo: true).limit(to: 8).getDocuments(completion: { query, error in
                 
                 //searchBar.isLoading = false
                 if error != nil{
@@ -679,6 +960,9 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                                 
                                 guard let uid = document["UID"] as? String else{
                                     continue}
+                                if pUserInfo.usersBlocking.contains(uid){
+                                    continue
+                                }
                                 let description = document["Description"] as? String
                                 let name = document["Name"] as? String
                                 let blurred = document["Blurred"] as? Bool
@@ -688,8 +972,10 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                                 let comments = ((document["Comments"]) as? Int) ?? 0
                                 let productID = document.documentID
                                 let productType = document["Type"] as? String ?? defaultProductType
+                                let displaySide = document["Side"] as? String ?? "front"
+                                let sides = document["Sides"] as? [String] ?? ["Front"]
 
-                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil), picID: productID, description: description, productID: productID, timestamp: timestamp, index: 0, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(productID), designImage: nil, comments: comments, link: nil, isAvailable: true, isPublic: true, productType: productType)
+                                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil), picID: productID, description: description, productID: productID, timestamp: timestamp, index: 0, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: pUserInfo.userLiked.contains(productID), designImage: nil, comments: comments, link: nil, isAvailable: true, isPublic: true, productType: productType, displaySide: displaySide, supportedSides: sides)
 
                                 Firestore.firestore().collection("Users").document(uid).collection("Products").document(productID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userUID).getDocuments(completion: { snapLikes, error in
                                 
@@ -697,15 +983,15 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                                         print(error?.localizedDescription ?? "")
                                     }
                                     else{
-                                        userInfo.userLiked.removeAll(where: {$0 == productID})
+                                        pUserInfo.userLiked.removeAll(where: {$0 == productID})
                                         if let likeDocs = snapLikes?.documents{
                                             if likeDocs.isEmpty{
                                                 product.liked = false
                                             }
                                             else{
                                                 product.liked = true
-                                                if !(userInfo.userLiked.contains(productID)){
-                                                    userInfo.userLiked.append(productID)
+                                                if !(pUserInfo.userLiked.contains(productID)){
+                                                    pUserInfo.userLiked.append(productID)
                                                 }
                                             }
                                         }
@@ -718,8 +1004,16 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                                     }
                                     self.searchedProducts.sort(by: {$0.likes > $1.likes})
                                     self.searchProductsTable.reloadData()
+                                    var prefix = ""
+                                    if displaySide == "back" || displaySide == "Back"{
+                                        prefix = "BACK_"
+                                    }
                                     
-                                    let ref = Storage.storage().reference().child("Users/" + uid + "/" + "Products/" + productID + "/" + "thumbnail_\(productID)" + ".png")
+                                    let thumbnail = "thumbnail_"
+                                    
+                                    let picString = "\(thumbnail)\(prefix)\(productID)"
+                                    
+                                    let ref = Storage.storage().reference().child("Users/" + uid + "/" + "Products/" + productID + "/" + picString + ".png")
                                     ref.downloadURL(completion: { url, error in
                                         if error != nil{
                                             print(error?.localizedDescription ?? "")
@@ -735,7 +1029,7 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
                                                 }
                                                 else{
                                                     if let image = image{
-                                                        cache.storeImage(toMemory: image, forKey: "thumbnail_\(productID)")
+                                                        cache.storeImage(toMemory: image, forKey: picString)
                                                         if let index = self.searchedProducts.firstIndex(where: {$0.productID == document.documentID}){
                                                             self.searchProductsTable.performBatchUpdates({
                                                                 self.searchProductsTable.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
@@ -763,12 +1057,17 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         
-        let lowerCaseSearchText = searchText.lowercased()
-        searchBar.text = lowerCaseSearchText
         if topTab.selectedSegmentIndex == 0{
+            let lowerCaseSearchText = searchText.lowercased()
+            searchBar.text = lowerCaseSearchText
             searchUsers(searchText: lowerCaseSearchText)
         }
         else if topTab.selectedSegmentIndex == 1{
+            searchHashtags(searchText: searchBar.text ?? "")
+        }
+        else if topTab.selectedSegmentIndex == 2{
+            let lowerCaseSearchText = searchText.lowercased()
+            searchBar.text = lowerCaseSearchText
             searchProducts(searchText: lowerCaseSearchText)
         }
     }
@@ -793,22 +1092,31 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     
     
-    var selectedTemplateColor: String?
+    var selectedHashtag = Hashtag()
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         if tableView == self.tableView{
-            selectedTemplateColor = colorSections[indexPath.row]["ID"] as? String
+            selectedHashtag = hashTags[indexPath.row]
             performSegue(withIdentifier: "toColorSection", sender: nil)
         }
         else if tableView == searchUsersTable{
             selectedUser = searchedUsers[indexPath.row]
-            if selectedUser?.uid == userInfo.uid{
+            if selectedUser?.uid == pUserInfo.uid{
                 tabBarController?.selectedIndex = 4
             }
             else{
                 performSegue(withIdentifier: "ToFriend", sender: nil)
             }
+        }
+        else if tableView == searchHashtagsTable{
+            guard searchedHashtags[indexPath.row].postsCount != 0 else{
+                tableView.deselectRow(at: indexPath, animated: true)
+                return
+            }
+            selectedHashtag = searchedHashtags[indexPath.row]
+            performSegue(withIdentifier: "toColorSection", sender: nil)
+            
         }
         else if tableView == searchProductsTable{
             productToOpen = searchedProducts[indexPath.row]
@@ -840,8 +1148,8 @@ class ExploreViewController: UIViewController, UITableViewDelegate, UITableViewD
             fullVC.fullProduct = productToOpen
         }
         if let sectionVC = segue.destination as? ColorSectionVC{
-            guard let color = selectedTemplateColor else{return}
-            sectionVC.templateColor = color
+            let hashtag = selectedHashtag
+            sectionVC.hashtag = hashtag
         }
         else if let friend = segue.destination as? FriendVC{
             friend.friendInfo = selectedUser!

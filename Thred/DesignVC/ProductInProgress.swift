@@ -9,10 +9,22 @@
 import Foundation
 import UIKit
 
-class ProductInProgress{
+class Design: Codable{
+    
+    var img: Data?
+    var side: TemplateSide!
+    
+    init(img: Data?, side: TemplateSide?) {
+        self.img = img
+        self.side = side
+    }
+    
+}
+
+class ProductInProgress: Codable{
     
     var templateColor: String!
-    var design: UIImage!
+    var designs = [Design?]()
     var uid: String!
     var caption: String!
     var name: String!
@@ -21,10 +33,11 @@ class ProductInProgress{
     var display: Data!
     var isPublic: Bool!
     var productType: String!
+    var displaySide: String!
     
-    init(templateColor: String!, design: UIImage!, uid: String!, caption: String!, name: String!, price: Double!, productID: String?, display: Data?, isPublic: Bool?, productType: String?) {
+    init(templateColor: String!, designs: [Design?], uid: String!, caption: String!, name: String!, price: Double!, productID: String?, display: Data?, isPublic: Bool?, productType: String?, displaySide: String?) {
         self.templateColor = templateColor
-        self.design = design
+        self.designs = designs
         self.uid = uid
         self.caption = caption
         self.name = name
@@ -32,9 +45,11 @@ class ProductInProgress{
         self.productID = productID
         self.display = display
         self.isPublic = isPublic
+        self.productType = productType
+        self.displaySide = displaySide ?? "front"
     }
     
     convenience init() {
-        self.init(templateColor: nil, design: nil, uid: nil, caption: nil, name: nil, price: nil, productID: nil, display: nil, isPublic: nil, productType: nil)
+        self.init(templateColor: nil, designs: [], uid: nil, caption: nil, name: nil, price: nil, productID: nil, display: nil, isPublic: nil, productType: nil, displaySide: nil)
     }
 }

@@ -12,7 +12,6 @@ import ColorCompatibility
 class FeaturedCell: UICollectionViewCell {
 
     @IBOutlet weak var dotLabel: UILabel!
-    @IBOutlet weak var thredIcon: UIImageView!
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var nameLbl: UILabel!
     @IBOutlet weak var priceLbl: UILabel!
@@ -22,7 +21,7 @@ class FeaturedCell: UICollectionViewCell {
     
     @IBOutlet weak var removedTextView: UITextView!
     @IBOutlet weak var productRemovedView: UIView!
-    
+    var product: Product!
     @IBAction func toRemovedLink(_ sender: UIButton) {
         
         
@@ -71,29 +70,80 @@ class FeaturedCell: UICollectionViewCell {
         ]
     }
     
-    lazy var canvasDisplayView: UIImageView = {
-        let view = UIImageView(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
-        view.isUserInteractionEnabled = true
-        view.backgroundColor = .clear
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
-    }()
-    
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
         
-        circularProgress.progressColor = (UIColor(named: "loadingColor") ?? UIColor(red: 0.4235, green: 0.7863, blue: 0.9882, alpha: 1)) /* #e0e0e0 */
+        circularProgress.progressColor = (UIColor(named: "LoadingColor") ?? UIColor(red: 0.4235, green: 0.7863, blue: 0.9882, alpha: 1)) /* #e0e0e0 */
         circularProgress.trackColor = .systemFill
         productRemovedView.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.75)
-        infoView.backgroundColor = UIColor(named: "ProfileMask")?.withAlphaComponent(0.4)
         
-        imageView.addSubview(canvasDisplayView)
+
         
-        NSLayoutConstraint(item: canvasDisplayView, attribute: .centerX, relatedBy: .equal, toItem: imageView, attribute: .centerX, multiplier: 1.0, constant: 0).isActive = true
-        NSLayoutConstraint(item: canvasDisplayView, attribute: .centerY, relatedBy: .equal, toItem: imageView, attribute: .centerY, multiplier: 1.0, constant: -20).isActive = true
-        NSLayoutConstraint(item: canvasDisplayView, attribute: .width, relatedBy: .equal, toItem: imageView, attribute: .width, multiplier: 0.25, constant: 0).isActive = true
-        NSLayoutConstraint(item: canvasDisplayView, attribute: .height, relatedBy: .equal, toItem: canvasDisplayView, attribute: .width, multiplier: canvasInfo.aspectRatio, constant: 0).isActive = true
+        
+    }
+    
+    var topCanvasConstraints = [NSLayoutConstraint]()
+    var canvasDisplayViews = [CanvasDisplayView]()
+    var touchHereLbls = [UILabel]()
+
+    
+    func addConstraints(template: Template!){
+        
+        switch topCanvasConstraints.isEmpty{
+        case false:
+            for constraint in topCanvasConstraints{
+                constraint.isActive = false
+            }
+            topCanvasConstraints.removeAll()
+        case true:
+            break
+        }
+        
+        for view in canvasDisplayViews{
+            view.removeFromSuperview()
+        }
+        canvasDisplayViews.removeAll()
+        
+        if let sideString = product?.displaySide.capitalizingFirstLetter(), let side = template?.supportedSides.first(where: {$0.name == sideString}) ?? template?.supportedSides.first(where: {$0.name == "Front"}){
+
+            guard let name = side.name, let canvas = canvasDisplayView(for: name) else{return}
+            
+            canvasDisplayViews.append(canvas)
+            
+            imageView.addSubview(canvas)
+
+            setConstraints(side: side, canvasDisplayView: canvas)
+        }
+    }
+    
+    func setConstraints(side: TemplateSide, canvasDisplayView: UIButton){
+        
+        switch topCanvasConstraints.isEmpty{
+        case false:
+            fallthrough
+        default:
+            DispatchQueue.main.async {
+                let ratio = self.imageView.frame.width / (UIApplication.shared.windows.first?.frame.width ?? 0)
+                let newConst = CGFloat(side.centerYConst ?? 0) * ratio
+                guard self.imageView.subviews.contains(canvasDisplayView) else{return}
+                let centerX = NSLayoutConstraint(item: canvasDisplayView, attribute: .centerX, relatedBy: .equal, toItem: self.imageView, attribute: .centerX, multiplier: 1.0, constant: 0)
+                let centerY = NSLayoutConstraint(item: canvasDisplayView, attribute: .centerY, relatedBy: .equal, toItem: self.imageView, attribute: .centerY, multiplier: 1.0, constant: newConst)
+                
+                let width = NSLayoutConstraint(item: canvasDisplayView, attribute: .width, relatedBy: .equal, toItem: self.imageView, attribute: .width, multiplier: CGFloat(side.widthMultiplier ?? 0), constant: 0)
+                
+                let height = NSLayoutConstraint(item: canvasDisplayView, attribute: .height, relatedBy: .equal, toItem: canvasDisplayView, attribute: .width, multiplier: side.regularAspectRatio, constant: 0)
+                
+                self.topCanvasConstraints.append(centerX)
+                self.topCanvasConstraints.append(centerY)
+                self.topCanvasConstraints.append(width)
+                self.topCanvasConstraints.append(height)
+                
+                for constraint in self.topCanvasConstraints{
+                    constraint.isActive = true
+                }
+            }
+        }
     }
     
     override func prepareForReuse() {

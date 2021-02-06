@@ -39,11 +39,17 @@ class DrawToolsCell: UICollectionViewCell {
             case "Pen_Color":
                 vc.showOrHideSlider(sender)
             case "Ruler":
-                vc.activateStraightLine(sender)
+                vc.activateNewLine(sender)
             case "Dropper":
                 vc.getDropper(sender)
             default:
                 return
+            }
+            if let index = vc.tools.firstIndex(where: {$0["Name"] as? String == name}){
+                DispatchQueue.main.async {
+                    vc.toolCollectionView.scrollToItem(at: IndexPath(item: index, section: 0), at: .centeredHorizontally, animated: true)
+
+                }
             }
         }
     }

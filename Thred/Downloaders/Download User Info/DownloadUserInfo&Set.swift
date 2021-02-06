@@ -19,7 +19,7 @@ extension UITableView{
         print(uid)
         
         guard let vc = feedVC ?? fullVC ?? friendVC ?? userVC else{return}
-        vc.downloadUserInfo(uid: uid, userVC: userVC, feedVC: feedVC, downloadingPersonalDP: false, doNotDownloadDP: false, userInfoToUse: nil, queryOnUsername: false, completed: {[weak self] uid, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followersCount, followingCount, verified  in
+        vc.downloadUserInfo(uid: uid, userVC: userVC, feedVC: feedVC, downloadingPersonalDP: false, doNotDownloadDP: false, userInfoToUse: nil, queryOnUsername: false, completed: {[weak self] uid, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postNotifs, postCount, followersCount, followingCount, verified in
             
             if username != nil{
                 if userVC != nil{
@@ -136,9 +136,27 @@ extension UITableViewCell{
             c.nameSkeletonView.stopAnimating()
             c.nameSkeletonView.layer.mask = nil
         }
+            /*
+        else if let c = self as? TextMessageCell{
+            c.nameSkeletonView.stopAnimating()
+            c.nameSkeletonView.layer.mask = nil
+        }
+        else if let c = self as? PicMessageCell{
+            c.nameSkeletonView.stopAnimating()
+            c.nameSkeletonView.layer.mask = nil
+        }
+ */
     }
     func removeDpLoad(){
         if let c = self as? ProductCell{
+            c.dpSkeletonView.stopAnimating()
+            c.dpSkeletonView.layer.mask = nil
+        }
+        else if let c = self as? TextMessageCell{
+            c.dpSkeletonView.stopAnimating()
+            c.dpSkeletonView.layer.mask = nil
+        }
+        else if let c = self as? PicMessageCell{
             c.dpSkeletonView.stopAnimating()
             c.dpSkeletonView.layer.mask = nil
         }
@@ -147,14 +165,14 @@ extension UITableViewCell{
 
 
 extension UIViewController{
-    func downloadUserInfo(uid: String?, userVC: UserVC?, feedVC: FeedVC?, downloadingPersonalDP: Bool, doNotDownloadDP: Bool, userInfoToUse: UserInfo?, queryOnUsername: Bool, completed: @escaping (String?, String?, String?, String?, String?, String?, Data?, [String], [String], Int, Int, Int, Bool?) -> ()){
+    func downloadUserInfo(uid: String?, userVC: UserVC?, feedVC: FeedVC?, downloadingPersonalDP: Bool, doNotDownloadDP: Bool, userInfoToUse: UserInfo?, queryOnUsername: Bool, completed: @escaping (String?, String?, String?, String?, String?, String?, Data?, [String], [String], [String], Int, Int, Int, Bool?) -> ()){
         
         let ref = Firestore.firestore().collection("Users")
 
         var query: Query!
         
         if queryOnUsername{
-            guard let username = userInfoToUse?.username?.replacingOccurrences(of: " ", with: "") else{
+            guard let username = userInfoToUse?.username?.replacingOccurrences(of: " ", with: "").lowercased() else{
             return}
             print(username)
             
@@ -170,13 +188,13 @@ extension UIViewController{
         query.getDocuments(){(querySnaps, err) in
             if err != nil{
                 print("Error getting documents: \(err?.localizedDescription ?? "")") // LOCALIZED DESCRIPTION OF ERROR
-                completed(nil, nil, nil, nil, nil, nil, userInfoToUse?.dp ?? defaultDP, [], [], 0, 0, 0, nil)
+                completed(nil, nil, nil, nil, nil, nil, userInfoToUse?.dp ?? defaultDP, [], [], [], 0, 0, 0, nil)
                 return
             }
             else{
                 
                 guard let snapDocs = querySnaps?.documents, !snapDocs.isEmpty else{
-                    completed(nil, nil, nil, nil, nil, nil, userInfoToUse?.dp ?? defaultDP, [], [], 0, 0, 0, nil)
+                    completed(nil, nil, nil, nil, nil, nil, userInfoToUse?.dp ?? defaultDP, [], [], [], 0, 0, 0, nil)
                     return
                 }
                 
@@ -192,14 +210,15 @@ extension UIViewController{
                     let followingCount = (document["Following_Count"] as? Int) ?? 0
                     let postCount = (document["Posts_Count"] as? Int) ?? 0
                     let verified = document["Verified"] as? Bool ?? false
+                    let postNotifs = document["Post_Notifications"] as? [String] ?? []
                     
-                    if userInfo.usersBlocking.contains(document.documentID){
-                        completed(document.documentID, fullName, username, nil, notifID, bio, nil, userFollowing, usersBlocking, postCount, followerCount, followingCount, verified)
+                    if pUserInfo.usersBlocking.contains(document.documentID){
+                        completed(document.documentID, fullName, username, dpUID, notifID, bio, nil, userFollowing, usersBlocking, postNotifs, postCount, followerCount, followingCount, verified)
                         return
                     }
                     
                     if doNotDownloadDP{
-                        completed(document.documentID, fullName, username, nil, notifID, bio, nil, userFollowing, usersBlocking, postCount, followerCount, followingCount, verified)
+                        completed(document.documentID, fullName, username, dpUID, notifID, bio, nil, userFollowing, usersBlocking, postNotifs, postCount, followerCount, followingCount, verified)
                         return
                     }
                     
@@ -210,9 +229,6 @@ extension UIViewController{
                     if downloadingPersonalDP{
                         options.insert(.refreshCached)
                     }
-                    
-                    
-                    completed(document.documentID, fullName, username, dpUID, notifID, bio, nil, userFollowing, usersBlocking, postCount, followerCount, followingCount, verified)
                     
                     storageRef?.downloadURL(completion: { url, error in
                         if error != nil{
@@ -231,7 +247,7 @@ extension UIViewController{
                                             if userVC != nil || feedVC != nil{
                                                 cache.storeImageData(toDisk: imgData, forKey: dpUID)
                                             }
-                                            completed(document.documentID, fullName, username, dpUID, notifID, bio, data, userFollowing, usersBlocking, postCount, followerCount, followingCount, verified)
+                                            completed(document.documentID, fullName, username, dpUID, notifID, bio, data, userFollowing, usersBlocking, postNotifs, postCount, followerCount, followingCount, verified)
                                         }
                                     }
                                 }

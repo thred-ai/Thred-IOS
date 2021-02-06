@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="7QI-eE-7ei">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097.2" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="7QI-eE-7ei">
     <device id="retina5_9" orientation="portrait" appearance="dark"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
@@ -19,17 +19,17 @@
         <!--NotificationVC-->
         <scene sceneID="Oza-RW-hOA">
             <objects>
-                <viewController id="b26-ny-SLm" customClass="NotificationVC" customModule="Thred" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController extendedLayoutIncludesOpaqueBars="YES" id="b26-ny-SLm" customClass="NotificationVC" customModule="Thred" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Qyz-T9-x73">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="641"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="729"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="veH-Cx-jQZ">
-                                <rect key="frame" x="0.0" y="40" width="375" height="601"/>
+                                <rect key="frame" x="0.0" y="128" width="375" height="601"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                             </tableView>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="bar" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="dl8-AM-42n">
-                                <rect key="frame" x="10" y="5" width="355" height="31"/>
+                                <rect key="frame" x="10" y="93" width="355" height="31"/>
                                 <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="30" id="apC-qj-6wZ"/>
@@ -56,26 +56,24 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="Wq2-gn-OIK"/>
                     </view>
-                    <extendedEdge key="edgesForExtendedLayout" bottom="YES"/>
+                    <extendedEdge key="edgesForExtendedLayout" top="YES"/>
                     <navigationItem key="navigationItem" id="sMD-LP-3Ri">
                         <nil key="title"/>
-                        <rightBarButtonItems>
-                            <barButtonItem image="cash" id="agr-0f-dMy">
-                                <color key="tintColor" name="LoadingColor"/>
-                                <connections>
-                                    <action selector="toSales:" destination="b26-ny-SLm" id="XRg-o5-DJy"/>
-                                </connections>
-                            </barButtonItem>
-                            <barButtonItem image="cart" id="FIa-rd-HO2">
-                                <color key="tintColor" name="LoadingColor"/>
-                                <connections>
-                                    <action selector="toCart:" destination="b26-ny-SLm" id="B3L-ni-3of"/>
-                                </connections>
-                            </barButtonItem>
-                        </rightBarButtonItems>
+                        <barButtonItem key="rightBarButtonItem" image="envelope.open.fill" catalog="system" id="agr-0f-dMy" customClass="BadgeBarButtonItem" customModule="Thred" customModuleProvider="target">
+                            <color key="tintColor" name="LoadingColor"/>
+                            <userDefinedRuntimeAttributes>
+                                <userDefinedRuntimeAttribute type="number" keyPath="badgeNumber">
+                                    <integer key="value" value="0"/>
+                                </userDefinedRuntimeAttribute>
+                            </userDefinedRuntimeAttributes>
+                            <connections>
+                                <action selector="toDMs:" destination="b26-ny-SLm" id="Yoh-Cl-s2b"/>
+                            </connections>
+                        </barButtonItem>
                     </navigationItem>
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO"/>
                     <connections>
+                        <outlet property="dmBtn" destination="agr-0f-dMy" id="Nej-Fh-UDk"/>
                         <outlet property="segmentedControl" destination="dl8-AM-42n" id="yZ3-2D-MG7"/>
                         <outlet property="tableView" destination="veH-Cx-jQZ" id="GbD-Mc-Elt"/>
                         <segue destination="e2E-In-S10" kind="show" identifier="toFriend" id="KPO-MO-eLU"/>
@@ -199,10 +197,10 @@
             </objects>
             <point key="canvasLocation" x="2492" y="-469"/>
         </scene>
-        <!--ShoppingCartVC-->
+        <!--ChatVC-->
         <scene sceneID="1c3-LD-rqh">
             <objects>
-                <viewControllerPlaceholder storyboardName="ShoppingCartVC" id="eBo-n3-iA3" sceneMemberID="viewController">
+                <viewControllerPlaceholder storyboardName="ChatVC" id="eBo-n3-iA3" sceneMemberID="viewController">
                     <navigationItem key="navigationItem" id="SZq-vi-X9N"/>
                 </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="50s-vD-Z28" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -248,8 +246,7 @@
     </scenes>
     <resources>
         <image name="captions.bubble" width="33.333332061767578" height="33.333332061767578"/>
-        <image name="cart" width="33.333332061767578" height="33.333332061767578"/>
-        <image name="cash" width="30" height="30"/>
+        <image name="envelope.open.fill" catalog="system" width="128" height="119"/>
         <namedColor name="LoadingColor">
             <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

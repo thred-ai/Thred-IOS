@@ -31,6 +31,24 @@ extension Array{
     }
 }
 
+extension Array where Iterator.Element == ProductInProgress{
+    func saveAll(type: String) {
+        
+        if self.isEmpty{
+            deleteAll(type: type)
+        }
+        else{
+            let encoder = JSONEncoder()
+            if let encoded = try? encoder.encode(self){
+                saveClass(encoded, name: "Products", type: type)
+            }
+        }
+    }
+    
+    func deleteAll(type: String){
+        removeClass("Products", type: type)
+    }
+}
 
 extension Array where Iterator.Element == Product{
     
@@ -56,7 +74,7 @@ extension Array where Iterator.Element == Product{
                 if (!(newPosts?.contains(where: {$0.picID == product.picID}) ?? true)) || newPosts?.contains(where: {$0.picID == product.picID && $0.blurred != product.blurred}) ?? false{
                     
                     cache.removeImage(forKey: product.productID, withCompletion: {
-                        if product.userInfo.uid != userInfo.uid{
+                        if product.userInfo.uid != pUserInfo.uid{
                             cache.removeImage(forKey: product.userInfo.dpID, withCompletion: {
                                 
                             })

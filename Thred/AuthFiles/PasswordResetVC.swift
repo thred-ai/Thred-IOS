@@ -62,6 +62,7 @@ class PasswordResetVC: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         setKeyBoardNotifs()
+        emailField.becomeFirstResponder()
     }
     
     override func viewWillDisappear(_ animated: Bool) {

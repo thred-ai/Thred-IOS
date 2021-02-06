@@ -112,6 +112,23 @@ extension UIView{
         self.layer.shadowRadius = 2.0
         self.layer.shadowOpacity = 0.7
     }
+    
+    func setRadiusWithShadowHeavy(_ radius: CGFloat? = nil) {
+           //self.layer.cornerRadius = radius ?? self.frame.width / 2
+        self.layer.shadowColor = UIColor.darkGray.cgColor
+        self.layer.shadowOffset = CGSize(width: -2.5, height: 5)
+        self.layer.shadowRadius = 5.0
+        self.layer.shadowOpacity = 0.7
+    }
+    
+    func setRadiusWithShadowDesign(_ radius: CGFloat? = nil) {
+           //self.layer.cornerRadius = radius ?? self.frame.width / 2
+        self.layer.shadowColor = UIColor.darkGray.cgColor
+        self.layer.shadowOffset = CGSize(width: -2, height: 2)
+        self.layer.shadowRadius = 1.0
+        self.layer.shadowOpacity = 1.0
+    }
+    
     func removeShadow() {
         self.layer.shadowOffset = CGSize(width: 0 , height: 0)
         self.layer.shadowColor = UIColor.clear.cgColor

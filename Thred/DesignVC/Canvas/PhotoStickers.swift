@@ -22,7 +22,7 @@ extension DesignViewController{
             drawBtn.isSelected = true
             closeDrawCanvas(drawBtn)
             cameraView.openCameraAnimate(backgroundView: view, viewToCarry: bottomBar, viewMaxY: cameraBtnMaxY){
-                self.titleView.isHidden = true
+                //self.titleView.isHidden = true
                 self.bottomBar.isHidden = true
             }
         }
@@ -61,7 +61,7 @@ extension DesignViewController{
     }
     
     @objc func closeCamera(_ sender: UIButton?){
-        titleView.isHidden = false
+        //titleView.isHidden = false
         bottomBar.isHidden = false
         canvas.gestureRecognizers?.first?.isEnabled = true
         cameraView.hideCameraAnimate(viewToCarry: bottomBar) {

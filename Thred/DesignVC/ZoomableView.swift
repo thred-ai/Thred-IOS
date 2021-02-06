@@ -12,34 +12,29 @@ import UIKit
 extension DesignViewController{
     @objc func showZoomableView(_ sender: UIButton){
         if let indexPath = carousel.collectionView.indexPathsForVisibleItems.first{
-            if let cell = carousel.collectionView.cellForItem(at: indexPath) as? CarouselCollectionViewCell{
-                zoomableView.isHidden = false
-                self.navigationItem.leftBarButtonItem?.isEnabled = false
-                self.navigationItem.rightBarButtonItem?.isEnabled = false
-                let imageView = zoomableView.subviews.first as? UIImageView
-                imageView?.image = nil
-                if cell.canvasDisplayView.image == nil{
-                    cell.canvasDisplayView.isHidden = true
-                }
-                imageView?.image = sender.superview?.makeSnapshot(clear: true, subviewsToIgnore: [sender, cell.colorDisplayLabel])
-                cell.canvasDisplayView.isHidden = false
+            zoomableView.isHidden = false
+            let imageView = zoomableView.subviews.first as? UIImageView
+            imageView?.image = nil
+            //if cell.canvasDisplayView.image(for: .normal) == nil{
+             //   cell.canvasDisplayView.isHidden = true
+           // }
+            imageView?.image = displayView?.makeSnapshot(clear: true, subviewsToIgnore: [])
+            //cell.canvasDisplayView.isHidden = false
 
-                zoomableView.alpha = 0.0
-                UIView.animate(withDuration: 0.2, animations: {
-                    self.zoomableView.alpha = 1.0
-                }, completion: { finished in
-                    if finished{
-                        self.navigationController?.setNavigationBarHidden(true, animated: true)
-                    }
-                })
-            }
+            zoomableView.alpha = 0.0
+            UIView.animate(withDuration: 0.2, animations: {
+                self.zoomableView.alpha = 1.0
+            }, completion: { finished in
+                if finished{
+                    self.navigationController?.setNavigationBarHidden(true, animated: true)
+                }
+            })
         }
     }
     
     @objc func hideZoomableView(_ sender: Any){
         zoomableView.alpha = 1.0
         self.navigationController?.setNavigationBarHidden(false, animated: false)
-        self.navigationItem.leftBarButtonItem?.isEnabled = true
         UIView.animate(withDuration: 0.2, animations: {
             self.zoomableView.alpha = 0.0
         }, completion: { finished in

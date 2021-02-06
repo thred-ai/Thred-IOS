@@ -1,0 +1,23 @@
+{
+  "images" : [
+    {
+      "filename" : "6d269eba75e6a31a39e807e0da2e214e-yahoo-icon-logo-by-vexels.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "filename" : "6d269eba75e6a31a39e807e0da2e214e-yahoo-icon-logo-by-vexels-1.png",
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "filename" : "6d269eba75e6a31a39e807e0da2e214e-yahoo-icon-logo-by-vexels-2.png",
+      "idiom" : "universal",
+      "scale" : "3x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

@@ -27,7 +27,7 @@ class SkeletonView: UIView {
         
     }
         
-        //UIColor(named: "loadingColor")?.cgColor ?? UIColor(red: 0.4235, green: 0.7863, blue: 0.9882, alpha: 1).cgColor
+        //UIColor(named: "LoadingColor")?.cgColor ?? UIColor(red: 0.4235, green: 0.7863, blue: 0.9882, alpha: 1).cgColor
     
     let movingAnimationDuration : CFTimeInterval = 0.8
     let delayBetweenAnimationLoops : CFTimeInterval = 0.8

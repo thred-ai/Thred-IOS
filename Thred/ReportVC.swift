@@ -138,7 +138,7 @@ class ReportVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        guard let uid = userInfo.uid else{return}
+        guard let uid = pUserInfo.uid else{return}
         if indexPath.row == 0{
             reportCategory = .inappropriate
             self.performSegue(withIdentifier: "ToSecondReport", sender: nil)

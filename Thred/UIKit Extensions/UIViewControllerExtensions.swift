@@ -24,45 +24,15 @@ extension UIViewController{
         formatter.pmSymbol = "PM"
         
         if ambiguous{
-            formatter.dateFormat = "YYYY-MM-dd, a hh:mm"
+            formatter.dateFormat = "yyyy-MM-dd, a hh:mm"
         }
         else{
-            formatter.dateFormat = "YYYY-MM-dd, a hh:mm:ss"
+            formatter.dateFormat = "yyyy-MM-dd, a hh:mm:ss"
         }
         formatter.timeZone = TimeZone(abbreviation: "UTC")
         let date = today.adding(hours: -5) //How far back products are loaded in hours
         let uploadDate = formatter.string(from: date)
         return uploadDate.replacingOccurrences(of: " 12:", with: " 00:", options: .literal, range: nil)
-    }
-    
-    func currentDate(asString: Bool, dateToUse: Any, toFirestoreFormat: Bool) -> (String?, Date?){
-        
-        //print(TimeZone.current.abbreviation())
-      
-    
-        let formatter = DateFormatter()
-        
-        formatter.amSymbol = "AM"
-        formatter.pmSymbol = "PM"
-        formatter.timeZone = TimeZone(abbreviation: "UTC")
-        var date: String!
-        
-        if dateToUse is Date{
-            date = formatter.string(from: dateToUse as! Date)
-        }
-        else if dateToUse is String{
-            date = dateToUse as? String
-        }
-        
-        switch asString{
-        case true:
-            return (date, nil)
-        case false:
-            
-            guard let returnDate = formatter.date(from: date) else{ return(nil,nil) }
-            
-            return (nil, returnDate)
-        }
     }
     
     func time(time: String) -> String{
@@ -80,5 +50,48 @@ extension UIViewController{
         do{
             try FileManager.default.removeItem(at: imageURL)
         }catch{print(error.localizedDescription)}
+    }
+}
+
+extension Date{
+    func currentDate(asString: Bool, dateToUse: Any, toFirestoreFormat: Bool) -> (String?, Date?){
+        
+        //print(TimeZone.current.abbreviation())
+      
+    
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        formatter.timeStyle = .medium
+        formatter.amSymbol = "AM"
+        formatter.pmSymbol = "PM"
+        formatter.dateFormat = "yyyy-MM-dd, a hh:mm:ss"
+        formatter.timeZone = TimeZone(abbreviation: "UTC")
+        var date: String!
+                
+        if dateToUse is Date{
+            date = formatter.string(from: dateToUse as! Date)
+        }
+        else if dateToUse is String{
+            date = dateToUse as? String
+        }
+                
+        switch toFirestoreFormat{
+            
+        case true:
+            date = date.replacingOccurrences(of: " 12:", with: " 00:", options: .literal, range: nil)
+
+        case false:
+            date = date.replacingOccurrences(of: " 00:", with: " 12:", options: .literal, range: nil)
+        }
+                
+        switch asString{
+        case true:
+            return (date, nil)
+        case false:
+            
+            guard let returnDate = formatter.date(from: date) else{ return(nil,nil) }
+            
+            return (nil, returnDate)
+        }
     }
 }

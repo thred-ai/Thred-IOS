@@ -22,15 +22,22 @@ extension UITableView{
         //let cp = pictureProduct?.circularProgress
         //cp?.isHidden = false
 
-        var pic_id = picID
-        //if product?.blurred ?? false{
-         //   pic_id = "blur_\(pic_id)"
-        //}
-        if fullVC == nil{
-            pic_id = "thumbnail_\(picID)"
+        var prefix = ""
+        if product?.displaySide == "back" || product?.displaySide == "Back"{
+            prefix = "BACK_"
         }
+        if product == nil{
+            
+        }
+        var thumbnail = ""
+        if fullVC == nil{
+            thumbnail = "thumbnail_"
+        }
+        let picString = "\(thumbnail)\(prefix)\(picID)"
         
-        let ref = Storage.storage().reference().child("Users/" + followingUID + "/" + "Products/" + picID + "/" + pic_id + ".png")
+        
+        let ref = Storage.storage().reference().child("Users/" + followingUID + "/" + "Products/" + picID + "/" + picString + ".png")
+        
         ref.downloadURL(completion: { url, error in
             if error != nil{
                 print(error?.localizedDescription ?? "")
@@ -42,10 +49,10 @@ extension UITableView{
                 }, completed: {(image, data, error, finished) in
                     if error != nil{
                         print(error?.localizedDescription ?? "")
-                        completed(nil, picID)
+                        completed(nil, picString)
                     }
                     else{
-                        completed(image, picID)
+                        completed(image, picString)
                     }
                 })
             }
@@ -55,7 +62,7 @@ extension UITableView{
 
 extension UIImageView {
 
-    func addShadowToImageNotLayer(blurSize: CGFloat = 8){
+    func addShadowToImageNotLayer(blurSize: CGFloat = 4){
 
         let shadowColor = UIColor(white:0.0, alpha:0.8).cgColor
 

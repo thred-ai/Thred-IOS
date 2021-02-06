@@ -90,9 +90,10 @@ class CameraView: UIView, AVCapturePhotoCaptureDelegate{
                 print(self.frame.origin.y)
                 //Switch for other app
                 if let vc = self.getViewController(){
-                    (vc as? EditProfileVC)?.hideProfileCam{
-                    }
+                    (vc as? EditProfileVC)?.hideProfileCam{}
                     (vc as? DesignViewController)?.closeCamera(nil)
+                    (vc as? CommentsVC)?.closeCamera(nil)
+                    (vc as? ChatVC)?.closeCamera(nil)
                 }
             }
             else{
@@ -493,6 +494,12 @@ class CameraView: UIView, AVCapturePhotoCaptureDelegate{
             if let designVC = vc as? DesignViewController{
                 self.useBtn.addTarget(designVC, action: #selector(designVC.usePhoto(_:)), for: .touchUpInside)
             }
+            if let commentsVC = vc as? CommentsVC{
+                self.useBtn.addTarget(commentsVC, action: #selector(commentsVC.usePhoto(_:)), for: .touchUpInside)
+            }
+            if let chatVC = vc as? ChatVC{
+                self.useBtn.addTarget(chatVC, action: #selector(chatVC.usePhoto(_:)), for: .touchUpInside)
+            }
         }
     }
     
@@ -569,6 +576,10 @@ class CameraView: UIView, AVCapturePhotoCaptureDelegate{
             case is EditProfileVC:
                 self.evaluateImageForEditProfile(image: image)
             case is DesignViewController:
+                self.evaluateImageForDesign(image: image)
+            case is CommentsVC:
+                self.evaluateImageForDesign(image: image)
+            case is ChatVC:
                 self.evaluateImageForDesign(image: image)
             default:
                 return
@@ -782,13 +793,15 @@ class CameraView: UIView, AVCapturePhotoCaptureDelegate{
         }
     }
     
-    fileprivate func convertToUIApplicationOpenExternalURLOptionsKeyDictionary(_ input: [String: Any]) -> [UIApplication.OpenExternalURLOptionsKey: Any] {
-        return Dictionary(uniqueKeysWithValues: input.map { key, value in (UIApplication.OpenExternalURLOptionsKey(rawValue: key), value)})
-    }
+    
     
 }
 
-
+extension UIView{
+    func convertToUIApplicationOpenExternalURLOptionsKeyDictionary(_ input: [String: Any]) -> [UIApplication.OpenExternalURLOptionsKey: Any] {
+        return Dictionary(uniqueKeysWithValues: input.map { key, value in (UIApplication.OpenExternalURLOptionsKey(rawValue: key), value)})
+    }
+}
 
 extension UIImageView{
     func cropImage(insets: UIEdgeInsets) -> UIImage{

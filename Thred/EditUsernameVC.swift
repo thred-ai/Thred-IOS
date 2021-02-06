@@ -68,7 +68,7 @@ class EditUsernameVC: UIViewController, UITextFieldDelegate, UINavigationControl
         
         sender.isEnabled = false
         guard let fieldText = usernameField.text else{return}
-        guard let uid = userInfo.uid else{return}
+        guard let uid = pUserInfo.uid else{return}
         errorView.text = nil
         Firestore.firestore().collection("Users").whereField("Username", isEqualTo: fieldText).getDocuments(completion: { snaps, error in
             
@@ -77,7 +77,10 @@ class EditUsernameVC: UIViewController, UITextFieldDelegate, UINavigationControl
                 //Do something
             }
             else{
-                if snaps?.isEmpty ?? false{
+                
+                let doc = snaps?.documents.first
+                let sameUID = doc?.documentID
+                if snaps?.isEmpty ?? false || sameUID == uid{
                     guard let fieldText = self.usernameField.text else{return}
 
                     let data = [

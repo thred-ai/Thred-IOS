@@ -84,10 +84,10 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
     }
     
     func setEditUserInfo(){
-        editUserInfo.username = userInfo.username
-        editUserInfo.fullName = userInfo.fullName
-        editUserInfo.dp = userInfo.dp
-        editUserInfo.bio = userInfo.bio
+        editUserInfo.username = pUserInfo.username
+        editUserInfo.fullName = pUserInfo.fullName
+        editUserInfo.dp = pUserInfo.dp
+        editUserInfo.bio = pUserInfo.bio
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -164,7 +164,7 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 20
+        return 40
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -217,7 +217,7 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
         
         //Display confirmation alert
         UserDefaults.standard.set(editUserInfo.username, forKey: "USERNAME")
-        userInfo.username = editUserInfo.username
+        pUserInfo.username = editUserInfo.username
         self.performSegue(withIdentifier: "backToProfile", sender: nil)
  
     }
@@ -236,16 +236,16 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
     
     func save(completed: @escaping () -> ()){
         
-        guard let uid = userInfo.uid else{
+        guard let uid = pUserInfo.uid else{
             
             
             
             return}
 
         let data = [
-            "Bio" : editUserInfo.bio ?? userInfo.bio ?? "",
-            "Username" : editUserInfo.username ?? userInfo.username ?? "",
-            "Full_Name" : editUserInfo.fullName ?? userInfo.fullName ?? "",
+            "Bio" : editUserInfo.bio ?? pUserInfo.bio ?? "",
+            "Username" : editUserInfo.username ?? pUserInfo.username ?? "",
+            "Full_Name" : editUserInfo.fullName ?? pUserInfo.fullName ?? "",
         ] as [String:Any]
         
         Firestore.firestore().collection("Users").document(uid).updateData(data, completion: { error in
@@ -253,7 +253,7 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
                 print(err.localizedDescription)
             }
             else{
-                if let dp = self.editUserInfo.dp, dp != userInfo.dp{
+                if let dp = self.editUserInfo.dp, dp != pUserInfo.dp{
                     guard let imageData = UIImage(data: dp)?.sd_resizedImage(with: CGSize(width: 200, height: 200), scaleMode: .aspectFit)?.jpegData(compressionQuality: 0.6) else {return}
 
                     let picID = NSUUID().uuidString.replacingOccurrences(of: "-", with: "")
@@ -262,7 +262,7 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
                     ref.putData(imageData, metadata: nil, completion: { metaData, error in
                         
                         if error != nil{
-                            self.editUserInfo.dp = userInfo.dp
+                            self.editUserInfo.dp = pUserInfo.dp
                             
                             completed()
                             print(error?.localizedDescription ?? "")
@@ -289,9 +289,31 @@ class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
         let spinner = MapSpinnerView(frame: profilePhotoView.bounds)
         profilePhotoView.addSubview(spinner)
         spinner.animate()
+        
+        if pUserInfo.bio == nil || pUserInfo.bio?.isEmpty ?? false{
+            Analytics.logEvent("added_bio", parameters: [
+            "name": "Bio",
+            "full_text": "A user added a bio"
+            ])
+        }
+        
+        if pUserInfo.bio == nil || pUserInfo.bio?.isEmpty ?? false{
+            Analytics.logEvent("added_bio", parameters: [
+            "name": "Bio",
+            "full_text": "User added a bio"
+            ])
+        }
+        
+        if pUserInfo.dp == nil || pUserInfo.dp == defaultDP{
+            Analytics.logEvent("added_profile_pic", parameters: [
+            "name": "Profile Picture",
+            "full_text": "User added a profile picture"
+            ])
+        }
+        
         save {
             spinner.removeFromSuperview()
-            self.setUserInfo(username: self.editUserInfo.username, fullname: self.editUserInfo.fullName, image: self.editUserInfo.dp, bio: self.editUserInfo.bio, notifID: self.editUserInfo.notifID, dpUID: self.editUserInfo.dpID, userFollowing: userInfo.userFollowing, followerCount: userInfo.followerCount, postCount: userInfo.postCount, followingCount: userInfo.followingCount, usersBlocking: userInfo.usersBlocking, verified: userInfo.verified)
+            self.setUserInfo(username: self.editUserInfo.username, fullname: self.editUserInfo.fullName, image: self.editUserInfo.dp, bio: self.editUserInfo.bio, notifID: self.editUserInfo.notifID, dpUID: self.editUserInfo.dpID, userFollowing: pUserInfo.userFollowing, followerCount: pUserInfo.followerCount, postCount: pUserInfo.postCount, followingCount: pUserInfo.followingCount, usersBlocking: pUserInfo.usersBlocking, verified: pUserInfo.verified)
             self.performSegue(withIdentifier: "backToProfile", sender: nil)
         }
  

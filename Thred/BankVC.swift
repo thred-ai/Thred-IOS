@@ -12,14 +12,59 @@ import Firebase
 import Stripe
 import ColorCompatibility
 
-class BankVC: UIViewController, WKNavigationDelegate {
+class BankVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITableViewDataSource {
     @IBOutlet weak var errorView: UITextView!
     
+    @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var tableViewHeight: NSLayoutConstraint!
     @IBOutlet weak var loadingView: UIView!
     @IBOutlet weak var spinner: MapSpinnerView!
     
     @IBOutlet weak var actionBtn: UIButton!
     var hasBankAccount = false
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return 2
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        if indexPath.row == 0{
+            let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "cardCell")
+            
+            let lastFour = UserDefaults.standard.string(forKey: "BANK_LAST_4")
+            cell.textLabel?.text = "Account Number"
+            cell.textLabel?.textColor = .secondaryLabel
+            cell.detailTextLabel?.textColor = .label
+            cell.textLabel?.font = UIFont(name: "NexaW01-Regular", size: 13)
+            cell.detailTextLabel?.font = UIFont(name: "NexaW01-Regular", size: 16)
+            if let four = lastFour{
+                cell.detailTextLabel?.text = "••••••\(four)"
+            }
+            else{
+                cell.detailTextLabel?.text = "None"
+            }
+            return cell
+        }
+        else{
+            let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "instCell")
+            cell.textLabel?.textColor = .secondaryLabel
+            cell.detailTextLabel?.textColor = .label
+            cell.textLabel?.font = UIFont(name: "NexaW01-Regular", size: 13)
+            cell.detailTextLabel?.font = UIFont(name: "NexaW01-Regular", size: 16)
+            let bankInst = UserDefaults.standard.string(forKey: "BANK_INSTITUTION")
+
+            if let inst = bankInst{
+                cell.detailTextLabel?.text = "\(inst)"
+            }
+            else{
+                cell.detailTextLabel?.text = "None"
+            }
+            cell.textLabel?.text = "Institution"
+            
+            return cell
+        }
+    }
+    
     
     @IBAction func bankInfoAction(_ sender: UIButton) {
         sender.isEnabled = false
@@ -35,10 +80,21 @@ class BankVC: UIViewController, WKNavigationDelegate {
         }
     }
     
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard !hasBankAccount else{
+            tableView.deselectRow(at: indexPath, animated: true)
+            return
+        }
+        
+        showStripeView {
+            tableView.deselectRow(at: indexPath, animated: true)
+        }
+    }
+    
     func deleteBankAccount(completed: @escaping () -> ()){
         showLoadingView()
         doneBtn.isEnabled = false
-        let data = ["uid" : userInfo.uid ?? ""]
+        let data = ["uid" : pUserInfo.uid ?? ""]
         Functions.functions().httpsCallable("removeBankAccount").call(data, completion: { result, error  in
             if error != nil{
                 print(error?.localizedDescription ?? "")
@@ -71,30 +127,24 @@ class BankVC: UIViewController, WKNavigationDelegate {
             }
         }
     }
-    
-    @IBOutlet weak var instField: UILabel!
-    @IBOutlet weak var lastFourField: UILabel!
 
     override func viewWillAppear(_ animated: Bool) {
         setup()
     }
     
     func setup(){
-        if let bankInst = UserDefaults.standard.string(forKey: "BANK_INSTITUTION"), let lastFour = UserDefaults.standard.string(forKey: "BANK_LAST_4"){
-            instField.text = bankInst
-            lastFourField.text = lastFour
+        if UserDefaults.standard.string(forKey: "BANK_INSTITUTION") != nil, UserDefaults.standard.string(forKey: "BANK_LAST_4") != nil{
             setActionBtnTitle("Remove Bank Account")
             hasBankAccount = true
             loadingView.isHidden = true
             doneBtn.isEnabled = true
         }
         else{
-            instField.text = "None"
-            lastFourField.text = "None"
             setActionBtnTitle("Add Bank Account")
             hasBankAccount = false
             doneBtn.isEnabled = false
         }
+        tableView.reloadData()
     }
     
     func setActionBtnTitle(_ text: String){
@@ -113,11 +163,21 @@ class BankVC: UIViewController, WKNavigationDelegate {
 
         hidesBottomBarWhenPushed = true
         errorView.text = nil
+        
+        tableView.delegate = self
+        tableView.dataSource = self
+        
         hideCenterBtn()
         view.addSubview(webViewBack)
         doneBtn.isEnabled = false
         getBankInfo()
         // Do any additional setup after loading the view.
+        tableViewHeight.constant = 50 * 2
+
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 50
     }
     
     var webView: WKWebView!
@@ -191,7 +251,7 @@ class BankVC: UIViewController, WKNavigationDelegate {
         self.showLoadingView()
         self.errorView.text = nil
         let data = ["code" : code,
-                    "uid" : userInfo.uid ?? ""]
+                    "uid" : pUserInfo.uid ?? ""]
         Functions.functions().httpsCallable("verifyStripeAccount").call(data, completion: { result, error  in
             if let err = error{
                 print(err)
@@ -209,7 +269,7 @@ class BankVC: UIViewController, WKNavigationDelegate {
     }
     
     func getBankInfo(){
-        let data = ["uid" : userInfo.uid ?? ""]
+        let data = ["uid" : pUserInfo.uid ?? ""]
         Functions.functions().httpsCallable("getBankInfo").call(data, completion: { result, error  in
             if error != nil{
                 print(error?.localizedDescription ?? "")
@@ -254,6 +314,7 @@ class BankVC: UIViewController, WKNavigationDelegate {
         
         
     }
+    
     
     
     

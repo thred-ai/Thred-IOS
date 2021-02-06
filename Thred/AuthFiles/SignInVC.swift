@@ -18,7 +18,23 @@ class SignInVC: UIViewController {
     @IBOutlet weak var scrollView: UIScrollView!
     @IBOutlet weak var imageView: UIImageView!
     
-    @IBAction func signIn(_ sender: UIBarButtonItem) {
+    func checkIfNext(sender: UIButton){
+        if usernameField.text?.isEmpty ?? false{
+            passwordField.resignFirstResponder()
+            usernameField.becomeFirstResponder()
+        }
+        else if passwordField.text?.isEmpty ?? false{
+            usernameField.resignFirstResponder()
+            passwordField.becomeFirstResponder()
+        }
+        else{
+            usernameField.resignFirstResponder()
+            passwordField.resignFirstResponder()
+            signIn(sender)
+        }
+    }
+    
+    func signIn(_ sender: UIButton) {
         sender.isEnabled = false
         self.navigationItem.hidesBackButton = true
         guard let text = passwordField.text
@@ -45,9 +61,9 @@ class SignInVC: UIViewController {
         ]
         
         self.errorView.text = nil
-        let spinner = MapSpinnerView.init(frame: CGRect(x: 5, y: 5, width: imageView.frame.height, height: imageView.frame.height))
-        spinner.center = imageView.center
-        imageView.addSubview(spinner)
+        let spinner = MapSpinnerView.init(frame: CGRect(x: 5, y: 0, width: 20, height: 20))
+        spinner.center.x = errorView.center.x
+        errorView.addSubview(spinner)
         spinner.animate()
         
         if usernameOrEmail.contains("@"){
@@ -81,35 +97,17 @@ class SignInVC: UIViewController {
         }
     }
     
-    func signIn(email: String, password: String, spinner: MapSpinnerView, sender: UIBarButtonItem?){
+    func signIn(email: String, password: String, spinner: MapSpinnerView?, sender: UIButton?){
         Auth.auth().signIn(withEmail: email, password: password, completion: { result, error in
             if let err = error{
-                spinner.removeFromSuperview()
+                spinner?.removeFromSuperview()
                 sender?.isEnabled = true
                 self.navigationItem.hidesBackButton = false
                 self.updateErrorView(text: "Invalid Password")
                 print(err.localizedDescription)
             }
             else{
-                guard let userUID = Auth.auth().currentUser?.uid else{
-                    sender?.isEnabled = true
-                    self.navigationItem.hidesBackButton = false
-                    return}
-                UserDefaults.standard.set(userUID, forKey: "UID")
-                userInfo.uid = userUID
-                self.loadUser(userUID: userUID){ success in
-                    sender?.isEnabled = true
-                    self.navigationItem.hidesBackButton = false
-                    if success{
-                        if let appdelegate: AppDelegate = UIApplication.shared.delegate as? AppDelegate{
-                            appdelegate.registerNotifs(application: UIApplication.shared)
-                            self.performSegue(withIdentifier: "toProfile", sender: nil)
-                        }
-                    }
-                    else{
-                        self.performSegue(withIdentifier: "toAccountSetup", sender: nil)
-                    }
-                }
+                self.downloadInfoOnSignIn(sender: sender)
             }
         })
     }
@@ -137,90 +135,7 @@ class SignInVC: UIViewController {
         passwordField.clipsToBounds = true
     }
     
-    func loadUser(userUID: String, completed: @escaping (Bool) -> ()){
-        self.downloadUserInfo(uid: userUID, userVC: nil, feedVC: nil, downloadingPersonalDP: true, doNotDownloadDP: false, userInfoToUse: nil, queryOnUsername: false, completed: { uid, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followersCount, followingCount, verified in
-            
-            if username == nil{
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3.5){
-                    completed(false)
-                }
-            }
-            else{
-                self.getBankInfo {
-                    self.getCardInfo {
-                        self.getFromFirestore(completed: { _ in
-                            if let appdelegate: AppDelegate = UIApplication.shared.delegate as? AppDelegate{
-                                appdelegate.registerNotifs(application: UIApplication.shared)
-                            }
-                            self.setUserInfo(username: username, fullname: fullName, image: imgData, bio: bio, notifID: notifID, dpUID: dpUID, userFollowing: userFollowing, followerCount: followersCount, postCount: postCount, followingCount: followingCount, usersBlocking: usersBlocking, verified: verified ?? false)
-                            completed(true)
-                        })
-                    }
-                }
-            }
-        })
-    }
     
-    func getBankInfo(completed: @escaping () -> ()){
-        let data = ["uid" : userInfo.uid ?? ""]
-        Functions.functions().httpsCallable("getBankInfo").call(data, completion: { result, error in
-            if error != nil{
-                print(error?.localizedDescription ?? "")
-                completed()
-            }
-            else{
-                if let res = result?.data as? [String:Any]{
-                    if let accounts = res["external_accounts"] as? [String : Any]{
-                        if let data = accounts["data"] as? [[String:Any]]{
-                            guard let firstAccount = data.first, let bankAccount = firstAccount["bank_name"] as? String, let lastFour = firstAccount["last4"] as? String else{completed(); return}
-                            UserDefaults.standard.set(bankAccount, forKey: "BANK_INSTITUTION")
-                            UserDefaults.standard.set(lastFour, forKey: "BANK_LAST_4")
-                            completed()
-                        }
-                        else{
-                            completed()
-                        }
-                    }
-                    else{
-                        completed()
-                    }
-                }
-                else{
-                    completed()
-                }
-            }
-        })
-    }
-    
-    func getCardInfo(completed: @escaping () -> ()){
-        let data = ["uid" : userInfo.uid ?? ""]
-        Functions.functions().httpsCallable("getCardInfo").call(data, completion: { result, error  in
-            if error != nil{
-                print(error?.localizedDescription ?? "")
-                completed()
-            }
-            else{
-                if let res = result?.data as? [String:Any]{
-                    if let card = res["card"] as? [String : Any], let billingDetails = res["billing_details"] as? [String : Any], let address = billingDetails["address"] as? [String : Any]{
-                        let cardBrand = card["brand"] as? String
-                        let cardLast4 = card["last4"] as? String
-                        let postalCode = address["postal_code"] as? String
-
-                        UserDefaults.standard.set(cardBrand, forKey: "CARD_BRAND")
-                        UserDefaults.standard.set(cardLast4, forKey: "CARD_LAST_4")
-                        UserDefaults.standard.set(postalCode, forKey: "CARD_POSTAL_CODE")
-                        completed()
-                    }
-                    else{
-                        completed()
-                    }
-                }
-                else{
-                    completed()
-                }
-            }
-        })
-    }
     
     
     override func viewDidLoad() {
@@ -235,6 +150,7 @@ class SignInVC: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         navigationController?.setNavigationBarHidden(false, animated: false)
         setKeyBoardNotifs()
+        usernameField.becomeFirstResponder()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -248,12 +164,13 @@ class SignInVC: UIViewController {
     
     lazy var toolBar: UIView = {
         let bar = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 45))
-        bar.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.8)
+        bar.backgroundColor = UIColor(named: "LoadingColor")
         let stackView = UIStackView(frame: bar.frame)
         bar.addSubview(stackView)
         let button = UIButton(frame: CGRect(x: 0, y: 0, width: 45, height: 45))
-        button.setTitle("Done", for: .normal)
+        button.setTitle("NEXT", for: .normal)
         button.setTitleColor(.label, for: .normal)
+        button.titleLabel?.font = UIFont(name: "NexaW01-Heavy", size: button.titleLabel?.font.pointSize ?? 16)
         button.addTarget(self, action: #selector(doneEditing(_:)), for: .touchUpInside)
         stackView.addArrangedSubview(button)
         
@@ -261,8 +178,7 @@ class SignInVC: UIViewController {
     }()
     
     @objc func doneEditing(_ sender: UIButton){
-        usernameField.resignFirstResponder()
-        passwordField.resignFirstResponder()
+        checkIfNext(sender: sender)
     }
     
     @objc func keyboardWillShow(_ notification: Notification) {
@@ -322,5 +238,122 @@ extension String{
             return String(data: Data(decrypted), encoding: .utf8)
         }
         return nil
+    }
+}
+
+extension UIViewController{
+    func downloadInfoOnSignIn(sender: UIButton?){
+        guard let userUID = Auth.auth().currentUser?.uid else{
+            sender?.isEnabled = true
+            self.navigationItem.hidesBackButton = false
+            return}
+        UserDefaults.standard.set(userUID, forKey: "UID")
+        pUserInfo.uid = userUID
+        Analytics.logEvent(AnalyticsEventLogin, parameters: [
+            AnalyticsParameterMethod: self.method
+        ])
+        self.loadUser(userUID: userUID){ success in
+            sender?.isEnabled = true
+            self.navigationItem.hidesBackButton = false
+            if success{
+                if let appdelegate: AppDelegate = UIApplication.shared.delegate as? AppDelegate{
+                    appdelegate.registerNotifs(application: UIApplication.shared)
+                    self.performSegue(withIdentifier: "toProfile", sender: nil)
+                }
+            }
+            else{
+                self.performSegue(withIdentifier: "toAccountSetup", sender: nil)
+            }
+        }
+    }
+    
+    func loadUser(userUID: String, completed: @escaping (Bool) -> ()){
+        self.downloadUserInfo(uid: userUID, userVC: nil, feedVC: nil, downloadingPersonalDP: true, doNotDownloadDP: false, userInfoToUse: nil, queryOnUsername: false, completed: { uid, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postNotifs, postCount, followersCount, followingCount, verified in
+            
+            if username == nil{
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.5){
+                    completed(false)
+                }
+            }
+            else{
+                self.getBankInfo {
+                    self.getCardInfo {
+                        self.getFromFirestore(completed: { _ in
+                            if let appdelegate: AppDelegate = UIApplication.shared.delegate as? AppDelegate{
+                                appdelegate.registerNotifs(application: UIApplication.shared)
+                            }
+                            self.setUserInfo(username: username, fullname: fullName, image: imgData, bio: bio, notifID: notifID, dpUID: dpUID, userFollowing: userFollowing, followerCount: followersCount, postCount: postCount, followingCount: followingCount, usersBlocking: usersBlocking, verified: verified ?? false)
+                            completed(true)
+                        })
+                    }
+                }
+            }
+        })
+    }
+    
+    func getBankInfo(completed: @escaping () -> ()){
+        let data = ["uid" : pUserInfo.uid ?? ""]
+        Functions.functions().httpsCallable("getBankInfo").call(data, completion: { result, error in
+            if error != nil{
+                print(error?.localizedDescription ?? "")
+                completed()
+            }
+            else{
+                if let res = result?.data as? [String:Any]{
+                    if let accounts = res["external_accounts"] as? [String : Any]{
+                        if let data = accounts["data"] as? [[String:Any]]{
+                            guard let firstAccount = data.first, let bankAccount = firstAccount["bank_name"] as? String, let lastFour = firstAccount["last4"] as? String else{completed(); return}
+                            UserDefaults.standard.set(bankAccount, forKey: "BANK_INSTITUTION")
+                            UserDefaults.standard.set(lastFour, forKey: "BANK_LAST_4")
+                            completed()
+                        }
+                        else{
+                            completed()
+                        }
+                    }
+                    else{
+                        completed()
+                    }
+                }
+                else{
+                    completed()
+                }
+            }
+        })
+    }
+    
+    func getCardInfo(completed: @escaping () -> ()){
+        let data = ["uid" : pUserInfo.uid ?? ""]
+        Functions.functions().httpsCallable("getCardInfo").call(data, completion: { result, error  in
+            if error != nil{
+                print(error?.localizedDescription ?? "")
+                completed()
+            }
+            else{
+                if let res = result?.data as? [String:Any]{
+                    if let card = res["card"] as? [String : Any], let billingDetails = res["billing_details"] as? [String : Any], let address = billingDetails["address"] as? [String : Any]{
+                        let cardBrand = card["brand"] as? String
+                        let cardLast4 = card["last4"] as? String
+                        let postalCode = address["postal_code"] as? String
+
+                        let expMonth = card["exp_month"] as? Int
+                        let expYear = card["exp_year"] as? Int
+
+                        UserDefaults.standard.set(cardBrand, forKey: "CARD_BRAND")
+                        UserDefaults.standard.set(cardLast4, forKey: "CARD_LAST_4")
+                        UserDefaults.standard.set(postalCode, forKey: "CARD_POSTAL_CODE")
+                        UserDefaults.standard.set(expMonth, forKey: "CARD_EXP_MONTH")
+                        UserDefaults.standard.set(expYear, forKey: "CARD_EXP_YEAR")
+                        completed()
+                    }
+                    else{
+                        completed()
+                    }
+                }
+                else{
+                    completed()
+                }
+            }
+        })
     }
 }

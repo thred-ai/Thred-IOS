@@ -10,15 +10,24 @@ import UIKit
 
 class ColorSectionFlowLayout: UICollectionViewFlowLayout {
 
-    var canvasInfo = CanvasInfo()
-
-    let innerSpace: CGFloat = 4
-    let numberOfCellsOnRow: CGFloat = 3
+    let innerSpace: CGFloat = 15
+    let numberOfCellsOnRow: CGFloat = 2
     override init() {
         super.init()
         self.minimumLineSpacing = innerSpace
         self.minimumInteritemSpacing = innerSpace
         self.scrollDirection = .vertical
+        
+        minimumInteritemSpacing = 2.5
+        minimumLineSpacing = 10
+        
+        sectionInset.left = 10
+        sectionInset.right = 10
+        sectionInset.top = 10
+        sectionInset.bottom = 10
+        
+        headerReferenceSize.height = 436
+        footerReferenceSize.height = 120
     }
     required init?(coder aDecoder: NSCoder) {
         //fatalError("init(coder:) has not been implemented")
@@ -27,12 +36,16 @@ class ColorSectionFlowLayout: UICollectionViewFlowLayout {
     func itemWidth() -> CGFloat {
         return (collectionView!.frame.size.width/self.numberOfCellsOnRow)-self.innerSpace
     }
+    
+    let ratio = 1.0
+
     override var itemSize: CGSize {
         set {
-            self.itemSize = CGSize(width:itemWidth(), height:itemWidth() * canvasInfo.aspectRatio)
+            self.itemSize = CGSize(width:itemWidth(), height:itemWidth() * CGFloat(ratio))
         }
         get {
-            return CGSize(width:itemWidth(),height:itemWidth() * canvasInfo.aspectRatio)
+            return CGSize(width:itemWidth(),height:itemWidth() * CGFloat(ratio))
         }
     }
+    
 }

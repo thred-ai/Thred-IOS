@@ -13,6 +13,21 @@ import CoreLocation
 import PopupDialog
 import FirebaseFirestore
 
+class SalesInfo{
+    
+    var shipping: Double = 0
+    var tax: Double = 0
+    var currency: String?
+    var final: Double?
+    
+    var rate: Double = 1{
+        didSet{
+            shipping = shipping * rate
+            tax = tax * rate
+        }
+    }
+}
+
 class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
     @IBOutlet weak var payBtn: UIButton!
@@ -34,7 +49,8 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     @IBOutlet weak var cityField: UILabel!
     @IBOutlet weak var postalField: UILabel!
     @IBOutlet weak var changeBtn: UIButton!
-    var province: String?
+    var billing_info = [String : String]()
+
     
     @IBOutlet weak var addressBackgroundView: UIView!
     var orderNumber: String?
@@ -42,10 +58,7 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     var address = [String : String]()
     var giftAddress = [String : String]()
 
-    var salesInfo = [
-        "SalesTax" : 0.0,
-        "Shipping" : 0.00
-    ]
+    var salesInfo = SalesInfo()
     
     @IBAction func addOrChangeAddress(_ sender: UIButton) {
         
@@ -61,36 +74,34 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         payBtn.setTitleColor(UIColor.white.withAlphaComponent(0.5), for: .disabled)
         payBtn.isEnabled = false
 
-        validateCosts()
-        
-        if let street = UserDefaults.standard.string(forKey: "street"), let city = UserDefaults.standard.string(forKey: "city"), let adminArea = UserDefaults.standard.string(forKey: "admin_area"), let country = UserDefaults.standard.string(forKey: "country"), UserDefaults.standard.string(forKey: "postal_code") != nil{
-            let unitNum = UserDefaults.standard.string(forKey: "unit_number")
-            let phoneNumber = UserDefaults.standard.string(forKey: "phone_number")
-            var fullName: String?
-            if let firstName = UserDefaults.standard.string(forKey: "first_name"), let lastName = UserDefaults.standard.string(forKey: "last_name"){
-                fullName = "\(firstName) \(lastName)"
+        validateCosts{
+            if let street = UserDefaults.standard.string(forKey: "street"), let city = UserDefaults.standard.string(forKey: "city"), let adminArea = UserDefaults.standard.string(forKey: "admin_area"), let country = UserDefaults.standard.string(forKey: "country"), UserDefaults.standard.string(forKey: "postal_code") != nil{
+                let unitNum = UserDefaults.standard.string(forKey: "unit_number")
+                let phoneNumber = UserDefaults.standard.string(forKey: "phone_number")
+                var fullName: String?
+                if let firstName = UserDefaults.standard.string(forKey: "first_name"), let lastName = UserDefaults.standard.string(forKey: "last_name"){
+                    fullName = "\(firstName) \(lastName)"
+                }
+                self.getAddress(street: street, city: city, adminArea: adminArea, country: country, unitNum: unitNum, fullName: fullName, phoneNumber: phoneNumber)
             }
-            getAddress(street: street, city: city, adminArea: adminArea, country: country, unitNum: unitNum, fullName: fullName, phoneNumber: phoneNumber)
-        }
-        else{
-            setAddress()
+            else{
+                self.setAddress()
+            }
         }
     }
     
-    func validateCosts(){
+    func validateCosts(completed: @escaping () -> ()){
         if let postalCode = UserDefaults.standard.string(forKey: "CARD_POSTAL_CODE"){
             showPriceSpinner()
-            self.validateAddress(address: postalCode, completed: { country, adminArea, _, _, postalCode, isValid in
-                self.province = adminArea
-                if country == "Canada", adminArea != "BC"{
-                    self.hideAddressSpinner()
-                    self.calculateCosts(province: adminArea){
-                        self.hidePriceSpinner()
-                    }
-                }
-                else{
-                    self.showCardCountryErrorView()
-                }
+            self.validateAddress(address: postalCode, completed: { country, adminArea, city, street, postalCode, countryCode, isValid in
+                self.billing_info["Admin_Area"] = adminArea
+                self.billing_info["Country"] = country
+                self.billing_info["Postal"] = postalCode
+                self.billing_info["Street"] = street
+                self.billing_info["City"] = city
+                self.billing_info["CountryCode"] = countryCode
+                self.hideAddressSpinner()
+                completed()
             })
         }
     }
@@ -99,33 +110,33 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         showAddressSpinner()
                 
         let address = "\(street), \(city), \(adminArea), \(country)"
-        validateAddress(address: address, completed: { country, adminArea, city, street, postalCode, isValid in
+        validateAddress(address: address, completed: { country, adminArea, city, street, postalCode, countryCode, isValid in
             switch isValid{
             case true:
-                if country == "Canada", adminArea != "BC"{
-                    self.address["Area"] = adminArea
-                    self.address["Country"] = country
-                    self.address["City"] = city
-                    self.address["Street"] = street
-                    self.address["Postal"] = postalCode
-                    
-                    if let fullName = fullName, !fullName.isEmpty, let phoneNumber = phoneNumber, !phoneNumber.isEmpty{
-                        self.address["Name"] = fullName
-                        self.address["Phone"] = phoneNumber
-                    }
-                    
-                    if let unitNum = unitNum, !unitNum.isEmpty{
-                        self.address["Unit"] = unitNum
-                    }
-                    else{
-                        self.address.removeValue(forKey: "Unit")
-                    }
-                    self.setAddress()
-                    self.hideAddressSpinner()
-                    self.payBtn.isEnabled = true
+                self.address["Area"] = adminArea
+                self.address["Country"] = country
+                self.address["City"] = city
+                self.address["Street"] = street
+                self.address["Postal"] = postalCode
+                self.address["CountryCode"] = countryCode
+                
+                if let fullName = fullName, !fullName.isEmpty, let phoneNumber = phoneNumber, !phoneNumber.isEmpty{
+                    self.address["Name"] = fullName
+                    self.address["Phone"] = phoneNumber
+                }
+                
+                if let unitNum = unitNum, !unitNum.isEmpty{
+                    self.address["Unit"] = unitNum
                 }
                 else{
-                    fallthrough
+                    self.address.removeValue(forKey: "Unit")
+                }
+                self.setAddress()
+                self.hideAddressSpinner()
+                
+                self.calculateCosts(shippingCountry: countryCode ?? "US", billingInfo: self.billing_info){
+                    self.hidePriceSpinner()
+                    self.payBtn.isEnabled = true
                 }
                 
             default:
@@ -219,7 +230,7 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         let okBtn = DefaultButton(title: "OK", dismissOnTap: true) {
             completed()
         }
-        showPopUp(title: title, message: message, image: image, buttons: [okBtn], titleColor: .label)
+        showPopUp(title: title, message: message, image: image, buttons: [okBtn], titleColor: .label, blurBack: true)
     }
     
     func showCardCountryErrorMessage(completed: @escaping () -> ()){
@@ -229,7 +240,7 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         let okBtn = DefaultButton(title: "OK", dismissOnTap: true) {
             completed()
         }
-        showPopUp(title: title, message: message, image: image, buttons: [okBtn], titleColor: .label)
+        showPopUp(title: title, message: message, image: image, buttons: [okBtn], titleColor: .label, blurBack: true)
     }
     
     func strikethroughShipping(){
@@ -269,8 +280,9 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         return subtotal
     }
     
-    func calculateShipping() -> Double{
-        var shipping = 0.00
+    func calculateShipping(country: String, completed: @escaping (Double) -> ()){
+        
+        /*
         if savedProducts.compactMap({$0.quantity}).reduce(0, +) < 5{
             shipping = 12.00
             salesInfo["Shipping"] = 1200
@@ -279,49 +291,108 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
             strikethroughShipping()
             salesInfo["Shipping"] = 0.00
         }
-        return shipping
-    }
-    
-    func setPriceLabels(subtotal: Double, shipping: Double, tax: Double){
-        subtotalField.text = "\((subtotal).formatPrice())"
-        taxShippingField.text = "\((tax + shipping).formatPrice())"
-        totalField.text = "\((subtotal + tax + shipping).formatPrice())"
-    }
-
-    func calculateCosts(province: String?, completed: @escaping () -> ()){
-        
-        
-        guard let province = province else{showErrorView(); return}
-        
-        let subtotal = calculateSubtotal()
-        let shipping = calculateShipping()
-        
-        
-        Firestore.firestore().collection("Canada_Tax_Docs").document(province).getDocument(completion: { doc, error in
+         
+ */
+        Firestore.firestore().collection("Print_Info").document("Shipping_Info").getDocument(completion: { doc, error in
+            
             if let err = error{
                 print(err.localizedDescription)
             }
             else{
-                var salesTax = 0.0
+                print(country)
                 
-                if let hst = doc?["HST"] as? Double{
-                    salesTax += hst
+                switch country{
+                case "CA":
+                    let shipping = doc?["shipping_rate_canada"] as? Double
+                    self.salesInfo.shipping = (shipping ?? 12) * 100
+                    completed(shipping ?? 12)
+                default:
+                    if doc?["Intl_Shipping"] as? Bool ?? false{
+                        if country == "US" || country == "USA"{
+                            print(country)
+                            let shipping = doc?["shipping_rate_us"] as? Double
+                            self.salesInfo.shipping = (shipping ?? 12) * 100
+                            completed(shipping ?? 12)
+                            
+                        }
+                        else{
+                            print(country)
+                            
+                            self.showCardCountryErrorView()
+                        }
+                    }
+                    else{
+                        self.showCardCountryErrorView()
+                    }
+                }
+            }
+        })
+    }
+    
+    func setPriceLabels(subtotal: Double, shipping: Double, tax: Double, currency: String, rate: Double, finalAmount: Double){
+        subtotalField.text = "\((subtotal * rate).formatPrice(addCurrency: currency))"
+        taxShippingField.text = "\((((tax) + shipping) * rate).formatPrice(addCurrency: currency))"
+        totalField.text = "\(((subtotal + tax + shipping) * rate).formatPrice(addCurrency: currency))"
+        
+        shippingAndTaxLbl.text = "Shipping and Tax:"
+        if shipping == 0 && tax == 0{
+            shippingAndTaxLbl.superview?.isHidden = true
+        }
+        else if shipping == 0{
+            shippingAndTaxLbl.text = "Tax:"
+            shippingAndTaxLbl.superview?.isHidden = false
+        }
+        else if tax == 0{
+            shippingAndTaxLbl.text = "Shipping:"
+            shippingAndTaxLbl.superview?.isHidden = false
+        }
+    }
+
+    func calculateCosts(shippingCountry: String, billingInfo: [String : String], completed: @escaping () -> ()){
+                
+        let subtotal = calculateSubtotal()
+        
+        calculateShipping(country: shippingCountry, completed: { shipping in
+            
+            let data = [
+                "Country" : self.billing_info["CountryCode"] ?? "",
+                "Admin_Area" : self.billing_info["Admin_Area"] ?? "",
+                "Street" : self.billing_info["Street"] ?? "",
+                "Postal" : self.billing_info["Postal"] ?? "",
+                "City" : self.billing_info["City"] ?? "",
+                "amount" : subtotal
+                ] as [String : Any]
+            
+            Functions.functions().httpsCallable("calculateTax").call(data, completion: { result, error in
+                
+                if let err = error{
+                    print(err.localizedDescription)
+                    
                 }
                 else{
-                    if let gst = doc?["GST"] as? Double{
-                        salesTax += gst
+                    if let returnData = result?.data as? [String : Any]{
+                        print(returnData)
+                        
+                        let currency = returnData["Currency"] as? String ?? "USD"
+                        let tax = ((returnData["Tax"] as? Double ?? 0) * subtotal).roundToDecimal()
+                        
+                        let final_amount_converted = returnData["Final_Amount"] as? Double ?? 0
+                        let rate = returnData["Rate"] as? Double ?? 1
+                        
+                        self.salesInfo.tax = tax
+                        self.salesInfo.currency = currency
+                        self.salesInfo.final = final_amount_converted
+                        self.salesInfo.rate = rate
+                        
+                        self.tableView.performBatchUpdates({
+                            self.tableView.reloadRows(at: self.tableView.indexPathsForVisibleRows ?? [], with: .fade)
+                        }, completion: nil)
+                        
+                        self.setPriceLabels(subtotal: subtotal, shipping: shipping, tax: tax, currency: String(currency.shortenCurrency()), rate: rate, finalAmount: final_amount_converted)
                     }
-                    if let pst = doc?["PST"] as? Double{
-                        salesTax += pst
-                    }
+                    completed()
                 }
-                self.salesInfo["SalesTax"] = salesTax
-                let tax = salesTax * subtotal
-                
-                self.setPriceLabels(subtotal: subtotal, shipping: shipping, tax: tax)
-                
-                completed()
-            }
+            })
         })
     }
     
@@ -364,25 +435,31 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         cell?.sizingLbl.isHidden = false
         
         DispatchQueue(label: "explore").async {
-            if let dp = cache.imageFromMemoryCache(forKey: "thumbnail_\(product.productID)"){
+            var prefix = ""
+            if product.displaySide == "back" || product.displaySide == "Back"{
+                prefix = "BACK_"
+            }
+            if let dp = cache.imageFromMemoryCache(forKey: "thumbnail_\(prefix)\(product.productID)"){
                 DispatchQueue.main.async {
                     cell?.productImageView.image = dp
                 }
             }
             else{
                 DispatchQueue.main.async {
-                    self.getProductImage(productID: product.productID, uid: uid)
+                    self.getProductImage(productID: product.productID, uid: uid, product: product)
                 }
             }
         }
-        cell?.productImageView.backgroundColor = UIColor(named: product.templateColor)
-        cell?.productImageView.backgroundColor = UIColor(named: product.templateColor)
+        
+        let color = all.tees.first(where: {$0.productCode == product.productType})?.colors.first(where: {$0.code == product.templateColor})?.getColor()
+
+        cell?.productImageView.backgroundColor = color
         cell?.productNameLbl.text = product.name
         cell?.isDeleted = !(product.isAvailable ?? false)
 
         cell?.savedProduct = savedProduct
         
-        cell?.priceLbl.text = product.price?.formatPrice()
+        cell?.priceLbl.text = ((product.price ?? 0) * salesInfo.rate).formatPrice(addCurrency: String(salesInfo.currency?.shortenCurrency() ?? ""))
         cell?.sizingLbl.text = "Size: \(savedProduct.size ?? "M")"
         cell?.quantityField.text = "\(savedProduct.quantity ?? 0)"
         
@@ -391,10 +468,14 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var downloadingPictures = [String]()
     
-    func getProductImage(productID: String, uid: String){
+    func getProductImage(productID: String, uid: String, product: Product?){
         if !self.downloadingPictures.contains(productID){
             self.downloadingPictures.append(productID)
-            let refString = "Users/" + uid + "/" + "Products/" + productID + "/" + "thumbnail_\(productID)" + ".png"
+            var prefix = ""
+            if product?.displaySide == "back" || product?.displaySide == "Back"{
+                prefix = "BACK_"
+            }
+            let refString = "Users/" + uid + "/" + "Products/" + productID + "/" + "thumbnail_\(prefix)\(productID)" + ".png"
             let ref = Storage.storage().reference().child(refString)
             ref.downloadURL(completion: { url, error in
                 if error != nil{
@@ -412,7 +493,7 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
                         else{
                             if let image = image{
                                 self.downloadingPictures.removeAll(where: {$0 == productID})
-                                cache.storeImage(toMemory: image, forKey: "thumbnail_\(productID)")
+                                cache.storeImage(toMemory: image, forKey: "thumbnail_\(prefix)\(productID)")
                                 for index in self.savedProducts.indices{
                                     if self.savedProducts[index].product.productID == productID{
                                         self.tableView.performBatchUpdates({
@@ -434,10 +515,13 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         sender.isEnabled = false
         showPriceSpinner()
                 
-        guard let tax = salesInfo["SalesTax"], let shipping = salesInfo["Shipping"], let userUID = userInfo.uid, let adminArea = address["Area"], let country = address["Country"], let city = address["City"], let street = address["Street"], let postal = address["Postal"]
+        guard let userUID = pUserInfo.uid, let adminArea = address["Area"], let country = address["Country"], let countryCode = address["CountryCode"], let city = address["City"], let street = address["Street"], let postal = address["Postal"]
         else{
             sender.isEnabled = true
         return}
+        
+        let tax = salesInfo.tax
+        let shipping = salesInfo.shipping
         
         guard let phone = address["Phone"], let name = address["Name"] else{
             showNameMessage {
@@ -452,6 +536,7 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         var address = [
             "postal_code" : postal,
             "country" : country,
+            "country_code" : countryCode,
             "admin_area" : adminArea,
             "city" : city,
             "street_address" : street,
@@ -467,18 +552,19 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
         for saved in savedProducts{
             guard let product = saved.product, let price = product.price, let name = product.name, let uid = product.userInfo.uid, let quantity = saved.quantity, let size = saved.size else{continue}
+            let productType = product.productType ?? defaultProductType
             let key = "TS_\(NSUUID().uuidString)"
             products.append([
                 "productID": product.productID,
-                "amount": price * 100,
+                "amount": (price * 100) * self.salesInfo.rate,
                 "size": size,
                 "name" : name,
                 "uid" : uid,
                 "quantity" : quantity,
-                "idempotency" : key,
+                "type" : productType,
+                "idempotency" : key
             ])
         }
-        
         if products.isEmpty{
             sender.isEnabled = true
             return
@@ -492,9 +578,12 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
             "shipping": shipping,
             "uid": userUID,
             "shipping_idempotency" : key,
-            "area" : province ?? "none",
+            "area" : self.billing_info["Admin_Area"] ?? "none",
             "country" : country,
-            "address" : address
+            "country_code" : self.billing_info["CountryCode"] ?? "",
+            "address" : address,
+            "currency" : salesInfo.currency?.lowercased() ?? "usd",
+            "rate" : salesInfo.rate
         ] as [String : Any]
 
         Functions.functions().httpsCallable("createIntent").call(data, completion: { result, error in
@@ -521,7 +610,7 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         let okBtn = DefaultButton(title: "OK", dismissOnTap: true) {
             completed()
         }
-        showPopUp(title: title, message: message, image: nil, buttons: [okBtn], titleColor: .red)
+        showPopUp(title: title, message: message, image: nil, buttons: [okBtn], titleColor: .red, blurBack: true)
     }
     
     func showNameMessage(completed: @escaping () -> ()){
@@ -531,7 +620,7 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
             completed()
         }
         
-        showPopUp(title: title, message: message, image: nil, buttons: [okBtn], titleColor: .red)
+        showPopUp(title: title, message: message, image: nil, buttons: [okBtn], titleColor: .red, blurBack: true)
     }
     // MARK: - Navigation
 
@@ -554,5 +643,11 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
 extension String {
     public func toPhoneNumber() -> String {
         return self.replacingOccurrences(of: "(\\d{3})(\\d{3})(\\d+)", with: "$1-$2-$3", options: .regularExpression, range: nil)
+    }
+}
+
+extension String{
+    func shortenCurrency() -> String{
+        return String(dropLast()).uppercased()
     }
 }

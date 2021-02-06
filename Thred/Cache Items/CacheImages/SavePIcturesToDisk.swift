@@ -53,14 +53,17 @@ extension String{
         else if self == "FeedProducts"{
             folder = "CachedFeedProducts"
         }
+        else if self == "UploadProducts"{
+            folder = "UploadProducts"
+        }
         else if self == "OtherProductsPictures"{
             folder = "CachedFeedProducts/Pictures"
         }
-        else if self == "TeeTemplates"{
-            folder = "CachedTemplates/Tees"
+        else if self == "Templates"{
+            folder = "CachedTemplates/Templates"
         }
-        else if self == "HoodieTemplates"{
-            folder = "CachedTemplates/Hoodies"
+        else if self == "Designs"{
+            folder = "Designs/Designs"
         }
         else{
             return nil

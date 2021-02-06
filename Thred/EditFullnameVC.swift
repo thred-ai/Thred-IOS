@@ -37,7 +37,12 @@ class EditFullnameVC: UIViewController, UINavigationControllerDelegate {
     func navigationController(_ navigationController: UINavigationController, willShow viewController: UIViewController, animated: Bool) {
         if doneBtnPressed{
             if let editVC = viewController as? EditProfileVC{
-                guard let fieldText = fullnameField.text else{return}
+                var fieldText = fullnameField.text
+                
+                if fieldText == "" {
+                    fieldText = editVC.editUserInfo.username
+                }
+                
                 editVC.editUserInfo.fullName = fieldText
             }
         }

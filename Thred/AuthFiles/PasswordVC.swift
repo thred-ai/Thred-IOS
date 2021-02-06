@@ -16,17 +16,32 @@ class PasswordVC: UIViewController {
     @IBOutlet weak var passwordField: UITextField!
     @IBOutlet weak var confirmField: UITextField!
     @IBOutlet weak var errorView: UITextView!
-    @IBOutlet weak var signUpBtn: UIBarButtonItem!
     @IBOutlet weak var scrollView: UIScrollView!
     
     var emailToUse: String!
+    
+    func checkIfNext(sender: UIButton){
+        
+        if passwordField.text?.isEmpty ?? false{
+            confirmField.resignFirstResponder()
+            passwordField.becomeFirstResponder()
+        }
+        else if confirmField.text?.isEmpty ?? false{
+            passwordField.resignFirstResponder()
+            confirmField.becomeFirstResponder()
+        }
+        else{
+            confirmField.resignFirstResponder()
+            passwordField.resignFirstResponder()
+            toAccountSetup(sender)
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
         passwordField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
-        signUpBtn.isEnabled = false
         passwordField.inputAccessoryView = toolBar
         confirmField.inputAccessoryView = toolBar
     }
@@ -42,15 +57,13 @@ class PasswordVC: UIViewController {
     @objc func textFieldDidChange(_ textField: UITextField){
         if textField.text?.count ?? 0 < 6{
             updateErrorView(text: "Password must be at least 6 characters")
-            signUpBtn.isEnabled = false
         }
         else{
             updateErrorView(text: nil)
-            signUpBtn.isEnabled = true
         }
     }
     
-    @IBAction func toAccountSetup(_ sender: UIBarButtonItem) {
+    func toAccountSetup(_ sender: UIButton) {
         
         sender.isEnabled = false
         if passwordField.text != confirmField.text{
@@ -62,97 +75,38 @@ class PasswordVC: UIViewController {
             sender.isEnabled = true
             return}
         
-        if let user = Auth.auth().currentUser{
-            let data = [
-                "UID" : user.uid,
-                "email" : emailToUse,
-                "password" : password
-            ]
-            Functions.functions().httpsCallable("updateAuth").call(data, completion: { result, error in
-                if let err = error{
-                    print(err.localizedDescription)
-                    sender.isEnabled = true
-                    self.updateErrorView(text: "Error updating Auth info")
+        let spinner = MapSpinnerView.init(frame: CGRect(x: 5, y: 0, width: 20, height: 20))
+        spinner.center.x = errorView.center.x
+        errorView.addSubview(spinner)
+        spinner.animate()
+        
+        Auth.auth().createUser(withEmail: emailToUse, password: password, completion: { result, error in
+            if let err = error{
+                sender.isEnabled = true
+                spinner.removeFromSuperview()
+                self.updateErrorView(text: err.localizedDescription)
+            }
+            else{
+                Analytics.logEvent(AnalyticsEventSignUp, parameters: [
+                    AnalyticsParameterMethod: self.method
+                ])
+                if let user = result?.user{
+                    sender.isEnabled = false
+                    spinner.removeFromSuperview()
+                    UserDefaults.standard.set(user.uid, forKey: "UID")
+                    self.performSegue(withIdentifier: "toAccountSetup", sender: nil)
                 }
                 else{
-                    do{
-                        try Auth.auth().signOut()
-                        let credential = EmailAuthProvider.credential(withEmail: self.emailToUse, password: password)
-                        Auth.auth().signIn(with: credential, completion: { result, error in
-                            if let err = error{
-                                sender.isEnabled = true
-                                print(err.localizedDescription)
-                                UIApplication.shared.logout(withMessage: "Sign in with your new login credentials", segueToFirstScreen: true)
-                            }
-                            else{
-                                sender.isEnabled = true
-                                result?.user.sendEmailVerification(with: actionCodeSettings, completion: { error in
-                                    if let err = error{
-                                        sender.isEnabled = true
-                                        print(err.localizedDescription)
-                                        
-                                    }
-                                    else{
-                                        if let userVC = self.navigationController?.viewControllers.first(where: {$0.isKind(of: UserVC.self)}){
-                                            sender.isEnabled = true
-                                            self.navigationController?.popToViewController(userVC, animated: true)
-                                        }
-                                    }
-                                })
-                            }
-                        })
-                    }catch{
-                        print(error.localizedDescription)
-                    }
-                }
-            })
-        }
-        else{
-            Auth.auth().createUser(withEmail: emailToUse, password: password, completion: { result, error in
-                if let err = error{
+                    spinner.removeFromSuperview()
                     sender.isEnabled = true
-                    self.updateErrorView(text: err.localizedDescription)
                 }
-                else{
-                    if let user = result?.user{
-                        let data = [
-                            "Full_Name" : "",
-                            "Bio" : "",
-                            "ProfilePicID" : "",
-                            "notification_tokens" : [],
-                            "Following_List" : [],
-                            "Following_Count" : 0,
-                            "Followers_Count" : 0,
-                            "Posts_Count" : 0,
-                            ] as [String : Any]
-                        Firestore.firestore().collection("Users").document(user.uid).setData(data, merge: true, completion: { error in
-                            if let err = error{
-                                self.updateErrorView(text: err.localizedDescription)
-                            }
-                            else{
-                                UserDefaults.standard.set(user.email, forKey: "EMAIL")
-                                UserDefaults.standard.set(user.uid, forKey: "UID")
-                                user.sendEmailVerification(with: actionCodeSettings, completion: { error in
-                                    if let err = error{
-                                        sender.isEnabled = true
-                                        print(err.localizedDescription)
-                                    }
-                                })
-                                sender.isEnabled = true
-                                self.performSegue(withIdentifier: "toAccountSetup", sender: nil)
-                            }
-                        })
-                    }
-                    else{
-                        sender.isEnabled = true
-                    }
-                }
-            })
-        }
+            }
+        })
     }
     
     override func viewWillAppear(_ animated: Bool) {
         setKeyBoardNotifs()
+        passwordField.becomeFirstResponder()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -166,12 +120,13 @@ class PasswordVC: UIViewController {
     
     lazy var toolBar: UIView = {
         let bar = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 45))
-        bar.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.8)
+        bar.backgroundColor = UIColor(named: "LoadingColor")
         let stackView = UIStackView(frame: bar.frame)
         bar.addSubview(stackView)
         let button = UIButton(frame: CGRect(x: 0, y: 0, width: 45, height: 45))
-        button.setTitle("Done", for: .normal)
+        button.setTitle("NEXT", for: .normal)
         button.setTitleColor(.label, for: .normal)
+        button.titleLabel?.font = UIFont(name: "NexaW01-Heavy", size: button.titleLabel?.font.pointSize ?? 16)
         button.addTarget(self, action: #selector(doneEditing(_:)), for: .touchUpInside)
         stackView.addArrangedSubview(button)
         
@@ -179,8 +134,7 @@ class PasswordVC: UIViewController {
     }()
     
     @objc func doneEditing(_ sender: UIButton){
-        confirmField.resignFirstResponder()
-        passwordField.resignFirstResponder()
+        checkIfNext(sender: sender)
     }
     
     @objc func keyboardWillShow(_ notification: Notification) {

@@ -12,6 +12,8 @@ import FirebaseFirestore
 import WebKit
 import ColorCompatibility
 import PopupDialog
+import StoreKit
+import SwiftKeychainWrapper
 
 
 class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITableViewDataSource {
@@ -66,7 +68,7 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
     func getSales(completed: @escaping (Bool) -> ()){
         
         var query: Query?
-        guard let uid = userInfo.uid else{ completed(false); return}
+        guard let uid = pUserInfo.uid else{ completed(false); return}
         if let doc = lastDoc{
             query = Firestore.firestore().collectionGroup("Purchases").whereField("merchant_uid", isEqualTo: uid).whereField("status", isEqualTo: "confirmed").order(by: "timestamp", descending: true).start(afterDocument: doc).limit(to: 15)
         }
@@ -94,19 +96,21 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
                     else{ continue }
                     let price = (doc["amount"] as? Double ?? 0) / 100
                     let toBank = doc["toBank"] as? Bool ?? false
-
+                    let moneyMade = (doc["moneyToMerchant"] as? Double ?? 0) / 100
+                    let currency = doc["currency"] as? String ?? "CAD"
                     let productUserInfo = UserInfo(uid: customer_uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil)
-                    
-                    let product = Product(userInfo: productUserInfo, picID: nil, description: nil, productID: product_id, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: price / Double(quantity), name: nil, templateColor: nil, likes: nil, liked: userInfo.userLiked.contains(doc.documentID), designImage: nil, comments: nil, link: nil, isAvailable: true, isPublic: nil, productType: nil)
-                    
-                    self.salesProducts.append(ProductInCart(product: product, size: size, quantity: quantity, isDeleted: false, timestamp: timestamp, timestampDiff: nil, saleID: doc.documentID, inBank: toBank))
+ 
+                    let product = Product(userInfo: productUserInfo, picID: nil, description: nil, productID: product_id, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: price / Double(quantity), name: nil, templateColor: nil, likes: nil, liked: pUserInfo.userLiked.contains(doc.documentID), designImage: nil, comments: nil, link: nil, isAvailable: true, isPublic: nil, productType: nil, displaySide: nil, supportedSides: [])
+                    let saleProduct = ProductInCart(product: product, size: size, quantity: quantity, isDeleted: false, timestamp: timestamp, timestampDiff: nil, saleID: doc.documentID, inBank: toBank, moneyMade: moneyMade)
+                    saleProduct.currency = currency
+                    self.salesProducts.append(saleProduct)
                    
                     self.tableView.performBatchUpdates({
                         self.tableView.insertRows(at: [IndexPath(row: self.salesProducts.count - 1, section: 0)], with: .fade)
                     }, completion: { finished in
                         if finished{
                             if doc == docs.last{
-                                return
+                                self.checkRate()
                             }
                         }
                     })
@@ -116,19 +120,29 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
         })
     }
     
+    
     func showBankMessage(product: ProductInCart, completed: @escaping () -> ()){
         
         var title = String()
         var titleColor = UIColor()
-        let fullname = userInfo.fullName ?? "<null>"
-        var moneyMade = "$0.00"
-        
+        let fullname = pUserInfo.fullName ?? "<null>"
+        var moneyMade = product.moneyMade?.formatPrice(addCurrency: product.currency?.shortenCurrency() ?? "") ?? "CA$0.00"
 
         switch product.inBank{
         case true:
             titleColor = UIColor.systemGreen
-            let price = product.product.price ?? 20.00
-            moneyMade = (((price - 20.00) * Double(product.quantity)) * 0.90).formatPrice()
+            let price = product.product.price ?? 20.00            
+            if moneyMade == "CA$0.00"{
+                var minPrice = 20.00
+                
+                if product.product.productType == "MASK"{
+                    minPrice = 15.00
+                }
+                moneyMade = (((price - minPrice) * Double(product.quantity)) * 0.90).formatPrice(addCurrency: product.currency?.shortenCurrency() ?? "")
+                print(price)
+                print(minPrice)
+                print(moneyMade)
+            }
             title = "COMMISSION EARNED"
         default:
             titleColor = UIColor.red
@@ -141,7 +155,7 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
             completed()
         }
         
-        showPopUp(title: title, message: description, image: nil, buttons: [yesBtn], titleColor: titleColor)
+        showPopUp(title: title, message: description, image: nil, buttons: [yesBtn], titleColor: titleColor, blurBack: true)
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -160,6 +174,8 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
         cell?.nameBtn.titleLabel?.text = nil
         cell?.nameBtn.setTitle(nil, for: .normal)
         cell?.notif = nil
+        cell?.nameBtn.titleLabel?.attributedText = nil
+        cell?.nameBtn.setAttributedTitle(nil, for: .normal)
         cell?.timestampLbl.text = nil
         cell?.removedNotifView.isHidden = true
         cell?.isUserInteractionEnabled = false
@@ -167,7 +183,7 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
         cell?.dpBtn.imageView?.image = nil
         cell?.dpBtn.setImage(nil, for: .normal)
         
-        if sale.inBank ?? false, let data = userInfo.dp, let image = UIImage(data: data){
+        if sale.inBank ?? false, let data = pUserInfo.dp, let image = UIImage(data: data){
             cell?.dpBtn.imageView?.image = image
             cell?.dpBtn.setImage(image, for: .normal)
         }
@@ -183,7 +199,7 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
 
         if sale.product.userInfo.username == nil{
             
-            downloadUserInfo(uid: sale.product.userInfo.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: false, userInfoToUse: nil, queryOnUsername: false, completed: { userUID, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followerCount, followingCount, verified in
+            downloadUserInfo(uid: sale.product.userInfo.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: false, userInfoToUse: nil, queryOnUsername: false, completed: { userUID, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postNotifs, postCount, followerCount, followingCount, verified in
                 
                 if username == nil{
                     for sameNotif in self.salesProducts.filter({$0.product.userInfo.uid == sale.product.userInfo.uid}){
@@ -227,9 +243,16 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
                 
         
         if let color = sale.product.templateColor{
-            cell?.notifPic.backgroundColor = UIColor(named: color)
+            
+            let colorInfo = all.tees.first(where: {$0.productCode == sale.product?.productType})?.colors.first(where: {$0.code == color})
+
+            cell?.notifPic.backgroundColor = colorInfo?.getColor()
             DispatchQueue(label: "cache").async {
-                if let img = cache.imageFromCache(forKey: "thumbnail_\(sale.product.productID)"){
+                var prefix = ""
+                if sale.product?.displaySide == "back" || sale.product?.displaySide == "Back"{
+                    prefix = "BACK_"
+                }
+                if let img = cache.imageFromCache(forKey: "thumbnail_\(prefix)\(sale.product.productID)"){
                     DispatchQueue.main.async {
                         guard let index = self.salesProducts.firstIndex(where: {$0.saleID == sale.saleID}) else{return}
                         if let cell = tableView.cellForRow(at: IndexPath(row: index, section: 0)) as? NotificationCell{
@@ -256,12 +279,18 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
                         }
                     }
                     else{
+                        product?.price = sale.product.price
                         sale.product = product
                         guard let templateColor = product?.templateColor else{return}
                         sale.product.templateColor = templateColor
-                        cell?.notifPic.backgroundColor = UIColor(named: templateColor)
+                        let colorInfo = all.tees.first(where: {$0.productCode == sale.product?.productType})?.colors.first(where: {$0.code == templateColor})
+                        cell?.notifPic.backgroundColor = colorInfo?.getColor()
                         DispatchQueue(label: "cache").async {
-                            if let img = cache.imageFromCache(forKey: "thumbnail_\(sale.product.picID ?? "")"){
+                            var prefix = ""
+                            if product?.displaySide == "back" || product?.displaySide == "Back"{
+                                prefix = "BACK_"
+                            }
+                            if let img = cache.imageFromCache(forKey: "thumbnail_\(prefix)\(sale.product.picID ?? "")"){
                                 DispatchQueue.main.async {
                                     guard let index = self.salesProducts.firstIndex(where: {$0.saleID == sale.saleID}) else{return}
                                     if let cell = tableView.cellForRow(at: IndexPath(row: index, section: 0)) as? NotificationCell{
@@ -278,9 +307,13 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
                             else{
                                 guard let productUID = product?.userInfo.uid else{return}
                                 DispatchQueue.main.async {
-                                    tableView.downloadProductImage(pictureProduct: nil, followingUID: productUID, picID: sale.product.productID, index: 0, feedVC: nil, friendVC: nil, userVC: nil, fullVC: nil, type: nil, product: nil, completed: { img, imgID in
+                                    var prefix = ""
+                                    if product?.displaySide == "back" || product?.displaySide == "Back"{
+                                        prefix = "BACK_"
+                                    }
+                                    tableView.downloadProductImage(pictureProduct: nil, followingUID: productUID, picID: sale.product.productID, index: 0, feedVC: nil, friendVC: nil, userVC: nil, fullVC: nil, type: nil, product: product, completed: { img, imgID in
                                         DispatchQueue(label: "cache").async {
-                                            cache.storeImageData(toDisk: img?.pngData(), forKey: "thumbnail_\(sale.product.productID)")
+                                            cache.storeImageData(toDisk: img?.pngData(), forKey: "thumbnail_\(prefix)\(sale.product.productID)")
                                         }
                                         sale.product.picID = imgID
                                         guard let index = self.salesProducts.firstIndex(where: {$0.saleID == sale.saleID}) else{return}
@@ -350,7 +383,7 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
     @IBAction func payoutBalance(_ sender: UIButton) {
         progressView.setProgress(0.6, animated: true)
         showStripeView {
-            let data = ["uid" : userInfo.uid]
+            let data = ["uid" : pUserInfo.uid]
             Functions.functions().httpsCallable("getExpressLoginLink").call(data, completion: { result, error in
                 if let err = error{
                     print(err.localizedDescription)
@@ -489,6 +522,15 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
         }
     }
     
+    func checkRate(){
+        if salesProducts.count >= 1{
+            if !(KeychainWrapper.standard.bool(forKey: "Prompted") ?? false){
+                KeychainWrapper.standard.set(true, forKey: "Prompted")
+                SKStoreReviewController.requestReview()
+            }
+        }
+    }
+    
     override func viewWillLayoutSubviews() {
         if !view.subviews.contains(webViewBack){
             view.addSubview(webViewBack)
@@ -497,7 +539,7 @@ class SalesVC: UIViewController, WKNavigationDelegate, UITableViewDelegate, UITa
     
     func loadSalesCount(){
         
-        guard let uid = userInfo.uid else{return}
+        guard let uid = pUserInfo.uid else{return}
         
         Firestore.firestore().collection("Users/\(uid)/Payment_Info").document("Seller_Stats").getDocument(completion: { snap, error in
             if error != nil{

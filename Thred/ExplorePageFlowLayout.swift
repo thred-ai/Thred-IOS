@@ -10,7 +10,6 @@ import UIKit
 
 class ExplorePageFlowLayout: UICollectionViewFlowLayout {
 
-    var canvasInfo = CanvasInfo()
     let innerSpace: CGFloat = 2
     override init() {
         super.init()
@@ -22,8 +21,11 @@ class ExplorePageFlowLayout: UICollectionViewFlowLayout {
         //fatalError("init(coder:) has not been implemented")
         super.init(coder: aDecoder)
     }
+    
+    let aspectRatio = 1.0
+    
     func itemWidth() -> CGFloat {
-        let width = collectionView!.frame.size.height / (canvasInfo.aspectRatio) - innerSpace
+        let width = collectionView!.frame.size.height / CGFloat((aspectRatio)) - innerSpace
         return (width)
     }
     override var itemSize: CGSize {

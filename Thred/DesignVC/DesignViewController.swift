@@ -16,73 +16,260 @@ import ColorSlider
 import AVKit
 import PopupDialog
 
-
-public enum LabelStyle {
-    case large
-    case normal
-    case nexa
-    case fancy
-    case fill
-    case hype
-    case thriller
-    case subway
+class AllTemplates{
+    var tees = [Template]()
 }
 
-public enum ProductType{
-    case c
-    case f_c
+var all = AllTemplates()
+
+
+class LabelFont: NSObject, NSCoding{
+    
+    
+    func encode(with coder: NSCoder) {
+        coder.encode(fontName, forKey: "fontName")
+        coder.encode(name, forKey: "name")
+        coder.encode(textAlignment, forKey: "textAlignment")
+        coder.encode(backgroundColor, forKey: "backgroundColor")
+        coder.encode(textColor, forKey: "textColor")
+    }
+    
+    required init?(coder: NSCoder) {
+        fontName = coder.decodeObject(forKey: "fontName") as? String
+        name = coder.decodeObject(forKey: "name") as? String
+        //textAlignment =
+        let o = NSTextAlignment.left
+            
+            //(coder.decodeObject(forKey: "textAlignment") as? NSTextAlignment).index
+        backgroundColor = coder.decodeObject(forKey: "backgroundColor") as? UIColor
+        textColor = coder.decodeObject(forKey: "textColor") as? UIColor
+    }
+        
+    var fontName: String!
+    var name: String!
+    var textAlignment: NSTextAlignment!
+    var backgroundColor: UIColor!
+    var textColor: UIColor!
+    
+    init(font: String?, name: String, textAlignment: NSTextAlignment, backgroundColor: UIColor, textColor: UIColor) {
+        self.fontName = font
+        self.name = name
+        self.textAlignment = textAlignment
+        self.backgroundColor = backgroundColor
+        self.textColor = textColor
+    }
+    
 }
 
-class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDelegate, UIGestureRecognizerDelegate, UITextFieldDelegate, SwiftyDrawViewDelegate, UICollectionViewDelegate, UICollectionViewDataSource, UITableViewDelegate, UITableViewDataSource {
+class CanvasDesign: NSObject, NSCoding{
     
+    func encode(with coder: NSCoder) {
+        drawItems.saveAllObjects(type: "Designs")
+        coder.encode(subviews, forKey: "subviews")
+        coder.encode(name, forKey: "name")
+        coder.encode(currentImage, forKey: "image")
+    }
     
+    required init?(coder: NSCoder) {
+        drawItems = drawItems.getAllObjects(type: "Designs", name: "Designs") ?? []
+        subviews = coder.decodeObject(forKey: "subviews") as? [UIView] ?? []
+        name = coder.decodeObject(forKey: "name") as? String ?? ""
+        currentImage = coder.decodeObject(forKey: "image") as? Data
+    }
     
-    let productTypes = [
+    var drawItems = [SwiftyDraw.SwiftyDrawView.DrawItem]()
+    var subviews = [UIView]()
+    var name: String!
+    var currentImage: Data?
+    
+    init(drawItems: [SwiftyDraw.SwiftyDrawView.DrawItem], subviews: [UIView], name: String, currentImage: Data?) {
+        self.drawItems = drawItems
+        self.subviews = subviews
+        self.name = name
+        self.currentImage = currentImage
+    }
+}
+
+class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDelegate, UIGestureRecognizerDelegate, UITextFieldDelegate, SwiftyDrawViewDelegate, UICollectionViewDelegate, UICollectionViewDataSource, UITableViewDelegate, UITableViewDataSource, UICollectionViewDelegateFlowLayout {
+    
+    @IBOutlet weak var displaySideLbl: UILabel!
+    var canvasDesigns = [CanvasDesign]()
+    @IBOutlet weak var colorDisplayLbl: UILabel!
+    
+    @IBOutlet weak var colorCollectionBackView: UIView!
+    @IBOutlet weak var rotateBtn: UIButton!
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+
+        switch tableView{
+        
+        case productTypesTableView:
+            return all.tees.count
+        default:
+            return labelFonts.count
+        }
+    }
+    
+    var labelFonts: [LabelFont]! =
         [
-        "Name" : "MEN'S T-SHIRT",
-        "Type" : ProductType.c
-        ],
-        [
-        "Name" : "WOMEN'S T-SHIRT",
-        "Type" : ProductType.f_c
-        ],
+            LabelFont(font: "bold", name: "Large", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+            LabelFont(font: "normal", name: "Normal", textAlignment: .left, backgroundColor: .clear, textColor: .clear),
+            LabelFont(font: "NexaW01-Heavy", name: "Nexa", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+            LabelFont(font: "AguafinaScript-Regular", name: "Fancy", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+            
+            
+            LabelFont(font: "Vanity", name: "Vanity", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+            LabelFont(font: "xirod", name: "Xirod", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+            LabelFont(font: "fill", name: "Fill", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+            LabelFont(font: "A Alloy Ink", name: "Bubbles", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+            
+            
+            LabelFont(font: "HOPE-HYPE", name: "Hype", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+            LabelFont(font: "Varsity Team", name: "Varsity", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+            LabelFont(font: "Hey November", name: "Thriller", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+            LabelFont(font: "Hacked", name: "Hacked", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+            
+            
+            LabelFont(font: "Whoa! 2", name: "Subway", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+            LabelFont(font: "New Waltograph", name: "Story", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+            LabelFont(font: "A Arang", name: "Bangarang", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+            LabelFont(font: "Basic Font", name: "Comic", textAlignment: .center, backgroundColor: .clear, textColor: .clear)
     ]
     
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        
-        return productTypes.count
-    }
+    
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "cell")
-        guard productTypes.indices.contains(indexPath.row) else{return cell}
-        let product = productTypes[indexPath.row]
-        cell.textLabel?.text = product["Name"] as? String
-        cell.textLabel?.font = UIFont(name: "NexaW01-Heavy", size: cell.textLabel?.font.pointSize ?? 16)
-        cell.backgroundColor = .clear
-        return cell
+        switch tableView{
         
+        case productTypesTableView:
+            let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "cell")
+            guard all.tees.indices.contains(indexPath.row) else{return cell}
+            let product = all.tees[indexPath.row]
+            cell.textLabel?.text = product.templateDisplayName
+            cell.textLabel?.font = UIFont(name: "NexaW01-Heavy", size: cell.textLabel?.font.pointSize ?? 16)
+            cell.backgroundColor = .clear
+            return cell
+        default:
+            let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "cell")
+            guard labelFonts.indices.contains(indexPath.row) else{return cell}
+            let font = labelFonts[indexPath.row]
+            cell.textLabel?.text = font.name.lowercased()
+            cell.textLabel?.textColor = .black
+            cell.textLabel?.font = UIFont(name: font.fontName, size: 24)
+            cell.backgroundColor = .clear
+            return cell
+        }
     }
-    
+        
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard productTypes.indices.contains(indexPath.row) else{return}
-        let product = productTypes[indexPath.row]
-        guard let type = product["Type"] as? ProductType else{return}
-        selectedProductType = type
-        hideList()
+        
+        switch tableView{
+        
+        case productTypesTableView:
+            guard all.tees.indices.contains(indexPath.row) else{return}
+            let product = all.tees[indexPath.row]
+            selectedProductType = product
+            hideList()
+        default:
+            
+            if let textView = self.canvas.subviews.first(where: {$0.isFirstResponder}) as? CanvasTextView, labelFonts.indices.contains(indexPath.row){
+                let font = labelFonts[indexPath.row]
+                textStyleBtn.setTitle(font.name.uppercased(), for: .normal)
+                textView.labelFont = font
+                textViewDidChange(textView)
+                hideFontTable()
+            }
+        }
     }
     
-    var selectedProductType: ProductType!{
+    var selectedSide: TemplateSide!{
+
         didSet{
-            var title = productTypes.first(where: {$0["Type"] as? ProductType == selectedProductType})?["Name"] as? String ?? ""
+            if selectedSide.name == "Front"{
+                displaySide = .front
+            }
+            else{
+                displaySide = .back
+            }
+            carousel.collectionView.reloadData()
+        }
+    }
+    
+    var displaySide: DisplaySide!{
+        didSet{
+            if (selectedProductType?.supportedSides.count ?? 0) > 1{
+                guard let side = displaySide else{return}
+                rotateBtn.superview?.isHidden = false
+                print(side)
+                rotateBtn.setTitle("\(side)".uppercased(), for: .normal)
+            }
+            else{
+                rotateBtn.superview?.superview?.isHidden = true
+            }
+        }
+    }
+    
+    
+    var selectedProductType: Template!{
+        
+        willSet{
+            
+            if selectedProductType?.templateID != newValue?.templateID{
+                
+                selectedSide = newValue.supportedSides.first(where: {$0.name == "Front"})
+
+                if newValue.category == "Accessories"{
+                    var image = self.carousel.currentImage()
+                    if newValue?.category != selectedProductType?.category, selectedProductType != nil{
+                        image = self.carousel.currentImage()?.rotate(radians: .pi / 2)
+                    }
+                    self.canvasDisplayView.image = image
+                    self.carousel.replaceImageSide(side: selectedSide, with: image, onlyReplaceImage: true)
+                    self.selectedView?.imageView?.image = image
+                    self.selectedView?.setImage(image, for: .normal)
+                }
+                else if newValue.category == "Tops"{
+                    var image = self.carousel.currentImage()
+                    if newValue?.category != selectedProductType?.category, selectedProductType != nil{
+                        image = self.carousel.currentImage()?.rotate(radians: -(.pi / 2))
+                    }
+                    self.canvasDisplayView.image = image
+                    self.carousel.replaceImageSide(side: selectedSide, with: image, onlyReplaceImage: true)
+                    self.selectedView?.imageView?.image = image
+                    self.selectedView?.setImage(image, for: .normal)
+                    
+                }
+                if newValue.supportedSides.contains(where: {$0.name == "Back"}){
+                    rotateBtn.superview?.superview?.isHidden = false
+                }
+                else{
+                    canvasDesigns.removeAll(where: {$0.name == "Back"})
+                    rotateBtn.superview?.superview?.isHidden = true
+                }
+            }
+            
+        }
+        
+        didSet{
+            var title = all.tees.first(where: {$0.templateID == selectedProductType?.templateID})?.templateDisplayName
             if !isEditingProduct{
-                title += " ▾"
+                title! += " ▾"
             }
             productTypeBtn.titleLabel?.text = title
             productTypeBtn.setTitle(title, for: .normal)
             productTypeBtn.sizeToFit()
+            canvasDisplayView.image = nil
+            colorCollectionView.reloadData()
+            carousel.slides.removeAll()
+            
+            carousel.setCarouselTemplates(templates: all.tees.filter({$0.templateID == selectedProductType?.templateID}))
+            
             carousel.collectionView.reloadData()
+            
+            DispatchQueue.main.async {
+                self.collectionView(self.colorCollectionView, didSelectItemAt: IndexPath(item: 0, section: 0))
+                self.colorCollectionView.selectItem(at: IndexPath(item: 0, section: 0), animated: false, scrollPosition: .centeredHorizontally)
+            }
         }
     }
     
@@ -97,10 +284,10 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     
     @IBOutlet weak var saveToPhotosLbl: UIView!
     @IBOutlet weak var scrollview: UIScrollView!
-    @IBOutlet weak var titleView: UITextField!
-    @IBOutlet weak var nextBtn: UIBarButtonItem!
-    @IBOutlet weak var priceView: UITextField!
-    @IBOutlet weak var profitLbl: UILabel!
+    //@IBOutlet weak var titleView: UITextField!
+    @IBOutlet weak var nextBtn: UIButton!
+    //@IBOutlet weak var priceView: UITextField!
+    //@IBOutlet weak var profitLbl: UILabel!
     
     var currentItemIndex: Int! = 0
     
@@ -108,67 +295,52 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     var product: ProductInProgress!
     var isEditingProduct = false
     var deletingPost = false
-
-    @IBOutlet weak var deletePostBtn: UIButton!
     
-    @IBAction func deletePost(_ sender: UIButton) {
-        deletingPost = true
-        performSegue(withIdentifier: "DoneDesigning", sender: nil)
+    override func viewWillLayoutSubviews() {
+        barView.roundCorners([.topLeft, .topRight], radius: colorCollectionBackView.frame.height / 4)
+        barView.superview?.superview?.clipsToBounds = true
+        rotateBtn.superview?.superview?.layer.cornerRadius = (rotateBtn.superview?.frame.height ?? 0) / 2
+        rotateBtn.superview?.superview?.clipsToBounds = true
+        colorCollectionBackView.roundCorners([.topLeft, .topRight], radius: colorCollectionBackView.frame.height / 4)
+
     }
     
-    @IBOutlet weak var publicLbl: UILabel!
+    override func viewDidLayoutSubviews() {
+        barView?.roundCorners([.topLeft, .topRight], radius: colorCollectionBackView.frame.height / 4)
+        barView?.clipsToBounds = true
+        colorCollectionBackView.roundCorners([.topLeft, .topRight], radius: colorCollectionBackView.frame.height / 4)
+    }
+
+    //@IBOutlet weak var deletePostBtn: UIButton!
     
+    @IBOutlet weak var publicLbl: UILabel!
+    @IBOutlet weak var barView: UIView!
+
     var isPublic = true
     
     
-    @IBAction func changeVisibility(_ sender: UIButton) {
-        if isPublic{
-            showVisibilityMessage(makePublic: false, completed: {
-                self.publicLbl.text = "Private"
-                self.isPublic = false
-            })
-        }
-        else{
-            showVisibilityMessage(makePublic: true, completed: {
-                self.publicLbl.text = "Public"
-                self.isPublic = true
-            })
-        }
-        if !cannotPost(){
-            nextBtn.isEnabled = true
-        }
-        else{
-            nextBtn.isEnabled = false
-        }
-    }
+    
     @IBOutlet weak var productTypeBtn: UIButton!
     
     func hideList(){
         productTypeBtn.isSelected = false
-        UIView.animate(withDuration: 0.2, animations: {
-            self.productTypesTableView.transform = CGAffineTransform(translationX: 0, y: -(self.view.safeAreaInsets.top))
-        }, completion: { finished in
-            if finished{
-                self.productTypesTableView.transform = CGAffineTransform.identity
-                self.productTypesTableView.isHidden = true
-            }
-        })
+        
+        productTypesTableView.isHidden = true
+           
     }
     
     func showList(){
         productTypesTableView.isHidden = false
-        productTypesTableView.transform = CGAffineTransform(translationX: 0, y: -(self.view.safeAreaInsets.top))
         
-        UIView.animate(withDuration: 0.2, animations: {
-            self.productTypesTableView.transform = CGAffineTransform.identity
-        })
+        
         productTypesTableView.reloadData()
         productTypeBtn.isSelected = true
     }
     
     @IBAction func showProductList(_ sender: UIButton) {
         
-        productTypesTableView.frame = CGRect(x: 0, y: self.view.safeAreaInsets.top, width: self.view.frame.width, height: 80)
+        productTypesTableView.frame = CGRect(x: 0, y: self.view.safeAreaInsets.top, width: self.view.frame.width, height: CGFloat(all.tees.count * 40))
+        
         if sender.isSelected{
             hideList()
         }
@@ -178,11 +350,18 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return productTypesTableView.frame.height / CGFloat(productTypes.count)
+        switch tableView{
+        case productTypesTableView:
+            let num = productTypesTableView.frame.height / CGFloat(all.tees.count)
+            print("Height: \(num)")
+            return num
+        default:
+            return 40
+        }
     }
     
     lazy var productTypesTableView: UITableView = {
-        let tableView = UITableView.init(frame: CGRect(x: 0, y: self.view.safeAreaInsets.top, width: self.view.frame.width, height: 80))
+        let tableView = UITableView.init(frame: CGRect(x: 0, y: self.view.safeAreaInsets.top, width: self.view.frame.width, height: CGFloat(all.tees.count * 40)))
         tableView.delegate = self
         tableView.dataSource = self
         tableView.backgroundColor = UIColor.secondarySystemBackground.withAlphaComponent(0.8)
@@ -193,110 +372,54 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     
     
     
-    func showVisibilityMessage(makePublic: Bool, completed: @escaping () -> ()){
-        var postStatus = "private"
-        var message = "Only you will be able to view/buy this post"
-        if makePublic{
-            postStatus = "public"
-            message = "Anyone on Thred will be able to view/buy this post"
-        }
-        let title = "Are you sure you want to make your product \(postStatus)?"
-
-        let yesBtn = DefaultButton(title: "YES", dismissOnTap: true) {
-            completed()
-        }
-        let cancelBtn = DefaultButton(title: "NEVER MIND", dismissOnTap: true) {
-        }
-        
-        showPopUp(title: title, message: message, image: nil, buttons: [yesBtn, cancelBtn], titleColor: .label)
-    }
-    
-    
-    @IBAction func doneDesigning(_ sender: UIBarButtonItem) {
+    @IBAction func doneDesigning(_ sender: UIButton) {
         
         sender.isEnabled = false
-        let canPost = canPostDesign()
-        if canPost.0{
-            if isEditingProduct{
-                product.caption = descriptionView.text
-                product.uid = userInfo.uid
-                product.name = titleView.text
+        
+        guard checkInternetConnection() else{
+            sender.isEnabled = true
+            return
+        }
+        if let indexPath = carousel.collectionView.indexPathsForVisibleItems.first{
+            if !(canvasDesigns.filter({$0.currentImage != nil}).isEmpty){
+                saveToPhotosLbl.isHidden = true
+                product = ProductInProgress()
+                
+                let designs = canvasDesigns.filter({$0.currentImage != nil})
+                
+                if designs.contains(where: {$0.name == "Front" && $0.currentImage != nil}){
+                    product.displaySide = "\(DisplaySide.front)"
+                    selectedSide = selectedProductType.supportedSides.first(where: {$0.name == "Front"})
+                }
+                else if designs.contains(where: {$0.name == "Back" && $0.currentImage != nil}){
+                    product.displaySide = "\(DisplaySide.back)"
+                    selectedSide = selectedProductType.supportedSides.first(where: {$0.name == "Back"})
+                }
+                
+                for des in designs{
+                    guard let data = des.currentImage, let name = des.name, let side = selectedProductType.supportedSides.first(where: {$0.name == name}) else{continue}
+                    let design = Design(img: data, side: side)
+                    product.designs.append(design)
+                }
+                product.uid = pUserInfo.uid
                 product.isPublic = isPublic
-                guard let price = priceView.text else{
+                product.productType = selectedProductType?.productCode
+                product.display = displayView.makeSnapshot(clear: true, subviewsToIgnore: [thredWatermark])?.withBackground(color: UIColor(red: 0.949, green: 0.949, blue: 0.969, alpha: 1.0))?.jpegData(compressionQuality: 0.5)
+                product.templateColor = selectedProductType.colors[indexPath.item].code
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     sender.isEnabled = true
-                    return
+                    self.performSegue(withIdentifier: "toInfo", sender: nil)
                 }
-                guard let decimalPrice = Double(price) else{
-                    sender.isEnabled = true
-                    return
-                }
-                product.price = decimalPrice * 100
-                performSegue(withIdentifier: "DoneDesigning", sender: nil)
             }
             else{
-                if let indexPath = carousel.collectionView.indexPathsForVisibleItems.first{
-                    if let cell = carousel.collectionView.cellForItem(at: indexPath) as? CarouselCollectionViewCell{
-                        if cell.canvasDisplayView.image != nil{
-                            saveToPhotosLbl.isHidden = true
-                            guard let price = priceView.text else{
-                                sender.isEnabled = true
-                                return
-                            }
-                            guard let decimalPrice = Double(price) else{
-                                sender.isEnabled = true
-                                return
-                            }
-                            product = ProductInProgress()
-                            product.design = cell.canvasDisplayView.image
-                            product.caption = descriptionView.text
-                            product.uid = userInfo.uid
-                            product.name = titleView.text
-                            product.isPublic = isPublic
-                            product.productType = selectedProductType?.productCode()
-                            product.display = displayView.makeSnapshot(clear: true, subviewsToIgnore: [zoomBtn, cell.colorDisplayLabel, thredWatermark])?.withBackground(color: UIColor(red: 0.949, green: 0.949, blue: 0.969, alpha: 1.0))?.jpegData(compressionQuality: 0.5)
-                            product.templateColor = tees[indexPath.item].templateID
-                            product.price = decimalPrice * 100
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                self.performSegue(withIdentifier: "DoneDesigning", sender: nil)
-                            }
-                        }
-                        else{
-                            sender.isEnabled = true
-                        }
-                    }
-                    else{
-                        sender.isEnabled = true
-                    }
-                }
-                else{
-                    sender.isEnabled = true
-                }
+                sender.isEnabled = true
             }
         }
         else{
-            if canPost.1 == "title"{
-                //throw title empty error
-            }
-            else if canPost.1 == "price"{
-                //throw price empty error
-            }
+            sender.isEnabled = true
         }
     }
     
-    
-    
-    func canPostDesign() -> (Bool, String?){
-        
-        if titleView.text?.isEmpty ?? false{
-            return (false, "title")
-        }
-        else if priceView.text?.isEmpty ?? false{
-            return (false, "price")
-        }
-        else{
-            return (true, nil)
-        }
-    }
     
     func setLeftNavigationItem(image: UIImage?, style: UIBarButtonItem.Style, target: Any?, action: Selector?){
         let item = UIBarButtonItem(image: image, style: style, target: target, action: action)
@@ -313,11 +436,10 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     
     lazy var drawToolBar: UIStackView = {
         
-        let stack = UIStackView(frame: CGRect(x: 10, y: 5, width: view.frame.width - 40, height: 35))
+        let stack = UIStackView(frame: CGRect(x: 10, y: 5, width: view.frame.width - 20, height: 35))
         
         stack.axis = .horizontal
         stack.distribution = .fill
-        stack.backgroundColor = .systemBackground
         stack.spacing = 10
         
         
@@ -327,8 +449,11 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         toolCollectionView.alwaysBounceHorizontal = true
         toolCollectionView.alwaysBounceVertical = false
         toolCollectionView.allowsSelection = false
+        
+        
         toolCollectionView.layer.cornerRadius = toolCollectionView.frame.height / 2
         toolCollectionView.clipsToBounds = true
+        
         toolCollectionView.delegate = self
         toolCollectionView.dataSource = self
         
@@ -342,9 +467,11 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         stack.addArrangedSubview(toolCollectionView)
         stack.addArrangedSubview(done)
         
+
         return stack
     }()
     
+
     
     var undo: UIButton!
     var brushBtn: UIButton!
@@ -355,8 +482,6 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     
     var garbageBtn: UIButton!
     var activeLbl: CanvasTextView?
-    
-        
     
     func makeMovable(view: UIView){
         let pan = UIPanGestureRecognizer(target: self, action: #selector(handleObjectPan(_:)))
@@ -379,28 +504,8 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     var viewCenteredX = false
     var angleLocked = false
     var prevTransform: CGAffineTransform!
-
-    lazy var toolBar: UIView = {
-        let bar = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 45))
-        bar.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.8)
-        let stackView = UIStackView(frame: bar.frame)
-        bar.addSubview(stackView)
-        let button = UIButton(frame: CGRect(x: 0, y: 0, width: 45, height: 45))
-        button.setTitle("Done", for: .normal)
-        button.setTitleColor(.label, for: .normal)
-        button.addTarget(self, action: #selector(doneEditing(_:)), for: .touchUpInside)
-        stackView.addArrangedSubview(button)
-        
-        return bar
-    }()
     
-    @objc func doneEditing(_ sender: UIButton){
-        descriptionView.resignFirstResponder()
-        titleView.resignFirstResponder()
-        priceView.resignFirstResponder()
-    }
     
-    @IBOutlet weak var descriptionView: UITextView!
     var backgroundView: UIImageView!
 
     @objc func keyboardWillShow(_ notification: Notification) {
@@ -410,7 +515,6 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
             if (notification.userInfo?[UIResponder.keyboardIsLocalUserInfoKey] as? Bool ?? true){
                 let keyboardFrame = keyboardFrame.cgRectValue
                 keyboardHeight = keyboardFrame.height
-                
                 switch product{
                 case .none:
                     if canvas.isHidden{
@@ -436,6 +540,9 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     
     func configureCanvasLabel(){
         if let textView = canvas.subviews.first(where: {$0.isFirstResponder && $0.isKind(of: UITextView.self)}) as? CanvasTextView{
+            for gesture in self.canvas.gestureRecognizers ?? []{
+                gesture.isEnabled = false
+            }
             if !cameraRollCollectionView.isHidden{
                 configurePhotos(self.photosBtn)
             }
@@ -458,6 +565,10 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
                     self.textViewDidChange(textView)
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) {
                         self.textDoneBtn.isEnabled = true
+                        if !self.textCoverView.subviews.contains(self.fontTable){
+                            self.textCoverView.addSubview(self.fontTable)
+                            self.fontTable.isHidden = true
+                        }
                     }
                     if let textStyleView = self.textStyleBtn.superview{
                         self.canvas.bringSubviewToFront(self.textCoverView)
@@ -524,7 +635,6 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     @objc func keyboardWillHide(_ notification: Notification) {
         
         if (notification.userInfo?[UIResponder.keyboardIsLocalUserInfoKey] as? Bool ?? true){
-            descriptionView.scrollRangeToVisible(NSRange(location: 0, length: 0))
             UIView.animate(withDuration: 0.2, animations: {
                 self.bottomBar.transform = CGAffineTransform.identity
                 self.scrollview.contentInset.bottom = 0
@@ -532,26 +642,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
             })
         }
     }
-    
-    var placeholderLabel = UILabel()
 
-    func setPlaceholder(textView: UITextView, textColor: UIColor?){
-        
-        
-        placeholderLabel.text = "Describe this design..."
-        placeholderLabel.font = UIFont(name: "NexaW01-Regular", size: 16)
-        placeholderLabel.sizeToFit()
-        placeholderLabel.backgroundColor = UIColor.clear
-        placeholderLabel.textColor = textColor
-        
-        if !textView.subviews.contains(placeholderLabel){
-            textView.addSubview(placeholderLabel)
-            placeholderLabel.translatesAutoresizingMaskIntoConstraints = false
-            placeholderLabel.centerYAnchor.constraint(equalTo: textView.centerYAnchor).isActive = true
-            placeholderLabel.leadingAnchor.constraint(equalTo: textView.leadingAnchor,  constant: 5).isActive = true
-            placeholderLabel.isHidden = !textView.text.isEmpty
-        }
-    }
     
     var textEditInfo = [[String: Any]]()
     var editingTransform: CGAffineTransform!
@@ -561,13 +652,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     
     
     func textViewDidChange(_ textView: UITextView) {
-        if textView == descriptionView{
-            placeholderLabel.isHidden = !textView.text.isEmpty
-            if product != nil, textView.text != product.caption{
-                nextBtn.isEnabled = true
-            }
-        }
-        else{
+
             let size = textView.sizeThatFits(CGSize(width: canvas.frame.width, height: CGFloat.greatestFiniteMagnitude))
             textView.center.x = canvas.center.x
             if keyboardHeight != nil{
@@ -601,11 +686,8 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
                     }
                 })
             }
-        }
     }
-    
-    var tees: [Template]! = [Template]()
-    
+        
     @IBOutlet weak var displayView: UIView!
     
     
@@ -625,7 +707,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     var textStyleBtn: UIButton!
     
     lazy var canvasDisplayView: UIImageView = {
-        let stack = displayView.superview as! UIStackView
+        let stack = displayView.superview?.superview as! UIStackView
         let x = displayView.frame.width / 3
         let y = stack.spacing + displayView.frame.height / 4
         let width = displayView.frame.width / 4
@@ -634,6 +716,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         view.center.x = displayView.center.x
         view.isUserInteractionEnabled = true
         view.isHidden = true
+        view.contentMode = .scaleAspectFill
         return view
     }()
     
@@ -654,10 +737,15 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     var lastTextView: CanvasTextView!
     
 
+     
+    
+    
     lazy var canvas: UIView = {
         let view = UIImageView(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: self.view.frame.height * aspectRatio))
         view.isUserInteractionEnabled = true
-        view.backgroundColor = UIColor(named: tees[currentItemIndex].templateID)
+        let color = all.tees.first(where: {$0.templateID == selectedProductType?.templateID})?.colors[currentItemIndex].getColor()
+
+        view.backgroundColor = color
         view.clipsToBounds = true
         let tapper = UITapGestureRecognizer(target: self, action: #selector(addLabel(_:)))
         tapper.delegate = self
@@ -730,7 +818,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         garbageBtn.isUserInteractionEnabled = false
         
         garbageBtn.setImage(UIImage(nameOrSystemName: "trash.circle", systemPointSize: 30, iconSize: 7), for: .normal)
-        let backView = UIView(frame: CGRect(x: 10, y: 10, width: 100, height: 30))
+        let backView = UIView(frame: CGRect(x: 10, y: 10, width: 160, height: 30))
         backView.backgroundColor = UIColor.black.withAlphaComponent(0.5)
         backView.layer.borderColor = UIColor(named: "LoadingColor")?.cgColor
         backView.layer.borderWidth = 3
@@ -739,6 +827,8 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         textStyleBtn = UIButton.init(frame: CGRect(x: 5, y: 5, width: backView.frame.width - 10, height: backView.frame.height - 10))
         textStyleBtn.setTitle("Large", for: .normal)
         textStyleBtn.setTitleColor(UIColor(named: "LoadingColor"), for: .normal)
+        textStyleBtn.titleLabel?.minimumScaleFactor = 0.5
+        textStyleBtn.titleLabel?.adjustsFontSizeToFitWidth = true
         textStyleBtn.addTarget(self, action: #selector(changeTextStyle(_:)), for: .touchUpInside)
         textStyleBtn.showsTouchWhenHighlighted = true
         backView.addSubview(textStyleBtn)
@@ -746,6 +836,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         let textTapper = UITapGestureRecognizer(target: self, action: #selector(doneLabelTyping(_:)))
         textCoverView.addGestureRecognizer(textTapper)
         textCoverView.backgroundColor = UIColor.black.withAlphaComponent(0.75)
+
         fontSlider = UISlider(frame: CGRect(x: backView.frame.maxX + 10, y: 10, width: view.frame.width - 10 - backView.frame.width - 10 - 10, height: 30))
         fontSlider.minimumValue = 20
         fontSlider.maximumValue = Float(defaultFontSize)
@@ -753,7 +844,6 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         fontSlider.maximumTrackTintColor = UIColor(named: "LoadingColor")
         fontSlider.minimumTrackTintColor = UIColor(named: "LoadingColor")
         fontSlider.addTarget(self, action: #selector(resizeFont(_:)), for: .valueChanged)
-        
         
         alignmentCanvas = UIView(frame: view.bounds)
         alignmentCanvas.isUserInteractionEnabled = false
@@ -771,7 +861,20 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         return view
     }()
     
-    
+    lazy var fontTable: UITableView = {
+        
+        let bottomY = self.view.convert(textToolBar.frame, from: textToolBar).minY + 10
+        let topY = self.view.convert(textStyleBtn.superview!.frame, from: textStyleBtn.superview!).maxY + 10
+        let tableView = UITableView(frame: CGRect(x: textStyleBtn.superview?.frame.minX ?? 0, y: (textStyleBtn.superview?.frame.maxY ?? 0) + 10, width: 160, height: bottomY - topY), style: .plain)
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.separatorStyle = .none
+        tableView.backgroundColor = UIColor.white.withAlphaComponent(0.75)
+        tableView.layer.cornerRadius = 6
+        tableView.clipsToBounds = true
+        tableView.reloadData()
+        return tableView
+    }()
     
     lazy var brushCircle: UIView = {
         let view = UIView.init(frame: CGRect(x: 0, y: 0, width: drawCanvas.brush.originalWidth, height: drawCanvas.brush.originalWidth))
@@ -790,7 +893,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     
     var currentFontSize: CGFloat!
      
-    var selectedView: UIImageView!
+    var selectedView: UIButton!
     
     lazy var bottomSafeAreaView: UIView = {
         let view = UIView.init(frame: CGRect(x: 0, y: 0, width: bottomBar.frame.width, height: 0))
@@ -874,9 +977,21 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         ],
         
         [
+            "Name" : "Ruler",
+            "Icon_Color" : UIColor(named: "LoadingColor")!,
+            "Image" : UIImage(named: "scribble.mode")!
+        ],
+        
+        [
             "Name" : "Pen_Color",
             "Icon_Color" : UIColor.cyan,
             "Image" : UIImage(nameOrSystemName: "largecircle.fill.circle", systemPointSize: 25, iconSize: 9)!,
+        ],
+        
+        [
+            "Name" : "Undo",
+            "Icon_Color" : UIColor(named: "LoadingColor")!,
+            "Image" : UIImage(nameOrSystemName: "arrow.uturn.left.circle", systemPointSize: 25, iconSize: 9)!,
         ],
         
         [
@@ -885,11 +1000,6 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
             "Image" : UIImage(nameOrSystemName: "arrow.uturn.right.circle", systemPointSize: 25, iconSize: 9)!,
         ],
         
-        [
-            "Name" : "Undo",
-            "Icon_Color" : UIColor(named: "LoadingColor")!,
-            "Image" : UIImage(nameOrSystemName: "arrow.uturn.left.circle", systemPointSize: 25, iconSize: 9)!,
-        ],
         /*
         [
             "Name" : "Dropper",
@@ -901,14 +1011,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
             "Name" : "Clear",
             "Icon_Color" : UIColor(named: "LoadingColor")!,
             "Image" : UIImage(nameOrSystemName: "xmark.circle", systemPointSize: 25, iconSize: 9)!,
-        ],
-        
-        [
-            "Name" : "Ruler",
-            "Icon_Color" : UIColor(named: "LoadingColor")!,
-            "Image" : UIImage(named: "scribble.mode")!
         ]
-        
     ]
     
     func showClearMessage(){
@@ -919,15 +1022,12 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         let cancelBtn = DefaultButton(title: "NEVER MIND", dismissOnTap: true) {
         }
         
-        showPopUp(title: nil, message: message, image: nil, buttons: [yesBtn, cancelBtn], titleColor: .label)
+        showPopUp(title: nil, message: message, image: nil, buttons: [yesBtn, cancelBtn], titleColor: .label, blurBack: true)
     }
-    
-    
-
     
     func clearDrawing(){
         
-        if drawCanvas.lines.count >= 3{
+        if drawCanvas.drawItems.count >= 3{
             showClearMessage()
         }
         else{
@@ -941,18 +1041,25 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         if collectionView == toolCollectionView{
+            print(tools.count)
             return tools.count
         }
-        return tees.count
+                
+        return all.tees.first(where: {$0.templateID == selectedProductType?.templateID})?.colors.count ?? 0
+        
     }
     
     func updateToolIcons(tool: inout [String : Any]){
         if (tool["Name"] as? String) == "Ruler"{
-            if drawCanvas.shouldDrawStraight{
-                tool["Image"] = UIImage(named: "straight.mode")
-            }
-            else{
+            switch drawCanvas.drawMode{
+            case .draw:
                 tool["Image"] = UIImage(named: "scribble.mode")
+            case .line:
+                tool["Image"] = UIImage(named: "straight.mode")
+            case .ellipse:
+                tool["Image"] = UIImage(systemName: "circle")
+            case .rect:
+                tool["Image"] = UIImage(systemName: "rectangle")
             }
         }
         else if tool["Name"] as? String == "Pen"{
@@ -1021,32 +1128,76 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
             return cell!
         }
         else{
-            let tee = self.tees[indexPath.item]
+            let colorInfo = all.tees.first(where: {$0.templateID == selectedProductType?.templateID})?.colors[indexPath.item]
+            
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "color_icon", for: indexPath) as? TemplateColorChooserCell
             cell?.colorView.backgroundColor = nil
-            cell?.colorView.layer.cornerRadius = 0
             cell?.isSelected = false
             
             if let index = carousel.collectionView.indexPathsForVisibleItems.first, index.item == indexPath.item{
                 cell?.isSelected = true
             }
             
-            
             cell?.setShape()
-
-            if let color = UIColor.init(named: tee.templateID){
-                
-                cell?.colorView.backgroundColor = color
-            }
+            
+            
+            cell?.colorView.backgroundColor = colorInfo?.getColor()
+            
             
             return cell!
         }
     }
-
     
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        
+        guard scrollView == carousel?.collectionView else{return}
+
+        let x = scrollView.contentOffset.x
+        let w = scrollView.bounds.size.width
+        let currentPage = Int(ceil(x/w))
+        guard let collectionView = colorCollectionView else{return}
+        if all.tees.first(where: {$0.templateID == selectedProductType.templateID})?.colors.indices.contains(currentPage) ?? false{
+            collectionView.selectItem(at: IndexPath(item: currentPage, section: 0), animated: true, scrollPosition: .centeredHorizontally)
+            DispatchQueue.main.async {
+                if let item = collectionView.indexPathsForSelectedItems?.first(where: {$0.item != currentPage}){
+                    collectionView.deselectItem(at: item, animated: false)
+                }
+            }
+        }
+    }
+    
+    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        guard scrollView == carousel?.collectionView else{return}
+        let x = scrollView.contentOffset.x
+        let w = scrollView.bounds.size.width
+        let currentPage = Int(ceil(x/w))
+        guard let collectionView = colorCollectionView else{return}
+        if all.tees.first(where: {$0.templateID == selectedProductType.templateID})?.colors.indices.contains(currentPage) ?? false{
+            collectionView.selectItem(at: IndexPath(item: currentPage, section: 0), animated: true, scrollPosition: .centeredHorizontally)
+            DispatchQueue.main.async {
+                if let item = collectionView.indexPathsForSelectedItems?.first(where: {$0.item != currentPage}){
+                    collectionView.deselectItem(at: item, animated: false)
+                }
+            }
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath) -> Bool {
+        if colorCollectionView.indexPathsForSelectedItems?.first == indexPath, let cell = carousel.collectionView.cellForItem(at: indexPath) as? CarouselCollectionViewCell, let displayView = cell.canvasDisplayViews.first{
+            
+            maximiseDrawingArea(displayView: displayView)
+            
+            return false
+        }
+        return true
+    }
+     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        
+        
         carousel.collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: false)
         colorCollectionView.selectItem(at: indexPath, animated: true, scrollPosition: .centeredHorizontally)
+        
     }
     
     
@@ -1057,74 +1208,55 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         NSLayoutConstraint(item: carousel!, attribute: .right, relatedBy: .equal, toItem: displayView, attribute: .right, multiplier: 1.0, constant: 0).isActive = true
     }
    
-    func textFieldDidBeginEditing(_ textField: UITextField) {
-        
-        if textField == priceView && textField.text == minimumPrice{
-            textField.text?.removeAll()
-            profitLbl.text = "Profit (per. shirt): $0.00"
-        }
-    }
     
-    var minimumPrice: String! = "20.00"
-    
-    func textFieldDidEndEditing(_ textField: UITextField, reason: UITextField.DidEndEditingReason) {
-        
-        if textField == priceView{
-            guard var text = textField.text else{
-                return}
-            
-            if text.count > 5{
-                text.removeLast(text.count - 5)
-                textField.text = text
-            }
-            
-            guard let price = Float(text) else{
-                
-                textField.text = minimumPrice
-                return}
-            
-            print(price)
-            
-            guard let minPrice = Float(minimumPrice) else{return}
-            if price >= minPrice{
-                if let index = text.firstIndex(of: ".")?.utf16Offset(in: text){
-                    switch index{
-                    case text.count - 1:
-                        textField.text?.append(contentsOf: "00")
-                    case text.count - 2:
-                        textField.text?.append(contentsOf: "0")
-                    default:
-                        break
-                    }
-                }
-                else{
-                    if text.isEmpty{
-                        textField.text = minimumPrice
-                    }
-                    else{
-                        textField.text?.append(contentsOf: ".00")
-                    }
-                }
-                profitLbl.text = "Profit (per. shirt): \(Double(0.90 * (price - minPrice)).formatPrice())"
-            }
-            else{
-                textField.text = minimumPrice
-                profitLbl.text = "Profit (per. shirt): $0.00"
-            }
-        }
-    }
+
 
     
     @IBOutlet weak var saveBtn: UIButton!
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+
+        if collectionView == colorCollectionView{
+            let leftInset = (collectionView.frame.width / 2) - ((collectionView.frame.width / 3) / 2)
+            let rightInset = leftInset
+
+            return UIEdgeInsets(top: 0, left: leftInset, bottom: 0, right: rightInset)
+        }
+        else{
+            return UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+        }
+    }
    
     
+    @IBAction func displaySideChanged(_ sender: UIButton?) {
+
+        if selectedSide.name == "Front"{
+            selectedSide = selectedProductType.supportedSides.first(where: {$0.name == "Back"})
+        }
+        else{
+            selectedSide = selectedProductType.supportedSides.first(where: {$0.name == "Front"})
+        }
+    }
+    
+
+    
+    
+    var editingTees = [Template]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         colorCollectionView.delegate = self
         colorCollectionView.dataSource = self
+        colorCollectionView.decelerationRate = .fast
         
+        
+        //canvasDesigns = canvasDesigns.getAllObjects(type: "", name: "") ?? []
+        
+        
+        print(canvasDesigns.compactMap({$0.drawItems}))
+        print(canvasDesigns.compactMap({$0.subviews}))
+
         saveBtn.addTarget(self, action: #selector(showSaveView(_:)), for: .touchDown)
         saveBtn.addTarget(self, action: #selector(showSaveView(_:)), for: .touchDragEnter)
         saveBtn.addTarget(self, action: #selector(hideSaveView(_:)), for: .touchDragOutside)
@@ -1134,119 +1266,102 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         saveToPhotosLbl.clipsToBounds = true
         saveToPhotosLbl.isHidden = true
         
-        productTypeBtn.isHidden = true
+        nextBtn.layer.cornerRadius = nextBtn.frame.height / 2
+        nextBtn.clipsToBounds = true
+        nextBtn.adjustsImageWhenDisabled = true
+        
+        colorDisplayLbl.superview?.layer.cornerRadius = (colorDisplayLbl.superview?.frame.height ?? 0) / 2
+        colorDisplayLbl.superview?.clipsToBounds = true
+        
+        
         navigationController?.navigationBar.setBackgroundImage(UIImage.init(), for: UIBarMetrics.default)
         navigationController?.navigationBar.shadowImage = UIImage.init()
-        descriptionView.delegate = self
-        descriptionView.inputAccessoryView = toolBar
-        titleView.inputAccessoryView = toolBar
-        priceView.delegate = self
-        titleView.delegate = self
-
-        priceView.text = minimumPrice
-        priceView.inputAccessoryView = toolBar
+        
         displayView.addSubview(carousel)
         displayView.bringSubviewToFront(thredWatermark)
         setCarouselConstraints()
-        textFieldDidChange(titleView)
-        titleView.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
-        priceView.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        
         setLeftNavigationItem(image: UIImage(nameOrSystemName: "xmark", systemPointSize: 18, iconSize: 9), style: .plain, target: self, action: #selector(cancelDesigning(_:)))
-        setPlaceholder(textView: descriptionView, textColor: .secondaryLabel)
         setKeyBoardNotifs()
         
-        if product != nil{
-            isEditingProduct = true
-            tees.append(Template(templateID: product.templateColor, templateDisplayName: "", hasFemale: true))
+        let spinner = MapSpinnerView.init(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
+        displayView.addSubview(spinner)
+        spinner.center.x = view.center.x
+        spinner.center.y = displayView.center.y
+        spinner.animate()
+        
+        loadDesigns(){
             
-            colorCollectionView.isHidden = true
-            carousel.displayImage = product.design
-            carousel.setCarouselTemplates(templates: tees)
-            carousel.collectionView.isUserInteractionEnabled = false
-            guard let price = product.price else{return}
-            priceView.text = "\(price)"
-            textFieldDidEndEditing(priceView, reason: .committed)
-            descriptionView.text = product.caption
-            titleView.text = product.name
-            if !(product.isPublic ?? true){
-                publicLbl.text = "Private"
-                isPublic = false
-            }
-            nextBtn.title = "Update"
-            textViewDidChange(descriptionView)
-            
-            if uploadingPosts.contains(product.productID ?? ""){
-                descriptionView.isEditable = false
-                titleView.isEnabled = false
-                nextBtn.isEnabled = false
-            }
-            
-            productTypeBtn.isUserInteractionEnabled = false
-            selectedProductType = product.productType?.productType() ?? .c
-            
-        }
-        else{
-            textViewDidChange(descriptionView)
-            deletePostBtn.isHidden = true
-            let spinner = MapSpinnerView.init(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
-            displayView.addSubview(spinner)
-            spinner.center.x = view.center.x
-            spinner.center.y = displayView.center.y
-            spinner.animate()
-            if !UserDefaults.standard.bool(forKey: "bank_confirm"), !checkIfCardSet(){
-                UserDefaults.standard.set(true, forKey: "bank_confirm")
-                showBankConfirmationMessage {
-                }
-            }
-            loadDesigns(){
+            DispatchQueue.main.async {
+                spinner.removeFromSuperview()
+                self.colorCollectionView.reloadData()
                 DispatchQueue.main.async {
-                    spinner.removeFromSuperview()
-                    self.colorCollectionView.reloadData()
-                    DispatchQueue.main.async {
-                        self.colorCollectionView.selectItem(at: IndexPath(item: 0, section: 0), animated: false, scrollPosition: .left)
-                    }
-                    self.carousel.setCarouselTemplates(templates: self.tees)
-                    if !self.scrollview.subviews.contains(self.canvasDisplayView){
-                        self.scrollview.addSubview(self.canvasDisplayView)
-                    }
-                    if !self.view.subviews.contains(self.canvas){
-                        self.view.addSubview(self.canvas)
-                        self.canvas.isHidden = true
-                    }
-                    if !self.view.subviews.contains(self.bottomBar){
-                        self.view.addSubview(self.bottomBar)
-                    }
-                    if !self.view.subviews.contains(self.bottomSafeAreaView){
-                        self.view.addSubview(self.bottomSafeAreaView)
-                    }
-                    if !self.bottomBar.subviews.contains(self.drawToolBar){
-                        self.bottomBar.addSubview(self.drawToolBar)
-                    }
-                    if !self.view.subviews.contains(self.canvasImageView){
-                        self.view.addSubview(self.canvasImageView)
-                    }
-                    if !self.view.subviews.contains(self.productTypesTableView){
-                        self.view.addSubview(self.productTypesTableView)
-                    }
-                    self.productTypesTableView.isHidden = true
-                    self.toolCollectionView.reloadData()
+                    self.colorCollectionView.selectItem(at: IndexPath(item: 0, section: 0), animated: false, scrollPosition: .centeredHorizontally)
+                }
+                
+                self.carousel.setCarouselTemplates(templates: all.tees)
+                                
+                
+                if !self.scrollview.subviews.contains(self.canvasDisplayView){
+                    self.scrollview.addSubview(self.canvasDisplayView)
+                }
+                if !self.view.subviews.contains(self.canvas){
+                    self.view.addSubview(self.canvas)
+                    
+                }
+                self.canvas.isHidden = true
+
+                if !self.view.subviews.contains(self.bottomBar){
+                    self.view.addSubview(self.bottomBar)
+                    self.bottomBar.isHidden = true
+                }
+                if !self.view.subviews.contains(self.bottomSafeAreaView){
+                    self.view.addSubview(self.bottomSafeAreaView)
+                    self.bottomSafeAreaView.isHidden = true
+                }
+                if !self.bottomBar.subviews.contains(self.drawToolBar){
+                    self.bottomBar.addSubview(self.drawToolBar)
                     self.drawToolBar.isHidden = true
-                    self.displayView.addSubview(self.zoomBtn)
+                    self.toolCollectionView.reloadData()
+                }
+                if !self.view.subviews.contains(self.canvasImageView){
+                    self.view.addSubview(self.canvasImageView)
+                    self.canvasImageView.isHidden = true
+                }
+                if !self.view.subviews.contains(self.productTypesTableView){
+                    self.view.addSubview(self.productTypesTableView)
+                    self.productTypesTableView.isHidden = true
+                    self.selectedProductType = all.tees.first
+                    //self.priceView.text = self.formattedMinPrice()
+                }
+                if !(self.displayView.superview?.subviews.contains(self.zoomBtn) ?? false){
+                    self.displayView.superview?.addSubview(self.zoomBtn)
                     self.zoomBtn.frame.origin = CGPoint(x: 5, y: self.displayView.frame.maxY - self.zoomBtn.frame.height - 5)
+                }
+                if !self.view.subviews.contains(self.zoomableView){
                     self.view.addSubview(self.zoomableView)
                     self.zoomableView.isHidden = true
-                    self.nextBtn.isEnabled = false
-                    self.bottomBar.isHidden = true
-                    self.bottomSafeAreaView.isHidden = true
-                    self.canvasImageView.isHidden = true
-                    self.selectedProductType = .c
                 }
             }
         }
     }
-    @IBAction func viewPricingGuide(_ sender: UIButton) {
-        self.performSegue(withIdentifier: "toCommissionCalc", sender: nil)
+    
+    func hideNextBtn(){
+        UIView.animate(withDuration: 0.2, animations: {
+            self.nextBtn.alpha = 0.0
+            self.nextBtn.isUserInteractionEnabled = false
+        }, completion: nil)
     }
+    
+    func showNextBtn(){
+        
+        UIView.animate(withDuration: 0.2, animations: {
+            self.nextBtn.alpha = 1.0
+            self.nextBtn.isUserInteractionEnabled = true
+        }, completion: nil)
+    }
+    
+    
     
     func checkIfCardSet() -> Bool{
                 
@@ -1256,29 +1371,6 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         return false
     }
     
-    func showBankConfirmationMessage(completed: @escaping () -> ()){
-        
-
-        let title = "Merchant Account"
-        let message = "In order to earn money from Thred, a bank account must be added in your account settings. Any sales made without this will not be deposited into your bank account."
-        let titleColor = UIColor.label
-        
-        let yesBtn = DefaultButton(title: "I UNDERSTAND", dismissOnTap: true) {
-            completed()
-        }
-
-        showPopUp(title: title, message: message, image: nil, buttons: [yesBtn], titleColor: titleColor)
-    }
-    
-    @objc func textFieldDidChange(_ textField: UITextField){
-        if cannotPost(){
-            nextBtn.isEnabled = false
-        }
-        else{
-            nextBtn.isEnabled = true
-        }
-    }
-    
     lazy var canvasImageView: UIImageView = {
         let imageView = UIImageView(frame: canvas.frame)
         return imageView
@@ -1286,22 +1378,20 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     
     func cannotPost() -> Bool{
         guard let indexPath = carousel.collectionView.indexPathsForVisibleItems.first, let cell = carousel.collectionView.cellForItem(at: indexPath) as? CarouselCollectionViewCell else {return true}
-        return titleView.text?.replacingOccurrences(of: " ", with: "").isEmpty ?? false || priceView.text?.isEmpty ?? false || cell.canvasDisplayView.image == nil
+        return cell.canvasDisplayViews.filter({$0.image(for: .normal) != nil}).isEmpty
     }
     
     
     func showCancelMessage(completed: @escaping () -> ()){
         
-        guard let indexPath = carousel.collectionView.indexPathsForVisibleItems.first, let cell = carousel.collectionView.cellForItem(at: indexPath) as? CarouselCollectionViewCell, (product == nil && cell.canvasDisplayView.image != nil), let titleText = titleView.text
+        
+//
+        guard let indexPath = carousel.collectionView.indexPathsForVisibleItems.first, let cell = carousel.collectionView.cellForItem(at: indexPath) as? CarouselCollectionViewCell, !(        cell.canvasDisplayViews.filter({$0.image(for: .normal) != nil}).isEmpty)
         else{
             completed()
             return
         }
-        var title = ""
-        if !titleText.isEmpty{
-            title = #""\#(titleText)""#
-        }
-        
+
         let message = "Are you sure you want to abandon your Thred-in-progress?"
         let yesBtn = DefaultButton(title: "YES", dismissOnTap: true) {
             completed()
@@ -1309,11 +1399,13 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         let cancelBtn = DefaultButton(title: "NEVER MIND", dismissOnTap: true) {
         }
             
-        let image = displayView.makeSnapshot(clear: true, subviewsToIgnore: [zoomBtn, cell.colorDisplayLabel, thredWatermark])
-        showPopUp(title: title, message: message, image: image, buttons: [yesBtn, cancelBtn], titleColor: .label)
+        let image = displayView.makeSnapshot(clear: true, subviewsToIgnore: [thredWatermark])
+        showPopUp(title: nil, message: message, image: image, buttons: [yesBtn, cancelBtn], titleColor: .label, blurBack: true)
+ 
     }
     
     @objc func cancelDesigning(_ sender: UIBarButtonItem){
+        
         showCancelMessage{
             self.product = nil
             self.performSegue(withIdentifier: "DoneDesigning", sender: nil)
@@ -1348,6 +1440,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     }()
     
     
+    
     lazy var zoomBtn: UIButton = {
         let btn = UIButton(frame: CGRect(x: 0, y: 0, width: 45, height: 45))
         btn.setImage(UIImage(nameOrSystemName: "doc.text.magnifyingglass", systemPointSize: 18, iconSize: 9), for: .normal)
@@ -1355,6 +1448,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         btn.addTarget(self, action: #selector(showZoomableView(_:)), for: .touchUpInside)
         return btn
     }()
+    
 
     func setKeyBoardNotifs(){
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
@@ -1368,15 +1462,8 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let tabVC = segue.destination as? MainTabBarViewController{
-            if product != nil{
-                tabVC.product = product
-                tabVC.deletingPost = deletingPost
-                tabVC.posted = !isEditingProduct
-            }
-            else{
-                tabVC.posted = false
-            }
+        if let infoVC = segue.destination as? DesignInfoViewController{
+            infoVC.product = product
         }
     }
 }
@@ -1392,12 +1479,12 @@ extension UIView {
         for view in subviewsToIgnore{
             view.isHidden = true
         }
-        
         let renderer = UIGraphicsImageRenderer(size: bounds.size)
         let image = renderer.image { ctx in
             drawHierarchy(in: bounds, afterScreenUpdates: true)
         }
         backgroundColor = color
+        
         for view in subviewsToIgnore{
             view.isHidden = false
         }
@@ -1451,7 +1538,7 @@ class CanvasTextView: UITextView {
     }
     var color: UIColor!{
         didSet{
-            if labelStyle == .fill{
+            if labelFont?.fontName == "fill"{
                 determineFillColor()
             }
             else{
@@ -1460,52 +1547,31 @@ class CanvasTextView: UITextView {
         }
     }
     
-    var labelStyle: LabelStyle!{
+    var labelFont: LabelFont!{
+        
         didSet{
-            switch labelStyle {
+            switch labelFont.fontName {
 
-            case .large:
+            case "bold":
                 self.font = UIFont.boldSystemFont(ofSize: currentFontSize ?? CGFloat(defaultFontSize))
                 self.textColor = color
-                self.backgroundColor = .clear
-                self.textAlignment = .center
-            case .normal:
+                self.backgroundColor = labelFont.backgroundColor
+                self.textAlignment = labelFont.textAlignment
+
+            case "normal":
                 self.font = UIFont.systemFont(ofSize: currentFontSize ?? CGFloat(defaultFontSize))
                 self.textColor = color
-                self.backgroundColor = .clear
-                self.textAlignment = .left
-            case .nexa:
-                self.font = UIFont(name: "NexaW01-Heavy", size: currentFontSize ?? CGFloat(defaultFontSize))
-                self.textColor = color
-                self.backgroundColor = .clear
-                self.textAlignment = .center
-            case .fancy:
-                self.font = UIFont(name: "AguafinaScript-Regular", size: currentFontSize ?? CGFloat(defaultFontSize))
-                self.textColor = color
-                self.backgroundColor = .clear
-                self.textAlignment = .center
-                
-            case .fill:
+                self.backgroundColor = labelFont.backgroundColor
+                self.textAlignment = labelFont.textAlignment
+
+            case "fill":
                 self.font = UIFont.boldSystemFont(ofSize: currentFontSize ?? CGFloat(defaultFontSize))
                 determineFillColor()
-                self.textAlignment = .center
-            case .hype:
-                self.font = UIFont(name: "HOPE-HYPE", size: currentFontSize ?? CGFloat(defaultFontSize))
-                self.textColor = color
-                self.backgroundColor = .clear
-                self.textAlignment = .center
-            case .thriller:
-                self.font = UIFont(name: "Hey November", size: currentFontSize ?? CGFloat(defaultFontSize))
-                self.textColor = color
-                self.backgroundColor = .clear
-                self.textAlignment = .center
-            case .subway:
-                self.font = UIFont(name: "Whoa! 2", size: currentFontSize ?? CGFloat(defaultFontSize))
-                self.textColor = color
-                self.backgroundColor = .clear
-                self.textAlignment = .center
             default:
-                return
+                self.font = UIFont(name: labelFont.fontName, size: currentFontSize ?? CGFloat(defaultFontSize))
+                self.textColor = color
+                self.backgroundColor = labelFont.backgroundColor
+                self.textAlignment = labelFont.textAlignment
             }
         }
     }
@@ -1524,16 +1590,31 @@ class CanvasTextView: UITextView {
         super.init(frame: frame, textContainer: textContainer)
     }
     
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    override func encode(with coder: NSCoder) {
+        coder.encode(textToStore, forKey: "textToStore")
+        coder.encode(currentFontSize, forKey: "currentFontSize")
+        coder.encode(defaultFontSize, forKey: "defaultFontSize")
+        coder.encode(color, forKey: "color")
+        coder.encode(labelFont, forKey: "labelFont")
     }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        textToStore = coder.decodeObject(forKey: "textToStore") as? String
+        currentFontSize = coder.decodeObject(forKey: "currentFontSize") as? CGFloat
+        defaultFontSize = coder.decodeObject(forKey: "defaultFontSize") as? Int
+        color = coder.decodeObject(forKey: "color") as? UIColor
+        labelFont = coder.decodeObject(forKey: "labelFont") as? LabelFont
+    }
+    
 }
 
 extension UIViewController{
-    func showPopUp(title: String?, message: String?, image: UIImage?, buttons: [DefaultButton], titleColor: UIColor){
+    func showPopUp(title: String?, message: String?, image: UIImage?, buttons: [DefaultButton], titleColor: UIColor, blurBack: Bool, transitionStyle: PopupDialogTransitionStyle = .bounceUp, dismissOnlyBtns: Bool = true, shakeOnBtnTap: Bool = false){
 
-        let popup = PopupDialog(title: title, message: message, image: image)
+        let popup = PopupDialog(title: title, message: message, image: image, buttonAlignment: .vertical, transitionStyle: transitionStyle, preferredWidth: self.view.frame.width - 40, tapGestureDismissal: !dismissOnlyBtns, panGestureDismissal: !dismissOnlyBtns, hideStatusBar: false, completion: nil)
         let dialogAppearance = PopupDialogDefaultView.appearance()
+        
         dialogAppearance.backgroundColor      = .secondarySystemBackground
         dialogAppearance.titleFont            = UIFont(name: "NexaW01-Heavy", size: 18)!
         dialogAppearance.titleColor           = titleColor
@@ -1553,7 +1634,16 @@ extension UIViewController{
         
         popup.addButtons(buttons)
         
-        self.present(popup, animated: true, completion: nil)
+        if !blurBack{
+            let vc = PopupDialogOverlayView.appearance()
+            vc.blurEnabled = false
+            
+            vc.opacity = 0.2
+        }
+                
+        self.present(popup, animated: true, completion: {
+            
+        })
     }
 }
 
@@ -1573,30 +1663,49 @@ extension UIImage {
         }
         return nil
     }
+    
+    
 }
 
-extension ProductType{
-    
-    func productCode() -> String{
-        switch self{
-        case .c:
-            return "ATC1000"
-        case .f_c:
-            return "ATC1000L"
-        }
+extension UIImage{
+    func overlayImage(color: UIColor) -> UIImage {
+        UIGraphicsBeginImageContextWithOptions(self.size, false, UIScreen.main.scale)
+        let context = UIGraphicsGetCurrentContext()
+
+        color.setFill()
+
+        context!.translateBy(x: 0, y: self.size.height)
+        context!.scaleBy(x: 1.0, y: -1.0)
+
+        context!.setBlendMode(CGBlendMode.colorBurn)
+        let rect = CGRect(x: 0, y: 0, width: self.size.width, height: self.size.height)
+        context!.draw(self.cgImage!, in: rect)
+
+        context!.setBlendMode(CGBlendMode.sourceIn)
+        context!.addRect(rect)
+        context!.drawPath(using: CGPathDrawingMode.fill)
+
+        let coloredImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+
+        return coloredImage!
+    }
+}
+
+extension Colors{
+    func getColor() -> UIColor{
+        let colors = rgb
+
+        let r = colors?.first ?? 0
+        let g = colors?[1] ?? 0
+        let b = colors?.last ?? 0
+
+        return UIColor(red: CGFloat(r), green: CGFloat(g), blue: CGFloat(b), alpha: 1)
     }
 }
 
 extension String{
-    
-    func productType() -> ProductType?{
-        switch self{
-        case "ATC1000":
-            return ProductType.c
-        case "ATC1000L":
-            return ProductType.f_c
-        default:
-            return nil
-        }
+    func prepared() -> String{
+        return trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }

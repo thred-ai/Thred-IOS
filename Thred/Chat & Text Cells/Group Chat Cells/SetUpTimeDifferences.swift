@@ -21,10 +21,26 @@ extension UITableView{
             user.timestampDiff = self.setTimeDifference(user: user, timeToUse: user.timestamp)
             guard user.timestampDiff != nil else{return}
             DispatchQueue.main.async {
-                timestampLbl?.text = "\(user.timestampDiff!) ago"
+                timestampLbl?.text = "\(user.timestampDiff ?? "") ago"
             }
         }
     }
+    
+    func checkChatTimes(chat: GroupChat, timestampLbl: UILabel?){
+        
+        DispatchQueue(label: "Times").async {
+            if chat.timestamp == nil{
+                return
+            }
+            chat.timestampDiff = self.setChatTimeDifference(chat: chat, timeToUse: chat.timestamp)
+            guard chat.timestampDiff != nil else{return}
+            DispatchQueue.main.async {
+                timestampLbl?.text = " • \(chat.timestampDiff ?? "")"
+            }
+        }
+    }
+    
+    
     
     func checkNotifTimes(notif: UserNotification, timestampLbl: UILabel?){
         
@@ -35,7 +51,7 @@ extension UITableView{
             notif.timestampDiff = self.setNotifTimeDifference(notif: notif, timeToUse: notif.timestamp)
             guard notif.timestampDiff != nil else{return}
             DispatchQueue.main.async {
-                timestampLbl?.text = "\(notif.timestampDiff ?? "some time") ago"
+                timestampLbl?.text = "\(notif.timestampDiff ?? "some time")"
             }
         }
     }
@@ -49,7 +65,7 @@ extension UITableView{
             sale.timestampDiff = self.setSaleTimeDifference(sale: sale, timeToUse: sale.timestamp)
             guard sale.timestampDiff != nil else{return}
             DispatchQueue.main.async {
-                timestampLbl?.text = "\(sale.timestampDiff ?? "some time") ago"
+                timestampLbl?.text = "\(sale.timestampDiff ?? "some time")"
             }
         }
     }
@@ -63,7 +79,7 @@ extension UITableView{
             comment.timestampDiff = self.setCommentTimeDifference(comment: comment, timeToUse: comment.timestamp)
             guard comment.timestampDiff != nil else{return}
             DispatchQueue.main.async {
-                timestampLbl?.text = "\(comment.timestampDiff!) ago"
+                timestampLbl?.text = "\(comment.timestampDiff ?? "")"
             }
         }
     }
@@ -78,7 +94,21 @@ extension UITableView{
               //return user.timestampDiff
         default:
             guard let time = timeToUse else{return "0 seconds"}
-            return calculateTimeDifference(time: time) ?? "0 seconds"
+            return calculateTimeDifference(time: time, shortForm: false) ?? "0 seconds"
+        }
+    }
+    
+    func setChatTimeDifference(chat: GroupChat, timeToUse: Date?) -> String{
+        
+        switch chat.timestampDiff{
+        case .some:
+            
+            chat.timestampDiff = nil
+            fallthrough
+              //return user.timestampDiff
+        default:
+            guard let time = timeToUse else{return "0s"}
+            return calculateTimeDifference(time: time, shortForm: true) ?? "0s"
         }
     }
     
@@ -91,13 +121,13 @@ extension UITableView{
             fallthrough
               //return user.timestampDiff
         default:
-            guard let time = timeToUse else{return "0 seconds"}
-            return calculateTimeDifference(time: time) ?? "0 seconds"
+            guard let time = timeToUse else{return "0s"}
+            return calculateTimeDifference(time: time, shortForm: true) ?? "0s"
         }
     }
     
     func setSaleTimeDifference(sale: ProductInCart, timeToUse: Date?) -> String{
-        
+    
         switch sale.timestampDiff{
         case .some:
             
@@ -105,8 +135,8 @@ extension UITableView{
             fallthrough
               //return user.timestampDiff
         default:
-            guard let time = timeToUse else{return "0 seconds"}
-            return calculateTimeDifference(time: time) ?? "0 seconds"
+            guard let time = timeToUse else{return "0s"}
+            return calculateTimeDifference(time: time, shortForm: true) ?? "0s"
         }
     }
     
@@ -119,12 +149,12 @@ extension UITableView{
             fallthrough
               //return user.timestampDiff
         default:
-            guard let time = timeToUse else{return "0 seconds"}
-            return calculateTimeDifference(time: time) ?? "0 seconds"
+            guard let time = timeToUse else{return "0s"}
+            return calculateTimeDifference(time: time, shortForm: true) ?? "0s"
         }
     }
     
-    func calculateTimeDifference(time: Date) -> String?{
+    func calculateTimeDifference(time: Date, shortForm: Bool) -> String?{
         let currentDate = Date()
         let requestedComponent: Set<Calendar.Component> = [.year, .month, .weekOfYear, .day, .hour, .minute, .second]
         let timeDifference = userCalendar.dateComponents(requestedComponent, from: time, to: currentDate)
@@ -150,12 +180,21 @@ extension UITableView{
             return nil
         }
         var pluralLetter = ""
-        let displayUnit = dateUnits[index]
+        var displayUnit = ""
+        var timeDiff = ""
         
-        if displayUnitCount > 1{
-            pluralLetter = "s"
+        if shortForm{
+            displayUnit = shortDateUnits[index]
+            timeDiff = "\(displayUnitCount)\(displayUnit)"
         }
-        let timeDiff = "\(displayUnitCount) \(displayUnit)\(pluralLetter)"
+        else{
+            displayUnit = dateUnits[index]
+            if displayUnitCount > 1{
+                pluralLetter = "s"
+            }
+            timeDiff = "\(displayUnitCount) \(displayUnit)\(pluralLetter)"
+        }
+        
         timeDiffList = nil
         return timeDiff
     }

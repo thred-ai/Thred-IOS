@@ -25,8 +25,10 @@ class ProductInCart{
     var timestampDiff: String!
     var saleID: String!
     var inBank: Bool?
+    var moneyMade: Double?
+    var currency: String?
     
-    init(product: Product?, size: String!, quantity: Int!, isDeleted: Bool, timestamp: Date!, timestampDiff: String?, saleID: String?, inBank: Bool?) {
+    init(product: Product?, size: String!, quantity: Int!, isDeleted: Bool, timestamp: Date!, timestampDiff: String?, saleID: String?, inBank: Bool?, moneyMade: Double?) {
         self.product = product
         self.size = size
         self.quantity = quantity
@@ -35,9 +37,10 @@ class ProductInCart{
         self.timestampDiff = timestampDiff
         self.saleID = saleID
         self.inBank = inBank
+        self.moneyMade = moneyMade
     }
     convenience init() {
-        self.init(product: nil, size: nil, quantity: nil, isDeleted: false, timestamp: nil, timestampDiff: nil, saleID: nil, inBank: nil)
+        self.init(product: nil, size: nil, quantity: nil, isDeleted: false, timestamp: nil, timestampDiff: nil, saleID: nil, inBank: nil, moneyMade: nil)
     }
 }
 
@@ -54,10 +57,12 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     override func viewWillAppear(_ animated: Bool) {
         navigationController?.setNavigationBarHidden(false, animated: true)
-        navigationController?.delegate = self
         setKeyBoardNotifs()
         guard let selectedIndexPath = tableView.indexPathForSelectedRow else{return}
         tableView.deselectRow(at: selectedIndexPath, animated: true)
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
     }
     
     override func viewWillLayoutSubviews() {
@@ -160,7 +165,7 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
             if remaining == 1{
                 grammar = ""
             }
-            freeShippingLbl.text = "Order \(remaining) more product\(grammar) and you'll qualify for free shipping!"
+            freeShippingLbl.text = "Add \(remaining) item\(grammar) to qualify for FREE SHIPPING!"
         }
     }
     
@@ -247,7 +252,7 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     
     func checkPrivateProducts() -> Bool{
-        if savedProducts.contains(where: {!($0.product.isPublic) && ($0.product.userInfo.uid != userInfo.uid)}){
+        if savedProducts.contains(where: {!($0.product.isPublic) && ($0.product.userInfo.uid != pUserInfo.uid)}){
             return false
         }
         return true
@@ -255,15 +260,7 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     func showBankConfirmationMessage(completed: @escaping () -> ()){
         
-        let title = "Billing Information Not Set"
-        let message = "Add a billing card to purchase products from Thred, you can do this in account settings."
-        let titleColor = UIColor.label
-        
-        let yesBtn = DefaultButton(title: "OK", dismissOnTap: true) {
-            completed()
-        }
-
-        showPopUp(title: title, message: message, image: nil, buttons: [yesBtn], titleColor: titleColor)
+        performSegue(withIdentifier: "toCard", sender: nil)
     }
     
     func showDeletedConfirmationMessage(completed: @escaping () -> ()){
@@ -276,7 +273,7 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
             completed()
         }
 
-        showPopUp(title: title, message: message, image: nil, buttons: [yesBtn], titleColor: titleColor)
+        showPopUp(title: title, message: message, image: nil, buttons: [yesBtn], titleColor: titleColor, blurBack: true)
     }
     
     func checkIfCardSet() -> Bool{
@@ -358,7 +355,7 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         
         for (index, id) in productIDs.enumerated(){
             
-            guard let userUID = userInfo.uid else{return}
+            guard let userUID = pUserInfo.uid else{return}
             let currentCartProduct = self.savedProducts[index]
 
             if let same = savedProducts.first(where: {$0.product.productID == id && $0.product.name != nil}){
@@ -389,7 +386,10 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                     let comments = ((snap["Comments"]) as? Int) ?? 0
                     let isPublic = snap["Public"] as? Bool ?? true
                     let productType = snap["Type"] as? String ?? defaultProductType
-                    let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: isAvailable, isPublic: isPublic, productType: productType)
+                    let displaySide = snap["Side"] as? String ?? "front"
+                    let sides = snap["Sides"] as? [String] ?? ["Front"]
+
+                    let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: index, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: pUserInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: isAvailable, isPublic: isPublic, productType: productType, displaySide: displaySide, supportedSides: sides)
                     
                     Firestore.firestore().collection("Users").document(uid).collection("Products").document(product.productID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userUID).getDocuments(completion: { snapLikes, error in
                     
@@ -397,15 +397,15 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                             print(error?.localizedDescription ?? "")
                         }
                         else{
-                            userInfo.userLiked.removeAll(where: {$0 == product.productID})
+                            pUserInfo.userLiked.removeAll(where: {$0 == product.productID})
                             if let likeDocs = snapLikes?.documents{
                                 if likeDocs.isEmpty{
                                     product.liked = false
                                 }
                                 else{
                                     product.liked = true
-                                    if !(userInfo.userLiked.contains(product.productID)){
-                                        userInfo.userLiked.append(product.productID)
+                                    if !(pUserInfo.userLiked.contains(product.productID)){
+                                        pUserInfo.userLiked.append(product.productID)
                                     }
                                 }
                             }
@@ -420,7 +420,11 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                         }
                         if !self.downloadingPictures.contains(snap.documentID){
                             self.downloadingPictures.append(snap.documentID)
-                            let ref = Storage.storage().reference().child("Users/" + uid + "/" + "Products/" + snap.documentID + "/" + "thumbnail_\(snap.documentID)" + ".png")
+                            var prefix = ""
+                            if displaySide == "back" || displaySide == "Back"{
+                                prefix = "BACK_"
+                            }
+                            let ref = Storage.storage().reference().child("Users/" + uid + "/" + "Products/" + snap.documentID + "/" + "thumbnail_\(prefix)\(snap.documentID)" + ".png")
                             ref.downloadURL(completion: { url, error in
                                 if error != nil{
                                     print(error?.localizedDescription ?? "")
@@ -437,7 +441,7 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                                         else{
                                             if let image = image{
                                                 self.downloadingPictures.removeAll(where: {$0 == snap.documentID})
-                                                cache.storeImage(toMemory: image, forKey: "thumbnail_\(snap.documentID)")
+                                                cache.storeImage(toMemory: image, forKey: "thumbnail_\(prefix)\(snap.documentID)")
                                                 for index in self.savedProducts.indices{
                                                     if self.savedProducts[index].product.productID == snap.documentID{
                                                         self.tableView.performBatchUpdates({
@@ -460,7 +464,7 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     func getCartList(completed: @escaping ([ProductInCart]?) -> ()){
         
-        guard let uid = userInfo.uid else{return}
+        guard let uid = pUserInfo.uid else{return}
 
         Firestore.firestore().collection("Users").document(uid).collection("Cart_Info").document("Cart_List").getDocument(completion: { doc, error in
             
@@ -482,12 +486,12 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                     let qty = product["Qty"] as? Int ?? 1
                     let timestamp = (product["Timestamp"] as? Timestamp)?.dateValue()
                     guard let productID = product["Post_ID"] as? String else{continue}
-                    if userInfo.usersBlocking.contains(uid){
+                    if pUserInfo.usersBlocking.contains(uid){
                         continue
                     }
 
-                    let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil), picID: productID, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: userInfo.userLiked.contains(doc.documentID), designImage: nil, comments: nil, link: nil, isAvailable: false, isPublic: nil, productType: nil)
-                    let productInCart = ProductInCart(product: product, size: size, quantity: qty, isDeleted: false, timestamp: timestamp, timestampDiff: nil, saleID: nil, inBank: nil)
+                    let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil), picID: productID, description: nil, productID: productID, timestamp: nil, index: nil, timestampDiff: nil, blurred: nil, price: nil, name: nil, templateColor: nil, likes: nil, liked: pUserInfo.userLiked.contains(doc.documentID), designImage: nil, comments: nil, link: nil, isAvailable: false, isPublic: nil, productType: nil, displaySide: nil, supportedSides: [])
+                    let productInCart = ProductInCart(product: product, size: size, quantity: qty, isDeleted: false, timestamp: timestamp, timestampDiff: nil, saleID: nil, inBank: nil, moneyMade: nil)
                     localLoaded.append(productInCart)
                 }
                 completed(localLoaded)
@@ -502,7 +506,6 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
 
     override func viewDidDisappear(_ animated: Bool) {
-        navigationController?.delegate = self
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -525,11 +528,11 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         cell?.isDeleted = false
         cell?.isUserInteractionEnabled = false
 
-        if let color = product.templateColor, let name = product.name, let price = product.price{
+        if let templateColor = product.templateColor, let name = product.name, let price = product.price, let color = all.tees.first(where: {$0.productCode == product.productType})?.colors.first(where: {$0.code == templateColor})?.getColor(){
             cell?.quantityView.isHidden = false
             cell?.isUserInteractionEnabled = true
             cell?.isDeleted = !(product.isAvailable ?? false)
-            cell?.productImageView.backgroundColor = UIColor(named: color)
+            cell?.productImageView.backgroundColor = color
             cell?.productNameLbl.text = name
             cell?.priceLbl.text = price.formatPrice()
 
@@ -541,7 +544,11 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
             cell?.cartVC = self
              
             DispatchQueue(label: "explore").async {
-                if let dp = cache.imageFromMemoryCache(forKey: "thumbnail_\(product.productID)"){
+                var prefix = ""
+                if product.displaySide == "back" || product.displaySide == "Back"{
+                    prefix = "BACK_"
+                }
+                if let dp = cache.imageFromMemoryCache(forKey: "thumbnail_\(prefix)\(product.productID)"){
                     DispatchQueue.main.async {
                         cell?.productImageView.image = dp
                     }
@@ -578,7 +585,7 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
 
     
     func uploadToFirestore(){
-        guard let uid = userInfo.uid else{
+        guard let uid = pUserInfo.uid else{
             return}
         checkoutBtn.isEnabled = false
         showPriceSpinner()
@@ -648,7 +655,7 @@ class ShoppingCartVC: UIViewController, UITableViewDelegate, UITableViewDataSour
             .filter({
                 !(
                     !($0.product.isPublic) &&
-                    ($0.product.userInfo.uid != userInfo.uid)
+                    ($0.product.userInfo.uid != pUserInfo.uid)
                 )
             })
         }

@@ -29,7 +29,7 @@ class TemplateColorChooserCell: UICollectionViewCell {
     
     func setShape(){
         DispatchQueue.main.async {
-            self.colorView.layer.cornerRadius = self.colorView.frame.height / 8
+            self.colorView.layer.cornerRadius = self.colorView.frame.height / 2
             self.colorView.clipsToBounds = true
             self.setNeedsLayout()
             self.layoutIfNeeded()

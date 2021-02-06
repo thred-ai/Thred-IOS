@@ -19,7 +19,7 @@ class FeaturedPostView: UIView, UICollectionViewDelegate, UICollectionViewDataSo
     var vc: UIViewController! {
         didSet{
             if vc is ExploreViewController{
-                trendingLbl.text = "Featured Five"
+                trendingLbl.text = "🔥 What's Hot 🔥"
             }
             else if vc is FullOrderVC, let orderID = order.orderID{
                 trendingLbl.text = "Order #: \(orderID)"
@@ -83,57 +83,83 @@ class FeaturedPostView: UIView, UICollectionViewDelegate, UICollectionViewDataSo
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "FeaturedCell", for: indexPath) as? FeaturedCell
         cell?.imageView.image = nil
-        cell?.canvasDisplayView.image = nil
+        for view in cell?.canvasDisplayViews ?? []{
+            view.imageView?.image = nil
+            view.setImage(nil, for: .normal)
+        }
         cell?.nameLbl.text = nil
         cell?.priceLbl.text = nil
-        cell?.likesLbl.text = "0"
+        cell?.likesLbl.text = nil
         cell?.imageView.alpha = 1.0
         cell?.isUserInteractionEnabled = false
         cell?.productRemovedView.isHidden = true
         cell?.isRemoved = false
         var product: Product!
+        
         if vc is ExploreViewController{
             cell?.dotLabel.isHidden = false
-            cell?.thredIcon.isHidden = false
             guard featuredProducts.indices.contains(indexPath.item) else{return cell!}
             product = featuredProducts[indexPath.item]
             cell?.nameLbl.text = product.name
             cell?.priceLbl.text = product.price?.formatPrice()
-            cell?.likesLbl.text = "\(product.likes)"
+            let display = all.tees.first(where: {$0.productCode == product.productType})?.info
+            cell?.likesLbl.text = display
+            cell?.likesLbl.font = UIFont(name: "NexaW01-Heavy", size: 12)
         }
         else if vc is FullOrderVC{
             cell?.dotLabel.isHidden = true
-            cell?.thredIcon.isHidden = true
             
             guard let orderProducts = order.products, orderProducts.indices.contains(indexPath.item), let price = orderProducts[indexPath.item].product?.price, let quantity = orderProducts[indexPath.item].quantity, let size = orderProducts[indexPath.item].size else{return cell!}
             cell?.isRemoved = orderProducts[indexPath.item].isDeleted
             
             product = orderProducts[indexPath.item].product
             cell?.nameLbl.text = product.name
-            cell?.priceLbl.text = "\(quantity) x \(price.formatPrice())"
+            cell?.priceLbl.text = "\(quantity) x \(price.formatPrice(addCurrency: order.currency?.shortenCurrency() ?? ""))"
             cell?.likesLbl.text = "Size: \(size)"
         }
         
+        
+        let type = all.tees.first(where: {$0.productCode == product.productType})
+        cell?.product = product
+        cell?.addConstraints(template: type)
 
+        
         DispatchQueue(label: "cache").async {
-            if let img = cache.imageFromCache(forKey: product.productID){
-                guard let productType = product.productType?.productType() else{return}
-                let bundlePath = Bundle.main.path(forResource: "\(productType)_\(product.templateColor ?? "")", ofType: "png")
-                let image = UIImage(contentsOfFile: bundlePath!)
+            var prefix = ""
+            if product.displaySide == "back" || product.displaySide == "Back"{
+                prefix = "BACK_"
+            }
+            
+            let picString = "\(prefix)\(product.productID)"
+            if let img = cache.imageFromCache(forKey: picString){
+                guard let color = all.tees.first(where: {$0.productCode == product.productType})?.colors?.first(where: {$0.code == product.templateColor})
+                else{return}
+                
+                var data: Data!
+                
+                if product.displaySide == "back" || product.displaySide == "Back"{
+                    data = color.imgBack
+                }
+                else{
+                    data = color.img
+                }
+                let image = UIImage(data: data)
                 DispatchQueue.main.async {
                     cell?.isUserInteractionEnabled = true
                     cell?.circularProgress.isHidden = true
-                    cell?.canvasDisplayView.image = img
+                    for view in cell?.canvasDisplayViews ?? []{
+                        view.imageView?.image = img
+                        view.setImage(img, for: .normal)
+                    }
                     cell?.imageView.image = image
                     if !(product.isAvailable ?? false){
                         cell?.imageView.alpha = 0.5
                     }
-                    cell?.imageView.addShadowToImageNotLayer()
                 }
             }
             else{
                 DispatchQueue.main.async {
-                    collectionView.downloadExploreProductImage(circularProgress: cell?.circularProgress, followingUID: product.userInfo.uid ?? "", picID: product.productID, index: indexPath.item, product: product, isThumbnail: false, completed: { image in
+                    UIApplication.shared.downloadExploreProductImage(circularProgress: cell?.circularProgress, followingUID: product.userInfo.uid ?? "", picID: product.productID, index: indexPath.item, product: product, isThumbnail: false, completed: { image in
                         collectionView.reloadData()
                     })
                 }
@@ -186,18 +212,19 @@ class FeaturedPostView: UIView, UICollectionViewDelegate, UICollectionViewDataSo
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         
         
-        DispatchQueue.main.async {
             
             if let exploreVC = self.vc as? ExploreViewController{
+                guard self.featuredProducts.indices.contains(indexPath.item) else{return}
                 let product = self.featuredProducts[indexPath.item]
                 exploreVC.productToOpen = product
             }
             else if let orderVC = self.vc as? FullOrderVC{
+                guard self.order.products?.indices.contains(indexPath.item) ?? false else{return}
                 let product = self.order.products?[indexPath.item].product
                 orderVC.productToOpen = product
             }
-            self.vc.performSegue(withIdentifier: "toFull", sender: nil)
-        }
+        
+        self.vc?.performSegue(withIdentifier: "toFull", sender: nil)
     }
     
     override func awakeFromNib() {
@@ -214,10 +241,14 @@ class FeaturedPostView: UIView, UICollectionViewDelegate, UICollectionViewDataSo
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        collectionView.superview?.roundCorners([.bottomLeft, .bottomRight], radius: collectionView.frame.height / 40)
-        if let trendingBack = trendingLbl.superview{
-            trendingBack.roundCorners([.bottomLeft, .bottomRight], radius: trendingBack.frame.height / 3)
-            trendingBack.clipsToBounds = true
+        DispatchQueue.main.async {
+            self.collectionView.superview?.roundCorners([.bottomLeft, .bottomRight], radius: self.collectionView.frame.height / 40)
+            if let trendingBack = self.trendingLbl.superview{
+                if self.numberOfItems != nil{
+                    trendingBack.roundCorners([.bottomLeft, .bottomRight], radius: 4)
+                    trendingBack.clipsToBounds = true
+                }
+            }
         }
     }
     

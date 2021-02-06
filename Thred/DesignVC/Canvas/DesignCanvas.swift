@@ -10,13 +10,49 @@ import Foundation
 import UIKit
 import Photos
 
+extension UIImage {
+    func rotate(radians: CGFloat) -> UIImage {
+        let rotatedSize = CGRect(origin: .zero, size: size)
+            .applying(CGAffineTransform(rotationAngle: CGFloat(radians)))
+            .integral.size
+        UIGraphicsBeginImageContext(rotatedSize)
+        if let context = UIGraphicsGetCurrentContext() {
+            let origin = CGPoint(x: rotatedSize.width / 2.0,
+                                 y: rotatedSize.height / 2.0)
+            context.translateBy(x: origin.x, y: origin.y)
+            context.rotate(by: radians)
+            draw(in: CGRect(x: -origin.y, y: -origin.x,
+                            width: size.width, height: size.height))
+            let rotatedImage = UIGraphicsGetImageFromCurrentImageContext()
+            UIGraphicsEndImageContext()
+
+            return rotatedImage ?? self
+        }
+
+        return self
+    }
+}
+
 
 extension DesignViewController{
-    @objc func maximiseDrawingArea(displayView: UIImageView){
+    @objc func maximiseDrawingArea(displayView: UIButton){
         self.navigationItem.leftBarButtonItem?.isEnabled = false
-        if let selectedIndex = carousel.collectionView.indexPathsForVisibleItems.first?.item{
-            aspectRatio = displayView.frame.height / displayView.frame.width
-            let viewY = displayView.frame.origin.y
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+
+        if let selectedIndex = carousel.collectionView.indexPathsForVisibleItems.first?.item, let _ = carousel.collectionView.cellForItem(at: IndexPath(item: selectedIndex, section: 0)) as? CarouselCollectionViewCell{
+            
+            hideList()
+            
+            aspectRatio = selectedSide.aspectRatio
+            
+            let colorInfo: Colors? = selectedProductType?.colors[selectedIndex]
+
+            let color = colorInfo?.getColor()
+            
+            
+            productTypeBtn.isEnabled = false
+            var viewY = CGFloat.zero
+                
             let width = view.frame.width
             var height = view.frame.width * aspectRatio
             let y = self.displayView.frame.origin.y
@@ -26,19 +62,68 @@ extension DesignViewController{
                 height = bottomBarY - view.safeAreaInsets.top
             }
             garbageBtn.center.y = bottomBarY - (garbageBtn.frame.height / 2) - view.safeAreaInsets.top
-            titleView.isUserInteractionEnabled = false
+            //titleView.isUserInteractionEnabled = false
+            canvasDisplayView.frame.size = displayView.bounds.size
+
+            if let currentDesign = canvasDesigns.first(where: {$0.name == selectedSide.name}){
+                let subviews = currentDesign.subviews
+                let drawItems = currentDesign.drawItems
+                print(canvasDesigns.compactMap({$0.subviews}))
+                print(canvasDesigns.compactMap({$0.name}))
+
+                print(subviews)
+                
+                drawCanvas.drawItems.append(contentsOf: drawItems)
+                
+                for view in subviews{
+                    canvas.addSubview(view)
+                }
+                drawCanvas.setNeedsDisplay()
+            }
+            else{
+                print(canvasDesigns.compactMap({$0.name}))
+                print(canvasDesigns.compactMap({$0.subviews}))
+                
+            }
+            
+            switch selectedSide.name{
+            
+            case "Front":
+                print("")
+                viewY = displayView.frame.origin.y
+                canvasDisplayView.frame.origin.y = viewY
+            case "Back":
+                print("")
+                viewY = displayView.frame.origin.y
+                canvasDisplayView.frame.origin.y = viewY
+            case "Left":
+                print("")
+                viewY = displayView.frame.origin.y
+                canvasDisplayView.frame.origin.y = viewY
+                let radians = atan2(displayView.transform.b, displayView.transform.a)
+                //let degrees = radians * 180 / .pi
+                canvasDisplayView.transform = CGAffineTransform(rotationAngle: radians)
+            case "Right":
+                print("")
+                viewY = displayView.frame.origin.y
+                canvasDisplayView.frame.origin.y = viewY
+                let radians = atan2(displayView.transform.b, displayView.transform.a)
+                canvasDisplayView.transform = CGAffineTransform(rotationAngle: radians)
+            default:
+                return
+            }
             canvasDisplayView.isHidden = false
-            canvasDisplayView.frame.size = displayView.frame.size
-            canvasDisplayView.frame.origin.y = viewY
+            
+            
             displayView.isHidden = true
-            nextBtn?.isEnabled = false
-            carousel.displayImage = canvasDisplayView.image
+            hideNextBtn()
+            canvasDisplayView.image = carousel.currentImage()
             selectedView = displayView
             DispatchQueue.main.async {
                 self.scrollview?.setContentOffset(.zero, animated: true)
                 self.scrollview?.isScrollEnabled = false
-                self.canvas.backgroundColor = UIColor(named: self.tees[selectedIndex].templateID)
-                self.canvasDisplayView.backgroundColor = UIColor(named: self.tees[selectedIndex].templateID)
+                self.canvas.backgroundColor = color
+                self.canvasDisplayView.backgroundColor = color
                 self.garbageBtn?.isHidden = true
                 self.textStyleBtn?.superview?.isHidden = true
                 self.fontSlider?.isHidden = true
@@ -49,7 +134,10 @@ extension DesignViewController{
                 self.bottomSafeAreaView.frame.origin.y = self.bottomBar.frame.maxY
                 self.bottomSafeAreaView.frame.size.height = self.view.frame.maxY - self.bottomSafeAreaView.frame.origin.y
                 UIView.animate(withDuration: 0.2, animations: {
-                    self.descriptionView?.alpha = 0.0
+                    if self.selectedProductType.category == "Accessories"{
+                        self.canvasDisplayView.transform = CGAffineTransform(rotationAngle: -(.pi / 2))
+                    }
+                    //self.descriptionView?.alpha = 0.0
                     self.canvasDisplayView.frame = CGRect(x: 0, y: y, width: width, height: height)
                     self.canvasDisplayView.center.x = self.view.center.x
                     self.canvas.frame = CGRect(x: 0, y: y + self.view.safeAreaInsets.top, width: width, height: height)
@@ -57,13 +145,17 @@ extension DesignViewController{
                 }, completion: { finished in
                     if finished{
                         //self.displayView.image = nil
+                        self.canvasDisplayView.transform = .identity
                         self.lineTypeView?.isHidden = true
-                        self.descriptionView?.isHidden = true
+                        //self.descriptionView?.isHidden = true
                         self.canvas.isHidden = false
                         self.drawCanvas?.isHidden = false
                     }
                 })
             }
+        }
+        else{
+            fatalError()
         }
     }
     
@@ -91,10 +183,14 @@ extension DesignViewController{
         angleLocked = false
         viewCenteredX = false
         viewCenteredY = false
-        if canvas.subviews.contains(where: {$0.isKind(of: UIImageView.self) || ($0.isKind(of: UITextView.self))}) || drawCanvas.lines.contains(where: {$0.brush.blendMode != .clear}){
-            canvasDisplayView.image = canvas.makeSnapshot(clear: true, subviewsToIgnore: [])
-            if !(titleView.text?.isEmpty ?? true){
-                nextBtn.isEnabled = true
+        productTypeBtn.isEnabled = true
+        if canvas.subviews.contains(where: {$0.isKind(of: UIImageView.self) || ($0.isKind(of: UITextView.self))}) || drawCanvas.drawItems.contains(where: {$0.brush.blendMode != .clear}){
+            let image = canvas.makeSnapshot(clear: true, subviewsToIgnore: [])
+            if selectedProductType.category == "Accessories"{
+                self.canvasDisplayView.image = image?.rotate(radians: (.pi / 2))
+            }
+            else{
+                self.canvasDisplayView.image = image
             }
         }
         if !cameraRollCollectionView.isHidden{
@@ -106,27 +202,35 @@ extension DesignViewController{
         let height = selectedView.frame.height
         DispatchQueue.main.async {
             self.scrollview.isScrollEnabled = true
-            self.titleView.isUserInteractionEnabled = true
+            //self.titleView.isUserInteractionEnabled = true
             self.bottomBar.isHidden = true
             self.bottomSafeAreaView.isHidden = true
-            self.descriptionView.isHidden = false
+            //self.descriptionView.isHidden = false
             self.drawCanvas.isEnabled = false
             self.drawBtn.isSelected = false
             self.drawBtn.tintColor = UIColor(named: "LoadingColor")
             self.drawCanvas.isHidden = true
             self.canvas.isHidden = true
             UIView.animate(withDuration: 0.2, animations: {
-                self.descriptionView.alpha = 1.0
+                //self.descriptionView.alpha = 1.0
                 self.canvasDisplayView.frame = CGRect(x: x, y: y, width: width, height: height)
                 self.canvasDisplayView.center.x = self.displayView.center.x
             }, completion: { finished in
                 if finished{
                     UIView.animate(withDuration: 0.1, animations: {
-                        self.carousel.displayImage = self.canvasDisplayView.image
+                        self.carousel.replaceImageSide(side: self.selectedSide, with: self.canvasDisplayView.image)
+                        self.drawCanvas.clear()
+                        self.drawCanvas.drawItems.removeAll()
+                        for subview in self.canvas.subviews.filter({$0.isKind(of: UIImageView.self) || ($0.isKind(of: UITextView.self))}){
+                            subview.removeFromSuperview()
+                        }
                         self.carousel.collectionView.reloadData()
                         self.selectedView.isHidden = false
                         self.selectedView = nil
                         self.canvasDisplayView.isHidden = true
+                        if self.canvasDesigns.contains(where: {$0.currentImage != nil}){
+                            self.showNextBtn()
+                        }
                     })
                 }
             })
@@ -217,9 +321,9 @@ extension DesignViewController{
     
     @IBAction func saveToCameraRoll(_ sender: UIButton){
         
+        //canvasDesigns.saveAllObjects(type: "")
+        
         if let thredLabel = self.thredWatermark.arrangedSubviews.first(where: {$0.isKind(of: UILabel.self)}) as? UILabel{
-            guard let cellIndex = carousel.collectionView.indexPathsForVisibleItems.first else{return}
-            guard let colorLbl = (carousel.collectionView.cellForItem(at: cellIndex) as? CarouselCollectionViewCell)?.colorDisplayLabel else{return}
             hideSaveView(nil)
             thredLabel.text = "thred"
             saveBtn.isEnabled = false
@@ -229,7 +333,7 @@ extension DesignViewController{
                 thredLabel.alpha = 1.0
             }, completion: { finished in
                 sender.transform = CGAffineTransform.identity
-                guard let image = self.displayView.makeSnapshot(clear: false, subviewsToIgnore: [self.zoomBtn, colorLbl]) else{return}
+                guard let image = self.displayView.makeSnapshot(clear: false, subviewsToIgnore: []) else{return}
                 sender.transform = CGAffineTransform(rotationAngle: CGFloat.pi)
                 image.saveToPhotos { (success) in
                     DispatchQueue.main.async {
@@ -260,6 +364,7 @@ extension DesignViewController{
                 }
             })
         }
+        
     }
     
     @objc func handleObjectPinch(_ sender: UIPinchGestureRecognizer){

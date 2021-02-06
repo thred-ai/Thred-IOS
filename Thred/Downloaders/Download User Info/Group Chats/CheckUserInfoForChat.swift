@@ -17,17 +17,17 @@ extension UITableView{
     func checkAndDownloadUserInfoInFullVC(user: Product, dp: UIImageView, userLbl: UILabel, fullLbl: UILabel, picCell: ProductCell?, fullVC: FullProductVC){
         
         switch user.userInfo.uid{
-        case userInfo.uid:
-            guard let imgData = userInfo.dp else{fallthrough}
+        case pUserInfo.uid:
+            guard let imgData = pUserInfo.dp else{fallthrough}
             dp.image = UIImage(data: imgData)
-            user.userInfo.fullName = userInfo.fullName
-            user.userInfo.username = userInfo.username
-            fullLbl.text = userInfo.fullName
-            if userInfo.verified{
+            user.userInfo.fullName = pUserInfo.fullName
+            user.userInfo.username = pUserInfo.username
+            fullLbl.text = pUserInfo.fullName
+            if pUserInfo.verified{
                 fullLbl.setVerified(name: user.userInfo.fullName ?? "")
-                user.userInfo.verified = userInfo.verified
+                user.userInfo.verified = pUserInfo.verified
             }
-            userLbl.text = "@" + (userInfo.username ?? "null")
+            userLbl.text = "@" + (pUserInfo.username ?? "null")
             picCell?.removeLabelLoad()
             picCell?.removeDpLoad()
         default:
@@ -37,7 +37,7 @@ extension UITableView{
                     dp.image = imageFromCache
                     fullLbl.text = user.userInfo.fullName
                     if user.userInfo.verified{
-                        fullLbl.setVerified(name: userInfo.fullName ?? "")
+                        fullLbl.setVerified(name: user.userInfo.fullName ?? "")
                     }
                     userLbl.text = "@" + (user.userInfo.username ?? "null")
                     picCell?.removeLabelLoad()
@@ -57,13 +57,13 @@ extension UITableView{
     
     func checkAndDownloadUserInfoInFeed(feed: FeedVC?, user: Product, dp: UIImageView, userLbl: UILabel, fullLbl: UILabel, picCell: ProductCell?){
         
-        if user.userInfo.uid == userInfo.uid, let username = userInfo.username, let fullname = userInfo.fullName, let imgData = userInfo.dp{
+        if user.userInfo.uid == pUserInfo.uid, let username = pUserInfo.username, let fullname = pUserInfo.fullName, let imgData = pUserInfo.dp{
             user.userInfo.username = username
             user.userInfo.fullName = fullname
-            user.userInfo.dpID = userInfo.dpID
+            user.userInfo.dpID = pUserInfo.dpID
             fullLbl.text = fullname
-            if userInfo.verified{
-                fullLbl.setVerified(name: userInfo.fullName ?? "")
+            if pUserInfo.verified{
+                fullLbl.setVerified(name: pUserInfo.fullName ?? "")
             }
             userLbl.text = "@\(username)"
             picCell?.removeLabelLoad()
@@ -89,14 +89,14 @@ extension UITableView{
                         }
                     }
                     else{
-                        if user.userInfo.uid == userInfo.uid, let imgData = userInfo.dp{
+                        if user.userInfo.uid == pUserInfo.uid, let imgData = pUserInfo.dp{
                             DispatchQueue.main.async {
                                 dp.image = UIImage(data: imgData)
-                                fullLbl.text = userInfo.fullName
+                                fullLbl.text = pUserInfo.fullName
                                 if user.userInfo.verified{
-                                    fullLbl.setVerified(name: userInfo.fullName ?? "")
+                                    fullLbl.setVerified(name: pUserInfo.fullName ?? "")
                                 }
-                                userLbl.text = "@" + (userInfo.username ?? "null")
+                                userLbl.text = "@" + (pUserInfo.username ?? "null")
                                 picCell?.removeLabelLoad()
                                 picCell?.removeDpLoad()
                             }
@@ -112,14 +112,14 @@ extension UITableView{
                         user.userInfo.username = cachedUserInfo?.userInfo.username
                         user.userInfo.fullName = cachedUserInfo?.userInfo.fullName
                         if user.userInfo.verified{
-                            fullLbl.setVerified(name: userInfo.fullName ?? "")
+                            fullLbl.setVerified(name: pUserInfo.fullName ?? "")
                         }
                         user.userInfo.dpID = cachedUserInfo?.userInfo.dpID
                         if let fullName = cachedUserInfo?.userInfo.fullName{
                             DispatchQueue.main.async {
                                 fullLbl.text = fullName
                                 if user.userInfo.verified{
-                                    fullLbl.setVerified(name: userInfo.fullName ?? "")
+                                    fullLbl.setVerified(name: pUserInfo.fullName ?? "")
                                 }
                                 picCell?.removeLabelLoad()
                             }

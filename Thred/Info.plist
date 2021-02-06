@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string></string>
+	<string>Thred</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -30,6 +30,14 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>thred.Thred</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.628658827719-j522atbbl9ta0lm3ro1hquoshlo1u2h3</string>
 			</array>
 		</dict>
 	</array>
@@ -58,6 +66,14 @@
 		<string>Nexa W01 Heavy.ttf</string>
 		<string>AguafinaScript-Regular.ttf</string>
 		<string>Whoa2-1GP7j.ttf</string>
+		<string>xirod.otf</string>
+		<string>VanityBold-BW08V.otf</string>
+		<string>AlloyInk-lgdWw.otf</string>
+		<string>VarsityTeamBold-6AXq.otf</string>
+		<string>NewWaltDisneyFontRegular-BPen.ttf</string>
+		<string>Arang-2ODRv.otf</string>
+		<string>Hacked-KerX.ttf</string>
+		<string>BasicFontRegular-GOOlD.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>

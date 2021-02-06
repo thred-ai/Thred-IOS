@@ -16,9 +16,32 @@ class CommissionCalcVC: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var slider: UISlider!
     @IBOutlet weak var scrollView: UIScrollView!
     
+    var productType: Template!
+    var designCount = 1
+    
+    var minimumPrice: Double!{
+        get{
+            var price = 0.00
+            if productType.isDiscount ?? false{
+                price = productType?.discountPrice ?? 0
+            }
+            else{
+                price = productType?.minPrice ?? 0
+            }
+            price += (((productType.extraCost ?? 0) * 100) * Double(designCount - 1))
+            return price
+        }
+    }
+    
+    var productName: String!{
+        get{
+            return productType?.templateDisplayName
+        }
+    }
+    
     @IBAction func sliderChanged(_ sender: UISlider) {
         let price = Double(sender.value) * 100.00
-        var commission = (price - 20.00) * 0.90
+        var commission = (price - minimumPrice) * 0.90
         if commission < 0.00{
             commission = 0.00
         }
@@ -31,12 +54,19 @@ class CommissionCalcVC: UIViewController, UITextFieldDelegate {
     }
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
+        navigationItem.title = "Pricing Guide - \(productName ?? "")"
+        slider.minimumValue = Float(minimumPrice ?? 0) / 100
+        
         let image = UIImage(named: "thred.logo.light")
         slider.setThumbImage(image?.sd_roundedCornerImage(withRadius: (image?.size.height ?? 0) / 2, corners: .allCorners, borderWidth: 2, borderColor: .gray)?.sd_resizedImage(with: CGSize(width: 30, height: 30), scaleMode: .aspectFit), for: .normal)
+        
+        
         sliderChanged(slider)
         commissionField.inputAccessoryView = toolBar
         commissionField.delegate = self
+        
+    
         // Do any additional setup after loading the view.
     }
     
@@ -100,7 +130,6 @@ class CommissionCalcVC: UIViewController, UITextFieldDelegate {
         }
     }
     
-    var minimumPrice: String! = "20.00"
     
     func textFieldDidEndEditing(_ textField: UITextField, reason: UITextField.DidEndEditingReason) {
         
@@ -120,7 +149,7 @@ class CommissionCalcVC: UIViewController, UITextFieldDelegate {
         
         print(price)
         
-        guard let minPrice = Float(minimumPrice) else{return}
+        guard let minPrice = Float(formattedMinPrice()) else{return}
         if price >= minPrice{
             if let index = text.firstIndex(of: ".")?.utf16Offset(in: text){
                 switch index{
@@ -134,7 +163,7 @@ class CommissionCalcVC: UIViewController, UITextFieldDelegate {
             }
             else{
                 if text.isEmpty{
-                    textField.text = minimumPrice
+                    textField.text = formattedMinPrice()
                 }
                 else{
                     textField.text?.append(contentsOf: ".00")
@@ -142,12 +171,16 @@ class CommissionCalcVC: UIViewController, UITextFieldDelegate {
             }
         }
         else{
-            textField.text = minimumPrice
+            textField.text = formattedMinPrice()
         }
         
         guard let newText = textField.text, let value = Float(newText) else{return}
         slider.value = value / Float(100)
         sliderChanged(slider)
+    }
+    
+    func formattedMinPrice() -> String{
+        return "\(minimumPrice.formatPrice().replacingOccurrences(of: "$", with: ""))"
     }
     
     @objc func doneEditing(_ sender: UIButton){

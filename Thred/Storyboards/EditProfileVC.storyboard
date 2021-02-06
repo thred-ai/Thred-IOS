@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Zxt-ng-uK9">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097.2" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Zxt-ng-uK9">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -77,8 +76,8 @@
                                                 </view>
                                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Mbv-HC-QYX">
                                                     <rect key="frame" x="0.0" y="149" width="324" height="37"/>
-                                                    <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="19"/>
-                                                    <state key="normal" title="Change profile photo">
+                                                    <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
+                                                    <state key="normal" title="Change">
                                                         <color key="titleColor" name="LoadingColor"/>
                                                     </state>
                                                     <connections>
@@ -104,20 +103,19 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Full Name" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="TKx-QT-ZBM">
-                                                    <rect key="frame" x="20" y="5" width="374" height="50"/>
+                                                    <rect key="frame" x="0.0" y="5" width="414" height="50"/>
                                                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="50" id="I1O-Up-RvF"/>
                                                     </constraints>
-                                                    <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
                                                     <textInputTraits key="textInputTraits"/>
                                                 </textField>
                                             </subviews>
                                             <constraints>
-                                                <constraint firstItem="TKx-QT-ZBM" firstAttribute="leading" secondItem="pIA-9a-xoZ" secondAttribute="leading" constant="20" id="83L-P9-rbD"/>
+                                                <constraint firstItem="TKx-QT-ZBM" firstAttribute="leading" secondItem="pIA-9a-xoZ" secondAttribute="leading" id="83L-P9-rbD"/>
                                                 <constraint firstItem="TKx-QT-ZBM" firstAttribute="top" secondItem="pIA-9a-xoZ" secondAttribute="top" constant="5" id="9xt-sB-KGT"/>
-                                                <constraint firstAttribute="trailing" secondItem="TKx-QT-ZBM" secondAttribute="trailing" constant="20" id="G3B-NI-Cr0"/>
+                                                <constraint firstAttribute="trailing" secondItem="TKx-QT-ZBM" secondAttribute="trailing" id="G3B-NI-Cr0"/>
                                                 <constraint firstAttribute="bottom" secondItem="TKx-QT-ZBM" secondAttribute="bottom" constant="5" id="qky-Nc-4Qs"/>
                                             </constraints>
                                         </tableViewCellContentView>
@@ -134,19 +132,18 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Username" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Ptn-WV-Vqi">
-                                                    <rect key="frame" x="20" y="5" width="374" height="50"/>
+                                                    <rect key="frame" x="0.0" y="5" width="414" height="50"/>
                                                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="50" id="AaQ-5f-ExH"/>
                                                     </constraints>
-                                                    <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="17"/>
                                                     <textInputTraits key="textInputTraits"/>
                                                 </textField>
                                             </subviews>
                                             <constraints>
-                                                <constraint firstItem="Ptn-WV-Vqi" firstAttribute="leading" secondItem="jrs-HX-BPN" secondAttribute="leading" constant="20" id="SAP-Ae-cyE"/>
-                                                <constraint firstAttribute="trailing" secondItem="Ptn-WV-Vqi" secondAttribute="trailing" constant="20" id="jsE-uE-bTH"/>
+                                                <constraint firstItem="Ptn-WV-Vqi" firstAttribute="leading" secondItem="jrs-HX-BPN" secondAttribute="leading" id="SAP-Ae-cyE"/>
+                                                <constraint firstAttribute="trailing" secondItem="Ptn-WV-Vqi" secondAttribute="trailing" id="jsE-uE-bTH"/>
                                                 <constraint firstAttribute="bottom" secondItem="Ptn-WV-Vqi" secondAttribute="bottom" constant="5" id="tNH-FK-Nn3"/>
                                                 <constraint firstItem="Ptn-WV-Vqi" firstAttribute="top" secondItem="jrs-HX-BPN" secondAttribute="top" constant="5" id="uHp-2U-tvf"/>
                                             </constraints>
@@ -167,7 +164,7 @@
                                                     <rect key="frame" x="0.0" y="10" width="414" height="147"/>
                                                     <subviews>
                                                         <textView clipsSubviews="YES" multipleTouchEnabled="YES" userInteractionEnabled="NO" contentMode="scaleToFill" scrollEnabled="NO" editable="NO" text="&quot;Bio&quot;" textAlignment="center" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="IvA-fN-rrN">
-                                                            <rect key="frame" x="10" y="10" width="394" height="127"/>
+                                                            <rect key="frame" x="10" y="0.0" width="394" height="137"/>
                                                             <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
                                                             <fontDescription key="fontDescription" name="NexaW01-Regular" family="NexaW01-Regular" pointSize="17"/>
                                                             <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
@@ -176,7 +173,7 @@
                                                     <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                                     <constraints>
                                                         <constraint firstItem="IvA-fN-rrN" firstAttribute="leading" secondItem="gIt-AI-avK" secondAttribute="leading" constant="10" id="JP0-p5-kfO"/>
-                                                        <constraint firstItem="IvA-fN-rrN" firstAttribute="top" secondItem="gIt-AI-avK" secondAttribute="top" constant="10" id="Oss-e2-i3Z"/>
+                                                        <constraint firstItem="IvA-fN-rrN" firstAttribute="top" secondItem="gIt-AI-avK" secondAttribute="top" id="Oss-e2-i3Z"/>
                                                         <constraint firstAttribute="trailing" secondItem="IvA-fN-rrN" secondAttribute="trailing" constant="10" id="VTe-qU-9Ug"/>
                                                         <constraint firstAttribute="bottom" secondItem="IvA-fN-rrN" secondAttribute="bottom" constant="10" id="jDT-O1-mNQ"/>
                                                     </constraints>
@@ -263,7 +260,7 @@
             <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="LoadingColor">
-            <color red="0.089999999999999997" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

@@ -10,6 +10,7 @@ import UIKit
 import SDWebImage
 import FirebaseFirestore
 import ColorCompatibility
+import Firebase
 
 
 class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableViewDelegate, UITableViewDataSource, UIGestureRecognizerDelegate {
@@ -17,6 +18,8 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
     @IBOutlet weak var addToCartBtn: UIButton!
     var selectedSize: String!
     var editedPost = false
+    var hashtagToOpen: Hashtag?
+    
     @IBOutlet weak var deletedView: UIView!
     
     var isDeleted: Bool! = false{
@@ -35,21 +38,34 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
     @IBAction func addToCart(_ sender: UIButton) {
         
         sender.isEnabled = false
+
+        if sender.currentTitle == "VIEW MY CART"{
+            navigationController?.segueToCart()
+            sender.setTitle("BUY NOW", for: .normal)
+            sender.isEnabled = true
+            return
+        }
+        
+        Analytics.logEvent("added_to_cart", parameters: [
+            "name": "Add to Cart",
+            "full_text": "User added to cart"
+        ])
+        
         UIView.animate(withDuration: 0.2, animations: {
-            sender.setTitle("Added to cart", for: .normal)
+            sender.setTitle("VIEW MY CART", for: .normal)
+        }, completion: { finished in
+            if finished{
+                sender.isEnabled = true
+            }
         })
         DispatchQueue.main.asyncAfter(deadline: .now() + 3){
             UIView.animate(withDuration: 0.2, animations: {
-                sender.setTitle("Add to cart", for: .normal)
-            }, completion: { finished in
-                if finished{
-                    sender.isEnabled = true
-                }
+                sender.setTitle("BUY NOW", for: .normal)
             })
         }
         
         let size = selectedSize ?? "M"
-        guard let uid = userInfo.uid else{
+        guard let uid = pUserInfo.uid else{
             return}
         guard let postUID = fullProduct.userInfo.uid else{
             return}
@@ -113,12 +129,32 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
         tableView.dataSource = self
         tableView.allowsSelection = false
         navigationController?.interactivePopGestureRecognizer?.delegate = self
-
+        navigationController?.delegate = self
         tableView.register(UINib(nibName: "ProductCell", bundle: nil), forCellReuseIdentifier: "PictureProduct")
+        
+        
         getProduct()
         
     }
     
+    
+    
+    override func viewDidAppear(_ animated: Bool) {
+        
+    }
+    
+    func scrollToBottom(){
+        guard selectedComment == nil, fullProduct.isAvailable else{return}
+        let lastSection = tableView.numberOfSections - 3
+        let lastRow = tableView.numberOfRows(inSection: lastSection) - 1
+        let lastIndexPath = IndexPath(row: lastRow, section: lastSection)
+        
+        print(lastIndexPath)
+        
+        DispatchQueue.main.async {
+            self.tableView.scrollToRow(at: lastIndexPath, at: .bottom, animated: true)
+        }
+    }
     
     
     lazy var backgroundView: UIView = {
@@ -133,7 +169,8 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
     
     
     func getProduct(){
-        guard let userUID = userInfo.uid else{return}
+        
+        guard let userUID = pUserInfo.uid else{return}
         
         let query = Firestore.firestore().collectionGroup("Products").whereField("Product_ID", isEqualTo: fullProduct.productID).order(by: "Timestamp")
         
@@ -152,6 +189,15 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
                     let isAvailable = snap["Available"] as? Bool
                     let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
                     let uid = snap["UID"] as! String
+                    
+                    if pUserInfo.usersBlocking.contains(uid){
+                        print(uid)
+                        print(pUserInfo.usersBlocking)
+                        
+                        self.navigationController?.popViewController(animated: true)
+                        return
+                    }
+                    
                     let description = snap["Description"] as? String
                     let name = snap["Name"] as? String
                     let blurred = snap["Blurred"] as? Bool
@@ -161,8 +207,10 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
                     let comments = ((snap["Comments"]) as? Int) ?? 0
                     let isPublic = snap["Public"] as? Bool ?? true
                     let productType = snap["Type"] as? String ?? defaultProductType
+                    let displaySide = snap["Side"] as? String ?? "front"
+                    let sides = snap["Sides"] as? [String] ?? ["Front"]
 
-                    guard !(!isPublic && uid != userInfo.uid) else{
+                    guard !(!isPublic && uid != pUserInfo.uid) else{
                         self.navigationController?.popViewController(animated: true)
                         return
                     }
@@ -175,15 +223,15 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
                             print(error?.localizedDescription ?? "")
                         }
                         else{
-                            userInfo.userLiked.removeAll(where: {$0 == snap.documentID})
+                            pUserInfo.userLiked.removeAll(where: {$0 == snap.documentID})
                             if let likeDocs = snapLikes?.documents{
                                 if likeDocs.isEmpty{
                                     liked = false
                                 }
                                 else{
                                     liked = true
-                                    if !(userInfo.userLiked.contains(snap.documentID)){
-                                        userInfo.userLiked.append(snap.documentID)
+                                    if !(pUserInfo.userLiked.contains(snap.documentID)){
+                                        pUserInfo.userLiked.append(snap.documentID)
                                     }
                                 }
                             }
@@ -192,12 +240,11 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
                             }
                         }
                         
-                        self.fullProduct = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: nil, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil, isAvailable: isAvailable, isPublic: isPublic, productType: productType)
-                        if let cell = self.tableView.cellForRow(at: IndexPath(row: 0, section: 0)) as? ProductCell{
-                            self.tableView.setPictureCell(cell: cell, indexPath: IndexPath(row: 0, section: 0), product: self.fullProduct, productLocation: self, shouldDownloadPic: false)
-                        }
-                        else{
+                        self.fullProduct = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: nil, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: liked, designImage: nil, comments: comments, link: nil, isAvailable: isAvailable, isPublic: isPublic, productType: productType, displaySide: displaySide, supportedSides: sides)
+                        
+                        DispatchQueue.main.async {
                             self.tableView.reloadData()
+                            self.scrollToBottom()
                         }
                     })
                 }
@@ -232,12 +279,6 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
         DispatchQueue.main.async {
             self.tableView.reloadData()
         }
-        if navigationController != nil{
-           navigationController?.delegate = self // Update assignment here
-        }
-        else {
-            print("navigation controller does not exist")
-        }
         hideCenterBtn()
     }
     
@@ -260,7 +301,7 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
             products[index].price = fullProduct.price
             products[index].isPublic = fullProduct.isPublic
                 
-            let tableView = (viewController as? UserVC)?.tableView ?? (viewController as? FriendVC)?.tableView ?? (viewController as? FeedVC)?.tableView
+            let tableView = (viewController as? FeedVC)?.tableView
             
             tableView?.performBatchUpdates({
                 tableView?.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
@@ -271,52 +312,6 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
         }
     }
 
-    
-    func navigationController(_ navigationController: UINavigationController, willShow viewController: UIViewController, animated: Bool) {
-        
-        guard let uid = userInfo.uid else{return}
-        guard let productUID = fullProduct.userInfo.uid else{return}
-
-        if viewController == self{
-            let cell = self.tableView.cellForRow(at: IndexPath(row: 0, section: 0)) as? ProductCell
-            cell?.isUserInteractionEnabled = true
-            if !(userInfo.userLiked.contains(fullProduct.productID)){
-                cell?.isUserInteractionEnabled = false
-                Firestore.firestore().collection("Users").document(productUID).collection("Products").document(fullProduct.productID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: uid).getDocuments(completion: { snapLikes, error in
-                    
-                    var liked: Bool!
-                    
-                    if error != nil{
-                        print(error?.localizedDescription ?? "")
-                    }
-                    else{
-                        userInfo.userLiked.removeAll(where: {$0 == self.fullProduct.productID})
-                        if let likeDocs = snapLikes?.documents{
-                            if likeDocs.isEmpty{
-                                liked = false
-                            }
-                            else{
-                                liked = true
-                                if !(userInfo.userLiked.contains(self.fullProduct.productID)){
-                                    userInfo.userLiked.append(self.fullProduct.productID)
-                                }
-                            }
-                        }
-                        else{
-                            liked = false
-                        }
-                    }
-                    cell?.isUserInteractionEnabled = true
-                    UserDefaults.standard.set(userInfo.userLiked, forKey: "LikedPosts")
-                    self.fullProduct.liked = liked
-                    DispatchQueue.main.async {
-                        self.tableView.reloadData()
-                    }
-                })
-            }
-        }
-    }
-    
 
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         
@@ -329,7 +324,7 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
         if fullProduct.name == nil{
             return 1
         }
-        return 2
+        return 4
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -348,11 +343,35 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
             tableView.setPictureCell(cell: cell, indexPath: indexPath, product: fullProduct, productLocation: self, shouldDownloadPic: true)
             return cell!
         }
-        else{
+        else if indexPath.section == 1{
             let cell = tableView.dequeueReusableCell(withIdentifier: "sizeCell", for: indexPath) as? SizeCell
+            cell?.vc = self
+            cell?.setUp()
+            return cell!
+        }
+        else if indexPath.section == 2{
+            let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "infoCell")
+            cell.textLabel?.font = UIFont(name: "NexaW01-Heavy", size: 12)
+            cell.detailTextLabel?.font = UIFont(name: "NexaW01-Regular", size: cell.detailTextLabel?.font.pointSize ?? 16)
+            
+            cell.textLabel?.text = "Product Type:"
+            
+            guard let sameType = all.tees.first(where: {$0.productCode == fullProduct.productType}), let info = sameType.info, let colorName = sameType.colors.first(where: {$0.code == fullProduct.templateColor})?.display
+            else {return cell}
+            
+            cell.detailTextLabel?.text = "\(info) (\(colorName))"
+            return cell
+        }
+        else{
+            let cell = tableView.dequeueReusableCell(withIdentifier: "info", for: indexPath) as? ProductInfoCell
+            guard let sameType = all.tees.first(where: {$0.productCode == fullProduct.productType}) else{return cell!}
+            cell?.infoLbl.text = "\((sameType.templateDisplayName ?? "").lowercased().capitalized) Details"
+            cell?.infoView?.text = sameType.moreInfo
             return cell!
         }
     }
+    
+    
     
     func setKeyBoardNotifs(){
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
@@ -441,15 +460,39 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
             commentsVC.selectedComment = selectedComment
             selectedComment = nil
         }
-        else if let designVC = (segue.destination as? UINavigationController)?.viewControllers.first as? DesignViewController{
-            if let img = cache.imageFromCache(forKey: fullProduct.productID){
-                designVC.product = ProductInProgress(templateColor: fullProduct.templateColor, design: img, uid: fullProduct.userInfo.uid, caption: fullProduct.description, name: fullProduct.name, price: fullProduct.price, productID: fullProduct.productID, display: fullProduct.designImage, isPublic: fullProduct.isPublic, productType: fullProduct.productType)
+        else if let designVC = (segue.destination as? UINavigationController)?.viewControllers.first as? DesignInfoViewController{
+            
+            var designs = [Design]()
+            guard let sameTemplate = all.tees.first(where: {$0.productCode == fullProduct.productType}) else{return}
+            for side in fullProduct.supportedSides.filter({$0 == fullProduct.displaySide.capitalizingFirstLetter()}){
+                
+                var design: Design!
+                var prefix = ""
+                if side == "Back"{
+                    prefix = "BACK_"
+                }
+                var img: Data!
+                if let fullIMG = cache.imageFromCache(forKey: "\(prefix)\(fullProduct.productID)")?.pngData(){
+                    img = fullIMG
+                }
+                else if let thumbIMG = cache.imageFromCache(forKey: "thumbnail_\(prefix)\(fullProduct.productID)")?.pngData(){
+                    img = thumbIMG
+                }
+                guard let side = sameTemplate.supportedSides.first(where: {$0.name == side}) else{return}
+                design = Design(img: img, side: side)
+                designs.append(design)
             }
+            
+            designVC.product = ProductInProgress(templateColor: fullProduct.templateColor, designs: designs, uid: fullProduct.userInfo.uid, caption: fullProduct.description, name: fullProduct.name, price: fullProduct.price, productID: fullProduct.productID, display: fullProduct.designImage, isPublic: fullProduct.isPublic, productType: fullProduct.productType, displaySide: fullProduct.displaySide)
+            designVC.isEditingProduct = true
         }
         else if let reportVC = (segue.destination as? UINavigationController)?.viewControllers.first as? ReportVC{
             reportVC.reportLevel = .post
             reportVC.reportPostID = fullProduct.productID
             reportVC.reportUID = fullProduct.userInfo.uid
+        }
+        else if let colorSectionVC = segue.destination as? ColorSectionVC{
+            colorSectionVC.hashtag = hashtagToOpen
         }
     }
 
@@ -457,11 +500,14 @@ class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableVi
 
 extension UIViewController{
     func showCenterBtn(){
-        if let button = (self.tabBarController as? MainTabBarViewController)?.button{
+        if let button = (self.tabBarController as? MainTabBarViewController)?.button, let spinner = (self.tabBarController as? MainTabBarViewController)?.spinner, let bubble = (self.tabBarController as? MainTabBarViewController)?.speechBubble{
             if button.isHidden{
                 button.isHidden = false
+                (self.tabBarController as? MainTabBarViewController)?.checktoHideBubble()
                 UIView.animate(withDuration: 0.2, animations: {
                     button.alpha = 1.0
+                    spinner.alpha = 1.0
+                    bubble.alpha = 1.0
                 }, completion: { finished in
                     if finished{
                     }
@@ -471,13 +517,17 @@ extension UIViewController{
     }
     
     func hideCenterBtn(){
-        if let button = (self.tabBarController as? MainTabBarViewController)?.button{
+        if let button = (self.tabBarController as? MainTabBarViewController)?.button, let spinner = (self.tabBarController as? MainTabBarViewController)?.spinner, let bubble = (self.tabBarController as? MainTabBarViewController)?.speechBubble{
             if !button.isHidden{
                 UIView.animate(withDuration: 0.2, animations: {
                     button.alpha = 0.0
+                    spinner.alpha = 0.0
+                    bubble.alpha = 0.0
                 }, completion: { finished in
                     if finished{
                         button.isHidden = true
+                        spinner.isHidden = true
+                        bubble.isHidden = true
                     }
                 })
             }

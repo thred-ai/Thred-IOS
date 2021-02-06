@@ -155,6 +155,7 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
 
             print(indexPath.row)
             
+            guard let currency = order.currency?.shortenCurrency() else{return cell}
             switch indexPath.row{
                 
             case 0:
@@ -199,7 +200,7 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
             case 3:
                 cell.textLabel?.text = "Subtotal:"
                 if let cost = order.subtotal, cost != 0.00{
-                    cell.detailTextLabel?.text = "\((order.subtotal ?? 0.00).formatPrice())"
+                    cell.detailTextLabel?.text = "\((order.subtotal ?? 0.00).formatPrice(addCurrency: currency, withSymbol: order.currencySymbol ?? "$"))"
                 }
                 else{
                     cell.detailTextLabel?.text = "FREE"
@@ -207,7 +208,7 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
             case 4:
                 cell.textLabel?.text = "Shipping:"
                 if let cost = order.shippingCost, cost != 0.00{
-                    cell.detailTextLabel?.text = "\((order.shippingCost ?? 0.00).formatPrice())"
+                    cell.detailTextLabel?.text = "\((order.shippingCost ?? 0.00).formatPrice(addCurrency: currency, withSymbol: order.currencySymbol ?? "$"))"
                 }
                 else{
                     cell.detailTextLabel?.text = "FREE"
@@ -215,7 +216,7 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
             case 5:
                 cell.textLabel?.text = "Tax:"
                 if let cost = order.tax, cost != 0.00{
-                    cell.detailTextLabel?.text = "\((order.tax ?? 0.00).formatPrice())"
+                    cell.detailTextLabel?.text = "\((order.tax ?? 0.00).formatPrice(addCurrency: currency, withSymbol: order.currencySymbol ?? "$"))"
                 }
                 else{
                     cell.detailTextLabel?.text = "N/A"
@@ -223,7 +224,7 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
             case 6:
                 cell.textLabel?.text = "Total:"
                 if let cost = order.totalCost, cost != 0.00{
-                    cell.detailTextLabel?.text = "\((order.totalCost ?? 0.00).formatPrice())"
+                    cell.detailTextLabel?.text = "\((order.totalCost ?? 0.00).formatPrice(addCurrency: currency, withSymbol: order.currencySymbol ?? "$"))"
                 }
                 else{
                     cell.detailTextLabel?.text = "FREE"
@@ -296,7 +297,7 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
             completed()
         }
         
-        showPopUp(title: title, message: description, image: nil, buttons: [yesBtn], titleColor: titleColor)
+        showPopUp(title: title, message: description, image: nil, buttons: [yesBtn], titleColor: titleColor, blurBack: true)
     }
     
     func showTracking(completed: @escaping () -> ()){
@@ -320,7 +321,7 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
                 completed()
             }
             
-            showPopUp(title: title, message: description, image: nil, buttons: [yesBtn], titleColor: titleColor)
+            showPopUp(title: title, message: description, image: nil, buttons: [yesBtn], titleColor: titleColor, blurBack: true)
         }
     }
     
@@ -336,7 +337,7 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
             completed()
         }
         
-        showPopUp(title: nil, message: description, image: nil, buttons: [yesBtn], titleColor: .label)
+        showPopUp(title: nil, message: description, image: nil, buttons: [yesBtn], titleColor: .label, blurBack: true)
     }
     
     func showCancelConfirmationMessage(completed: @escaping () -> ()){
@@ -351,7 +352,7 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
             
         }
         
-        showPopUp(title: title, message: description, image: nil, buttons: [yesBtn, noBtn], titleColor: titleColor)
+        showPopUp(title: title, message: description, image: nil, buttons: [yesBtn, noBtn], titleColor: titleColor, blurBack: true)
     }
     
     func errorCancelling(completed: @escaping () -> ()){
@@ -367,7 +368,7 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
             completed()
         }
         
-        showPopUp(title: title, message: description, image: nil, buttons: [yesBtn], titleColor: titleColor)
+        showPopUp(title: title, message: description, image: nil, buttons: [yesBtn], titleColor: titleColor, blurBack: true)
     }
     
     func confirmCancellation(completed: @escaping () -> ()){
@@ -400,7 +401,7 @@ class FullOrderVC: UIViewController, UITableViewDelegate, UITableViewDataSource,
             let intents = order.intents?.filter({uncancelledOrders.contains($0["ID"] ?? "null")}), !intents.isEmpty,
             let shippingCost = order.shippingCost,
             let id = order.orderID,
-            let uid = userInfo.uid else{
+            let uid = pUserInfo.uid else{
             errorCancelling {}
         return }
         print(intents)

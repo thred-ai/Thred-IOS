@@ -18,7 +18,19 @@ class SignUpVC: UIViewController {
     @IBOutlet weak var termsOfServiceView: UITextView!
     @IBOutlet weak var toSignInBtn: UIButton!
     
-    @IBAction func toPassword(_ sender: UIBarButtonItem) {
+    func checkIfNext(sender: UIButton){
+        if emailField.text?.isEmpty ?? false{
+            updateErrorView(text: "Not a valid email")
+        }
+        else{
+            emailField.resignFirstResponder()
+            toPassword(sender)
+        }
+    }
+    
+    
+    
+    func toPassword(_ sender: UIButton) {
         sender.isEnabled = false
         guard let text = emailField.text, !text.isEmpty, text.filter({$0 == "@"}).count == 1 else{
             updateErrorView(text: "Not a valid email")
@@ -27,6 +39,7 @@ class SignUpVC: UIViewController {
         errorView.text = nil
         print(text)
         emailToUse = text.lowercased().replacingOccurrences(of: " ", with: "")
+        sender.isEnabled = true
         self.performSegue(withIdentifier: "toPassword", sender: nil)
     }
     
@@ -62,6 +75,8 @@ class SignUpVC: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         navigationController?.setNavigationBarHidden(false, animated: false)
         setKeyBoardNotifs()
+        emailField.becomeFirstResponder()
+        
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -75,12 +90,13 @@ class SignUpVC: UIViewController {
     
     lazy var toolBar: UIView = {
         let bar = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 45))
-        bar.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.8)
+        bar.backgroundColor = UIColor(named: "LoadingColor")
         let stackView = UIStackView(frame: bar.frame)
         bar.addSubview(stackView)
         let button = UIButton(frame: CGRect(x: 0, y: 0, width: 45, height: 45))
-        button.setTitle("Done", for: .normal)
+        button.setTitle("NEXT", for: .normal)
         button.setTitleColor(.label, for: .normal)
+        button.titleLabel?.font = UIFont(name: "NexaW01-Heavy", size: button.titleLabel?.font.pointSize ?? 16)
         button.addTarget(self, action: #selector(doneEditing(_:)), for: .touchUpInside)
         stackView.addArrangedSubview(button)
         
@@ -122,7 +138,7 @@ class SignUpVC: UIViewController {
     }
     
     @objc func doneEditing(_ sender: UIButton){
-        emailField.resignFirstResponder()
+        checkIfNext(sender: sender)
     }
     
     @objc func keyboardWillShow(_ notification: Notification) {

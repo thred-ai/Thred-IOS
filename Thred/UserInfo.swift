@@ -29,6 +29,7 @@ class UserInfo: Codable{
     var usersBlocking = [String]()
     var profileLink: URL?
     var verified = Bool()
+    var postNotifsList = [String]()
     
     init(uid: String?, dp: Data?, dpID: String?, username: String?, fullName: String?, bio: String?, notifID: String?, userFollowing: [String], userLiked: [String], followerCount: Int, postCount: Int, followingCount: Int, usersBlocking: [String], profileLink: URL?, verified: Bool?) {
         

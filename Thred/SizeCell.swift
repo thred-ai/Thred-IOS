@@ -11,19 +11,9 @@ import ColorCompatibility
 
 class SizeCell: UITableViewCell, UIPickerViewDelegate, UIPickerViewDataSource {
     
-    var sizes = [
-        "XS (Fun Size)",
-        "S",
-        "M",
-        "L",
-        "XL",
-        "XXL"
-    ]
+    var sizes = [String]()
     
-
-    weak var vc: FullProductVC!{
-        return getViewController() as? FullProductVC
-    }
+    var vc: FullProductVC?
     
     @IBOutlet weak var sizingView: UITextField!
     @IBOutlet weak var sizeChartBtn: UIButton!
@@ -54,14 +44,18 @@ class SizeCell: UITableViewCell, UIPickerViewDelegate, UIPickerViewDataSource {
     }()
     
     @objc func doneEditing(_ sender: UIButton){
+        if let text = sizingView.text?.split(separator: ":"), text.count < 2, (text.isEmpty || sizingView.text == nil){
+            sizingView.text = "Size: \(startingSize ?? "M") ▾"
+            vc?.selectedSize = startingSize ?? "M"
+        }
         sizingView.resignFirstResponder()
     }
     
     
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         let size = sizes[row].replacingOccurrences(of: " (Fun Size)", with: "")
-        sizingView.text = "Size: \(size)"
-        vc.selectedSize = size
+        sizingView.text = "Size: \(size) ▾"
+        vc?.selectedSize = size
     }
     
     
@@ -70,9 +64,30 @@ class SizeCell: UITableViewCell, UIPickerViewDelegate, UIPickerViewDataSource {
         sizingView.inputView = sizePicker
         sizePicker.delegate = self
         sizePicker.dataSource = self
-        sizePicker.reloadComponent(0)
-        if let index = sizes.firstIndex(of: "M"){
-            sizePicker.selectRow(index, inComponent: 0, animated: false)
+    }
+    
+    var startingSize: String! = "M"
+    
+    func setUp(){
+        
+        if let template = all.tees.first(where: {$0.productCode == vc?.fullProduct.productType}), let sizes = template.sizes{
+            self.sizes.removeAll()
+            if sizes.contains("M"){
+                startingSize = "M"
+            }
+            else{
+                startingSize = sizes.first
+            }
+            if vc?.selectedSize != nil{
+                startingSize = vc?.selectedSize
+            }
+            sizePicker.reloadComponent(0)
+            self.sizes.append(contentsOf: sizes)
+            if let index = sizes.firstIndex(of: startingSize){
+                sizePicker.selectRow(index, inComponent: 0, animated: false)
+                sizingView.text = "Size: \(startingSize ?? "M") ▾"
+                vc?.selectedSize = startingSize
+            }
         }
     }
     

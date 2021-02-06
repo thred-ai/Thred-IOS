@@ -107,18 +107,16 @@ class PhotosView: UIView{
     lazy var sendPicBtn: UIButton = {
         
         let button = UIButton.init(frame: CGRect(x: 0, y: 0, width: 60, height: 60))
-        button.backgroundColor = .systemBackground
+        button.backgroundColor = .cyan
         button.layer.cornerRadius = button.frame.height / 2
         button.clipsToBounds = true
         button.setImage(UIImage.init(named: "SendIcon"), for: .normal)
         button.center.x = self.center.x
         button.center.y = frame.height - 60
-        button.tintColor = .cyan
+        button.tintColor = .systemBackground
         button.addTarget(self, action: #selector(self.sendText(_:)), for: .touchUpInside)
         button.setRadiusWithShadow()
         button.accessibilityIdentifier = "LibrarySendBtn"
-        button.layer.borderColor = UIColor.cyan.cgColor
-        button.layer.borderWidth = 2
         return button
     }()
     
@@ -129,6 +127,12 @@ class PhotosView: UIView{
             }
             else if let design = parent as? DesignViewController{
                 design.usePhoto(sender)
+            }
+            else if let comments = parent as? CommentsVC{
+                comments.usePhoto(sender)
+            }
+            else if let chat = parent as? ChatVC{
+                chat.usePhoto(sender)
             }
         }
     }
@@ -193,6 +197,15 @@ class PhotosView: UIView{
                         self?.cameraRollCollectionView.getImages()
                     }
                     else{
+                        if #available(iOS 14, *) {
+                            if status == .limited{
+                                completed(true)
+                                self?.cameraRollCollectionView.getImages()
+                            }
+                        } else {
+                            // Fallback on earlier versions
+                        }
+                        
                         if firstTime{
                             completed(false)
                         }
@@ -310,7 +323,12 @@ class CameraRollView: UICollectionView, UICollectionViewDelegate, UICollectionVi
             print("Authorized, proceed")
             UserDefaults.standard.set(true, forKey: "AuthPhoto")
             completed(.authorized, false)
-            
+        case .limited:
+            print("Authorized, proceed")
+            UserDefaults.standard.set(true, forKey: "AuthPhoto")
+            if #available(iOS 14, *) {
+                completed(.limited, false)
+            }
         case .notDetermined:
             PHPhotoLibrary.requestAuthorization({ status in
                 if status == .authorized  {
@@ -406,11 +424,7 @@ class CameraRollView: UICollectionView, UICollectionViewDelegate, UICollectionVi
             self.getViewController()?.present(alertController, animated: true)
         }
     }
-    
-    fileprivate func convertToUIApplicationOpenExternalURLOptionsKeyDictionary(_ input: [String: Any]) -> [UIApplication.OpenExternalURLOptionsKey: Any] {
-        return Dictionary(uniqueKeysWithValues: input.map { key, value in (UIApplication.OpenExternalURLOptionsKey(rawValue: key), value)})
-    }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -474,17 +488,17 @@ class ThredListView: UICollectionView, UICollectionViewDelegate, UICollectionVie
         var query: Query! = nil
         //REMOVE LATER
         //
-        guard let uid = userInfo.uid else{return}
+        guard let uid = pUserInfo.uid else{return}
 
         
         if fromInterval == nil{
             if let view = self.backgroundView{
                 view.addViewSpinner(centerX: view.center.x, centerY: (visibleSize.height / 2), width: 40, height: 40)
             }
-            query = Firestore.firestore().collection("Users").document(uid).collection("Products").whereField("Public", isEqualTo: true).whereField("Timestamp", isLessThanOrEqualTo: Timestamp(date: Date())).whereField("Available", isEqualTo: true).limit(to: 15).order(by: "Timestamp", descending: true)
+            query = Firestore.firestore().collection("Users").document(uid).collection("Products").whereField("Timestamp", isLessThanOrEqualTo: Timestamp(date: Date())).whereField("Available", isEqualTo: true).limit(to: 15).order(by: "Timestamp", descending: true)
         }
         else if let last = fromInterval{
-            query = Firestore.firestore().collection("Users").document(uid).collection("Products").whereField("Public", isEqualTo: true).whereField("Timestamp", isLessThan: Timestamp(date: last)).whereField("Available", isEqualTo: true).limit(to: 15).order(by: "Timestamp", descending: true)
+            query = Firestore.firestore().collection("Users").document(uid).collection("Products").whereField("Timestamp", isLessThan: Timestamp(date: last)).whereField("Available", isEqualTo: true).limit(to: 15).order(by: "Timestamp", descending: true)
         }
         query.getDocuments(completion: { (snapDocuments, err) in
             if let err = err {
@@ -506,12 +520,16 @@ class ThredListView: UICollectionView, UICollectionViewDelegate, UICollectionVie
                         
                         let timestamp = (snap["Timestamp"] as? Timestamp)?.dateValue()
                         let color = snap["Template_Color"] as? String
+                        let type = snap["Type"] as? String ?? defaultProductType
+                        let side = snap["Side"] as? String
 
                         self.images.append([
                             "ID" : snap.documentID,
                             "Timestamp" : timestamp,
                             "Image" : nil,
-                            "Color" : color
+                            "Color" : color,
+                            "Type" : type,
+                            "Side" : side
                             ])
                         self.performBatchUpdates({
                             self.insertItems(at: [IndexPath(item: self.images.count - 1, section: 0)])
@@ -532,31 +550,34 @@ class ThredListView: UICollectionView, UICollectionViewDelegate, UICollectionVie
         let design = self.images[indexPath.item]
         guard let color = design["Color"] as? String else{return cell!}
         guard let designID = design["ID"] as? String else{return cell!}
-        guard let uid = userInfo.uid else{return cell!}
+        guard let designType = design["Type"] as? String else{return cell!}
+        guard let uid = pUserInfo.uid else{return cell!}
         let designImg = design["Image"] as? UIImage
+        let side = design["Side"] as? String ?? "front"
+
+        let colorObject = all.tees.first(where: {$0.productCode == designType})?.colors.first(where: {$0.code == color})?.getColor()
 
         if designImg != nil{
             cell?.photo = designImg
-            cell?.photoImageView.backgroundColor = UIColor(named: color)
+            cell?.photoImageView.backgroundColor = colorObject
         }
         else{
             if let image = cache.imageFromCache(forKey: designID){
                 cell?.photo = image
-                cell?.photoImageView.backgroundColor = UIColor(named: color)
+                cell?.photoImageView.backgroundColor = colorObject
                 self.images[indexPath.item]["Image"] = image
             }
             else{
                 if !(tokens.contains(designID)){
                         //cell?.circularProgress.isHidden = false
                     tokens.append(designID)
-                    self.downloadThredListImage(isThumbnail: true, cell: cell, followingUID: uid, picID: designID){ img in
+                    self.downloadThredListImage(isThumbnail: true, cell: cell, followingUID: uid, picID: designID, displaySide: side){ img in
                         self.tokens.removeAll(where: {$0 == designID})
                         if self.images.indices.contains(indexPath.item){
                             self.images[indexPath.item]["Image"] = img
-                            if cell != nil{
-                                cell?.photo = img
-                                cell?.photoImageView.backgroundColor = UIColor(named: color)
-                            }
+                            collectionView.performBatchUpdates({
+                                collectionView.reloadItems(at: [indexPath])
+                            }, completion: nil)
                         }
                     }
                 }
@@ -569,13 +590,15 @@ class ThredListView: UICollectionView, UICollectionViewDelegate, UICollectionVie
         guard let cell = collectionView.cellForItem(at: indexPath) as? PhotosCell else{return}
         let design = images[indexPath.item]
         guard let designID = design["ID"] as? String else{return}
-        guard let uid = userInfo.uid else{return}
+        guard let uid = pUserInfo.uid else{return}
         let photosView = superview as? PhotosView
         let designImg = design["Image"] as? UIImage
+        let side = design["Side"] as? String ?? "front"
+
         photosView?.selectedImage = designImg
         photosView?.sendPicBtn.isHidden = false
         
-        downloadThredListImage(isThumbnail: false, cell: cell, followingUID: uid, picID: designID){ img in
+        downloadThredListImage(isThumbnail: false, cell: cell, followingUID: uid, picID: designID, displaySide: side){ img in
             
             self.tokens.removeAll(where: {$0 == designID})
             

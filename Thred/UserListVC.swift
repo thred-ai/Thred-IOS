@@ -99,12 +99,12 @@ class UserListVC: UITableViewController {
                                     }
                                 }
                             })
-                            if uid == userInfo.uid{
-                                user.dp = userInfo.dp
-                                user.dpID = userInfo.dpID
-                                user.username = userInfo.username
-                                user.fullName = userInfo.fullName
-                                user.verified = userInfo.verified
+                            if uid == pUserInfo.uid{
+                                user.dp = pUserInfo.dp
+                                user.dpID = pUserInfo.dpID
+                                user.username = pUserInfo.username
+                                user.fullName = pUserInfo.fullName
+                                user.verified = pUserInfo.verified
                                 if let index = self.listUsers.firstIndex(where: {$0.uid == uid}){
                                     if let cell = self.tableView.cellForRow(at: IndexPath(row: index, section: 0)) as? SearchUserTableViewCell{
                                         cell.usernameLbl.text = "@\(user.username ?? "null")"
@@ -113,7 +113,7 @@ class UserListVC: UITableViewController {
                                             cell.fullnameLbl.attributedText = nil
                                             cell.fullnameLbl.setVerified(name: user.fullName ?? "")
                                         }
-                                        guard let imgData = userInfo.dp else{return}
+                                        guard let imgData = pUserInfo.dp else{return}
                                         cell.userImageView.image = UIImage(data: imgData)
                                         cell.spinner.isHidden = true
                                     }
@@ -153,10 +153,6 @@ class UserListVC: UITableViewController {
                             })
                         }
                         else{
-                            userInfo.userFollowing.removeAll(where: {$0 == uid})
-                            self.listUsers.removeAll(where: {$0.uid == uid})
-                            self.tableView.reloadData()
-                            self.removeFromLists(uidToRemove: uid)
                         }
                     }
                 })
@@ -227,12 +223,15 @@ class UserListVC: UITableViewController {
         let user = listUsers[indexPath.row]
         cell?.usernameLbl.text = nil
         cell?.fullnameLbl.text = nil
+        cell?.followBtn.isHidden = false
+        cell?.friendInfo = user
         cell?.fullnameLbl.attributedText = nil
-
+        cell?.accessoryType = .none
         cell?.userImageView.image = nil
         cell?.spinner.isHidden = false
         cell?.usernameLbl.text = "@\(user.username ?? "null")"
         cell?.fullnameLbl.text = user.fullName
+        cell?.checkFollow()
         if user.verified{
             cell?.fullnameLbl.setVerified(name: user.fullName ?? "")
         }
@@ -248,14 +247,68 @@ class UserListVC: UITableViewController {
         return cell!
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        DispatchQueue.main.async {
+            self.tableView.reloadData()
+        }
+    }
+    
+    func updateFollowInDatabase(friendInfo: UserInfo, didFollow: Bool){
+        guard let uid = pUserInfo.uid else{return}
+        guard let friendUID = friendInfo.uid else{return}
+        
+        if didFollow{
+            friendInfo.followerCount += 1
+            pUserInfo.userFollowing.append(friendUID)
+            
+            UserDefaults.standard.set(pUserInfo.userFollowing, forKey: "FOLLOWING")
+            let data = [
+                 "UID" : friendUID
+             ]
+            checkAuthStatus {
+                Firestore.firestore().document("Users/\(uid)/Following/\(friendUID)").setData(data, completion: { error in
+                    if error != nil{
+                        print(error?.localizedDescription ?? "")
+                        //pUserInfo.userFollowing.removeAll(where: {$0 == friendUID})
+                        UserDefaults.standard.set(pUserInfo.userFollowing, forKey: "FOLLOWING")
+                        friendInfo.followerCount -= 1
+                    }
+                    else{
+                       pUserInfo.followingCount += 1
+                       UserDefaults.standard.set(pUserInfo.followingCount, forKey: "FOLLOWING_COUNT")
+                    }
+                })
+            }
+        }
+        else{
+            friendInfo.followerCount -= 1
+            pUserInfo.userFollowing.removeAll(where: {$0 == friendUID})
+            UserDefaults.standard.set(pUserInfo.userFollowing, forKey: "FOLLOWING")
+            Firestore.firestore().collection("Users/\(uid)/Following").document(friendUID).delete(
+                completion: { error in
+                if error != nil{
+                    pUserInfo.userFollowing.append(friendUID)
+                    UserDefaults.standard.set(pUserInfo.userFollowing, forKey: "FOLLOWING")
+                    friendInfo.followerCount += 1
+                    print(error?.localizedDescription ?? "")
+                }
+                else{
+                    pUserInfo.followingCount -= 1
+                    UserDefaults.standard.set(pUserInfo.followingCount, forKey: "FOLLOWING_COUNT")
+                }
+            })
+        }
+    }
+    
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         selectedUser = listUsers[indexPath.row]
+        print(listUsers[indexPath.row].uid!)
         self.performSegue(withIdentifier: "toFriend", sender: nil)
     }
     
     override func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
         
-        if listUsers[indexPath.row].uid == userInfo.uid{
+        if listUsers[indexPath.row].uid == pUserInfo.uid{
             return nil
         }
         return indexPath

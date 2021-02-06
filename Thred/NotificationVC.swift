@@ -11,6 +11,8 @@ import Firebase
 import SDWebImage
 import ColorCompatibility
 import FirebaseFirestore
+import SwiftKeychainWrapper
+import StoreKit
 
 
 class UserNotification: Codable{
@@ -22,6 +24,7 @@ class UserNotification: Codable{
     var timestampDiff: String!
     var username: String!
     var picID: String!
+    var hasCommentPic: Bool?
     var commentMessage: String?
     var commentID: String?
     var shouldShowDP: Bool!
@@ -64,7 +67,8 @@ class Order{
     var subtotal: Double?
     var address: Address!
     var trackingNumber: String?
-    
+    var currency: String?
+    var currencySymbol: String?
     
     var canCancel: Bool{
         get{
@@ -73,7 +77,7 @@ class Order{
         }
     }
     
-    init(orderID: String?, timestamp: Date?, products: [ProductInCart], status: String!, intents: [[String : String]], shippingIntent: String?, shippingCost: Double?, subtotal: Double?, tax: Double?, totalCost: Double?, address: Address?, trackingNumber: String?) {
+    init(orderID: String?, timestamp: Date?, products: [ProductInCart], status: String!, intents: [[String : String]], shippingIntent: String?, shippingCost: Double?, subtotal: Double?, tax: Double?, totalCost: Double?, address: Address?, trackingNumber: String?, currency: String?, currencySymbol: String?) {
         self.orderID = orderID
         self.timestamp = timestamp
         self.products = products
@@ -86,10 +90,12 @@ class Order{
         self.totalCost = totalCost
         self.address = address
         self.trackingNumber = trackingNumber
+        self.currency = currency
+        self.currencySymbol = currencySymbol
     }
     
     convenience init(){
-        self.init(orderID: nil, timestamp: nil, products: [], status: nil, intents: [], shippingIntent: nil, shippingCost: nil, subtotal: nil, tax: nil, totalCost: nil, address: nil, trackingNumber: nil)
+        self.init(orderID: nil, timestamp: nil, products: [], status: nil, intents: [], shippingIntent: nil, shippingCost: nil, subtotal: nil, tax: nil, totalCost: nil, address: nil, trackingNumber: nil, currency: nil, currencySymbol: nil)
     }
 }
 
@@ -136,21 +142,21 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     
     override func viewDidAppear(_ animated: Bool) {
-        self.navigationController?.tabBarItem.badgeValue = nil
-        self.navigationController?.tabBarItem.badgeColor = nil
-        UIApplication.shared.applicationIconBadgeNumber = 0 // For Clear Badge Counts
+        
+        //UIApplication.shared
     }
     
     var isLoadingNotifs = false
     var isLoadingOrders = false
     var lastDoc: DocumentSnapshot!
     var fullOrder: Order!
+    
 
     
     func getOrders(completed: @escaping () -> ()){
         
         var query: Query!
-        guard let uid = userInfo.uid else{return}
+        guard let uid = pUserInfo.uid else{return}
 
         if let last = lastDoc{
             query = Firestore.firestore().collection("Users/\(uid)/Orders").order(by: "timestamp", descending: true).start(afterDocument: last)
@@ -182,7 +188,12 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                     let shippingIntent = doc["shipping_intent"] as? String
                     let trackingNumber = doc["tracking_id"] as? String
                     let shippingCost = (doc["shipping_cost"] as? Double ?? 0.00) / 100
-                    let tax = doc["tax"] as? Double ?? 1.0
+                    let taxPercent = doc["tax"] as? Double
+                    let taxNum = doc["sales_tax"] as? Double
+                                        
+                    let currency = doc["currency"] as? String ?? "CAD"
+                    let currencySymbol = doc["currency_symbol"] as? String ?? "$"
+
                     var subtotal = 0.0
                     
                     guard
@@ -200,7 +211,7 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                     
                     let orderAddress = Address(postalCode: postalCode, streetAddress: street, unitNumber: unitNum, city: city, adminArea: area, country: country)
                     
-                    let order = Order(orderID: doc.documentID, timestamp: timestamp, products: [], status: status, intents: intents, shippingIntent: shippingIntent, shippingCost: shippingCost, subtotal: 0, tax: 0, totalCost: 0, address: orderAddress, trackingNumber: trackingNumber)
+                    let order = Order(orderID: doc.documentID, timestamp: timestamp, products: [], status: status, intents: intents, shippingIntent: shippingIntent, shippingCost: shippingCost, subtotal: 0, tax: 0, totalCost: 0, address: orderAddress, trackingNumber: trackingNumber, currency: currency, currencySymbol: currencySymbol)
                     
                     localLoaded.append(order)
                     doc.reference.collection("Purchases").getDocuments(completion: { pSnaps, error in
@@ -231,17 +242,18 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                                     
                                     subtotal += product?.price ?? 0
                                     
-                                    let orderProduct = ProductInCart(product: product, size: size, quantity: quantity, isDeleted: status == "cancelled-print", timestamp: timestamp, timestampDiff: nil, saleID: pDoc.documentID, inBank: nil)
+                                    let orderProduct = ProductInCart(product: product, size: size, quantity: quantity, isDeleted: status == "cancelled-print", timestamp: timestamp, timestampDiff: nil, saleID: pDoc.documentID, inBank: nil, moneyMade: nil)
                                     
                                     order.products.append(orderProduct)
                                     if order.products.count == pDocs.count{
                                         order.products.sort(by: {$0.product.productID > $1.product.productID})
                                         order.subtotal = subtotal
-                                        order.tax = tax * subtotal
+                                        order.tax = taxNum ?? (taxPercent ?? 0) * subtotal
                                         order.totalCost = (order.tax ?? 0.0) + (order.subtotal ?? 0.0) + (order.shippingCost ?? 0.0)
                                         downloaded += 1
                                     }
                                     if downloaded == docCount{
+                                        self.checkRate()
                                         self.addOrderRows(localLoaded: localLoaded)
                                         completed()
                                     }
@@ -268,11 +280,25 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         }
     }
     
+    func checkBadge(){
+        if UIApplication.shared.applicationIconBadgeNumber > 0{
+            dmBtn.badgeNumber = 1
+        }
+        else{
+            dmBtn.badgeNumber = 0
+            navigationController?.tabBarItem.badgeColor = nil
+            navigationController?.tabBarItem.badgeValue = nil
+        }
+    }
+    
     override func viewWillAppear(_ animated: Bool) {
         showCenterBtn()
         selectedComment = nil
         
-        if self.navigationController?.tabBarItem.badgeColor != nil{
+        
+        checkBadge()
+        
+        if self.navigationController?.tabBarItem.badgeColor == UIColor(named: "LoadingColor"){
             if !isLoadingNotifs{
                 downloadNotifs {
                     
@@ -286,13 +312,25 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         if let selectedIndexPathForOrder = ordersTableView.indexPathForSelectedRow{
             ordersTableView.deselectRow(at: selectedIndexPathForOrder, animated: true)
         }
+        DispatchQueue.main.async {
+            self.tableView.reloadData()
+        }
     }
     
     
     
     override func viewWillDisappear(_ animated: Bool) {
+        
     }
     
+    func checkRate(){
+        if orders.filter({($0.status == "completed") || ($0.status == "shipped")}).count >= 1{
+            if !(KeychainWrapper.standard.bool(forKey: "PromptedOrders") ?? false){
+                KeychainWrapper.standard.set(true, forKey: "PromptedOrders")
+                SKStoreReviewController.requestReview()
+            }
+        }
+    }
     
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -315,6 +353,10 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
             cell?.notifPic.alpha = 1.0
             cell?.dpBtn.superview?.isHidden = true
             cell?.notif = notif
+            cell?.nameBtn.titleLabel?.attributedText = nil
+            cell?.nameBtn.setAttributedTitle(nil, for: .normal)
+            cell?.followBtn.isHidden = !notif.shouldShowDP
+            cell?.checkFollow()
             self.tableView.checkNotifTimes(notif: notif, timestampLbl: cell?.timestampLbl)
 
             guard !notif.deleted else{
@@ -325,7 +367,7 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
             isMentionBreak:
             if notif.username == nil{
                 
-                downloadUserInfo(uid: notif.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: false, userInfoToUse: nil, queryOnUsername: false, completed: { userUID, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postCount, followerCount, followingCount, verified in
+                downloadUserInfo(uid: notif.uid, userVC: nil, feedVC: nil, downloadingPersonalDP: false, doNotDownloadDP: false, userInfoToUse: nil, queryOnUsername: false, completed: { userUID, fullName, username, dpUID, notifID, bio, imgData, userFollowing, usersBlocking, postNotifs, postCount, followerCount, followingCount, verified in
                     
                     if username == nil{
                         for sameNotif in self.notifications.filter({$0.uid == notif.uid}){
@@ -369,7 +411,7 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                             if notif.product == nil{
                                 notif.product = Product()
                             }
-                            notif.product.userInfo = userInfo
+                            notif.product.userInfo = pUserInfo
                         }
                     }
                     cell?.isUserInteractionEnabled = true
@@ -389,21 +431,16 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                 if notif.product == nil{
                     notif.product = Product()
                 }
-                if let color = notif.templateColor{
-                    cell?.notifPic.backgroundColor = UIColor(named: color)
+                if let templateColor = notif.templateColor, let color = all.tees.first(where: {$0.productCode == notif.product?.productType})?.colors.first(where: {$0.code == templateColor})?.getColor(){
+                    cell?.notifPic.backgroundColor = color
                     DispatchQueue(label: "cache").async {
-                        if let img = cache.imageFromCache(forKey: "thumbnail_\(notif.picID ?? "")"){
+                        var prefix = ""
+                        if notif.product?.displaySide == "back" || notif.product?.displaySide == "Back"{
+                            prefix = "BACK_"
+                        }
+                        if let img = cache.imageFromCache(forKey: "thumbnail_\(prefix)\(notif.picID ?? "")"){
                             DispatchQueue.main.async {
-                                guard let index = self.notifications.firstIndex(where: {$0.notifID == notif.notifID}) else{return}
-                                if let cell = tableView.cellForRow(at: IndexPath(row: index, section: 0)) as? NotificationCell{
-                                    cell.notifPic.image = img
-                                    if notif.product?.isAvailable ?? false{
-                                        cell.notifPic.alpha = 1.0
-                                    }
-                                    else{
-                                        cell.notifPic.alpha = 0.25
-                                    }
-                                }
+                                self.setNotifImages(tableView: tableView, notif: notif, img: img)
                             }
                         }
                     }
@@ -421,41 +458,27 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                         }
                         else{
                             notif.product = product
-                            guard let templateColor = product?.templateColor else{return}
+                            guard let templateColor = product?.templateColor, let color = all.tees.first(where: {$0.productCode == notif.product?.productType})?.colors.first(where: {$0.code == templateColor})?.getColor() else{return}
                             notif.templateColor = templateColor
-                            cell?.notifPic.backgroundColor = UIColor(named: templateColor)
+                            cell?.notifPic.backgroundColor = color
                             DispatchQueue(label: "cache").async {
-                                if let img = cache.imageFromCache(forKey: "thumbnail_\(notif.picID ?? "")"){
+                                var prefix = ""
+                                if product?.displaySide == "back" || product?.displaySide == "Back"{
+                                    prefix = "BACK_"
+                                }
+                                if let img = cache.imageFromCache(forKey: "thumbnail_\(prefix)\(notif.picID ?? "")"){
                                     DispatchQueue.main.async {
-                                        guard let index = self.notifications.firstIndex(where: {$0.notifID == notif.notifID}) else{return}
-                                        if let cell = tableView.cellForRow(at: IndexPath(row: index, section: 0)) as? NotificationCell{
-                                            cell.notifPic.image = img
-                                            if notif.product?.isAvailable ?? false{
-                                                cell.notifPic.alpha = 1.0
-                                            }
-                                            else{
-                                                cell.notifPic.alpha = 0.25
-                                            }
-                                        }
+                                        self.setNotifImages(tableView: tableView, notif: notif, img: img)
                                     }
                                 }
                                 else{
                                     guard let productUID = product?.userInfo.uid else{return}
                                     DispatchQueue.main.async {
-                                        tableView.downloadProductImage(pictureProduct: nil, followingUID: productUID, picID: notif.picID, index: 0, feedVC: nil, friendVC: nil, userVC: nil, fullVC: nil, type: nil, product: nil, completed: { img, imgID in
+                                        tableView.downloadProductImage(pictureProduct: nil, followingUID: productUID, picID: notif.picID, index: 0, feedVC: nil, friendVC: nil, userVC: nil, fullVC: nil, type: nil, product: product, completed: { img, imgID in
                                             DispatchQueue(label: "cache").async {
-                                                cache.storeImageData(toDisk: img?.pngData(), forKey: "thumbnail_\(imgID ?? "")")
+                                                cache.storeImageData(toDisk: img?.pngData(), forKey: imgID)
                                             }
-                                            guard let index = self.notifications.firstIndex(where: {$0.notifID == notif.notifID}) else{return}
-                                            if let cell = tableView.cellForRow(at: IndexPath(row: index, section: 0)) as? NotificationCell{
-                                                cell.notifPic.image = img
-                                                if notif.product?.isAvailable ?? false{
-                                                    cell.notifPic.alpha = 1.0
-                                                }
-                                                else{
-                                                    cell.notifPic.alpha = 0.25
-                                                }
-                                            }
+                                            self.setNotifImages(tableView: tableView, notif: notif, img: img)
                                         })
                                     }
                                 }
@@ -472,10 +495,7 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                 DispatchQueue(label: "cache").async {
                     if let img = cache.imageFromCache(forKey: notif.userInfo.dpID){
                         DispatchQueue.main.async {
-                            guard let index = self.notifications.firstIndex(where: {$0.notifID == notif.notifID}) else{return}
-                            if let cell = tableView.cellForRow(at: IndexPath(row: index, section: 0)) as? NotificationCell{
-                                cell.notifPic.image = img
-                            }
+                            self.setNotifImages(tableView: tableView, notif: notif, img: img)
                         }
                     }
                 }
@@ -486,6 +506,8 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
             let cell = tableView.dequeueReusableCell(withIdentifier: "SearchProductCell", for: indexPath) as? SearchProductTableViewCell
             guard orders.indices.contains(indexPath.section), orders[indexPath.section].products.indices.contains(indexPath.row) else{return cell!}
             let savedProduct = orders[indexPath.section].products[indexPath.row]
+            let order = orders[indexPath.section]
+            let currency = order.currency ?? ""
             guard let product = savedProduct.product, let uid = product.userInfo.uid else{return cell!}
             cell?.productImageView.image = nil
             cell?.priceLbl.text = nil
@@ -503,8 +525,12 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
             if !(product.isAvailable){
                 cell?.productImageView.alpha = 0.25
             }
+            var prefix = ""
+            if product.displaySide == "back" || product.displaySide == "Back"{
+                prefix = "BACK_"
+            }
             DispatchQueue(label: "explore").async {
-                if let dp = cache.imageFromMemoryCache(forKey: "thumbnail_\(product.productID)"){
+                if let dp = cache.imageFromMemoryCache(forKey: "thumbnail_\(prefix)\(product.productID)"){
                     DispatchQueue.main.async {
                         cell?.productImageView.image = dp
                     }
@@ -516,18 +542,89 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                 }
             }
             
-            cell?.productImageView.backgroundColor = UIColor(named: product.templateColor)
-            cell?.productImageView.backgroundColor = UIColor(named: product.templateColor)
+            let color = all.tees.first(where: {$0.productCode == product.productType})?.colors.first(where: {$0.code == product.templateColor})?.getColor()
+            
+            cell?.productImageView.backgroundColor = color
             cell?.productNameLbl.text = product.name
             cell?.savedProduct = savedProduct
             cell?.priceLbl.font = UIFont(name: "NexaW01-Regular", size: cell?.priceLbl.font.pointSize ?? 16)
             cell?.sizingLbl.font = UIFont(name: "NexaW01-Regular", size: cell?.priceLbl.font.pointSize ?? 16)
             if let price = product.price, let qty = savedProduct.quantity{
-                cell?.priceLbl.text = "\(qty) x \(price.formatPrice())"
+                cell?.priceLbl.text = "\(qty) x \(price.formatPrice(addCurrency: currency.shortenCurrency()))"
             }
             cell?.sizingLbl.text = "Size: \(savedProduct.size ?? "M")"
             
             return cell!
+        }
+    }
+    
+    func setNotifImages(tableView: UITableView, notif: UserNotification, img: UIImage?){
+        if let allIndexes = tableView.indexPathsForVisibleRows?.compactMap({$0.row}){
+            
+            for index in allIndexes{
+                guard self.notifications.indices.contains(index) else{continue}
+                
+                if self.notifications[index].notifID == notif.notifID{
+                    if let cell = tableView.cellForRow(at: IndexPath(row: index, section: 0)) as? NotificationCell{
+                        cell.notifPic.image = img
+                        if let product = notif.product{
+                            if product.isAvailable ?? false{
+                                cell.notifPic.alpha = 1.0
+                            }
+                            else{
+                                cell.notifPic.alpha = 0.25
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    func updateFollowInDatabase(friendInfo: UserInfo, didFollow: Bool){
+        guard let uid = pUserInfo.uid else{return}
+        guard let friendUID = friendInfo.uid else{return}
+        
+        if didFollow{
+            friendInfo.followerCount += 1
+            pUserInfo.userFollowing.append(friendUID)
+            
+            UserDefaults.standard.set(pUserInfo.userFollowing, forKey: "FOLLOWING")
+            let data = [
+                 "UID" : friendUID
+             ]
+            checkAuthStatus {
+                Firestore.firestore().document("Users/\(uid)/Following/\(friendUID)").setData(data, completion: { error in
+                    if error != nil{
+                        print(error?.localizedDescription ?? "")
+                        //pUserInfo.userFollowing.removeAll(where: {$0 == friendUID})
+                        UserDefaults.standard.set(pUserInfo.userFollowing, forKey: "FOLLOWING")
+                        friendInfo.followerCount -= 1
+                    }
+                    else{
+                       pUserInfo.followingCount += 1
+                       UserDefaults.standard.set(pUserInfo.followingCount, forKey: "FOLLOWING_COUNT")
+                    }
+                })
+            }
+        }
+        else{
+            friendInfo.followerCount -= 1
+            pUserInfo.userFollowing.removeAll(where: {$0 == friendUID})
+            UserDefaults.standard.set(pUserInfo.userFollowing, forKey: "FOLLOWING")
+            Firestore.firestore().collection("Users/\(uid)/Following").document(friendUID).delete(
+                completion: { error in
+                if error != nil{
+                    pUserInfo.userFollowing.append(friendUID)
+                    UserDefaults.standard.set(pUserInfo.userFollowing, forKey: "FOLLOWING")
+                    friendInfo.followerCount += 1
+                    print(error?.localizedDescription ?? "")
+                }
+                else{
+                    pUserInfo.followingCount -= 1
+                    UserDefaults.standard.set(pUserInfo.followingCount, forKey: "FOLLOWING_COUNT")
+                }
+            })
         }
     }
     
@@ -555,11 +652,15 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                             if let image = image{
                                 self.downloadingPictures.removeAll(where: {$0 == productID})
                                 cache.storeImage(toMemory: image, forKey: "thumbnail_\(productID)")
-                                for index in self.orders[section].products.indices{
-                                    if self.orders[section].products[index].product.productID == productID{
-                                        self.ordersTableView.performBatchUpdates({
-                                            self.ordersTableView.reloadRows(at: [IndexPath(row: index, section: section)], with: .none)
-                                        }, completion: nil)
+                                
+                                for (section, _) in self.orders.enumerated(){
+                                    guard self.orders.indices.contains(section) else{continue}
+                                    for index in self.orders[section].products.indices{
+                                        if self.orders[section].products[index].product.productID == productID{
+                                            self.ordersTableView.performBatchUpdates({
+                                                self.ordersTableView.reloadRows(at: [IndexPath(row: index, section: section)], with: .none)
+                                            }, completion: nil)
+                                        }
                                     }
                                 }
                             }
@@ -578,16 +679,10 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     var selectedObject: Any!
     var selectedComment: Comment!
     
+
     
-    @IBAction func toCart(_ sender: UIBarButtonItem) {
-        navigationController?.segueToCart()
-    }
-    
-    @IBAction func toSales(_ sender: UIBarButtonItem) {
-        navigationController?.segueToSales()
-        
-        
- 
+    @IBAction func toDMs(_ sender: UIBarButtonItem) {
+        navigationController?.segueToDMs()
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -612,7 +707,12 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                 selectedObject = notif.product
                 
                 if notif.notifType == "Mention" || notif.notifType == "Comment"{
-                    selectedComment = Comment(timestamp: notif.timestamp, message: notif.commentMessage, commentID: notif.commentID, userInfo: UserInfo(uid: notif.uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil))
+                    let comment = Comment(timestamp: notif.timestamp, message: notif.commentMessage, commentID: notif.commentID, userInfo: UserInfo(uid: notif.uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil), picID: nil, productID: notif.product.productID)
+                    if notif.hasCommentPic ?? false{
+                        comment.picID = comment.commentID
+                    }
+                    
+                    selectedComment = comment
                 }
                 performSegue(withIdentifier: "toFull", sender: nil)
             }
@@ -625,6 +725,7 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
             performSegue(withIdentifier: "toFull", sender: nil)
         }
     }
+    @IBOutlet weak var dmBtn: BadgeBarButtonItem!
     
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         if tableView == self.tableView{
@@ -643,7 +744,7 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     func deleteNotif(indexPath: IndexPath){
         
-        guard let uid = userInfo.uid else{return}
+        guard let uid = pUserInfo.uid else{return}
         guard let notifID = notifications[indexPath.row].notifID else{return}
         notifications.removeAll(where: {$0.notifID == notifID})
         
@@ -798,7 +899,7 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     func getNotifications(completed: @escaping () -> ()){
         
-        guard let uid = userInfo.uid else{return}
+        guard let uid = pUserInfo.uid else{return}
         checkAuthStatus {
             self.refreshLists(userUID: uid){
                 let query = Firestore.firestore().collection("Users/\(uid)/Notifications").order(by: "Timestamp", descending: true).limit(to: 30)
@@ -812,7 +913,7 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                             for doc in docs{
                                 guard let uid = doc["UID"] as? String else{
                                     continue}
-                                if userInfo.usersBlocking.contains(uid){
+                                if pUserInfo.usersBlocking.contains(uid){
                                     continue
                                 }
                                 let timestamp = (doc["Timestamp"] as? Timestamp)?.dateValue()
@@ -828,9 +929,20 @@ class NotificationVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                                     }
                                 }
                                 let commentMessage = doc["Comment_Message"] as? String
+                                
                                 let commentID = doc["Comment_ID"] as? String
 
-                                self.notifications.append(UserNotification(notifID: doc.documentID, uid: uid, notifType: type, timestamp: timestamp, username: nil, picID: picID, shouldShowDP: type == "Follow" || type == "Bio_Mention" || (type == "Report" && picID != nil), templateColor: nil, timestampDiff: nil, commentMessage: commentMessage, commentID: commentID, deleted: false))
+                                let notif = UserNotification(notifID: doc.documentID, uid: uid, notifType: type, timestamp: timestamp, username: nil, picID: picID, shouldShowDP: type == "Follow" || type == "Bio_Mention" || (type == "Report" && picID != nil), templateColor: nil, timestampDiff: nil, commentMessage: commentMessage, commentID: commentID, deleted: false)
+
+                                let hasPic = doc["Has_Comment_Pic"] as? Bool
+
+                                if hasPic ?? false{
+                                    notif.hasCommentPic = true
+                                }
+                                
+                                self.notifications.append(notif)
+                                
+                                
                             }
                             completed()
                         }
@@ -1122,7 +1234,7 @@ extension UINavigationController{
 
 extension UIViewController{
     func getPostBackgroundInfo(postID: String, completed: @escaping (Product?) -> ()){
-        guard let userUID = userInfo.uid else{return}
+        guard let userUID = pUserInfo.uid else{return}
         Firestore.firestore().collectionGroup("Products").whereField("Product_ID", isEqualTo: postID).getDocuments(completion: { snaps, error in
             if error != nil{
                 print(error?.localizedDescription ?? "")
@@ -1144,8 +1256,10 @@ extension UIViewController{
                 let comments = ((snap["Comments"]) as? Int) ?? 0
                 let isPublic = snap["Public"] as? Bool ?? true
                 let productType = snap["Type"] as? String ?? defaultProductType
+                let displaySide = snap["Side"] as? String ?? "front"
+                let sides = snap["Sides"] as? [String] ?? ["Front"]
 
-                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: 0, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: userInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: isAvailable, isPublic: isPublic, productType: productType)
+                let product = Product(userInfo: UserInfo(uid: uid, dp: nil, dpID: nil, username: nil, fullName: nil, bio: nil, notifID: nil, userFollowing: [], userLiked: [], followerCount: 0, postCount: 0, followingCount: 0, usersBlocking: [], profileLink: nil, verified: nil), picID: snap.documentID, description: description, productID: snap.documentID, timestamp: timestamp, index: 0, timestampDiff: nil, blurred: blurred, price: priceCents / 100, name: name, templateColor: templateColor, likes: likes, liked: pUserInfo.userLiked.contains(snap.documentID), designImage: nil, comments: comments, link: nil, isAvailable: isAvailable, isPublic: isPublic, productType: productType, displaySide: displaySide, supportedSides: sides)
                 
                 Firestore.firestore().collection("Users").document(uid).collection("Products").document(product.productID).collection("Likes").whereField(FieldPath.documentID(), isEqualTo: userUID).getDocuments(completion: { snapLikes, error in
                 
@@ -1153,15 +1267,15 @@ extension UIViewController{
                         print(error?.localizedDescription ?? "")
                     }
                     else{
-                        userInfo.userLiked.removeAll(where: {$0 == product.productID})
+                        pUserInfo.userLiked.removeAll(where: {$0 == product.productID})
                         if let likeDocs = snapLikes?.documents{
                             if likeDocs.isEmpty{
                                 product.liked = false
                             }
                             else{
                                 product.liked = true
-                                if !(userInfo.userLiked.contains(product.productID)){
-                                    userInfo.userLiked.append(product.productID)
+                                if !(pUserInfo.userLiked.contains(product.productID)){
+                                    pUserInfo.userLiked.append(product.productID)
                                 }
                             }
                         }

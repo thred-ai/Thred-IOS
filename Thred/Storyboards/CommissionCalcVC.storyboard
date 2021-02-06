@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BJT-r3-6Vb">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097.2" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BJT-r3-6Vb">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
@@ -74,7 +74,7 @@
                                                     <constraint firstAttribute="height" constant="140" id="EPU-fk-fYp"/>
                                                 </constraints>
                                             </stackView>
-                                            <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.29999999999999999" minValue="0.20000000000000001" maxValue="10" minimumValueImage="dollarsign.square" catalog="system" maximumValueImage="dollarsign.square.fill" translatesAutoresizingMaskIntoConstraints="NO" id="eWn-BJ-DtZ">
+                                            <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.29999999999999999" minValue="0.0" maxValue="10" minimumValueImage="dollarsign.square" catalog="system" maximumValueImage="dollarsign.square.fill" translatesAutoresizingMaskIntoConstraints="NO" id="eWn-BJ-DtZ">
                                                 <rect key="frame" x="-2" y="155" width="378" height="31"/>
                                                 <color key="tintColor" name="LoadingColor"/>
                                                 <constraints>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="16097.2" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="storiesCell" id="gTV-IL-0wX" customClass="StoriesCell" customModule="Thred" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
+                <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                <subviews>
+                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="dmI-wp-G70">
+                        <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                    </imageView>
+                </subviews>
+            </view>
+            <constraints>
+                <constraint firstItem="dmI-wp-G70" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="MTs-Yn-Ch3"/>
+                <constraint firstItem="dmI-wp-G70" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="VJR-KX-FNc"/>
+                <constraint firstItem="dmI-wp-G70" firstAttribute="centerX" secondItem="gTV-IL-0wX" secondAttribute="centerX" id="Zp8-F5-ukt"/>
+                <constraint firstAttribute="trailing" secondItem="dmI-wp-G70" secondAttribute="trailing" id="ph8-f4-1Qv"/>
+                <constraint firstAttribute="bottom" secondItem="dmI-wp-G70" secondAttribute="bottom" id="pt4-0U-LaS"/>
+                <constraint firstItem="dmI-wp-G70" firstAttribute="centerY" secondItem="gTV-IL-0wX" secondAttribute="centerY" id="yNg-1P-VE8"/>
+            </constraints>
+            <viewLayoutGuide key="safeArea" id="ZTg-uK-7eu"/>
+            <connections>
+                <outlet property="imageView" destination="dmI-wp-G70" id="beo-BI-0OH"/>
+            </connections>
+            <point key="canvasLocation" x="139" y="134"/>
+        </collectionViewCell>
+    </objects>
+</document>

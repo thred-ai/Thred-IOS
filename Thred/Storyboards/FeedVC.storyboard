@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="7LV-k9-ssG">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="7LV-k9-ssG">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -14,7 +16,7 @@
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" contentInsetAdjustmentBehavior="always" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="ASm-Rc-Hqa">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <connections>
                             <outlet property="dataSource" destination="5UA-1s-RDD" id="qQB-NQ-vWZ"/>
                             <outlet property="delegate" destination="5UA-1s-RDD" id="LgK-VA-YU5"/>
@@ -46,6 +48,7 @@
                         <segue destination="b87-RR-reN" kind="show" identifier="toComments" id="JSf-ZP-UBs"/>
                         <segue destination="Fee-QS-3Nk" kind="show" identifier="toEdit" id="iIr-3J-S4m"/>
                         <segue destination="AW9-x7-stO" kind="show" identifier="toReport" id="Q9G-ZQ-F4F"/>
+                        <segue destination="Z8b-bF-jTh" kind="show" identifier="toHashtag" id="uSv-xj-hKR"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="m53-NO-336" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -92,10 +95,10 @@
             </objects>
             <point key="canvasLocation" x="-565" y="1156"/>
         </scene>
-        <!--DesignVC-->
+        <!--DesignInfoVC-->
         <scene sceneID="Fdb-ch-9uI">
             <objects>
-                <viewControllerPlaceholder storyboardName="DesignVC" id="Fee-QS-3Nk" sceneMemberID="viewController">
+                <viewControllerPlaceholder storyboardName="DesignInfoVC" id="Fee-QS-3Nk" sceneMemberID="viewController">
                     <navigationItem key="navigationItem" id="hg0-WA-WBc"/>
                 </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Lm2-2a-hzb" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -130,6 +133,16 @@
             </objects>
             <point key="canvasLocation" x="-1501" y="1156"/>
         </scene>
+        <!--ColorSectionVC-->
+        <scene sceneID="bqR-5b-Y00">
+            <objects>
+                <viewControllerPlaceholder storyboardName="ColorSectionVC" id="Z8b-bF-jTh" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="hwk-8M-r0J"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="SbX-im-c0V" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-1022" y="1156"/>
+        </scene>
     </scenes>
     <resources>
         <image name="cart" width="33.5" height="33.5"/>
@@ -138,5 +151,8 @@
         <namedColor name="LoadingColor">
             <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
     </resources>
 </document>

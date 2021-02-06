@@ -29,7 +29,7 @@ class EditBioVC: UIViewController, UINavigationControllerDelegate {
     func navigationController(_ navigationController: UINavigationController, willShow viewController: UIViewController, animated: Bool) {
         if doneBtnPressed{
             if let editVC = viewController as? EditProfileVC{
-                guard let fieldText = bioField.text else{return}
+                guard let fieldText = bioField.text?.prepared() else{return}
                 editVC.editUserInfo.bio = fieldText
             }
         }

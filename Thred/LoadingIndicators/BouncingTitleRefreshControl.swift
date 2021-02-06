@@ -115,6 +115,7 @@ class BouncingTitleRefreshControl: UIRefreshControl {
                 else{
                     self.currentLabelIndex = 0
                     for label in self.labelsArray{
+
                         label.textColor = UIColor(red: 0, green: 0.749, blue: 1, alpha: 1.0)
                         label.transform = CGAffineTransform.identity
                     }
@@ -124,6 +125,8 @@ class BouncingTitleRefreshControl: UIRefreshControl {
         })
     }
     func getNextColor() -> UIColor {
+        
+        
         let colorsArray: Array<UIColor> = [UIColor.magenta, UIColor.white, UIColor.yellow, UIColor.red, UIColor.green, UIColor.blue, UIColor.orange]
      
         if currentColorIndex == colorsArray.count {

@@ -18,7 +18,7 @@ extension Date {
         
         let dateFormatter = DateFormatter()
         dateFormatter.timeZone = TimeZone.current
-        dateFormatter.dateFormat = "YYYY-MM-dd"
+        dateFormatter.dateFormat = "yyyy-MM-dd"
         let date = Date()
         let td = dateFormatter.string(from: date)
         

@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17156" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="dark"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17125"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
@@ -36,11 +38,11 @@
                                     </collectionViewFlowLayout>
                                 </collectionView>
                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="GkF-7H-Xlp">
-                                    <rect key="frame" x="123" y="0.0" width="110" height="25"/>
+                                    <rect key="frame" x="123" y="0.0" width="110" height="22.5"/>
                                     <subviews>
                                         <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="&quot;TITLE&quot;" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="Lcr-wj-QfF">
-                                            <rect key="frame" x="5" y="0.0" width="100" height="25"/>
-                                            <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="15"/>
+                                            <rect key="frame" x="5" y="0.0" width="100" height="22.5"/>
+                                            <fontDescription key="fontDescription" name="NexaW01-Heavy" family="NexaW01-Heavy" pointSize="12"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                     </subviews>
@@ -48,7 +50,7 @@
                                     <constraints>
                                         <constraint firstAttribute="trailing" secondItem="Lcr-wj-QfF" secondAttribute="trailing" constant="5" id="CAz-QC-v9E"/>
                                         <constraint firstItem="Lcr-wj-QfF" firstAttribute="centerX" secondItem="GkF-7H-Xlp" secondAttribute="centerX" id="U87-iS-gpF"/>
-                                        <constraint firstAttribute="height" constant="25" id="Xky-rm-ub6"/>
+                                        <constraint firstAttribute="height" constant="22.5" id="Xky-rm-ub6"/>
                                         <constraint firstItem="Lcr-wj-QfF" firstAttribute="leading" secondItem="GkF-7H-Xlp" secondAttribute="leading" constant="5" id="m3U-sG-c7w"/>
                                         <constraint firstAttribute="bottom" secondItem="Lcr-wj-QfF" secondAttribute="bottom" id="mzn-kx-hyv"/>
                                         <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="110" id="rbN-4h-SNA"/>
@@ -85,11 +87,12 @@
                     <constraints>
                         <constraint firstAttribute="height" constant="30" id="U7B-Kw-jE0"/>
                     </constraints>
-                    <color key="pageIndicatorTintColor" systemColor="systemFillColor" red="0.47058823529999999" green="0.47058823529999999" blue="0.50196078430000002" alpha="0.20000000000000001" colorSpace="custom" customColorSpace="sRGB"/>
+                    <color key="pageIndicatorTintColor" systemColor="systemFillColor"/>
                     <color key="currentPageIndicatorTintColor" name="LoadingColor"/>
                 </pageControl>
             </subviews>
-            <color key="backgroundColor" name="DefaultProductBackground"/>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
             <constraints>
                 <constraint firstAttribute="trailing" secondItem="HYm-bh-W43" secondAttribute="trailing" id="ASN-H2-SxD"/>
                 <constraint firstItem="NDw-ld-8bP" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" id="JFG-vu-Gcm"/>
@@ -102,7 +105,6 @@
             <nil key="simulatedTopBarMetrics"/>
             <nil key="simulatedBottomBarMetrics"/>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
-            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
             <connections>
                 <outlet property="collectionView" destination="rcy-QC-ocE" id="u2I-j1-QLd"/>
                 <outlet property="pageControl" destination="NDw-ld-8bP" id="ozZ-gq-S1w"/>
@@ -118,5 +120,11 @@
         <namedColor name="LoadingColor">
             <color red="0.090000003576278687" green="0.75" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
+        <systemColor name="secondarySystemBackgroundColor">
+            <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemFillColor">
+            <color red="0.47058823529411764" green="0.47058823529411764" blue="0.50196078431372548" alpha="0.20000000000000001" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
     </resources>
 </document>
