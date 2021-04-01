@@ -10,6 +10,7 @@ import UIKit
 import Firebase
 import ColorCompatibility
 import FirebaseFirestore
+import FirebaseAnalytics
 
 class PasswordVC: UIViewController {
     

@@ -94,7 +94,7 @@ extension DesignViewController{
         
     }
     
-    
+
     func activateDropper(image: UIImage){
         if let (r,g,b,a) = pixel(in: image, at: CGPoint(x: 10, y:10)) {
             print ("Red: \(r), Green: \(g), Blue: \(b), Alpha: \(a)")
@@ -183,6 +183,8 @@ extension DesignViewController{
                 sender.setImage(UIImage(named: "scribble.mode"), for: .normal)
             }
             
+            
+            
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5){
                 UIView.animate(withDuration: 0.2, animations: {
                     self.lineTypeView.alpha = 0.0
@@ -201,7 +203,10 @@ extension DesignViewController{
     }
     
     func swiftyDraw(isDrawingIn drawingView: SwiftyDrawView, using touch: UITouch) {
-        
+        guard drawingView.drawMode == .line else{return}
+        if drawingView.firstPoint.x == drawingView.currentPoint.x, drawingView.firstPoint.y != drawingView.currentPoint.y{
+            print("match")
+        }
     }
     
     func swiftyDraw(didFinishDrawingIn drawingView: SwiftyDrawView, using touch: UITouch) {

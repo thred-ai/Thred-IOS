@@ -28,8 +28,8 @@ extension DesignViewController{
     }
     
     func showFontTable(sender: UIButton){
-        if let index = labelFonts.firstIndex(where: {$0.name == sender.title(for: .normal)}){
-            self.fontTable.selectRow(at: IndexPath(row: index, section: 0), animated: false, scrollPosition: .middle)
+        if let section = labelFontCategories.firstIndex(where: {$0.containedFonts.contains(where: {$0.name == sender.title(for: .normal)})}), let index = labelFontCategories[section].containedFonts.firstIndex(where: {$0.name == sender.title(for: .normal)}){
+            self.fontTable.selectRow(at: IndexPath(row: index, section: section), animated: false, scrollPosition: .middle)
         }
         self.fontTable.isHidden = false
         for gesture in self.textCoverView.gestureRecognizers ?? []{
@@ -82,7 +82,7 @@ extension DesignViewController{
             if lastTextView?.hasShadow ?? false{
                 label.setRadiusWithShadowDesign()
             }
-            label.labelFont = lastTextView?.labelFont ?? labelFonts.first(where: {$0.name == "Large"})
+            label.labelFont = lastTextView?.labelFont ?? labelFontCategories[0].containedFonts.first
             
             label.autoresizesSubviews = true
             label.showsVerticalScrollIndicator = false

@@ -72,8 +72,10 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         
         tableView.allowsSelection = false
         payBtn.setTitleColor(UIColor.white.withAlphaComponent(0.5), for: .disabled)
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
         payBtn.isEnabled = false
-
         validateCosts{
             if let street = UserDefaults.standard.string(forKey: "street"), let city = UserDefaults.standard.string(forKey: "city"), let adminArea = UserDefaults.standard.string(forKey: "admin_area"), let country = UserDefaults.standard.string(forKey: "country"), UserDefaults.standard.string(forKey: "postal_code") != nil{
                 let unitNum = UserDefaults.standard.string(forKey: "unit_number")
@@ -86,6 +88,7 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
             }
             else{
                 self.setAddress()
+                self.priceSpinner.isHidden = true
             }
         }
     }
@@ -133,7 +136,7 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
                 }
                 self.setAddress()
                 self.hideAddressSpinner()
-                
+
                 self.calculateCosts(shippingCountry: countryCode ?? "US", billingInfo: self.billing_info){
                     self.hidePriceSpinner()
                     self.payBtn.isEnabled = true
@@ -186,6 +189,7 @@ class CheckoutVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     func showPriceSpinner(){
         priceSpinnerView.isHidden = false
+        priceSpinner.isHidden = false
         priceSpinner.animate()
     }
     

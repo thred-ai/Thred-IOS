@@ -12,6 +12,7 @@ import AVKit
 import FirebaseFunctions
 import ColorCompatibility
 import FirebaseFirestore
+import FirebaseAnalytics
 
 
 class EditProfileVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UINavigationControllerDelegate, UIGestureRecognizerDelegate {

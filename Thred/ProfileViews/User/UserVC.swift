@@ -18,6 +18,7 @@ import BRYXBanner
 import FirebaseFirestore
 import PopupDialog
 import StoreKit
+import FirebaseAnalytics
 
 var pUserInfo = UserInfo()
 var uploadingPosts = [ProductInProgress]()

@@ -12,6 +12,7 @@ import SDWebImage
 import Firebase
 import FirebaseFirestore
 import PopupDialog
+import FirebaseAnalytics
 
 var uploadingComments = [String]()
 

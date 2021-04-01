@@ -13,6 +13,7 @@ import FirebaseFirestore
 import Photos
 import AVFoundation
 import PopupDialog
+import FirebaseAnalytics
 
 class TextMessage: Equatable{
     

@@ -22,9 +22,29 @@ class AllTemplates{
 
 var all = AllTemplates()
 
+class LabelFontCategories{
+    
+    var name: String!
+    var fontName: String!
+    var textAlignment: NSTextAlignment!
+    var backgroundColor: UIColor!
+    var textColor: UIColor!
+    var containedFonts = [LabelFont]()
+    
+    init(font: String?, name: String, textAlignment: NSTextAlignment, backgroundColor: UIColor, textColor: UIColor, containedFonts: [LabelFont]) {
+        self.fontName = font
+        self.name = name
+        self.textAlignment = textAlignment
+        self.backgroundColor = backgroundColor
+        self.textColor = textColor
+        self.containedFonts = containedFonts
+    }
+}
+
 
 class LabelFont: NSObject, NSCoding{
     
+    var arvin = UIImage()
     
     func encode(with coder: NSCoder) {
         coder.encode(fontName, forKey: "fontName")
@@ -38,7 +58,7 @@ class LabelFont: NSObject, NSCoding{
         fontName = coder.decodeObject(forKey: "fontName") as? String
         name = coder.decodeObject(forKey: "name") as? String
         //textAlignment =
-        let o = NSTextAlignment.left
+        //let o = NSTextAlignment.left
             
             //(coder.decodeObject(forKey: "textAlignment") as? NSTextAlignment).index
         backgroundColor = coder.decodeObject(forKey: "backgroundColor") as? UIColor
@@ -98,6 +118,14 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     
     @IBOutlet weak var colorCollectionBackView: UIView!
     @IBOutlet weak var rotateBtn: UIButton!
+    
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+        guard tableView != productTypesTableView else{return 1}
+        
+        return labelFontCategories.count
+    }
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
 
         switch tableView{
@@ -105,37 +133,57 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
         case productTypesTableView:
             return all.tees.count
         default:
-            return labelFonts.count
+            return labelFontCategories[section].containedFonts.count
         }
     }
     
-    var labelFonts: [LabelFont]! =
+    var labelFontCategories: [LabelFontCategories]! =
         [
-            LabelFont(font: "bold", name: "Large", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
-            LabelFont(font: "normal", name: "Normal", textAlignment: .left, backgroundColor: .clear, textColor: .clear),
-            LabelFont(font: "NexaW01-Heavy", name: "Nexa", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
-            LabelFont(font: "AguafinaScript-Regular", name: "Fancy", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+            LabelFontCategories(font: "Helvetica", name: "SYSTEM", textAlignment: .center, backgroundColor: UIColor(named: "ProductColor")!, textColor: UIColor(named: "LoadingColor")!, containedFonts: [
+                
+                LabelFont(font: "bold", name: "Large", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+                LabelFont(font: "normal", name: "Normal", textAlignment: .left, backgroundColor: .clear, textColor: .clear),
+                LabelFont(font: "fill", name: "Fill", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+                LabelFont(font: "Arial", name: "Basic", textAlignment: .center, backgroundColor: .clear, textColor: .clear)
+
+            ]),
             
+            LabelFontCategories(font: "AguafinaScript-Regular", name: "Artistic", textAlignment: .center, backgroundColor: UIColor(named: "ProductColor")!, textColor: UIColor(named: "LoadingColor")!, containedFonts: [
+                
+                LabelFont(font: "NexaW01-Heavy", name: "Nexa", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+                LabelFont(font: "AguafinaScript-Regular", name: "Fancy", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+                LabelFont(font: "Basic Font", name: "Comic", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+                LabelFont(font: "New Waltograph", name: "Story", textAlignment: .center, backgroundColor: .clear, textColor: .clear)
+
+            ]),
             
-            LabelFont(font: "Vanity", name: "Vanity", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
-            LabelFont(font: "xirod", name: "Xirod", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
-            LabelFont(font: "fill", name: "Fill", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
-            LabelFont(font: "A Alloy Ink", name: "Bubbles", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+            LabelFontCategories(font: "OPTIRadiant", name: "La Maison", textAlignment: .center, backgroundColor: UIColor(named: "ProductColor")!, textColor: UIColor(named: "LoadingColor")!, containedFonts: [
+                
+                LabelFont(font: "Vanity", name: "Vanity", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+                LabelFont(font: "Smaragd", name: "Fashion", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+                LabelFont(font: "OPTIRadiant", name: "Greek", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+                LabelFont(font: "Cinzel", name: "Royal", textAlignment: .center, backgroundColor: .clear, textColor: .clear)
+
+            ]),
             
+            LabelFontCategories(font: "Hey November", name: "Streetwear", textAlignment: .center, backgroundColor: UIColor(named: "ProductColor")!, textColor: UIColor(named: "LoadingColor")!, containedFonts: [
+                
+                LabelFont(font: "Whoa! 2", name: "Subway", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+                LabelFont(font: "A Arang", name: "Bangarang", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+                LabelFont(font: "Hey November", name: "Thriller", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+                LabelFont(font: "HOPE-HYPE", name: "Hype", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+                LabelFont(font: "xirod", name: "Xirod", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+
+            ]),
             
-            LabelFont(font: "HOPE-HYPE", name: "Hype", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
-            LabelFont(font: "Varsity Team", name: "Varsity", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
-            LabelFont(font: "Hey November", name: "Thriller", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
-            LabelFont(font: "Hacked", name: "Hacked", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
-            
-            
-            LabelFont(font: "Whoa! 2", name: "Subway", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
-            LabelFont(font: "New Waltograph", name: "Story", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
-            LabelFont(font: "A Arang", name: "Bangarang", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
-            LabelFont(font: "Basic Font", name: "Comic", textAlignment: .center, backgroundColor: .clear, textColor: .clear)
-    ]
-    
-    
+            LabelFontCategories(font: "Hacked", name: "Miscellaneous", textAlignment: .center, backgroundColor: UIColor(named: "ProductColor")!, textColor: UIColor(named: "LoadingColor")!, containedFonts: [
+                
+                LabelFont(font: "Varsity Team", name: "Varsity", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+                LabelFont(font: "A Alloy Ink", name: "Bubbles", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+                LabelFont(font: "Hacked", name: "Hacked", textAlignment: .center, backgroundColor: .clear, textColor: .clear),
+
+            ]),
+        ]
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
@@ -151,11 +199,11 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
             return cell
         default:
             let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "cell")
-            guard labelFonts.indices.contains(indexPath.row) else{return cell}
-            let font = labelFonts[indexPath.row]
+            guard labelFontCategories.indices.contains(indexPath.section), labelFontCategories[indexPath.section].containedFonts.indices.contains(indexPath.row) else{return cell}
+            let font = labelFontCategories[indexPath.section].containedFonts[indexPath.row]
             cell.textLabel?.text = font.name.lowercased()
             cell.textLabel?.textColor = .black
-            cell.textLabel?.font = UIFont(name: font.fontName, size: 24)
+            cell.textLabel?.font = UIFont(name: font.fontName, size: 22)
             cell.backgroundColor = .clear
             return cell
         }
@@ -172,8 +220,8 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
             hideList()
         default:
             
-            if let textView = self.canvas.subviews.first(where: {$0.isFirstResponder}) as? CanvasTextView, labelFonts.indices.contains(indexPath.row){
-                let font = labelFonts[indexPath.row]
+            if let textView = self.canvas.subviews.first(where: {$0.isFirstResponder}) as? CanvasTextView, labelFontCategories.indices.contains(indexPath.section), labelFontCategories[indexPath.section].containedFonts.indices.contains(indexPath.row){
+                let font = labelFontCategories[indexPath.section].containedFonts[indexPath.row]
                 textStyleBtn.setTitle(font.name.uppercased(), for: .normal)
                 textView.labelFont = font
                 textViewDidChange(textView)
@@ -181,6 +229,30 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
             }
         }
     }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        guard tableView != productTypesTableView else{return 0}
+        
+        return 40
+    }
+    
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        guard tableView != productTypesTableView else{return nil}
+        guard labelFontCategories.indices.contains(section) else{return nil}
+        let category = labelFontCategories[section]
+        let view = UIView(frame: CGRect(x: 0, y: 0, width: fontTable.frame.width, height: 40))
+        view.backgroundColor = category.backgroundColor
+        let label = UILabel(frame: CGRect(x: 10, y: 2.5, width: fontTable.frame.width - 20, height: 35))
+        label.textColor = category.textColor
+        label.textAlignment = category.textAlignment
+        label.font = UIFont(name: category.fontName, size: 16)
+        label.text = category.name
+        label.backgroundColor = .clear
+        view.addSubview(label)
+        
+        return view
+    }
+    
     
     var selectedSide: TemplateSide!{
 
@@ -674,7 +746,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
                             textView.frame.size.height = maxY - minY
                           
                             if textView.text.count > 250{
-                                    textView.text.removeLast(textView.text.count - 250)
+                                textView.text.removeLast(textView.text.count - 250)
                             }
                         }
                         else{
@@ -1384,9 +1456,7 @@ class DesignViewController: UIViewController, UITextViewDelegate, UIScrollViewDe
     
     func showCancelMessage(completed: @escaping () -> ()){
         
-        
-//
-        guard let indexPath = carousel.collectionView.indexPathsForVisibleItems.first, let cell = carousel.collectionView.cellForItem(at: indexPath) as? CarouselCollectionViewCell, !(        cell.canvasDisplayViews.filter({$0.image(for: .normal) != nil}).isEmpty)
+        guard self.canvasDesigns.contains(where: {$0.currentImage != nil})
         else{
             completed()
             return

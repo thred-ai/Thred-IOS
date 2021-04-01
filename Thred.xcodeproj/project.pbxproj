@@ -58,6 +58,10 @@
 		AA25B19724A7AD9800C090CA /* ChangePasswordVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA25B19624A7AD9800C090CA /* ChangePasswordVC.storyboard */; };
 		AA25B19924A7ADEC00C090CA /* AddressVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA25B19824A7ADEC00C090CA /* AddressVC.storyboard */; };
 		AA3151D123EC081E003BF268 /* akaDora.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA3151D023EC0800003BF268 /* akaDora.ttf */; };
+		AA32B2F225CF3B54009147DE /* UILabelX.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA32B2F125CF3B54009147DE /* UILabelX.swift */; };
+		AA32B2F825CF40D7009147DE /* Smaragd-Alternate.otf in Resources */ = {isa = PBXBuildFile; fileRef = AA32B2F725CF40D7009147DE /* Smaragd-Alternate.otf */; };
+		AA32B2FE25CF40E5009147DE /* OPTIRadiant-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = AA32B2FD25CF40E5009147DE /* OPTIRadiant-Medium.otf */; };
+		AA32B30425CF40FF009147DE /* Cinzel-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = AA32B30325CF40FF009147DE /* Cinzel-Bold.otf */; };
 		AA33212024B81072006F3F58 /* CommissionCalcVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA33211F24B81072006F3F58 /* CommissionCalcVC.swift */; };
 		AA33212224B8388E006F3F58 /* CommissionCalcVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA33212124B8388E006F3F58 /* CommissionCalcVC.storyboard */; };
 		AA44090A23EDFB75009F5774 /* TemplateCarousel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA44090923EDFB75009F5774 /* TemplateCarousel.swift */; };
@@ -156,6 +160,10 @@
 		AA8E68EA2407C43900C651A1 /* ExplorePageFlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8E68E92407C43900C651A1 /* ExplorePageFlowLayout.swift */; };
 		AA8E68ED240B2B5C00C651A1 /* CarouselCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8E68EB240B2B5C00C651A1 /* CarouselCollectionViewCell.swift */; };
 		AA8E6B162485A7120042992F /* AddressVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8E6B152485A7120042992F /* AddressVC.swift */; };
+		AA8FD38125EDACA700512164 /* carl.gpx in Resources */ = {isa = PBXBuildFile; fileRef = AA8FD38025EDACA700512164 /* carl.gpx */; };
+		AA8FD38725EDED7A00512164 /* hosp.gpx in Resources */ = {isa = PBXBuildFile; fileRef = AA8FD38625EDED7A00512164 /* hosp.gpx */; };
+		AA8FD38D25F2BC3D00512164 /* rock.gpx in Resources */ = {isa = PBXBuildFile; fileRef = AA8FD38C25F2BC3D00512164 /* rock.gpx */; };
+		AA8FD39325F32EE700512164 /* nep.gpx in Resources */ = {isa = PBXBuildFile; fileRef = AA8FD39225F32EE700512164 /* nep.gpx */; };
 		AA90B70125C01FD1005AE7C7 /* DesignInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA90B70025C01FD0005AE7C7 /* DesignInfoViewController.swift */; };
 		AA90B77E25C150F9005AE7C7 /* DesignInfoVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA90B77D25C150F9005AE7C7 /* DesignInfoVC.storyboard */; };
 		AAA4B027242693AA007BC407 /* DesignVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AAA4B026242693AA007BC407 /* DesignVC.storyboard */; };
@@ -349,6 +357,10 @@
 		AA25B19624A7AD9800C090CA /* ChangePasswordVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = ChangePasswordVC.storyboard; sourceTree = "<group>"; };
 		AA25B19824A7ADEC00C090CA /* AddressVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = AddressVC.storyboard; sourceTree = "<group>"; };
 		AA3151D023EC0800003BF268 /* akaDora.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = akaDora.ttf; sourceTree = "<group>"; };
+		AA32B2F125CF3B54009147DE /* UILabelX.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UILabelX.swift; sourceTree = "<group>"; };
+		AA32B2F725CF40D7009147DE /* Smaragd-Alternate.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Smaragd-Alternate.otf"; sourceTree = "<group>"; };
+		AA32B2FD25CF40E5009147DE /* OPTIRadiant-Medium.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "OPTIRadiant-Medium.otf"; sourceTree = "<group>"; };
+		AA32B30325CF40FF009147DE /* Cinzel-Bold.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Cinzel-Bold.otf"; sourceTree = "<group>"; };
 		AA33211F24B81072006F3F58 /* CommissionCalcVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommissionCalcVC.swift; sourceTree = "<group>"; };
 		AA33212124B8388E006F3F58 /* CommissionCalcVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = CommissionCalcVC.storyboard; sourceTree = "<group>"; };
 		AA44090923EDFB75009F5774 /* TemplateCarousel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateCarousel.swift; sourceTree = "<group>"; };
@@ -437,6 +449,10 @@
 		AA8E68E92407C43900C651A1 /* ExplorePageFlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplorePageFlowLayout.swift; sourceTree = "<group>"; };
 		AA8E68EB240B2B5C00C651A1 /* CarouselCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarouselCollectionViewCell.swift; sourceTree = "<group>"; };
 		AA8E6B152485A7120042992F /* AddressVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressVC.swift; sourceTree = "<group>"; };
+		AA8FD38025EDACA700512164 /* carl.gpx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = carl.gpx; sourceTree = "<group>"; };
+		AA8FD38625EDED7A00512164 /* hosp.gpx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = hosp.gpx; sourceTree = "<group>"; };
+		AA8FD38C25F2BC3D00512164 /* rock.gpx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = rock.gpx; sourceTree = "<group>"; };
+		AA8FD39225F32EE700512164 /* nep.gpx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = nep.gpx; sourceTree = "<group>"; };
 		AA90B70025C01FD0005AE7C7 /* DesignInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignInfoViewController.swift; sourceTree = "<group>"; };
 		AA90B77D25C150F9005AE7C7 /* DesignInfoVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = DesignInfoVC.storyboard; sourceTree = "<group>"; };
 		AAA4B026242693AA007BC407 /* DesignVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = DesignVC.storyboard; sourceTree = "<group>"; };
@@ -636,6 +652,9 @@
 				AA61039A25C90AEF005F5004 /* Arang-2ODRv.otf */,
 				AA61038E25C90AC8005F5004 /* Hacked-KerX.ttf */,
 				AA6103B625C92156005F5004 /* BasicFontRegular-GOOlD.ttf */,
+				AA32B2F725CF40D7009147DE /* Smaragd-Alternate.otf */,
+				AA32B2FD25CF40E5009147DE /* OPTIRadiant-Medium.otf */,
+				AA32B30325CF40FF009147DE /* Cinzel-Bold.otf */,
 			);
 			path = Fonts;
 			sourceTree = "<group>";
@@ -652,6 +671,7 @@
 				AADAAD32241385D4003AD618 /* TemplateColorChooserCell.swift */,
 				AA44090D23F3DFC5009F5774 /* ProductInProgress.swift */,
 				AA8E68EB240B2B5C00C651A1 /* CarouselCollectionViewCell.swift */,
+				AA32B2F125CF3B54009147DE /* UILabelX.swift */,
 				AADAAD342414DFC3003AD618 /* ColorCollectionLayout.swift */,
 				AA44090F23F3E00D009F5774 /* Template.swift */,
 				AA44091D23F3E61E009F5774 /* ZoomableView.swift */,
@@ -695,7 +715,11 @@
 			children = (
 				AAA5C84A258308B50080D997 /* rideau.gpx */,
 				AA82F4CA25A3FD4300F255F1 /* orleans.gpx */,
+				AA8FD38625EDED7A00512164 /* hosp.gpx */,
+				AA8FD38025EDACA700512164 /* carl.gpx */,
 				AAA5C850258309140080D997 /* rideau-2.gpx */,
+				AA8FD39225F32EE700512164 /* nep.gpx */,
+				AA8FD38C25F2BC3D00512164 /* rock.gpx */,
 				AA4AF75623B4464500088F11 /* Thred */,
 				AA4AF76D23B4464800088F11 /* ThredTests */,
 				AA4AF77823B4464800088F11 /* ThredUITests */,
@@ -1261,6 +1285,7 @@
 			files = (
 				AAA4B03524269765007BC407 /* EditProfileVC.storyboard in Resources */,
 				AAD3F421241DEDB900F8FF8F /* NotificationCell.xib in Resources */,
+				AA8FD38725EDED7A00512164 /* hosp.gpx in Resources */,
 				AAA4B029242695CF007BC407 /* FeedVC.storyboard in Resources */,
 				AAD64EE82531257000D0841B /* sasa.gpx in Resources */,
 				AA25B19124A6B0CD00C090CA /* ChangeEmailVC.storyboard in Resources */,
@@ -1290,6 +1315,7 @@
 				AAABC15F23C947AF00E48987 /* Main.storyboard in Resources */,
 				AA6103A725C90B33005F5004 /* NewWaltDisneyFontRegular-BPen.ttf in Resources */,
 				AA25B19324A6B0E400C090CA /* BankVC.storyboard in Resources */,
+				AA8FD38125EDACA700512164 /* carl.gpx in Resources */,
 				AA25B19724A7AD9800C090CA /* ChangePasswordVC.storyboard in Resources */,
 				AA453A7C2435F3E900BA2B12 /* EmptyNotifView.xib in Resources */,
 				AA50AD2125183B0700EE2E0A /* NewsSection.xib in Resources */,
@@ -1298,6 +1324,8 @@
 				AA3151D123EC081E003BF268 /* akaDora.ttf in Resources */,
 				AA4858BA243937820043BE6F /* HeyNovember-eZZ2l.ttf in Resources */,
 				AA44092423F66DD1009F5774 /* HOPE-HYPE.ttf in Resources */,
+				AA32B30425CF40FF009147DE /* Cinzel-Bold.otf in Resources */,
+				AA32B2F825CF40D7009147DE /* Smaragd-Alternate.otf in Resources */,
 				AAA4B0332426972C007BC407 /* FullProductVC.storyboard in Resources */,
 				AA25B19524A7978F00C090CA /* CardVC.storyboard in Resources */,
 				AA4CE2772406F69B009BAC92 /* ExploreColorCell.xib in Resources */,
@@ -1307,6 +1335,7 @@
 				AA02AA32242AE7D30003CFCE /* Nexa W01 Regular.ttf in Resources */,
 				AA1B4BA024F18EDC00B61021 /* ChatVC.storyboard in Resources */,
 				AA61038F25C90AC8005F5004 /* Hacked-KerX.ttf in Resources */,
+				AA8FD38D25F2BC3D00512164 /* rock.gpx in Resources */,
 				AAA4B03724269989007BC407 /* EditBioVC.storyboard in Resources */,
 				AAABC07023C9432700E48987 /* SearchUserTableViewCell.xib in Resources */,
 				AA4FFB7D24F0514B009C999A /* EmptyProfileProductsView.xib in Resources */,
@@ -1314,6 +1343,7 @@
 				AA4858B82439354F0043BE6F /* AguafinaScript-Regular.ttf in Resources */,
 				AA61039B25C90AF0005F5004 /* Arang-2ODRv.otf in Resources */,
 				AAB095292558E7E800C4286C /* o.gpx in Resources */,
+				AA32B2FE25CF40E5009147DE /* OPTIRadiant-Medium.otf in Resources */,
 				AA4EAFDE24904D7500D4D144 /* EmptyOrdersView.xib in Resources */,
 				AAD5A586248DCA99008E79AE /* FullOrder.storyboard in Resources */,
 				AAACD016243F0A2E00D97D41 /* FeaturedCell.xib in Resources */,
@@ -1335,6 +1365,7 @@
 				AAB206F9247CB1E100B0A04B /* ProductPicCell.xib in Resources */,
 				AAE535B5256A461E0018332D /* hos.gpx in Resources */,
 				AAD85475245004C8007C205B /* LoadingView.xib in Resources */,
+				AA8FD39325F32EE700512164 /* nep.gpx in Resources */,
 				AA45931C243464BE00C9D5DC /* countries.json in Resources */,
 				AAA5C851258309140080D997 /* rideau-2.gpx in Resources */,
 				AA5685962469CA05006A18CC /* DrawToolsCell.xib in Resources */,
@@ -1599,6 +1630,7 @@
 				AAABC07423C9432700E48987 /* EditFullnameVC.swift in Sources */,
 				AA192838243449D000C16F28 /* FirstViewController.swift in Sources */,
 				AA4EAFE024904D8500D4D144 /* EmptyOrdersView.swift in Sources */,
+				AA32B2F225CF3B54009147DE /* UILabelX.swift in Sources */,
 				AA44090A23EDFB75009F5774 /* TemplateCarousel.swift in Sources */,
 				AAABC0BC23C9435C00E48987 /* InternetConnection.swift in Sources */,
 				AAABC07523C9432700E48987 /* UIBarButtonItemExtensions.swift in Sources */,
@@ -1936,7 +1968,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0.3;
+				MARKETING_VERSION = 2.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = thred.Thred;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1962,7 +1994,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0.3;
+				MARKETING_VERSION = 2.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = thred.Thred;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

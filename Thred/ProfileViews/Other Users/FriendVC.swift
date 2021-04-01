@@ -12,7 +12,7 @@ import FirebaseFunctions
 import FirebaseUI
 import ColorCompatibility
 import Firebase
-
+import FirebaseAnalytics
 
 class FriendVC: UICollectionViewController, UINavigationControllerDelegate, UICollectionViewDelegateFlowLayout {
 

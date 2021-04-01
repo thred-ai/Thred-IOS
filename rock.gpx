@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<gpx
+  xmlns="http://www.topografix.com/GPX/1/1"
+  xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd
+  http://www.garmin.com/xmlschemas/GpxExtensions/v3
+  http://www8.garmin.com/xmlschemas/GpxExtensions/v3/GpxExtensionsv3.xsd"
+  version="1.1"
+  creator="gpx-poi.com">
+  <wpt lat="45.551929" lon="-75.276040">
+    <time>2021-03-05T19:20:47Z</time>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:Address>
+          <gpxx:StreetAddress>860 Caron Street</gpxx:StreetAddress>
+          <gpxx:City>Clarence-Rockland</gpxx:City>
+          <gpxx:State>ON</gpxx:State>
+          <gpxx:Country>CA</gpxx:Country>
+          <gpxx:PostalCode>K4K 1H1</gpxx:PostalCode>
+        </gpxx:Address>
+      </gpxx:WaypointExtension>
+    </extensions>
+  </wpt>
+</gpx>

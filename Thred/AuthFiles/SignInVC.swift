@@ -10,6 +10,7 @@ import UIKit
 import ColorCompatibility
 import Firebase
 import CryptoSwift
+import FirebaseAnalytics
 
 class SignInVC: UIViewController {
     @IBOutlet weak var usernameField: UITextField!

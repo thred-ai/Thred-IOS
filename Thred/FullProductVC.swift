@@ -11,6 +11,7 @@ import SDWebImage
 import FirebaseFirestore
 import ColorCompatibility
 import Firebase
+import FirebaseAnalytics
 
 
 class FullProductVC: UIViewController, UINavigationControllerDelegate, UITableViewDelegate, UITableViewDataSource, UIGestureRecognizerDelegate {
